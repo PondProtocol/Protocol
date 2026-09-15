@@ -501,18 +501,20 @@ GitHub Enterprise Cloud. There is no cheap private-site option.
 **Owner decision required:** confirm the tier-2 calls above — specifically whether the
 `open-questions.md` files should be public — before the first deploy.
 
-### 6.1 The issuer address: two surfaces currently disagree
+### 6.1 The issuer address: settled, and now consistent
 
-**This needs settling once, for both surfaces, rather than per surface.**
+**Status: resolved in favour of publishing.** The organisation's profile page previously stated that
+*"no issuer address is published yet"* and that the address was *"deliberately withheld until the
+account's funding status is confirmed"*, while `protocol/README.md`, `pnd/docs/token-spec.md` and
+this site's `/verify/` page all published `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` in full. That
+disagreement is being closed by an open pull request on the `.github` repository which publishes the
+address with the same pre-launch framing used here.
 
-The organisation's public profile page states that **"no issuer address is published yet"** and that
-the address is *"deliberately withheld until the account's funding status is confirmed."* The literal
-address appears nowhere in the `.github` repository. Meanwhile `protocol/README.md`,
-`pnd/docs/token-spec.md` and this site's `/verify/` page all publish
-`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` in full.
+The two surfaces are now deliberately aligned rather than accidentally different, and the reasoning
+is recorded below so the decision does not have to be re-argued. **Keep them aligned:** if either
+surface changes its position on the address, the other has to change with it.
 
-**Recommendation: publish it on both surfaces, with identical pre-launch framing.** Four reasons,
-in order of weight:
+**Why publishing is right.** Four reasons, in order of weight:
 
 1. **The org page's own stated condition has already been met.** It withholds the address "until the
    account's funding status is confirmed." That is now confirmed: the account is funded on mainnet
@@ -537,16 +539,24 @@ therefore *any* token currently trading under the code `PND` is not $PND. That i
 protective than saying nothing — it converts the address from an invitation to buy into a tool for
 refusing to.
 
-**What the owner should do:** update the `.github` profile to publish the same address with the same
-framing, and once the domain exists, link it to `/verify/` so there is one canonical destination
-rather than two partial ones. **That edit is in the `.github` repository and is deliberately not part
-of this pull request** — the point is to settle the question once, not to change one surface and
-leave the other stale in the opposite direction.
+**What the two surfaces must keep in common.** Both now publish the address, both state that the
+account is unconfigured and has issued nothing, both give runnable queries against the real address,
+and both say plainly that if the page and the ledger disagree the ledger wins. `/verify/` additionally
+describes the `PND` code collisions — other accounts issuing the exact code `PND`, plus the variants
+`Pnd`, `PNDN` and `PNDC` — as a **pattern**, without naming any other issuer's address.
 
-If the owner would rather keep the address unpublished, that is a coherent position too, but it has
-to apply everywhere: it would mean removing it from `protocol/README.md`, from `pnd/docs/token-spec.md`,
-and from this site — and accepting that `/verify/` cannot then do its job. What should not happen is
-the two surfaces continuing to disagree by accident.
+That omission is deliberate and enforced. Some of those projects may be entirely legitimate, their
+metrics change constantly, and naming them would be an accusation the site has no basis to make. The
+publication guard fails the build if any classic XRPL address other than the canonical issuer appears
+anywhere in the output, so it is a property of the build rather than an editorial habit.
+
+**Remaining step for the owner:** once the domain exists, link the org profile to `/verify/` so there
+is one canonical destination rather than two partial ones.
+
+**If the position is ever reversed,** it has to be reversed everywhere: `protocol/README.md`,
+`pnd/docs/token-spec.md`, the org profile, and this site — and it costs `/verify/` its function,
+because without the address there is nothing to distinguish $PND from the same-code tokens that
+already exist. What must not happen is the surfaces drifting apart again by accident.
 
 ---
 

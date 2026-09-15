@@ -184,6 +184,29 @@ check(
   badStatus.map((l) => `${l.label}: "${l.status}"`).join(", "),
 );
 
+// 11b. Third-party issuer addresses must not appear anywhere in the output.
+//
+//      The verify page describes the PND-code collisions as a pattern on purpose. Some of those
+//      projects may be entirely legitimate, their metrics change constantly, and naming them would
+//      be an accusation this site has no basis to make. This check makes that a property of the
+//      build rather than an editorial habit: any classic XRPL address that is not the canonical
+//      issuer fails it.
+const addressPattern = /\br[1-9A-HJ-NP-Za-km-z]{24,34}\b/g;
+const foreignAddresses = new Map();
+for (const file of textFiles) {
+  for (const [match] of readFileSync(file, "utf8").matchAll(addressPattern)) {
+    if (match === config.site.issuerAddress) continue;
+    // The null address is what blackholing sets a regular key to. Naming it identifies no project.
+    if (/^rrrrrrrrrrrrrrrrrrrr[A-Za-z0-9]*$/.test(match)) continue;
+    if (!foreignAddresses.has(match)) foreignAddresses.set(match, relative(DIST_DIR, file));
+  }
+}
+check(
+  "no third-party issuer address appears in the output",
+  foreignAddresses.size === 0,
+  [...foreignAddresses].map(([a, f]) => `${a} in ${f}`).join(", "),
+);
+
 // 12. Vendored snapshot integrity, independent of the same check in build.mjs. Needs no access to
 //     the sibling repositories, so it holds on the deploy host too. Upstream drift is a separate
 //     concern handled by `sync --check` in CI; see scripts/sync.mjs.
