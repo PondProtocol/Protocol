@@ -219,9 +219,10 @@ a:hover {
 
 .sidebar li a {
   display: block;
-  padding: 0.32rem 0 0.32rem 0.85rem;
+  padding: 0.42rem 0 0.42rem 0.85rem;
   margin-left: -1px;
   border-left: 2px solid transparent;
+  line-height: 1.45;
   color: var(--text-muted);
   text-decoration: none;
 }
@@ -420,7 +421,7 @@ pre code {
   padding: 0;
   border: 0;
   background: none;
-  font-size: 0.86rem;
+  font-size: 0.94rem;
   word-break: normal;
 }
 
@@ -608,19 +609,28 @@ pre code {
 }
 
 .footer {
-  padding: 2rem clamp(1rem, 4vw, 2.5rem) 3rem;
+  padding: 2.25rem clamp(1rem, 4vw, 2.5rem) 3rem;
   border-top: 1px solid var(--border);
   background: var(--bg-soft);
-  font-size: 0.87rem;
+  font-size: 0.9rem;
+}
+
+.footer-inner {
+  max-width: 82rem;
+  margin: 0 auto;
 }
 
 .footer p {
-  max-width: 60rem;
-  margin: 0 auto 0.4rem;
+  margin: 0;
+  max-width: 52rem;
 }
 
 .footer .muted {
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
   color: var(--text-muted);
+  line-height: 1.65;
 }
 
 /* ------------------------------------------------------------------ mobile */

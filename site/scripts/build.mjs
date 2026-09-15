@@ -343,9 +343,12 @@ ${banner}
   </main>
 </div>
 <footer class="footer">
-  <p><strong>${esc(site.title)}</strong> &middot; documentation. Apache-2.0.</p>
-  <p class="muted">Asset identity on the XRP Ledger is the pair (currency code, issuer address).
-  A different issuer using the code <code>PND</code> is a different token.</p>
+  <div class="footer-inner">
+    <p><strong>${esc(site.title)}</strong> &middot; documentation. Licensed Apache-2.0.</p>
+    <p class="muted">Asset identity on the XRP Ledger is the pair (currency code, issuer address),
+    never the code alone. A different issuer using the code <code>PND</code> is a different token.
+    <a href="/verify/">Check the issuer address</a> before you trust anything calling itself $PND.</p>
+  </div>
 </footer>
 </body>
 </html>
