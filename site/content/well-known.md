@@ -50,9 +50,23 @@ TOML it finds, and serves the result through a public API. Consumers of that fee
 the Xaman DEX, Crossmark, GemWallet and XRP Toolkit.
 
 The practical consequence: one file and one `AccountSet` transaction propagate a token's name, icon,
-description and links across the ecosystem, with no per-wallet application or approval. XLS-26
+description and links across those consumers, with no per-wallet application or approval. XLS-26
 exists precisely because the alternative was contacting every wallet and explorer individually and
 repeating it for every change.
+
+### What it does not do
+
+Publishing this file is **not** a general-purpose way to set how every XRPL product describes the
+token. Some front-ends maintain their own metadata and do not read self-published XLS-26 at all.
+
+That is verified rather than assumed. Tracing a project whose own published XLS-26 description is
+known, on 2026-09-15, one major XRPL trading front-end displayed a completely different description
+from the one the project publishes — so it is not reading the project's file. Publishing this TOML
+should therefore be expected to populate wallet and explorer metadata, and should **not** be
+expected to populate that front-end's description box.
+
+Set expectations accordingly. The list above is what the file demonstrably reaches. Anything else is
+a separate, per-product question, and in at least one significant case the answer is no.
 
 To check what the ecosystem currently holds for $PND:
 
