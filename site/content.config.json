@@ -240,6 +240,24 @@
       "path": "scripts/check-docs.mjs",
       "publish": false,
       "reason": "A repository CI script, referenced from pnd's contributing notes. Not documentation."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/hosting-decision.md",
+      "publish": false,
+      "reason": "Operational decision document about where to host this very site, written for the owner. Not product documentation, and it would be odd for the site to host the argument for its own hosting. Keep it in the repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "site/README.md",
+      "publish": false,
+      "reason": "Build and deploy instructions for the site itself. Belongs with the code."
+    },
+    {
+      "repo": "protocol",
+      "path": "site/",
+      "publish": false,
+      "reason": "Source directory for this site. A link to it is a link to code, which is a repository concern."
     }
   ],
 
