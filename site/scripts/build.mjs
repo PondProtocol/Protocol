@@ -37,6 +37,12 @@ const strict = process.argv.includes("--strict");
 const config = loadConfig();
 const { site } = config;
 
+const esc = (s) =>
+  String(s).replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+  );
+
 /* ---------------------------------------------------------- substitutions
  *
  * The domain is not chosen yet, so it exists in exactly one place - content.config.json - and is
@@ -46,12 +52,53 @@ const { site } = config;
 const domainConfigured = Boolean(site.domain);
 const displayDomain = site.domain || site.domainPlaceholder;
 
+/**
+ * Render the canonical link list.
+ *
+ * Unverified entries are rendered with a visible warning rather than quietly, because the whole
+ * value of this list is that a reader can trust it. See content.config.json "canonicalLinks".
+ */
+function canonicalLinksHtml() {
+  const links = config.canonicalLinks?.links ?? [];
+  if (!links.length) return "";
+
+  const rows = links
+    .map((link) => {
+      const verified = link.status === "verified";
+      const badge = verified
+        ? `<span class="status status-ok">verified${
+            link.verifiedOn ? ` ${esc(link.verifiedOn)}` : ""
+          }</span>`
+        : `<span class="status status-warn">unverified</span>`;
+      return `<li class="canon-item">
+  <div class="canon-head"><span class="canon-label">${esc(link.label)}</span>${badge}</div>
+  <p class="canon-purpose">${esc(link.purpose)}</p>
+  <p class="canon-url"><a href="${esc(link.url)}" target="_blank" rel="noopener noreferrer nofollow"><code>${esc(
+    link.url,
+  )}</code></a></p>
+  ${link.note ? `<p class="canon-note">${esc(link.note)}</p>` : ""}
+</li>`;
+    })
+    .join("\n");
+
+  const anyUnverified = links.some((l) => l.status !== "verified");
+  const warning = anyUnverified
+    ? `<p class="canon-warning"><strong>Some links below are unverified.</strong> $PND has not been
+       issued, so pages that depend on the token existing cannot render yet, and one of these
+       routes has already changed once. Check the issuer address on ledger rather than trusting a
+       link alone.</p>`
+    : "";
+
+  return `<div class="canon">${warning}<ul class="canon-list">\n${rows}\n</ul></div>`;
+}
+
 const substitutions = {
   "{{issuerAddress}}": site.issuerAddress,
   "{{issuerAddressStatus}}": site.issuerAddressStatus,
   "{{domain}}": displayDomain,
   "{{title}}": site.title,
   "{{tagline}}": site.tagline,
+  "{{canonicalLinks}}": canonicalLinksHtml(),
 };
 
 function substitute(text, origin) {
@@ -211,12 +258,6 @@ function renderMarkdown(page) {
 }
 
 /* ------------------------------------------------------------------- layout */
-
-const esc = (s) =>
-  String(s).replace(
-    /[&<>"']/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
-  );
 
 const isPreLaunch = site.launchStatus !== "live";
 

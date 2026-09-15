@@ -17,10 +17,15 @@ object, they are not interchangeable, and neither confers a claim on the other:
 Anyone can issue a token with the currency code `PND`, and several accounts already have. A ticker
 is not an identity — only the pair **(currency code, issuer address)** is.
 
+Worse, **searching for a token is not a reliable way to find it.** On XRPL trading front-ends,
+tokens with real liquidity and tens of thousands of holders have been verified as unreachable by
+searching either their ticker or their issuer address, while unrelated same-ticker tokens appear
+instead. A direct link from a source you trust is the dependable route.
+
 <p><a class="button" href="/verify/">Verify the real $PND &rarr;</a></p>
 
-Checking the issuer address takes about thirty seconds and it is the only way to tell $PND from a
-token that merely reuses its ticker.
+That page carries the canonical issuer address, the direct links to where $PND can actually be
+viewed and traded, and how to confirm all of it against the ledger yourself.
 
 </div>
 

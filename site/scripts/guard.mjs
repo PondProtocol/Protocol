@@ -145,9 +145,33 @@ check(
 
 // 9. The canonical issuer address must appear on the verify page. It is the whole point of it.
 const verifyPage = join(DIST_DIR, "verify", "index.html");
+const verifyHtml = existsSync(verifyPage) ? readFileSync(verifyPage, "utf8") : "";
+check("verify page shows the canonical issuer address", verifyHtml.includes(config.site.issuerAddress));
+
+// 10. Canonical direct links are the primary anti-impersonation mitigation, because search on at
+//     least one major front-end does not reliably surface a token that has a working page. They
+//     must actually render, and every one of them must appear.
+const links = config.canonicalLinks?.links ?? [];
+check("verify page renders the canonical link list", links.length > 0 && verifyHtml.includes("canon-list"));
+const missingLinks = links.filter((l) => !verifyHtml.includes(l.url)).map((l) => l.label);
+check("every canonical link is rendered", missingLinks.length === 0, missingLinks.join(", "));
+
+// 11. An unverified link must never be presented as though somebody had checked it. A confidently
+//     shown dead link teaches readers that this page cannot be trusted, which defeats its purpose.
+if (links.some((l) => l.status !== "verified")) {
+  check("unverified canonical links carry a visible warning", verifyHtml.includes("canon-warning"));
+  const unbadged = links
+    .filter((l) => l.status !== "verified")
+    .filter((l) => !verifyHtml.includes("status-warn"))
+    .map((l) => l.label);
+  check("unverified links are badged", unbadged.length === 0, unbadged.join(", "));
+}
+
+const badStatus = links.filter((l) => !["verified", "unverified"].includes(l.status));
 check(
-  "verify page shows the canonical issuer address",
-  existsSync(verifyPage) && readFileSync(verifyPage, "utf8").includes(config.site.issuerAddress),
+  "every canonical link has a valid status",
+  badStatus.length === 0,
+  badStatus.map((l) => `${l.label}: "${l.status}"`).join(", "),
 );
 
 /* ------------------------------------------------------------------ report */

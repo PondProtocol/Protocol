@@ -54,6 +54,56 @@
     "issuerAddressStatus": "planned issuer account — funded, not yet configured on ledger"
   },
 
+  "canonicalLinks": {
+    "$comment": [
+      "Direct links to the real $PND, rendered into /verify/ by the {{canonicalLinks}} placeholder.",
+      "",
+      "Why this list is load-bearing rather than a convenience. On at least one major XRPL trading",
+      "front-end, having a token page is not the same as being findable: a token with a $649k market",
+      "cap and roughly 63,000 holders was verified on 2026-09-15 to have a working page that could",
+      "not be reached by searching either its ticker or its issuer address - the address search",
+      "returned no results and the ticker search surfaced only sub-$300 tokens instead. It was",
+      "reachable only by direct URL. That is not a small-token artifact, so a user who cannot find",
+      "$PND by searching has no reliable path to it except a link from a source they already trust.",
+      "Publishing these links is therefore the primary anti-impersonation mitigation, not the",
+      "issuer address alone.",
+      "",
+      "Every entry has a status:",
+      "  unverified - the URL is derived from a documented or observed route shape but nobody has",
+      "               loaded it. Rendered with a visible warning. This is the correct state for",
+      "               anything that depends on $PND existing, because it does not exist yet.",
+      "  verified   - somebody loaded it in a browser and it rendered the right token. Set the",
+      "               verifiedOn date at the same time.",
+      "",
+      "Do not promote anything to verified without loading it. A confidently-presented dead link is",
+      "worse than an absent one: it teaches readers that this page's links cannot be trusted, which",
+      "is the one thing the page depends on."
+    ],
+    "links": [
+      {
+        "label": "XRP Ledger explorer",
+        "purpose": "The issuer account itself: flags, Domain field, trust lines",
+        "url": "https://livenet.xrpl.org/accounts/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
+        "status": "unverified",
+        "note": "Route shape is deterministic and matches the explorerAccount base in rpnd/config/tokens.json. The account exists and is funded, so this should already resolve — load it and mark it verified."
+      },
+      {
+        "label": "XRPL Meta",
+        "purpose": "The metadata record wallets read, once the TOML is published",
+        "url": "https://s1.xrplmeta.org/v2/token/PND:rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
+        "status": "unverified",
+        "note": "Returns nothing useful until the issuer Domain field is set and the crawler has run. Expect an empty or absent record before then; that is the correct pre-launch result, not a fault."
+      },
+      {
+        "label": "FirstLedger",
+        "purpose": "Trading page",
+        "url": "https://firstledger.net/token-v3/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc/PND",
+        "status": "unverified",
+        "note": "Route shape is /token-v3/{issuer}/{currency-code}, with /token-v2/ redirecting to it. For a standard three-character code the final segment is the plain code rather than the 40-character hex form. This route has already moved once, and $PND does not exist yet, so treat the URL as a best guess until somebody loads it."
+      }
+    ]
+  },
+
   "sources": {
     "$comment": "Filesystem roots the sync step may read. Any path outside these roots is rejected.",
     "protocol": "..",

@@ -37,6 +37,36 @@ this notice is gone.
 That address is the identity. Save it, and check it against this page — served over HTTPS from the
 domain the issuer account itself points at — rather than against a ticker in a search box.
 
+## Canonical links to the real $PND
+
+<div class="callout callout-critical">
+
+**Searching for $PND is not a reliable way to find it.** Use these links, from this page, or check
+the issuer address on ledger. Nothing else.
+
+</div>
+
+On XRPL trading front-ends, having a token page and being *findable* are two different things.
+Verified on 2026-09-15: a token with a market capitalisation around $649,000 and roughly 63,000
+holders had a working, fully populated trading page that **could not be reached by searching for
+it.** Searching its issuer address returned "No results." Searching its ticker returned a list of
+unrelated sub-$300 tokens and not the real one. The page existed and worked, but only if you already
+had the URL.
+
+That token is 200 times larger than a new launch. So this is not something $PND grows out of — if a
+$649k token with 63,000 holders is unfindable by search, a brand-new one certainly is. The practical
+consequence is uncomfortable and worth stating plainly: **for a new token, a direct link from a
+source you trust is the only dependable route to the real asset.** Search will show you something
+else, and what it shows you may be an impostor with a matching ticker.
+
+Hence this list. It is the most load-bearing thing on this page.
+
+{{canonicalLinks}}
+
+If you arrive at a $PND page by any other route — a search result, a message, an advertisement,
+someone's reply — treat it as unrelated until you have checked the issuer address on it against the
+address above.
+
 ## How to check it yourself
 
 You do not have to trust this page. Three independent ways to confirm, in increasing order of
