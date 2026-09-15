@@ -501,6 +501,53 @@ GitHub Enterprise Cloud. There is no cheap private-site option.
 **Owner decision required:** confirm the tier-2 calls above — specifically whether the
 `open-questions.md` files should be public — before the first deploy.
 
+### 6.1 The issuer address: two surfaces currently disagree
+
+**This needs settling once, for both surfaces, rather than per surface.**
+
+The organisation's public profile page states that **"no issuer address is published yet"** and that
+the address is *"deliberately withheld until the account's funding status is confirmed."* The literal
+address appears nowhere in the `.github` repository. Meanwhile `protocol/README.md`,
+`pnd/docs/token-spec.md` and this site's `/verify/` page all publish
+`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` in full.
+
+**Recommendation: publish it on both surfaces, with identical pre-launch framing.** Four reasons,
+in order of weight:
+
+1. **The org page's own stated condition has already been met.** It withholds the address "until the
+   account's funding status is confirmed." That is now confirmed: the account is funded on mainnet
+   with `Flags` of 0, verified and written up in the correction PRs open against both `protocol` and
+   `pnd`. This is not a disagreement about principle — it is a gate that has been passed and a page
+   that has not caught up.
+2. **It is not secret, and cannot be.** The moment the account was funded it became public ledger
+   data, visible on any explorer to anyone who looks. Withholding it from one page does not conceal
+   it; it only means the project is not the one telling you what it is.
+3. **The anti-impersonation mechanism does not work without it.** `/verify/` exists because two
+   other mainnet accounts already issue `PND` and a third issues `Pnd`, one of them permanently
+   broken. The single thing that distinguishes $PND is the issuer address. A page that warns about
+   impostors without naming the real address is not a mitigation. The site's guard enforces the
+   address's presence on `/verify/` for exactly this reason.
+4. **Silence leaves a vacuum that someone else fills.** If the project has published no canonical
+   address and a trader searches the ticker, whatever they find becomes the de facto answer. Naming
+   it first is the cheapest defence available, and it costs nothing that is recoverable later.
+
+**What keeps this safe** is the pre-launch framing, not the withholding. The address is published
+alongside an explicit statement that the account is unconfigured, nothing has been issued, and
+therefore *any* token currently trading under the code `PND` is not $PND. That is both true and more
+protective than saying nothing — it converts the address from an invitation to buy into a tool for
+refusing to.
+
+**What the owner should do:** update the `.github` profile to publish the same address with the same
+framing, and once the domain exists, link it to `/verify/` so there is one canonical destination
+rather than two partial ones. **That edit is in the `.github` repository and is deliberately not part
+of this pull request** — the point is to settle the question once, not to change one surface and
+leave the other stale in the opposite direction.
+
+If the owner would rather keep the address unpublished, that is a coherent position too, but it has
+to apply everywhere: it would mean removing it from `protocol/README.md`, from `pnd/docs/token-spec.md`,
+and from this site — and accepting that `/verify/` cannot then do its job. What should not happen is
+the two surfaces continuing to disagree by accident.
+
 ---
 
 ## 7. What the owner has to do
