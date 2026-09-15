@@ -1,6 +1,8 @@
 ---
 source_repo: rpnd
 source_path: docs/rpnd-spec.md
+source_ref: main
+source_sha256: c47621c408a1565348506ea64da5e75aeb3947cea3e6cb588e07df542280f7aa
 title: Token specification
 url: /rpnd/
 section: $rPND — Multi-Purpose Token

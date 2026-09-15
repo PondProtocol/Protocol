@@ -105,10 +105,35 @@
   },
 
   "sources": {
-    "$comment": "Filesystem roots the sync step may read. Any path outside these roots is rejected.",
-    "protocol": "..",
-    "pnd": "../../pnd",
-    "rpnd": "../../rpnd"
+    "$comment": [
+      "Filesystem roots the sync step may read. Any path resolving outside these roots is rejected.",
+      "",
+      "`ref` says WHICH VERSION of each document gets vendored, and it is load-bearing:",
+      "",
+      "  \"worktree\"  read the file from disk as checked out. Correct for this repository, whose",
+      "              documents are edited in the same commit as the site.",
+      "  <git ref>   read via `git show <ref>:<path>`. Correct for sibling repositories, because it",
+      "              pins exactly what was vendored instead of depending on whatever happens to be",
+      "              checked out on the machine that ran sync.",
+      "",
+      "`pinnedReason` is REQUIRED whenever `ref` is not \"main\" or \"worktree\". A pin means this site",
+      "is vendoring documentation from an unmerged branch, which is a temporary state that must be",
+      "visible rather than discovered later. The build prints a warning for every pin and the guard",
+      "fails if a pin has no reason."
+    ],
+    "protocol": {
+      "path": "..",
+      "ref": "worktree"
+    },
+    "pnd": {
+      "path": "../../pnd",
+      "ref": "origin/cursor/pnd-issuer-funded-state-7b41",
+      "pinnedReason": "PND PR #3 corrects the same false claim this site would otherwise publish: pnd/main still presents Default Ripple as enabled on the issuer, when Flags is 0 on the live account and holder-to-holder $PND payments therefore do not work. Vendoring from pnd/main would republish that. UNPIN TO \"main\" the moment PND PR #3 merges — the staleness check will fail until you do, which is the intended reminder."
+    },
+    "rpnd": {
+      "path": "../../rpnd",
+      "ref": "main"
+    }
   },
 
   "nav": [

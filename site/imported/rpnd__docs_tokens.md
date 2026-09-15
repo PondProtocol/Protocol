@@ -1,6 +1,8 @@
 ---
 source_repo: rpnd
 source_path: docs/tokens.md
+source_ref: main
+source_sha256: eb0ce8460969b1d5cb13c34438440231d261fcf52b7d5e6d345c3434d83621bc
 title: Token identity
 url: /rpnd/identity/
 section: $rPND — Multi-Purpose Token

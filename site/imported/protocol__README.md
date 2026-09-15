@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: README.md
+source_ref: worktree
+source_sha256: 90ee7247cc4ac6193f8928e4b24f51c35115ae9e58b0a7133cb4fe4dd8c185e6
 title: Overview
 url: /protocol/
 section: Protocol
@@ -17,7 +19,9 @@ Pond Protocol is the protocol layer that ties together two XRP Ledger assets:
 
 Pond Protocol is the umbrella brand for both assets, and this repository is the canonical home for the **specification, architecture, and design decisions**. It holds no issuance keys, no machine-readable token parameters, and submits no transactions; the operator tooling lives in the token repos listed below.
 
-> **Status: pre-specification.** The two tokens exist as working, tested XRPL issuance code, and their on-ledger parameters are defined in [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json). The *protocol* that relates them is not yet specified. Everything in `docs/spec/` is a skeleton: it records what is already true on ledger and marks the rest as open. See **[docs/open-questions.md](docs/open-questions.md)** for the decisions that are still owner calls.
+> **Status: pre-issuance.** Neither token exists on ledger. The issuer account `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is funded on mainnet and completely unconfigured — no `AccountSet`, no trust lines, no obligations, no MPT issuance. What exists is working, tested issuance *tooling* plus the parameters it would submit, defined in [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json). Configured values are intent, not live properties: see **[Live state](docs/architecture.md#live-state)** for the verified snapshot and the queries to re-check it.
+>
+> The *protocol* that relates the two tokens is not yet specified. Everything in `docs/spec/` is a skeleton. See **[docs/open-questions.md](docs/open-questions.md)** for the decisions that are still owner calls.
 >
 > **Sequencing:** **$PND launches first**; $rPND design work follows. The near-term open questions are therefore the $PND ones — what the IOU represents, freeze policy, custody, the domain, and distribution.
 >
@@ -27,9 +31,9 @@ Pond Protocol is the umbrella brand for both assets, and this repository is the 
 
 The two assets are **different kinds of on-ledger object and are not interchangeable on ledger**.
 
-**$PND — IOU.** A classic XRPL issued currency with the standard 3-character code `PND`, issued by `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Holders must submit a `TrustSet` to the issuer before they can receive it. Amounts are expressed as `{ currency, issuer, value }`, so the issuer's classic address is part of the asset's identity — a different issuer using the code `PND` is a different token. Configured defaults: Default Ripple on, Disallow XRP on, transfer rate 0, tick size 5, 6 display decimals. Supply targets 100,000,000,000 as **issuer policy**, not as a ledger constraint: the XRP Ledger stores no supply field for an IOU, so circulating supply is measured as the issuer's outstanding obligations via `gateway_balances`.
+**$PND — IOU.** A classic XRPL issued currency with the standard 3-character code `PND`, to be issued by `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Holders must submit a `TrustSet` to the issuer before they can receive it. Amounts are expressed as `{ currency, issuer, value }`, so the issuer's classic address is part of the asset's identity — a different issuer using the code `PND` is a different token. Supply targets 100,000,000,000 as **issuer policy**, not as a ledger constraint: the XRP Ledger stores no supply field for an IOU, so circulating supply is measured as the issuer's outstanding obligations via `gateway_balances`. The issuer's intended settings — Default Ripple, Disallow XRP, transfer rate 0, tick size 5 — are **config intent and not yet applied**; see [Live state](docs/architecture.md#live-state).
 
-**$rPND — MPT.** A Multi-Purpose Token with the XLS-89 ticker `RPND`. Holders must submit an `MPTokenAuthorize` before they can receive it. Amounts are expressed as `{ mpt_issuance_id, value }` in base units at an asset scale of 6. Configured defaults: transferable, lockable, transfer fee 0, and **clawback permanently disabled** — the create transaction sets `tifMPTCanClawback` in `ImmutableFlags`, so the issuer cannot enable clawback later. Capability flags are one-way, so whatever is enabled at create is permanent and the unset flags can be added later but never withdrawn. `MaximumAmount` caps circulating supply rather than cumulative issuance, since burns free headroom to mint again. Its supply parameters are working defaults that have never been issued on ledger; [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) calls them "not ratified economics."
+**$rPND — MPT.** A Multi-Purpose Token with the XLS-89 ticker `RPND`, **not yet created**. Holders would opt in with `MPTokenAuthorize`, and amounts are expressed as `{ mpt_issuance_id, value }` in base units at an asset scale of 6. The create transaction would make it transferable and lockable with transfer fee 0 and **clawback permanently disabled** via `tifMPTCanClawback` in `ImmutableFlags`. Capability flags are one-way, so whatever is enabled at create is permanent and the unset flags can be added later but never withdrawn. `MaximumAmount` caps circulating supply rather than cumulative issuance, since burns free headroom to mint again. Its supply parameters are working defaults; [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) calls them "not ratified economics."
 
 The issuance toolkit signs transactions for both assets with one configured issuer wallet. Whether the production $rPND issuance comes from the same account as $PND, and whether the live deployment has a separate operational account, are still open — [OQ-22](docs/open-questions.md#oq-22) and [OQ-23](docs/open-questions.md#oq-23).
 
@@ -107,7 +111,9 @@ host is an owner decision. See [site/README.md](site/README.md) to build it loca
 
 ## Networks
 
-$rPND depends on the MPTokens amendment. In `rpnd/config/tokens.json`, Devnet and mainnet are marked `supportsMpt: true` and Testnet is marked `supportsMpt: false`; the mainnet flag has not been verified against live amendment status ([TD-03](docs/open-questions.md)). Devnet is the default for all scripted issuance. Mainnet issuance is a separate, reviewed operation with no faucet command, and no mainnet deployment has happened.
+$rPND depends on the MPTokens amendment. In `rpnd/config/tokens.json`, Devnet and mainnet are marked `supportsMpt: true` and Testnet is marked `supportsMpt: false`; the mainnet flag has not been verified against live amendment status ([TD-03](docs/open-questions.md#td-03)). Devnet is the default for all scripted issuance.
+
+The issuer account exists on **mainnet only** — it is `actNotFound` on both Testnet and Devnet, so nothing rehearsed on a test network shares its identity. Mainnet issuance is a separate, reviewed operation with no faucet command, and nothing has been issued there.
 
 ## License
 
