@@ -1,0 +1,23 @@
+Presence of this file tells GitHub Pages not to run the published output through Jekyll.
+
+It matters for one specific reason. Jekyll excludes files and directories whose names begin with a
+dot from its output unless they are named in an `include:` list, and it does so silently, with a
+zero exit code and no warning. Verified with Jekyll 4.4.1 on 2026-09-15: a source tree containing
+`.well-known/xrp-ledger.toml` built to a `_site` directory with no `.well-known` in it at all.
+
+That path is where the $PND issuer's on-ledger `Domain` field points. Losing it produces a 404 at
+the one URL that anchors the token's identity, and nothing in the build output would tell you.
+
+This site is not built by Jekyll, so the exclusion should never apply. This file is here so that it
+still cannot apply if someone later switches the repository to a branch-based Pages deployment,
+where GitHub runs Jekyll over the branch contents by default.
+
+If you ever do need Jekyll, note that the intuitive fix does not work:
+
+    include: [".well-known/*"]      # verified NOT to work - the file is still dropped
+    include: [".well-known"]        # works
+    include: [".well-known/xrp-ledger.toml"]   # also works
+
+Either way, verify the deployed result rather than the build log:
+
+    cd site && npm run verify:live -- <domain>

@@ -8,3 +8,5 @@ var/
 *.log
 .DS_Store
 *.tsbuildinfo
+site/dist/
+site/.screenshots/

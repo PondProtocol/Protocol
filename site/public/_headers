@@ -1,0 +1,44 @@
+# Cloudflare Pages custom response headers.
+#
+# Cloudflare Pages does NOT send Access-Control-Allow-Origin by default. Verified 2026-09-15:
+# static assets on Cloudflare Pages sites without a _headers file return no CORS header at all.
+# This file is what supplies it, so deleting it silently breaks every browser-based XLS-26
+# consumer while the site itself keeps looking fine.
+#
+# GitHub Pages ignores this file entirely - it sends Access-Control-Allow-Origin: * on everything
+# and offers no way to configure headers. If you deploy there, the CORS rule below is redundant
+# but harmless, and the Content-Type rule below cannot be honoured.
+#
+# Format: https://developers.cloudflare.com/pages/configuration/headers/
+# Limits: 100 rules, 2,000 characters per line.
+#
+# After any host or DNS change, verify rather than assume:
+#     cd site && npm run verify:live -- <domain>
+#
+# A note from real-world observation: a malformed line in a _headers file can stop later rules
+# from applying, and the deploy still succeeds. Header rules are not verified until you fetch the
+# response. Always check the live response, never just the file.
+
+# XLS-26 requires this file to be readable cross-origin. This is the single most important rule
+# in this file: without it, wallets that resolve token metadata in the browser cannot read it.
+/.well-known/xrp-ledger.toml
+  Access-Control-Allow-Origin: *
+  Content-Type: application/toml; charset=utf-8
+  Cache-Control: public, max-age=300
+  X-Content-Type-Options: nosniff
+
+# Anything else under .well-known/ should also be publicly readable.
+/.well-known/*
+  Access-Control-Allow-Origin: *
+
+# Ordinary hardening for the documentation pages. No inline script, no third-party anything, so
+# the policy can be strict.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; style-src 'self'; img-src 'self' data:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+
+/styles.css
+  Cache-Control: public, max-age=3600

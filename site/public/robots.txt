@@ -1,0 +1,10 @@
+# Pond Protocol documentation.
+#
+# Everything here is intended to be public and indexable. The verify page in particular should be
+# findable by search, because someone who has been shown an impostor token is likely to search for
+# the project name rather than navigate here directly.
+
+User-agent: *
+Allow: /
+
+# Sitemap: https://REPLACE-WITH-YOUR-DOMAIN.example/sitemap.xml
