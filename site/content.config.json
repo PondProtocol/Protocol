@@ -1,0 +1,210 @@
+{
+  "$comment": [
+    "PUBLICATION ALLOWLIST. This file is the only thing that decides what reaches the public site.",
+    "",
+    "The build never walks a directory looking for documents to publish. It reads this list and",
+    "nothing else. A document that is not listed here cannot be published, and a document listed",
+    "with \"publish\": false is imported for link resolution but is never rendered or copied.",
+    "",
+    "Two consequences worth stating plainly:",
+    "  1. Adding a page to the public site is always a reviewable diff to this file.",
+    "  2. Analysis that lives outside the three repositories - for example the Pond Protocol",
+    "     strategy notes held in the private agent store - has no path onto the site at all.",
+    "     scripts/guard.mjs additionally fails the build if such material shows up in the output.",
+    "",
+    "See site/README.md for the reasoning and scripts/guard.mjs for the enforced invariants."
+  ],
+
+  "site": {
+    "title": "Pond Protocol",
+    "tagline": "Two XRP Ledger assets, one canonical identity.",
+    "description": "Documentation for Pond Protocol: the $PND issued currency, the $rPND Multi-Purpose Token, and the verified issuer identity that distinguishes them from same-ticker impostors.",
+    "issuerAddress": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
+
+    "$comment_domain": [
+      "The domain is not chosen yet. Set \"domain\" to the real apex once it is registered - for",
+      "example \"pondprotocol.xyz\" - and everything that needs it picks it up: the {{domain}}",
+      "placeholder in authored pages, the canonical and og:url tags, and the sitemap.",
+      "",
+      "While \"domain\" is empty the site renders domainPlaceholder as visible text so the reader",
+      "can see a decision is outstanding, and emits NO canonical or og:url tags at all. A canonical",
+      "URL pointing at a domain that does not exist is worse than having none.",
+      "",
+      "The domain must be one you will hold indefinitely. Once the issuer's on-ledger Domain field",
+      "points at it, and especially if the issuer is ever blackholed, losing the domain breaks the",
+      "token's metadata permanently. Treat its renewal as a protocol-critical dependency."
+    ],
+    "domain": "",
+    "domainPlaceholder": "REPLACE-WITH-YOUR-DOMAIN.example",
+    "repoUrlBase": "https://github.com/PondProtocol",
+
+    "$comment_launchStatus": [
+      "launchStatus drives the sitewide banner and the wording on /verify/.",
+      "",
+      "  pre-launch : the issuer account exists and is funded but has no account settings, no",
+      "               Domain, and no issuance. The site states that no $PND exists yet and that",
+      "               anything trading under the code PND is therefore not $PND.",
+      "  live       : the issuer has been configured, Domain matches this host, and $PND has",
+      "               been issued. Only set this after the checks on /verify/ actually pass.",
+      "",
+      "Leave this at pre-launch until the AccountSet and issuance transactions are validated.",
+      "Setting it to live early is the one edit on this site that could mislead a buyer."
+    ],
+    "launchStatus": "pre-launch",
+    "issuerAddressStatus": "planned issuer account — funded, not yet configured on ledger"
+  },
+
+  "sources": {
+    "$comment": "Filesystem roots the sync step may read. Any path outside these roots is rejected.",
+    "protocol": "..",
+    "pnd": "../../pnd",
+    "rpnd": "../../rpnd"
+  },
+
+  "nav": [
+    {
+      "section": "Start here",
+      "pages": [
+        { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
+        { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
+        { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" }
+      ]
+    },
+    {
+      "section": "$PND — issued currency",
+      "pages": [
+        { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/", "title": "Token specification", "publish": true },
+        { "repo": "pnd", "path": "docs/trust-lines.md", "url": "/pnd/holding/", "title": "Holding $PND", "publish": true },
+        { "repo": "pnd", "path": "docs/integration.md", "url": "/pnd/integration/", "title": "Integration guide", "publish": true },
+        { "repo": "pnd", "path": "README.md", "url": "/pnd/overview/", "title": "Overview", "publish": true }
+      ]
+    },
+    {
+      "section": "$rPND — Multi-Purpose Token",
+      "pages": [
+        { "repo": "rpnd", "path": "docs/rpnd-spec.md", "url": "/rpnd/", "title": "Token specification", "publish": true },
+        { "repo": "rpnd", "path": "docs/mpt-vs-iou.md", "url": "/rpnd/why-mpt/", "title": "Why $rPND is an MPT", "publish": true },
+        { "repo": "rpnd", "path": "docs/tokens.md", "url": "/rpnd/identity/", "title": "Token identity", "publish": true }
+      ]
+    },
+    {
+      "section": "Protocol",
+      "pages": [
+        { "repo": "protocol", "path": "README.md", "url": "/protocol/", "title": "Overview", "publish": true },
+        { "repo": "protocol", "path": "docs/architecture.md", "url": "/protocol/architecture/", "title": "Architecture", "publish": true },
+        { "repo": "pnd", "path": "docs/pnd-vs-rpnd.md", "url": "/protocol/two-tokens/", "title": "$PND and $rPND compared", "publish": true },
+        { "repo": "protocol", "path": "docs/glossary.md", "url": "/protocol/glossary/", "title": "Glossary", "publish": true }
+      ]
+    },
+    {
+      "section": "Specification",
+      "pages": [
+        { "repo": "protocol", "path": "docs/spec/README.md", "url": "/spec/", "title": "Status and conventions", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/01-tokens.md", "url": "/spec/tokens/", "title": "01 — Tokens", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/02-accounts-and-roles.md", "url": "/spec/accounts-and-roles/", "title": "02 — Accounts and roles", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/03-issuance-and-supply.md", "url": "/spec/issuance-and-supply/", "title": "03 — Issuance and supply", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/04-token-relationship.md", "url": "/spec/token-relationship/", "title": "04 — Token relationship", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/05-metadata-and-discovery.md", "url": "/spec/metadata-and-discovery/", "title": "05 — Metadata and discovery", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/06-governance-and-change-control.md", "url": "/spec/governance/", "title": "06 — Governance", "publish": true },
+        { "repo": "protocol", "path": "docs/spec/07-security-considerations.md", "url": "/spec/security/", "title": "07 — Security considerations", "publish": true }
+      ]
+    },
+    {
+      "section": "Project status",
+      "pages": [
+        { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
+        { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }
+      ]
+    }
+  ],
+
+  "excluded": [
+    {
+      "repo": "rpnd",
+      "path": "docs/issuance.md",
+      "publish": false,
+      "reason": "Operator runbook. Contains no secrets, but it is a procedure for the people holding the issuer keys rather than documentation for holders or integrators. Flip to true and give it a url if you want it public."
+    },
+    {
+      "repo": "rpnd",
+      "path": "README.md",
+      "publish": false,
+      "reason": "Operator toolkit quick-start: faucet commands, .env handling, seed warnings. Reads as an instruction to run issuance transactions, which is not what a public visitor should be invited to do."
+    },
+    {
+      "repo": "protocol",
+      "path": "CONTRIBUTING.md",
+      "publish": false,
+      "reason": "Repository governance, not product documentation. Belongs on the repo, not the site."
+    },
+    {
+      "repo": "pnd",
+      "path": "CONTRIBUTING.md",
+      "publish": false,
+      "reason": "Repository governance, not product documentation."
+    },
+    {
+      "repo": "rpnd",
+      "path": "CONTRIBUTING.md",
+      "publish": false,
+      "reason": "Repository governance, not product documentation."
+    },
+    {
+      "repo": "pnd",
+      "path": "SECURITY.md",
+      "publish": false,
+      "reason": "Vulnerability reporting process. GitHub surfaces this from the repo and the org .github repo; duplicating it on the site creates a second copy that can drift out of date."
+    },
+    {
+      "repo": "rpnd",
+      "path": "SECURITY.md",
+      "publish": false,
+      "reason": "Vulnerability reporting process. Same reasoning as pnd/SECURITY.md."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/README.md",
+      "publish": false,
+      "reason": "An index of the repo's docs directory. The site has its own navigation, so this page would only offer a second, conflicting table of contents."
+    },
+    {
+      "repo": "protocol",
+      "path": "LICENSE",
+      "publish": false,
+      "reason": "License text. Belongs in the repository; the site footer states the license."
+    },
+    {
+      "repo": "pnd",
+      "path": "LICENSE",
+      "publish": false,
+      "reason": "License text. Belongs in the repository; the site footer states the license."
+    },
+    {
+      "repo": "rpnd",
+      "path": "LICENSE",
+      "publish": false,
+      "reason": "License text. Belongs in the repository; the site footer states the license."
+    },
+    {
+      "repo": "pnd",
+      "path": "scripts/check-docs.mjs",
+      "publish": false,
+      "reason": "A repository CI script, referenced from pnd's contributing notes. Not documentation."
+    }
+  ],
+
+  "forbiddenMarkers": {
+    "$comment": [
+      "scripts/guard.mjs fails the build if any of these strings appear anywhere in the built output.",
+      "These are the internal analysis documents and their storage location. They are not in any",
+      "repository and the allowlist above cannot reach them, so this is a second, independent check",
+      "rather than the primary control - it catches copy-paste into an authored page."
+    ],
+    "strings": [
+      "/cursor/stores/",
+      "firstledger-strategy",
+      "rpnd-tokenomics.md",
+      "REDACTED"
+    ]
+  }
+}

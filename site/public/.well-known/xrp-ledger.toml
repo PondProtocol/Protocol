@@ -1,0 +1,61 @@
+# XLS-26 token metadata for Pond Protocol.
+#
+# Served at https://<domain>/.well-known/xrp-ledger.toml
+#
+# THIS FILE IS NOT READY TO PUBLISH. Three things must be settled first, and each one is marked
+# TODO below:
+#
+#   1. The domain. It is not chosen yet. It appears here and in site/content.config.json.
+#   2. The icon. It must be a real, square, permanently hosted image.
+#   3. The issuer's on-ledger Domain field, which must be set to the same domain with AccountSet
+#      and stored as the hex of the LOWERCASE ASCII. A mixed-case value silently breaks the
+#      two-way link that makes everything in this file authoritative.
+#
+# Order of operations, which matters:
+#   a. Choose the domain and register it for as long as the registrar allows.
+#   b. Deploy this file and confirm the headers:  cd site && npm run verify:live -- <domain>
+#   c. Only then submit AccountSet with Domain = <domain>.
+#
+# Doing (c) before (b) publishes a pointer to a file that is not being served correctly, and the
+# ecosystem caches what it finds.
+#
+# Field reference: https://xls.xrpl.org/xls/XLS-0026-iou-token-metadata.html
+
+[[ISSUERS]]
+address = "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc"
+name = "Pond Protocol"
+desc = "Issuer of $PND, an XRP Ledger issued currency, and $rPND, a Multi-Purpose Token."
+
+[[TOKENS]]
+currency = "PND"
+issuer = "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc"
+name = "PND"
+desc = "The issued-currency token of Pond Protocol on the XRP Ledger."
+asset_class = "memes"
+# TODO: replace with a real square icon on a permanent host. Must include the protocol
+#       (https:// or ipfs://). Leave commented until it resolves - a broken icon URL is worse
+#       than no icon field, because consumers cache what they fetch.
+# icon = "https://REPLACE-WITH-YOUR-DOMAIN.example/icon-512.png"
+
+[[TOKENS.URLS]]
+# TODO: replace REPLACE-WITH-YOUR-DOMAIN.example once the domain is chosen.
+url = "https://REPLACE-WITH-YOUR-DOMAIN.example"
+type = "website"
+title = "Official website"
+
+[[TOKENS.URLS]]
+# TODO: replace with the real documentation URL once the domain is chosen.
+url = "https://REPLACE-WITH-YOUR-DOMAIN.example/verify/"
+type = "document"
+title = "Verify the issuer"
+
+# ---------------------------------------------------------------------------------------------
+# $rPND is deliberately absent.
+#
+# The MPT has not been created on mainnet, so it has no MPTokenIssuanceID to reference. Add a
+# stanza only after MPTokenIssuanceCreate is validated. Note also that MPT DEX and AMM support
+# depends on a ledger amendment that is not yet enabled on mainnet.
+# ---------------------------------------------------------------------------------------------
+
+# [[PRINCIPALS]] is intentionally omitted. It attaches a real name and email address to the
+# project, which is a disclosure decision rather than a technical one. XLS-26 does not require it.
