@@ -25,7 +25,9 @@ Citations below name files by path. All of them are on `main` in their repos:
 
 ## Blocking now
 
-**[OQ-21](#oq-21) — the supply scale relationship between the two tokens.** $PND has a policy target of 100,000,000,000 (100B). $rPND's config carries a `MaximumAmount` of 1,000,000,000 display units, which `rpnd/docs/rpnd-spec.md` labels a working default, not ratified economics, and which has never been issued on ledger. That is a 100:1 difference with no documented relationship between the two figures. This is an open design decision, not a committed conflict — but the $rPND `MaximumAmount` becomes permanent at `MPTokenIssuanceCreate`, so the tokenomics work in flight needs an answer before any create transaction.
+**$PND launches first** ([OQ-15](#oq-15)), so the near-term blockers are the $PND ones: what the IOU represents ([OQ-05](#oq-05)), freeze and trust-line-clawback policy before the issuer's first trust line ([OQ-08](#oq-08)), custody ([OQ-11](#oq-11)), the domain and metadata publication ([OQ-12](#oq-12), [TD-02](#td-02)), and distribution ([OQ-13](#oq-13)).
+
+**[OQ-21](#oq-21) — the supply scale relationship between the two tokens** is the one to answer before any $rPND create, though not before the $PND launch. $PND has a policy target of 100,000,000,000 (100B); $rPND's config carries a `MaximumAmount` of 1,000,000,000 display units, labelled a working default and never issued on ledger. That is a 100:1 difference with no documented relationship, and `MaximumAmount` becomes permanent at `MPTokenIssuanceCreate`.
 
 ## Index
 
@@ -95,7 +97,7 @@ Undecided: whether $PND additionally represents a redeemable claim, against whom
 
 **Fee policy: are transfer rate 0 and transfer fee 0 permanent?**
 
-Documented today: `transferRate: 0` for $PND and `transferFee: 0` for $rPND; tick size 5. `rpnd/docs/rpnd-spec.md` notes `TransferFee` is omitted from the create transaction entirely when zero, and that it stays changeable after create unless frozen with `tifMPTTransferFee` (not currently set). `pnd/docs/integration.md` tells integrators to read the rate from the ledger rather than trusting a document.
+Documented today: `transferRate: 0` for $PND and `transferFee: 0` for $rPND; tick size 5. `rpnd/docs/rpnd-spec.md` notes `TransferFee` is omitted from the create transaction entirely when zero, and records `tifMPTTransferFee` as the flag that would freeze it (not set). `pnd/docs/integration.md` tells integrators to read the rate from the ledger rather than trusting a document — good practice regardless of what any document claims about mutability.
 
 Undecided: whether zero is a permanent commitment. If it is, the $rPND side can be made permanent at create; the $PND side cannot be, so the two tokens can offer holders different degrees of assurance on the same policy. `pnd/docs/open-questions.md` item 8 tracks the IOU half.
 
@@ -105,9 +107,9 @@ Undecided: whether zero is a permanent commitment. If it is, the $rPND side can 
 
 **Freeze and lock policy, and who may invoke it?**
 
-Documented today: $rPND is created with `tfMPTCanLock`, so the issuer may lock the issuance or an individual holder's balance; clawback is permanently foreclosed via `tifMPTCanClawback`. For $PND no freeze flag is set by the toolkit, so `pnd/docs/token-spec.md` notes freezing remains technically available, and separately that `asfAllowTrustLineClawback` can only ever be set on an account that has never had a trust line — a door that closes on first use, not a decision that can wait.
+Documented today: $rPND is created with `tfMPTCanLock`, so the issuer may lock the issuance or an individual holder's balance; clawback is permanently foreclosed via `tifMPTCanClawback`. Because MPT capability flags are one-way — `MPTokenIssuanceSet` can enable a flag but never disable one — **lock authority over $rPND is permanent once the issuance is created**. The issuer cannot give it up later, so this is not a policy that can be softened after the fact. For $PND no freeze flag is set by the toolkit, so `pnd/docs/token-spec.md` notes freezing remains technically available, and separately that `asfAllowTrustLineClawback` can only ever be set on an account that has never had a trust line — a door that closes on first use, not a decision that can wait.
 
-Undecided: whether locking $rPND is ever intended to be used and under what authorization; whether $PND adopts individual freeze, global freeze, or permanent `asfNoFreeze`; and whether trust line clawback is enabled before the issuer's first trust line. `rpnd/docs/rpnd-spec.md` adds a related decision — whether `canLock` and other mutable flags should be frozen at create so holders get the same permanence they get on clawback. Tracked as items 4 and 5 in `pnd/docs/open-questions.md`.
+Undecided: whether to create $rPND with `tfMPTCanLock` at all, given it cannot be revoked; under what authorization locking would be used; whether $PND adopts individual freeze, global freeze, or permanent `asfNoFreeze`; and whether trust line clawback is enabled before the issuer's first trust line. Tracked as items 4 and 5 in `pnd/docs/open-questions.md`.
 
 ### OQ-09
 
@@ -115,7 +117,7 @@ Undecided: whether locking $rPND is ever intended to be used and under what auth
 
 Documented today: $rPND sets `requireAuth: false`. `rpnd/docs/rpnd-spec.md` is careful that this does not mean holders need no action — every holder still submits `MPTokenAuthorize` — it means there is no second, issuer-side approval. $PND relies on Default Ripple with no authorized-trust-lines setting.
 
-Undecided: whether permissionless holding is the intended end state on mainnet. Turning gating on later is a breaking change for existing holders.
+Undecided: whether permissionless holding is the intended end state on mainnet. Note the asymmetry created by one-way flags: `tfMPTRequireAuth` can be switched on after create but never back off, so gating $rPND later is both a breaking change for existing holders and an irreversible one.
 
 ### OQ-10
 
@@ -155,17 +157,19 @@ Undecided: sale, airdrop, liquidity provision, faucet, or grants; plus vesting, 
 
 **Liquidity: DEX, AMM, or neither?**
 
-Documented today: $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. It remains changeable after create unless frozen. $PND's tick size of 5 is an order-book parameter, so the IOU is at least shaped for a book.
+Documented today: $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Because flags are one-way, it can be enabled after create but never disabled again. $PND's tick size of 5 is an order-book parameter, so the IOU is at least shaped for a book.
 
-Undecided: whether the protocol intends order-book listings, an AMM pool, or no venue; and how price discovery works between the two assets given [OQ-03](#oq-03).
+Undecided: whether the protocol intends order-book listings, an AMM pool, or no venue; and how price discovery works between the two assets given [OQ-03](#oq-03). Enabling trading is available later; withdrawing it is not.
 
 ### OQ-15
 
-**Mainnet launch criteria and sequencing.**
+**Mainnet launch criteria.**
+
+Decided: **$PND launches first.** $rPND design work follows, which means the $rPND parameter decisions ([OQ-21](#oq-21), [OQ-24](#oq-24), [TD-09](#td-09)) do not gate the first launch — but they do gate the $rPND create transaction whenever it happens.
 
 Documented today: mainnet has no faucet command and no deployment. `rpnd/docs/issuance.md` describes mainnet as a separate, reviewed operation requiring confirmed amendment support, replaced placeholders, and production seeds held outside the repo. `pnd/docs/token-spec.md` lists the mainnet issuance date as a TODO.
 
-Undecided: what "reviewed" means concretely and who signs off; which token launches first; and whether Testnet is a prerequisite given $rPND cannot exist there.
+Undecided: what "reviewed" means concretely and who signs off; the issuance date; and whether Testnet is a prerequisite for the $PND launch. Because $PND goes first, the launch-blocking items are the $PND ones — [OQ-05](#oq-05), [OQ-06](#oq-06), [OQ-08](#oq-08), [OQ-11](#oq-11), [OQ-12](#oq-12), [OQ-13](#oq-13), [TD-02](#td-02) — rather than anything MPT-specific.
 
 ## Governance and process
 
@@ -214,9 +218,11 @@ Documented today:
 - $PND target supply is **100,000,000,000 (100B)**, an issuer policy target rather than an on-ledger cap, with circulating supply measured as issuer obligations via `gateway_balances` — see [OQ-06](#oq-06).
 - $rPND's config carries `maximumAmount` of `1000000000000000` base units = **1,000,000,000 display units** at `assetScale` 6. `rpnd/docs/rpnd-spec.md` labels the `assetScale`, `maximumAmount`, and `initialIssuance` values working defaults, "not ratified economics," and records that no issuance exists on mainnet. It carries an owner TODO to confirm all three before create.
 
-Undecided: whether the two figures should relate at all, and if so how. As they stand they differ by 100:1 with nothing documenting why. Because a $rPND `MaximumAmount` is permanent once `MPTokenIssuanceCreate` is validated — changing it requires destroying the issuance and creating a new one with a new `MPTokenIssuanceID` — this needs an answer before any create transaction, on any network intended to persist.
+The two caps are also different *kinds* of number. `MaximumAmount` bounds $rPND **circulating** supply rather than cumulative issuance: returning tokens to the issuer frees headroom to mint again, so the lifetime total minted can exceed it. The 100B $PND figure is a policy target with no ledger enforcement at all.
 
-Not a parameter conflict today: the $rPND figures have never been issued on ledger and are explicitly labelled provisional. Treat this as one input to the $rPND tokenomics work in flight, which owns the answer. Related: [OQ-03](#oq-03), which is the same question in mechanism terms rather than numbers.
+Undecided: whether the two figures should relate, and if so how. As they stand they differ by 100:1 with nothing documenting why. `MaximumAmount` is permanent once `MPTokenIssuanceCreate` is validated — changing it requires destroying the issuance and creating a new one with a different `MPTokenIssuanceID` — so it needs an answer before any create transaction on a network intended to persist.
+
+Not a parameter conflict today, and not launch-blocking: the $rPND figures have never been issued and are explicitly provisional, and **$PND launches first** ([OQ-15](#oq-15)). Treat this as an input to the $rPND tokenomics work, which owns the answer. Related: [OQ-03](#oq-03), the same question in mechanism terms rather than numbers.
 
 ### OQ-22
 

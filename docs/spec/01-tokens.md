@@ -43,10 +43,10 @@ Pond Protocol involves two XRP Ledger assets. They are different object types an
 | Asset identity | `MPTokenIssuanceID`, assigned by the ledger at `MPTokenIssuanceCreate` |
 | Amount form | `{ mpt_issuance_id, value }`, value in fractional units |
 | Asset scale | 6 (one whole rPND = 1,000,000 base units). Working default; permanent once created. |
-| Maximum amount | `1000000000000000` base units = 1,000,000,000 rPND. Working default; permanent once created. |
+| Maximum amount | `1000000000000000` base units = 1,000,000,000 rPND **in circulation**. Working default; permanent once created. |
 | Transfer fee | 0 |
-| Create flags | `tfMPTCanTransfer`, `tfMPTCanLock` |
-| Flags not set | `canTrade`, `canClawback`, `requireAuth` |
+| Create flags | `tfMPTCanTransfer`, `tfMPTCanLock` — one-way, so both are permanent once created |
+| Flags not set | `canTrade`, `canClawback`, `requireAuth`. Can be enabled later, never disabled again |
 | Immutable flags | `tifMPTCanClawback` — clawback permanently foreclosed |
 | Holder opt-in | `MPTokenAuthorize`, required before receiving |
 
@@ -56,7 +56,7 @@ The ticker is metadata; the issuance id is identity. Consumers keying off `RPND`
 
 **Open:** whether `canTrade: false` is intended, given any trading venue plans — [OQ-14](../open-questions.md#oq-14).
 
-**Open:** the intended use of the lock capability — [OQ-08](../open-questions.md#oq-08).
+**Open:** whether to create the issuance with lock authority at all, since one-way flags make it permanent, and what its intended use is — [OQ-08](../open-questions.md#oq-08).
 
 **Open:** whether metadata should later be marked immutable — [OQ-10](../open-questions.md#oq-10).
 
@@ -64,7 +64,7 @@ The ticker is metadata; the issuance id is identity. Consumers keying off `RPND`
 
 Documented consequences of the two object types, worth stating because they surprise people:
 
-- $rPND has a hard on-ledger supply cap the ledger enforces. $PND's 100B target is policy only; the trust limit bounds one line, not total issuance.
+- $rPND has a hard on-ledger cap on circulating supply, enforced by the ledger. $PND's 100B target is policy only; the trust limit bounds one line, not total issuance.
 - $rPND can never be clawed back. $PND has no freeze policy recorded either way.
 - $rPND opt-in is one transaction with no limit. $PND opt-in carries a per-holder limit the holder chooses.
 - $rPND amounts are integers in fractional units. $PND amounts are decimal strings.

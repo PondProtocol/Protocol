@@ -14,7 +14,7 @@ This section describes the risks that exist today. It does not offer mitigations
 
 ## 7.2 Supply risk
 
-**Documented:** $rPND cannot exceed `MaximumAmount`; the ledger rejects mints past it. $PND has no on-ledger cap — its 100B target is issuer policy, and the operational trust limit constrains a single line, not total issuance. Circulating $PND is auditable after the fact through `gateway_balances`, which reports the issuer's obligations.
+**Documented:** $rPND circulating supply cannot exceed `MaximumAmount`; the ledger rejects mints past it. Because the cap applies to circulation rather than cumulative issuance, returning tokens to the issuer frees headroom to mint again, so the cap bounds how much exists at once, not how much has ever been created. $PND has no on-ledger cap at all — its 100B target is issuer policy, and the operational trust limit constrains a single line, not total issuance. Circulating $PND is auditable after the fact through `gateway_balances`, which reports the issuer's obligations.
 
 The asymmetry is worth stating plainly for holders: an $rPND holder's dilution risk is bounded by consensus, while a $PND holder's is bounded by issuer discipline and observable only by watching obligations — [OQ-06](../open-questions.md#oq-06).
 
@@ -22,9 +22,9 @@ The asymmetry is worth stating plainly for holders: an $rPND holder's dilution r
 
 ## 7.3 Freeze and lock risk
 
-**Documented:** $rPND is created with `tfMPTCanLock`, so the issuer can lock balances. $PND has no freeze-related flags configured, so the ledger's default freeze capability remains available to the issuer.
+**Documented:** $rPND is created with `tfMPTCanLock`, so the issuer can lock balances — and because capability flags are one-way, that authority is permanent for the life of the issuance. The issuer cannot later renounce it, which is the opposite of the clawback guarantee holders get on the same token. $PND has no freeze-related flags configured, so the ledger's default freeze capability remains available to the issuer.
 
-**Open:** intended use of lock, authorization required to invoke it, and whether $PND should adopt No Freeze — [OQ-08](../open-questions.md#oq-08).
+**Open:** whether $rPND should be created with lock authority at all, given it cannot be revoked; the authorization required to invoke it; and whether $PND should adopt No Freeze — [OQ-08](../open-questions.md#oq-08).
 
 ## 7.4 Metadata trust
 

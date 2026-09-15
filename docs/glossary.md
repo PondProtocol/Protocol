@@ -28,9 +28,9 @@ Terms as they are used in this repo. XRPL definitions are summarized for orienta
 
 **`MPTokenIssuanceID`** — the ledger-assigned identifier that *is* the MPT's identity, 192 bits / 48 hex characters, derived from the issuer account and the create transaction's sequence. The ticker is only a label.
 
-**`MPTokenIssuanceSet`** — the transaction that updates an existing issuance: lock and unlock, the metadata blob, and any flag not frozen at create.
+**`MPTokenIssuanceSet`** — the transaction that updates an existing issuance: lock and unlock, the metadata blob, and capability flags. Flag changes are **one-way** — it can enable a flag but never disable one — so the issuer can only ever acquire capabilities, never give them up.
 
-**`MaximumAmount`** — the MPT's ledger-enforced supply cap, in base units. Permanent from create; raising it requires destroying the issuance and creating a new one with a new id.
+**`MaximumAmount`** — the MPT's ledger-enforced cap on **circulating** supply, in base units, not a cap on cumulative issuance: returning tokens to the issuer frees headroom to mint again. Permanent from create; raising it requires destroying the issuance and creating a new one with a new id.
 
 **OQ-nn** — an open design question in [open-questions.md](open-questions.md). Undecided by definition.
 

@@ -22,7 +22,7 @@ Beyond that field, the assets may share an issuing account, though that is itsel
 
 **Open — all of the following.** None of it appears in any repo, and none of it may be written into this spec as fact until an owner decides it. Primary trackers: [OQ-03](../open-questions.md#oq-03), [OQ-04](../open-questions.md#oq-04), and [OQ-21](../open-questions.md#oq-21). `rpnd/docs/rpnd-spec.md` carries the same question as an owner TODO, and until it is answered nothing in that repo "may be presented as a redemption promise."
 
-- **Scale.** $PND targets 100B; $rPND's provisional cap is 1B. Should those figures relate, and how? This is the one item with a deadline attached, since `MaximumAmount` is permanent from the create transaction onward — [OQ-21](../open-questions.md#oq-21).
+- **Scale.** $PND targets 100B as policy; $rPND's provisional cap is 1B in circulation. Should those figures relate, and how? `MaximumAmount` is permanent from the create transaction onward, so this must be settled before any $rPND create — though not before the $PND launch, which comes first — [OQ-21](../open-questions.md#oq-21).
 - **Rate.** Is there a fixed rate or peg between $PND and $rPND? 1:1, or something else? Floating?
 - **Convertibility.** Can a holder convert one into the other? One-way, two-way, or not at all?
 - **Execution.** If conversion exists, who performs it — an operator process, an on-ledger mechanism, a manual desk — and what are the settlement expectations?
@@ -39,7 +39,7 @@ Stated here so the field is never mistaken for a mechanism.
 
 ## 4.4 Liquidity and price discovery
 
-**Documented:** $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use; it stays changeable after create unless frozen. [rPND PR #1](https://github.com/PondProtocol/rPND/pull/1) lists DEX listings as out of scope.
+**Documented:** $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Flags are one-way, so it can be enabled after create but never disabled again. [rPND PR #1](https://github.com/PondProtocol/rPND/pull/1) lists DEX listings as out of scope.
 
 **Open:** whether the protocol intends order-book listings, an XRPL AMM pool, or no venue at all, and how price discovery is meant to work between the two assets — [OQ-14](../open-questions.md#oq-14).
 

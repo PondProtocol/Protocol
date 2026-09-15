@@ -18,7 +18,7 @@ Because the protocol's core mechanics are undecided ([OQ-01](../open-questions.m
 | [06 — Governance and change control](06-governance-and-change-control.md) | Who may change what, and how | Partly documented |
 | [07 — Security considerations](07-security-considerations.md) | Trust assumptions, custody, failure modes | Partly documented |
 
-One decision has a deadline rather than merely an owner: the $PND / $rPND supply scale relationship ([OQ-21](../open-questions.md#oq-21)) must be settled before any `MPTokenIssuanceCreate` that is meant to persist, because `MaximumAmount` is permanent from that transaction onward.
+**$PND launches first** ([OQ-15](../open-questions.md#oq-15)), so sections 01, 02, 03, and 07 carry the near-term decisions and the MPT-specific ones can follow. One decision has a deadline rather than merely an owner: the $PND / $rPND supply scale relationship ([OQ-21](../open-questions.md#oq-21)) must be settled before any `MPTokenIssuanceCreate` meant to persist, because `MaximumAmount` is permanent from that transaction onward.
 
 ## Conventions
 
