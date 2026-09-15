@@ -55,7 +55,9 @@ Citations below name files by path. All of them are on `main` in their repos:
 | [OQ-23](#oq-23) | Is there a cold/hot split in the live deployment? | [spec/02](spec/02-accounts-and-roles.md) |
 | [OQ-24](#oq-24) | Should on-ledger `issuer_name` read "Pond Protocol"? | [spec/05](spec/05-metadata-and-discovery.md) |
 
-Decided: [OQ-02](#oq-02), [OQ-06](#oq-06), [OQ-16](#oq-16). Completed: [TD-06](#td-06), [TD-07](#td-07), [TD-08](#td-08).
+Decided: [OQ-02](#oq-02), [OQ-06](#oq-06), [OQ-15](#oq-15) (sequencing), [OQ-16](#oq-16). Completed: [TD-06](#td-06), [TD-07](#td-07), [TD-08](#td-08), [TD-11](#td-11).
+
+Every item that touches a configured value now distinguishes what the config intends from what is on ledger now. The verified snapshot and the queries to refresh it are in [architecture Live state](architecture.md#live-state); [TD-12](#td-12) tracks auditing the other repos for the same error.
 
 ## Identity and scope
 
@@ -107,9 +109,11 @@ Undecided: whether zero is a permanent commitment. If it is, the $rPND side can 
 
 **Freeze and lock policy, and who may invoke it?**
 
-Documented today: $rPND is created with `tfMPTCanLock`, so the issuer may lock the issuance or an individual holder's balance; clawback is permanently foreclosed via `tifMPTCanClawback`. Because MPT capability flags are one-way — `MPTokenIssuanceSet` can enable a flag but never disable one — **lock authority over $rPND is permanent once the issuance is created**. The issuer cannot give it up later, so this is not a policy that can be softened after the fact. For $PND no freeze flag is set by the toolkit, so `pnd/docs/token-spec.md` notes freezing remains technically available, and separately that `asfAllowTrustLineClawback` can only ever be set on an account that has never had a trust line — a door that closes on first use, not a decision that can wait.
+Documented today: the config would create $rPND with `tfMPTCanLock`, letting the issuer lock the issuance or an individual holder's balance, and would foreclose clawback permanently via `tifMPTCanClawback`. Because MPT capability flags are one-way — `MPTokenIssuanceSet` can enable a flag but never disable one — **lock authority would be permanent from the moment the issuance is created**. The issuer could not give it up later, so this is not a policy that can be softened after the fact. For $PND the toolkit sets no freeze flag, and `pnd/docs/token-spec.md` notes freezing therefore remains available to the issuer.
 
-Undecided: whether to create $rPND with `tfMPTCanLock` at all, given it cannot be revoked; under what authorization locking would be used; whether $PND adopts individual freeze, global freeze, or permanent `asfNoFreeze`; and whether trust line clawback is enabled before the issuer's first trust line. Tracked as items 4 and 5 in `pnd/docs/open-questions.md`.
+On ledger now: the issuer's flags confirm none of this is set — no No Freeze, no Global Freeze, and no trust line clawback. Because `asfAllowTrustLineClawback` is only settable on an account that has never had a trust line, and this account has none, **the clawback option is still open and the first `TrustSet` closes it permanently**. That makes it a decision with a deadline attached to the very first $PND transaction, not a backlog item.
+
+Undecided: whether to create $rPND with `tfMPTCanLock` at all, given it cannot be revoked; under what authorization locking would be used; whether $PND adopts individual freeze, global freeze, or permanent `asfNoFreeze`; and whether trust line clawback is set before that first trust line. Tracked as items 4 and 5 in `pnd/docs/open-questions.md`.
 
 ### OQ-09
 
@@ -133,7 +137,7 @@ Undecided: whether to freeze metadata, and at what point — freezing before pro
 
 **Legal issuing entity and key custody policy.**
 
-Documented today: the $PND issuer account is the public address `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. `rpnd/docs/issuance.md` prescribes a cold/hot split and says the cold seed should stay offline, but names no custody mechanism, and the toolkit has no multi-sign or regular-key support.
+Documented today: the $PND issuer account is the public address `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. `rpnd/docs/issuance.md` prescribes a cold/hot split and says the cold seed should stay offline, but names no custody mechanism, and the toolkit has no multi-sign or regular-key support. On ledger the account has no `RegularKey` and its master key is enabled, so custody currently rests entirely on one master seed — which is also the state a mainnet-funded, unconfigured account is most exposed in, since nothing yet depends on the key being safe.
 
 Undecided: the legal entity that issues, and the concrete custody arrangement — hardware wallet, multi-sign with a defined quorum, `SetRegularKey` rotation, or a custodian. Either of the latter two implies implementation work in `rpnd`. Also undecided: key rotation and compromise response. See [OQ-23](#oq-23) for whether the split exists in the live deployment at all.
 
@@ -141,7 +145,7 @@ Undecided: the legal entity that issues, and the concrete custody arrangement �
 
 **Canonical public domain and production asset URLs.**
 
-Documented today: placeholders. `icon` is `example.com/rpnd-icon.png`, `uris[0].uri` is `https://example.com/rpnd`, the toml template has `replace-me@example.com`, and `ISSUER_DOMAIN` is empty. `rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the file. Now that [OQ-02](#oq-02) is decided, the domain should be a Pond Protocol one.
+Documented today: placeholders. `icon` is `example.com/rpnd-icon.png`, `uris[0].uri` is `https://example.com/rpnd`, the toml template has `replace-me@example.com`, and `ISSUER_DOMAIN` is empty. On ledger the issuer has no `Domain` at all, so there is no verifiable link between the account and any domain today. `rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the file. Now that [OQ-02](#oq-02) is decided, the domain should be a Pond Protocol one.
 
 Undecided: the domain itself. Tracked as items 9, 10, and 11 in `pnd/docs/open-questions.md`.
 
@@ -157,7 +161,7 @@ Undecided: sale, airdrop, liquidity provision, faucet, or grants; plus vesting, 
 
 **Liquidity: DEX, AMM, or neither?**
 
-Documented today: $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Because flags are one-way, it can be enabled after create but never disabled again. $PND's tick size of 5 is an order-book parameter, so the IOU is at least shaped for a book.
+Documented today: the config leaves `tfMPTCanTrade` off, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Because flags are one-way, it could be enabled after create but never disabled again. The intended $PND tick size of 5 is an order-book parameter, so the IOU is at least shaped for a book — though it is not yet applied.
 
 Undecided: whether the protocol intends order-book listings, an AMM pool, or no venue; and how price discovery works between the two assets given [OQ-03](#oq-03). Enabling trading is available later; withdrawing it is not.
 
@@ -228,7 +232,7 @@ Not a parameter conflict today, and not launch-blocking: the $rPND figures have 
 
 **Does the same account issue $rPND?**
 
-Documented today: `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is the $PND issuer. The toolkit signs every issuance transaction for both assets with the single wallet from `ISSUER_SEED`, and `rpnd`'s README and `docs/rpnd-spec.md` both state that the two assets come from the same issuing account. `pnd/docs/pnd-vs-rpnd.md` is more careful, listing "no guarantee the two are issued by the same account, beyond the operator choosing to do so" among the things the pairing field does not establish.
+Documented today: `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is the $PND issuer, and `account_objects` on it is empty, so no `MPTokenIssuance` exists from it — the question is still fully open on ledger. The toolkit signs every issuance transaction for both assets with the single wallet from `ISSUER_SEED`, and `rpnd`'s README and `docs/rpnd-spec.md` both state that the two assets come from the same issuing account. `pnd/docs/pnd-vs-rpnd.md` is more careful, listing "no guarantee the two are issued by the same account, beyond the operator choosing to do so" among the things the pairing field does not establish.
 
 Undecided: whether the production $rPND issuance actually comes from that account or a separate one. Until it is settled, `rpnd`'s statement is a description of the tooling, not of a deployment decision — one of the two needs correcting, which makes this an instance of [OQ-17](#oq-17). A shared issuer couples the two assets' key risk and their `AccountSet` configuration; separate issuers decouple them but need a second custody arrangement.
 
@@ -262,7 +266,7 @@ Follow-through: prose and license copyright across `rpnd`, `pnd`, and `.github` 
 
 **$PND supply is policy-enforced with a target of 100,000,000,000 (100B).** Decided by the owner. This is an issuer policy target, not an on-ledger cap: the XRP Ledger stores no supply field for an IOU, so nothing enforces it mechanically. Circulating supply is measured as the issuer's outstanding obligations across trust lines, reported by the `gateway_balances` API call — the method `pnd/docs/token-spec.md` already documents.
 
-Two consequences to carry into the spec: holders rely on issuer discipline rather than ledger enforcement for this figure ([spec/07](spec/07-security-considerations.md)), and `initialIssuance` in `rpnd`'s config is a Devnet rehearsal default that must never be quoted as a supply figure. The $rPND side of supply is **not** decided — see [OQ-21](#oq-21).
+Two consequences to carry into the spec: holders rely on issuer discipline rather than ledger enforcement for this figure ([spec/07](spec/07-security-considerations.md)), and `initialIssuance` in `rpnd`'s config is a Devnet rehearsal default that must never be quoted as a supply figure. On ledger, outstanding $PND is currently nil — the issuer reports no obligations and holds no trust lines. The $rPND side of supply is **not** decided — see [OQ-21](#oq-21).
 
 ### OQ-16
 
@@ -298,11 +302,15 @@ Confirm the final `assetScale` (6), `maximumAmount` (1,000,000,000 display units
 
 Decide whether this repo needs CI. It is documents only, so there is nothing to test, but a link checker and a drift check against `rpnd/config/tokens.json` would both earn their keep — see [OQ-17](#oq-17). `pnd/scripts/check-docs.mjs` is prior art.
 
-### TD-11
+### TD-12
 
-Record which network or networks `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is established on. This repo and both token repos currently state that no mainnet issuance exists; if that account is a mainnet account, those statements need revisiting. `pnd/docs/open-questions.md` items 1 and 14 track the address and the issuance date from the $PND side.
+Audit the remaining repos for config-intent-stated-as-on-ledger-fact. The error has now been found and fixed in `pnd` and here; `rpnd`'s own docs and the `.github` profile describe configured flags in the present tense too, and `rpnd/docs/rpnd-spec.md` lists the issuer account as "TODO — cold account address" when the address is known. The convention to adopt is in [CONTRIBUTING.md](../CONTRIBUTING.md#config-intent-is-not-on-ledger-fact).
 
 ## Completed TODOs
+
+### TD-11
+
+**Done.** The issuer account is established on **mainnet only**, and is `actNotFound` on Testnet and Devnet. It is funded and completely unconfigured: no `AccountSet`, no trust lines, no obligations, no MPT issuance. Recorded in [architecture Live state](architecture.md#live-state) along with the queries to re-check it, since every one of those facts changes as soon as a transaction lands. This answers `pnd/docs/open-questions.md` item 1 and sharpens item 14 — the account exists, but there is no issuance date because nothing has been issued.
 
 ### TD-06
 

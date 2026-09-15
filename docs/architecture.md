@@ -4,6 +4,50 @@ This document describes how the pieces of Pond Protocol fit together **as they e
 
 Ground truth for every on-ledger statement here is [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json) and the transaction builders in `rpnd/src/issuance.ts`, with [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) and [`pnd/docs/token-spec.md`](https://github.com/PondProtocol/PND/blob/main/docs/token-spec.md) as the per-token references. If this document and those files disagree, they are right and this document is stale — please fix it.
 
+## Live state
+
+**The issuer account is funded on mainnet and completely unconfigured. Neither token exists on ledger.**
+
+Config values describe what the operator *intends to submit*. None of them is on ledger until the corresponding transaction is validated, and every parameter section below separates the three: what the config intends, what is on ledger now, and what changes once applied. Treat any document in this organization that states a configured flag as a live property as a bug.
+
+| | State |
+| --- | --- |
+| $PND issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, funded on **mainnet** only — `actNotFound` on Testnet and Devnet |
+| Account flags | `Flags` is 0 and every flag reports false, so Default Ripple, Disallow XRP, Require Destination Tag, No Freeze, Global Freeze, and trust line clawback are all **unset** |
+| `Domain`, `TransferRate`, `TickSize`, `RegularKey` | Absent — the account has no `AccountSet` applied at all |
+| Trust lines | None. `account_lines` is empty and `OwnerCount` is 0 |
+| $PND outstanding | None. `gateway_balances` reports no obligations |
+| $rPND | No issuance. `account_objects` is empty, so no `MPTokenIssuance` exists from this account |
+
+Two consequences that expire, so worth acting on rather than noting:
+
+- **`asfAllowTrustLineClawback` can still be set.** It is only settable on an account that has never had a trust line, and this account has none yet. The first `TrustSet` closes the option permanently — [OQ-08](open-questions.md#oq-08).
+- **`AssetScale` and `MaximumAmount` are still free.** No `MPTokenIssuanceCreate` has happened, so the supply decision is still fully open — [OQ-21](open-questions.md#oq-21).
+
+### Checking current state
+
+Do not trust the table above — it was true when written and the whole point is that these values change the moment a transaction lands. Query the ledger:
+
+```bash
+ACCOUNT=rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc
+
+# account flags, Domain, TransferRate, TickSize, RegularKey, OwnerCount
+curl -s https://xrplcluster.com -H 'Content-Type: application/json' \
+  -d "{\"method\":\"account_info\",\"params\":[{\"account\":\"$ACCOUNT\",\"ledger_index\":\"validated\"}]}"
+
+# outstanding $PND (issuer obligations)
+curl -s https://xrplcluster.com -H 'Content-Type: application/json' \
+  -d "{\"method\":\"gateway_balances\",\"params\":[{\"account\":\"$ACCOUNT\",\"ledger_index\":\"validated\"}]}"
+
+# trust lines, and objects including any MPTokenIssuance
+curl -s https://xrplcluster.com -H 'Content-Type: application/json' \
+  -d "{\"method\":\"account_lines\",\"params\":[{\"account\":\"$ACCOUNT\",\"ledger_index\":\"validated\"}]}"
+curl -s https://xrplcluster.com -H 'Content-Type: application/json' \
+  -d "{\"method\":\"account_objects\",\"params\":[{\"account\":\"$ACCOUNT\",\"ledger_index\":\"validated\"}]}"
+```
+
+`account_flags` in the `account_info` response is the readable form — check that rather than decoding the `Flags` bitfield by hand.
+
 ## Layers
 
 ### 1. XRP Ledger
@@ -16,11 +60,24 @@ $rPND depends on the MPTokens amendment, which makes network capability part of 
 
 Two distinct on-ledger object types:
 
-**$PND** is an issued currency (IOU), issued by `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Its identity is the pair (currency code `PND`, issuer classic address) — amounts are `{ currency, issuer, value }`, so the issuing account is inseparable from the asset. Balances live on trust lines, which means a holder must opt in with `TrustSet` before receiving any. Configured on-ledger properties: Default Ripple enabled (so balances can ripple between trust lines), Disallow XRP set, Require Destination Tag off, transfer rate 0, tick size 5, 6 display decimals. Supply targets 100,000,000,000 by issuer policy, not as a ledger constraint — see [spec/03](spec/03-issuance-and-supply.md#32-supply-parameters).
+**$PND** is an issued currency (IOU) to be issued by `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Its identity is the pair (currency code `PND`, issuer classic address) — amounts are `{ currency, issuer, value }`, so the issuing account is inseparable from the asset. Balances live on trust lines, which means a holder must opt in with `TrustSet` before receiving any. Supply targets 100,000,000,000 by issuer policy, not as a ledger constraint — see [spec/03](spec/03-issuance-and-supply.md#32-supply-parameters).
 
-**$rPND** is a Multi-Purpose Token. Its identity is the `MPTokenIssuanceID` assigned by the ledger when `MPTokenIssuanceCreate` succeeds; the XLS-89 ticker `RPND` is metadata, not identity. Amounts are `{ mpt_issuance_id, value }` in base units at asset scale 6, so one whole rPND is 1,000,000 units. A holder must opt in with `MPTokenAuthorize`. Create-time flags: `tfMPTCanTransfer` and `tfMPTCanLock` set; `canTrade`, `canClawback`, and `requireAuth` unset. `ImmutableFlags` carries `tifMPTCanClawback`, which permanently forecloses clawback. Its supply parameters — `assetScale`, `maximumAmount`, `initialIssuance` — are working defaults that have never been issued on ledger, and `rpnd/docs/rpnd-spec.md` labels them "not ratified economics."
+Its issuer settings are config intent, not live state. None has been applied:
 
-Capability flags are one-way: `MPTokenIssuanceSet` can enable a flag but never disable one. Flags set at create are therefore permanent, and flags left off can be added later but never withdrawn afterward. `MaximumAmount` bounds **circulating** supply rather than cumulative issuance — returning tokens to the issuer frees headroom to mint again.
+| Setting | Config intends | On ledger now | Effect once applied |
+| --- | --- | --- | --- |
+| Default Ripple | enabled | **not set** | Lets $PND ripple between holders' trust lines. Until it is set, holders cannot pay each other in $PND without each line's `NoRipple` default being overridden |
+| Disallow XRP | set | **not set** | Advisory only, asking clients not to send XRP to the issuer; the ledger does not enforce it |
+| Require Destination Tag | off | not set | No change; config and ledger agree |
+| `TransferRate` | 0 | absent | Absent already means no transfer fee, so applying it changes nothing observable |
+| `TickSize` | 5 | absent | Rounds order-book prices for $PND pairs to 5 significant digits. Absent means the ledger default applies |
+| `Domain` | operator-supplied | absent | Binds the issuer to the host serving `xrp-ledger.toml`. Absent means XLS-26 metadata cannot be verified at all |
+
+The `displayDecimals` value of 6 is XLS-26 presentation metadata, not an account setting, and never appears on the AccountRoot.
+
+**$rPND** is a Multi-Purpose Token. **No issuance exists**, so everything here describes what `MPTokenIssuanceCreate` would submit, not an asset anyone can hold today. Its identity will be the `MPTokenIssuanceID` the ledger assigns when that transaction succeeds; the XLS-89 ticker `RPND` is metadata, not identity. Amounts are `{ mpt_issuance_id, value }` in base units at asset scale 6, so one whole rPND is 1,000,000 units. A holder must opt in with `MPTokenAuthorize`. Flags the create would set: `tfMPTCanTransfer` and `tfMPTCanLock`, with `canTrade`, `canClawback`, and `requireAuth` left off, and `ImmutableFlags` carrying `tifMPTCanClawback` to foreclose clawback permanently. The supply parameters — `assetScale`, `maximumAmount`, `initialIssuance` — are working defaults that `rpnd/docs/rpnd-spec.md` labels "not ratified economics."
+
+Capability flags are one-way: `MPTokenIssuanceSet` can enable a flag but never disable one. Flags set at create would therefore be permanent, and flags left off could be added later but never withdrawn afterward. `MaximumAmount` bounds **circulating** supply rather than cumulative issuance — returning tokens to the issuer frees headroom to mint again.
 
 The toolkit signs both assets' transactions with one configured issuer wallet, and `rpnd`'s own docs describe the two as sharing an issuing account. Whether the production $rPND issuance actually uses the $PND account is still an owner decision — [OQ-22](open-questions.md#oq-22).
 
@@ -92,4 +149,4 @@ Named explicitly so nobody assumes it exists:
 - Any holder-facing application, wallet, or website
 - Any trading venue, order book presence, or AMM pool
 - Any governance mechanism, on ledger or off
-- Any mainnet deployment
+- Any issued token. The issuer account is funded on mainnet, but it has no `AccountSet` applied, no trust lines, no obligations, and no MPT issuance — see [Live state](#live-state)

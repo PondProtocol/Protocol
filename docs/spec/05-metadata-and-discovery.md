@@ -4,6 +4,8 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 Discovery uses two independent mechanisms: an off-ledger TOML file bound to the issuer by its `Domain` field, and an on-ledger metadata blob attached to the MPT issuance.
 
+**Neither is live.** The issuer has no `Domain`, so no XLS-26 file can be verified against it, and no MPT issuance exists, so no XLS-89 blob is published. Everything below describes the intended mechanism — see [architecture Live state](../architecture.md#live-state).
+
 ## 5.1 XLS-26 — off-ledger `xrp-ledger.toml`
 
 **Documented** (`rpnd/config/xrp-ledger.toml.template`, `rpnd/docs/issuance.md`):
