@@ -1,6 +1,8 @@
 ---
 source_repo: pnd
 source_path: docs/token-spec.md
+source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_sha256: 5927a62aa418f2edeb48986c7077f4243b50c5dcc4a60948dfc06695ed691413
 title: Token specification
 url: /pnd/
 section: $PND — issued currency
@@ -28,29 +30,47 @@ The address above is a well-formed classic XRPL address: base58check decodes to 
 
 ### Account state on ledger
 
-At the time of writing, `account_info` for the issuer returns `actNotFound` on mainnet (confirmed against two independent servers at validated ledger 107,010,902), testnet, and devnet. The account has never been funded, which means:
+The issuer account exists and is funded on **mainnet**. It is also completely unconfigured: no `AccountSet` has been applied, so every account flag is false and the token-defining fields are absent. On **testnet** and **devnet** the address does not exist at all (`account_info` returns `actNotFound`).
 
-- No $PND exists. `gateway_balances` on the issuer returns no obligations.
-- No trust lines exist — `account_lines` returns `actNotFound`, not an empty list.
-- Because there are no trust lines, `asfAllowTrustLineClawback` is still available. That flag can only be set on an account that has never had a trust line, so this decision closes permanently the first time anyone opens a $PND line to this address. See the clawback item below.
+Check the current state yourself rather than trusting this paragraph, since the account will change as it is configured:
+
+```bash
+curl -sS -X POST https://xrplcluster.com \
+  -H 'Content-Type: application/json' \
+  -d '{"method":"account_info","params":[{"account":"rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc","ledger_index":"validated"}]}'
+```
+
+What to read in the response, and what each field means for $PND:
+
+| Field | Meaning while unconfigured |
+| --- | --- |
+| `account_flags.defaultRipple` | `false` means holders cannot send $PND to each other, only to and from the issuer. Configuration must set `asfDefaultRipple` before $PND circulates |
+| `account_flags.allowTrustLineClawback` | `false`, and `OwnerCount` is 0 with an empty `account_lines`, so the clawback decision is still open. It closes permanently at the first trust line |
+| `account_flags.noFreeze` | `false`, so the issuer has not given up freezing. Freeze policy is undecided |
+| `account_flags.requireAuthorization` | `false`, so holders will not need issuer approval to open a trust line |
+| `Domain` | absent, so no XLS-26 metadata location is claimed and nothing about this account can be independently attributed to Pond Protocol |
+| `TransferRate`, `TickSize` | absent, meaning ledger defaults rather than the intended values below |
+| `Balance`, `OwnerCount` | the account is funded above the mainnet base reserve with no owned objects. Holders pay the owner reserve for trust lines they create, so the issuer's balance does not need to scale with holder count |
+
+Funded is not the same as ready. At present the account can hold XRP and sign transactions; it has none of the settings that make $PND behave as documented, and no $PND exists.
 
 ## Issuer account configuration
 
-The issuer's `AccountSet` establishes the token's behavior. Current values:
+An `AccountSet` from the issuer establishes the token's behavior. **That transaction has not been submitted**, so the values below describe intent — `rpnd`'s `config/tokens.json`, applied by its `configure-issuer` command — not the account's present state. Verify against `account_info` before relying on any row.
 
-| Setting | Value | Effect |
-| --- | --- | --- |
-| `asfDefaultRipple` | enabled | Trust lines to the issuer allow rippling by default, so holders can pay each other in $PND without extra setup |
-| `TransferRate` | `0` | No transfer fee; sending 100 $PND delivers 100 $PND |
-| `TickSize` | `5` | Order book prices for $PND pairs are rounded to 5 significant digits, which keeps DEX offers from splitting into dust levels |
-| `tfDisallowXRP` | enabled | Advisory flag asking clients not to send XRP to the issuing account. It is not enforced by the ledger |
-| `tfRequireDestTag` | not set | The issuing account does not require destination tags |
-| `Domain` | TODO | Must be set to the host serving `/.well-known/xrp-ledger.toml` before the metadata is treated as authoritative |
+| Setting | Intended | On ledger now | Effect once applied |
+| --- | --- | --- | --- |
+| `asfDefaultRipple` | enabled | **not set** | Trust lines to the issuer allow rippling, so holders can pay each other in $PND. Until this is set, holder-to-holder payments fail |
+| `TransferRate` | `0` | absent (ledger default, equivalent to no fee) | No transfer fee; sending 100 $PND delivers 100 $PND |
+| `TickSize` | `5` | absent (ledger default, 15 digits) | Order book prices for $PND pairs are rounded to 5 significant digits, which keeps DEX offers from splitting into dust levels |
+| `tfDisallowXRP` | enabled | not set | Advisory flag asking clients not to send XRP to the issuing account. It is not enforced by the ledger |
+| `tfRequireDestTag` | not set | not set | The issuing account does not require destination tags |
+| `Domain` | TODO | absent | Must be set to the host serving `/.well-known/xrp-ledger.toml` before the metadata is treated as authoritative |
 
 Two policy flags are deliberately not covered here because they have not been decided:
 
-- **Freeze.** Whether the issuer will use individual freeze, global freeze, or permanently give up freezing via `asfNoFreeze` is a TODO. The issuance toolkit does not set any freeze flag today, which means freezing remains technically available to the issuer.
-- **Trust line clawback.** `asfAllowTrustLineClawback` is not set by the toolkit, and it can only be set on an account that has never had a trust line. The issuer has no trust lines today, so the choice is still open — but it expires on its own the moment the first line is created, which makes it the most time-sensitive open item in this repository. This differs from $rPND, where clawback is disabled and frozen in the create transaction, so it is a permanent guarantee rather than a standing decision; see [`rpnd/docs/rpnd-spec.md`](https://github.com/pondprotocol/rpnd/blob/main/docs/rpnd-spec.md#immutable-flags).
+- **Freeze.** Whether the issuer will use individual freeze, global freeze, or permanently give up freezing via `asfNoFreeze` is a TODO. `noFreeze` is false on ledger and the issuance toolkit sets no freeze flag, so freezing remains technically available to the issuer.
+- **Trust line clawback.** `asfAllowTrustLineClawback` is not set by the toolkit and reads false on ledger. It can only be set on an account that has never had a trust line, and the issuer's `OwnerCount` is 0 with an empty `account_lines`, so the window is confirmed open — but it closes on its own the moment the first line is created, which makes it the most time-sensitive open item in this repository. This differs from $rPND, where clawback is disabled and frozen in the create transaction, so it is a permanent guarantee rather than a standing decision; see [`rpnd/docs/rpnd-spec.md`](https://github.com/pondprotocol/rpnd/blob/main/docs/rpnd-spec.md#immutable-flags).
 
 Both flags materially affect what a holder is exposed to, so they should be resolved and documented before mainnet issuance.
 
@@ -101,7 +121,7 @@ curl -sS -X POST https://xrplcluster.com \
   -d '{"method":"gateway_balances","params":[{"account":"rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc","ledger_index":"validated"}]}'
 ```
 
-Today this returns success with no obligations, since the account is unfunded. Two things to keep in mind when reading it later: the result is a snapshot at one ledger rather than a running total, and it counts what the issuer owes rather than what is liquid or in circulation, so tokens sitting in an operational account are included.
+Today this returns success with no obligations at all: the issuer exists but has issued nothing. Two things to keep in mind when reading it later: the result is a snapshot at one ledger rather than a running total, and it counts what the issuer owes rather than what is liquid or in circulation, so tokens sitting in an operational account are included.
 
 Nothing in that mechanism stops the issuer from exceeding 100 billion. There is no transaction that would fail, no flag that would block it, and no amendment that changes this for IOUs. Anyone describing the 100 billion figure as a hard or on-chain cap is describing something the XRP Ledger does not provide.
 
@@ -144,6 +164,6 @@ Until both halves exist — the `Domain` on the account and the file on the host
 | --- | --- |
 | Devnet | Used for rehearsal issuance with disposable accounts. Devnet is periodically reset. The published issuer address does not exist there |
 | Testnet | Usable for IOU work. $rPND is not issued there because the MPT amendment is absent. The published issuer address does not exist there |
-| Mainnet | Not issued. The issuer account is unfunded, so nothing has been created. TODO — issuance date |
+| Mainnet | The issuer account exists and is funded, but carries no configuration and has issued nothing. TODO — issuance date |
 
 Devnet and Testnet keys must never be reused on mainnet.

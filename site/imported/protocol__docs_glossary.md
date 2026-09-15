@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/glossary.md
+source_ref: worktree
+source_sha256: d70efb7514cd357d119a475f4fd035f4ae18c5d6644820829dd054854ac04598
 title: Glossary
 url: /protocol/glossary/
 section: Protocol

@@ -1,6 +1,8 @@
 ---
 source_repo: pnd
 source_path: docs/trust-lines.md
+source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_sha256: c1cba9af361a2c4fc737dfc141151c766cc55d2ce871c095ffce2a14a253483c
 title: Holding $PND
 url: /pnd/holding/
 section: $PND — issued currency
@@ -10,7 +12,9 @@ synced: 2026-09-15
 
 $PND lives on trust lines. This is the holder-side view: how to opt in, what a limit means, and what happens when you want out.
 
-The issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. That account is not funded on any network yet, so none of the transactions below can succeed today — this describes how holding $PND will work, not something you can do now. Holder addresses shown are placeholders.
+The issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. The account is funded on mainnet but carries no configuration, and no $PND has been issued, so there is nothing to hold yet — this describes how holding $PND will work. Holder addresses shown are placeholders.
+
+One consequence of the unconfigured state is worth reading before the rest of this file: `asfDefaultRipple` is not set, so even once $PND exists, holders will only be able to move it to and from the issuer, not to each other. See [Sending and receiving](#sending-and-receiving).
 
 ## Opening a trust line
 
@@ -32,23 +36,31 @@ The limit is the maximum balance you are willing to accept from that issuer. Pay
 
 Until the trust line exists, no one can send you $PND. An issuer `Payment` to an account with no line fails with a path error (`tecPATH_DRY`), and one that would exceed your limit fails as an incomplete path (`tecPATH_PARTIAL`). This is the ledger working as intended: an IOU cannot be forced onto an unwilling account.
 
-The issuer does not require holder authorization (`asfRequireAuth` is not set), so opening the line is enough. You do not need approval from Pond Protocol to hold $PND.
+The issuer does not require holder authorization — `account_flags.requireAuthorization` is false on ledger and the toolkit does not set `asfRequireAuth` — so opening the line is enough. You do not need approval from Pond Protocol to hold $PND.
 
 ## Reserves
 
-Each trust line is an object owned by your account, and each owned object raises your account's owner reserve — XRP that stays locked in your account while the object exists. Check the current reserve values in the [XRPL reserves documentation](https://xrpl.org/reserves.html) rather than assuming a figure, since they are set by validator vote and have changed over time.
+Each trust line is an object owned by your account, and each owned object raises your account's owner reserve — XRP that stays locked in your account while the object exists. You pay that reserve for the line you create; the issuer does not pay per holder. Check the current reserve values in the [XRPL reserves documentation](https://xrpl.org/reserves.html) rather than assuming a figure, since they are set by validator vote and have changed over time.
 
 You reclaim the reserve by deleting the trust line, which the ledger does automatically once the line is back in its default state: zero balance, zero limit, and no non-default flags.
 
 ## Sending and receiving
 
-With `asfDefaultRipple` enabled on the issuer, holders can pay each other in $PND directly, and the balance ripples through the issuer. In practice:
+A payment between two holders does not move a balance directly between them. It ripples through the issuer: your balance with the issuer falls and the recipient's rises. That is only permitted when the issuer's trust lines allow rippling, which is what `asfDefaultRipple` controls.
 
-- Sending to another holder who has a $PND trust line with room under their limit works as a plain `Payment` with a $PND amount.
+**The issuer has not set `asfDefaultRipple`.** When an issuer has not enabled it, new trust lines to that issuer get the `NoRipple` flag on the issuer's side by default, and rippling is what a holder-to-holder payment needs. So as things stand:
+
+- **Payments to and from the issuer work.** Receiving $PND from the issuer, and sending it back to redeem, are direct and need no rippling.
+- **Payments between holders do not.** There is no path, so the transaction fails rather than partially settling. Order-book activity is affected for the same reason, since crossing an offer between two holders also moves balances through the issuer's lines.
+
+Confirm the current setting with `account_info` on the issuer and read `account_flags.defaultRipple`. If it is true, the issuer has since enabled rippling and holder-to-holder payments work as they do for any ordinary XRPL token; if it is false, they do not, whatever a wallet's interface implies.
+
+Two things that hold either way:
+
 - Sending to an account with no trust line does not work. Wallets that silently retry as an XRP payment or as a path payment through another asset are doing something different from what you asked; check the delivered amount.
 - Returning $PND to the issuer redeems it. The obligation disappears from the issuer's balance sheet rather than moving to a treasury address, since the issuer cannot hold its own IOU.
 
-If you set the `NoRipple` flag on your side of the line you block rippling through your account, which is a reasonable default for an end user but breaks intermediary or market-making behavior.
+Separately, if you set the `NoRipple` flag on your own side of the line you block rippling through your account, which is a reasonable default for an end user but breaks intermediary or market-making behavior.
 
 ## Exchanges and custodians
 
@@ -67,7 +79,7 @@ The ticker is not the asset. Before trusting a $PND balance:
 2. Compare it character by character with `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Vanity prefixes are cheap to generate, so an address that merely starts with `rPND` proves nothing.
 3. Confirm the issuer account's `Domain` resolves to a host serving `/.well-known/xrp-ledger.toml` that lists the same address. The domain is not published yet (TODO), so this step cannot be completed today.
 
-Anything that fails those checks is a different token that shares a ticker, whatever a wallet or listing page calls it. Since the issuer account is still unfunded, a mainnet trust line to that exact address would today be the only $PND line in existence — which is itself a reason to be suspicious of any $PND balance you are offered right now.
+Anything that fails those checks is a different token that shares a ticker, whatever a wallet or listing page calls it. The issuer currently has no trust lines at all (`account_lines` returns an empty list) and has issued nothing, so any $PND balance you are offered right now did not come from this issuer.
 
 ## Checking outstanding supply
 
@@ -75,4 +87,4 @@ The target supply is 100 billion $PND, and it is a policy commitment rather than
 
 ## Freeze exposure
 
-The issuer has not committed to a freeze policy (TODO). Since `asfNoFreeze` is not set, the issuer retains the technical ability to freeze individual trust lines or to apply a global freeze. Holders who need certainty on this point should treat it as unresolved until the policy is published here.
+The issuer has not committed to a freeze policy (TODO). `account_flags.noFreeze` is false on ledger, so the issuer retains the technical ability to freeze individual trust lines or to apply a global freeze. Holders who need certainty on this point should treat it as unresolved until the policy is published here, and can check `noFreeze` themselves at any time — once it is true, freezing is surrendered permanently.

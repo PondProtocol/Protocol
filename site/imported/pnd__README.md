@@ -1,6 +1,8 @@
 ---
 source_repo: pnd
 source_path: README.md
+source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_sha256: 1b6852400e8f8013fcac88b3650b931381e1ce3b735d47e0b6b519ac1690603b
 title: Overview
 url: /pnd/overview/
 section: $PND — issued currency
@@ -16,7 +18,7 @@ This repository is the token-facing reference for $PND — what the asset is, ho
 | --- | --- |
 | Ledger type | Issued currency (IOU) on a trust line |
 | Currency code | `PND` (standard 3-character code) |
-| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — not yet funded on any network |
+| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — funded on mainnet, no configuration applied |
 | Target supply | 100,000,000,000 $PND — an issuer policy target, not a ledger-enforced cap |
 | Networks in use | XRPL Devnet for rehearsal; mainnet issuance is not live |
 | Transfer fee | `TransferRate` 0 in the current issuer config |
@@ -29,7 +31,9 @@ On the XRP Ledger, an issued currency is a balance recorded on a trust line betw
 
 Because an IOU is a claim on its issuer, three things matter more than the ticker: which account issues it, what that issuer promises to honor, and what flags the issuer set on itself. The issuing account is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`; what $PND represents is a policy question that has not been published; the flags are documented in [`docs/token-spec.md`](docs/token-spec.md).
 
-The issuing account does not exist on ledger yet. A query for it returns `actNotFound` on mainnet, testnet, and devnet, which means it has never been funded, holds no balances, and has issued nothing. The address is published here so that holders have something to compare against later, not because $PND is live.
+That account now exists on mainnet and holds XRP, but it is otherwise untouched: no `AccountSet` has been applied, so every account flag reads false, there is no `Domain`, `TransferRate`, or `TickSize`, and no $PND has been issued. Funded is a long way from configured — in particular, `asfDefaultRipple` is not set, which means $PND could not circulate between holders even if it existed. On testnet and devnet the address does not exist at all.
+
+Confirm the state yourself with `account_info` against the issuer rather than trusting this file; [`docs/token-spec.md`](docs/token-spec.md) gives the request and explains what each field means.
 
 ## Issuance and trust lines
 
@@ -50,7 +54,7 @@ Read that as a commitment by the issuer, not as a property of the token. The XRP
 
 What that means in practice:
 
-- **Outstanding supply is observable.** `gateway_balances` on the issuer reports its obligations at a given ledger, so anyone can check the live figure against the 100 billion target without trusting a listing page. Today it reports no obligations, because the account is not funded.
+- **Outstanding supply is observable.** `gateway_balances` on the issuer reports its obligations at a given ledger, so anyone can check the live figure against the 100 billion target without trusting a listing page. Today it reports no obligations at all, because nothing has been issued.
 - **The cap is enforced by whatever the issuer does with its keys**, which is operational discipline. Some designs make it verifiable — minting the full supply once and then blackholing the issuer makes the number permanent and checkable — and others keep the issuer live for controlled issuance, which keeps flexibility and leaves the cap as a promise. Those are opposing choices and the owner has not made one; both, plus the exact enforcement mechanism, are open items in [`docs/open-questions.md`](docs/open-questions.md).
 
 [`docs/token-spec.md`](docs/token-spec.md) covers how the figure interacts with precision, which matters above 1 billion.
@@ -91,9 +95,9 @@ Useful reading in `rpnd`: [`docs/rpnd-spec.md`](https://github.com/pondprotocol/
 
 ## Status
 
-$PND is pre-mainnet. The issuer address and the 100 billion supply target are published; no launch date, listing, or audit is, and nothing here has been audited. The issuing account has not been funded on any network, so no $PND exists yet. Values that are not yet decided appear as explicit `TODO` markers, all of them collected in [`docs/open-questions.md`](docs/open-questions.md).
+$PND is pre-issuance. The issuer address and the 100 billion supply target are published, and the issuing account is funded on mainnet; no configuration has been applied to it, no $PND has been issued, and no launch date, listing, or audit exists. Nothing here has been audited. Values that are not yet decided appear as explicit `TODO` markers, all of them collected in [`docs/open-questions.md`](docs/open-questions.md).
 
-Any $PND-branded token you find on mainnet today is unverified, including one issued by the address above: publishing an address in a README proves nothing on its own. The check becomes meaningful when the issuer account is funded, its `Domain` is set, and a matching `xrp-ledger.toml` is served from that host.
+Any $PND-branded token you find on mainnet today is unverified, including one issued by the address above: publishing an address in a README proves nothing on its own. The check becomes meaningful when the issuer's `Domain` is set and a matching `xrp-ledger.toml` is served from that host, which pairs the account with a domain that the operator demonstrably controls.
 
 ## Contributing
 

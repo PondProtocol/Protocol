@@ -29,7 +29,8 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 | Command | What it does |
 | --- | --- |
 | `npm run sync` | Copy allowlisted documents from the sibling repos into `imported/`. Needs `../../pnd` and `../../rpnd`. |
-| `npm run sync -- --check` | Fail if `imported/` has drifted from the source repos. |
+| `npm run sync -- --check` | Fail if any vendored copy no longer matches its source. Run by CI. |
+| `npm run sync -- --print-refs` | Print `repo<TAB>dir<TAB>ref` for each source. Used by CI to fetch the declared refs. |
 | `npm run build` | Render `content/` + `imported/` into `dist/`. No network, no sibling repos needed. |
 | `npm run check` | `build --strict` plus the publication guard. This is what CI runs. |
 | `npm run serve` | Preview `dist/` locally with the same headers `_headers` asks the host for. |
@@ -71,6 +72,66 @@ year.
 The honest cost: no search, no versioned docs, no live reload, and syntax highlighting is plain
 monospace. If any of those become necessary, port `content/` and `imported/` to Astro Starlight or
 MkDocs Material — the markdown is standard and the `public/` directory carries over unchanged.
+
+## Keeping the vendored copies honest
+
+Vendoring documentation into `imported/` buys a hermetic build and a reviewable publication diff.
+It also creates a real hazard, and it has already bitten once: the first revision of this site
+vendored `protocol/docs/spec/01-tokens.md` while a parallel pull request was correcting it, and
+would have published *"Default Ripple | Enabled on the issuer"* to a public site. The live issuer
+has `Flags` of 0. That statement tells readers holders can pay each other in $PND, which is false.
+
+A silent snapshot of documentation that is being actively corrected generates defects, so staleness
+is checked in two layers, split by what each one can actually see.
+
+**Layer 1 — snapshot integrity. Runs in every build, including on the deploy host.** Every vendored
+file records a `source_sha256` of the body it was synced from. `build.mjs` and `guard.mjs` both
+recompute it and fail on mismatch. This needs no access to the sibling repositories, so it holds
+everywhere, and it catches somebody editing a file in `imported/` by hand — which would silently
+make the site and the source repository disagree about what is true.
+
+**Layer 2 — freshness against upstream. Runs in CI and on a daily schedule.**
+`npm run sync -- --check` recomputes each hash from the *source* at the ref declared in
+`content.config.json` and fails on any difference. It needs all three repositories checked out, so
+it lives in a dedicated `staleness` job in
+[`.github/workflows/docs-site.yml`](../.github/workflows/docs-site.yml). The `deploy` job depends on
+it. It also runs on a schedule, because a documentation change in `pnd` or `rpnd` cannot trigger a
+workflow in this repository — without the schedule, a correction landing next door would go
+unnoticed until somebody happened to touch `site/`.
+
+### Why not just build from the repos directly?
+
+It was the other option and it was rejected for one reason: **the deploy host clones exactly one
+repository.** Making the render build fetch two additional *private* repositories would mean putting
+a cross-repository token into the hosting provider, and it would make the published site depend on
+three repositories being reachable at deploy time. For a site whose entire job is to keep
+`/.well-known/xrp-ledger.toml` online, trading one dependency for three is the wrong direction.
+
+So the split is deliberate: the deploy build stays hermetic, and freshness is enforced in CI, which
+is where the defect actually enters — at merge time. Two consequences worth knowing:
+
+- **Cloudflare Pages does not run these checks.** It builds from a push. Require the `staleness` and
+  `build` checks in branch protection on `main`, or a direct push can publish a stale snapshot.
+- **Layer 2 needs a cross-repo token.** `pnd` and `rpnd` are private, and the default
+  `GITHUB_TOKEN` cannot read them. The job fails loudly with setup instructions when
+  `SIBLING_REPOS_TOKEN` is absent, rather than skipping — a freshness check that quietly does
+  nothing is worse than none, because it reports success while the site publishes corrected-away
+  text.
+
+### Pinned sources
+
+`content.config.json` records a `ref` per repository, and `pinnedReason` is mandatory when that ref
+is not `main` or `worktree`. A pin means this site renders documentation from an **unmerged branch**.
+That is sometimes correct — it is correct right now, because `pnd/main` still carries the false
+Default Ripple claim and vendoring from it would republish it — but it must never be quiet. So:
+
+- Every build prints each pin and its reason.
+- `guard.mjs` fails if a pin has no reason.
+- Pages from a pinned source say so in the provenance line at the bottom: *"from unmerged branch
+  `origin/cursor/...`"*.
+- `sync -- --check` fails once the pinned branch changes, which is the reminder to unpin.
+
+**Unpin `pnd` to `main` as soon as its correction PR merges.**
 
 ## How publication is controlled
 

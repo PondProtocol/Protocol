@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/spec/07-security-considerations.md
+source_ref: worktree
+source_sha256: 5d2d7a58c61cc61c884aa97bba4385eef68e12ce28f203aec4968d6052a099fa
 title: 07 — Security considerations
 url: /spec/security/
 section: Specification
@@ -30,7 +32,9 @@ The asymmetry is worth stating plainly for holders: an $rPND holder's dilution r
 
 ## 7.3 Freeze and lock risk
 
-**Documented:** $rPND is created with `tfMPTCanLock`, so the issuer can lock balances — and because capability flags are one-way, that authority is permanent for the life of the issuance. The issuer cannot later renounce it, which is the opposite of the clawback guarantee holders get on the same token. $PND has no freeze-related flags configured, so the ledger's default freeze capability remains available to the issuer.
+**Documented:** the config would create $rPND with `tfMPTCanLock`, letting the issuer lock balances — and because capability flags are one-way, that authority would be permanent for the life of the issuance. The issuer could not later renounce it, which is the opposite of the clawback guarantee holders get on the same token. For $PND, the issuer's live flags confirm neither No Freeze nor Global Freeze is set, so the ledger's default freeze capability rests with the issuer.
+
+**Still open on ledger, but not for long:** trust line clawback is unset and remains settable only because the account has never had a trust line. The first `TrustSet` closes that option permanently, which makes it a decision with a deadline rather than a backlog item — [OQ-08](../open-questions.md#oq-08).
 
 **Open:** whether $rPND should be created with lock authority at all, given it cannot be revoked; the authorization required to invoke it; and whether $PND should adopt No Freeze — [OQ-08](../open-questions.md#oq-08).
 
@@ -44,9 +48,11 @@ Consequence: an attacker controlling DNS or hosting for the issuer domain can mi
 
 **Documented:** $PND's identity is (code, issuer address), so anyone may issue a token with the code `PND` from their own account. For $rPND, the ticker `RPND` is metadata and is likewise not unique; only the `MPTokenIssuanceID` is. Publishing the issuer address through a verified domain is the primary defense, which makes [TD-02](../open-questions.md#td-02) a security task and not just a polish task.
 
+This is the most exposed gap today: the issuer address is public and has no `Domain`, so there is currently no on-ledger link between the account and any Pond Protocol domain — and no issued token whose absence would tip off a holder that an impersonator's `PND` is not the real one.
+
 ## 7.6 Network dependency
 
-**Documented:** $rPND requires the MPTokens amendment. Testnet is flagged as lacking it; mainnet is flagged as having it, unverified — [TD-03](../open-questions.md#td-03). Devnet is periodically reset by Ripple, and `rpnd/docs/issuance.md` warns against reusing dev keys on mainnet.
+**Documented:** $rPND requires the MPTokens amendment. Testnet is flagged as lacking it; mainnet is flagged as having it, unverified — [TD-03](../open-questions.md#td-03). Devnet is periodically reset by Ripple, and `rpnd/docs/issuance.md` warns against reusing dev keys on mainnet. The issuer address resolves only on mainnet; it is `actNotFound` on both test networks, so nothing rehearsed there shares its identity.
 
 ## 7.7 Disclosure
 

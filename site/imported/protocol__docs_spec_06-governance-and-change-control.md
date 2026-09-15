@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/spec/06-governance-and-change-control.md
+source_ref: worktree
+source_sha256: 69f6d13b288f0e575f83ae40b6a79f6c36110477006f6c521f642004009465c0
 title: 06 — Governance
 url: /spec/governance/
 section: Specification

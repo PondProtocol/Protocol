@@ -1,6 +1,8 @@
 ---
 source_repo: rpnd
 source_path: docs/mpt-vs-iou.md
+source_ref: main
+source_sha256: 8063a3e1fa2c3794a62a288c1bc985b4b00a1bae624996adfe5b0c5db7f6fcd3
 title: Why $rPND is an MPT
 url: /rpnd/why-mpt/
 section: $rPND — Multi-Purpose Token

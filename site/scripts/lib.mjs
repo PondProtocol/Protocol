@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -25,6 +26,36 @@ export function loadConfig() {
 /** Imported documents keep their vendored copy at a path derived from repo + source path. */
 export function importedFileName(repo, path) {
   return `${repo}__${path.replace(/\//g, "_")}`;
+}
+
+/**
+ * Hash of a document body, used to detect both upstream drift and hand-edited vendored copies.
+ *
+ * Line endings are normalised so a checkout with different autocrlf settings does not read as
+ * drift, and trailing whitespace at end of file is ignored for the same reason.
+ */
+export function bodyHash(text) {
+  return createHash("sha256").update(text.replace(/\r\n/g, "\n").replace(/\s*$/, "\n")).digest("hex");
+}
+
+/**
+ * Resolve the `sources` map into { dir, ref, pinnedReason } per repository.
+ *
+ * Accepts the legacy shorthand of a bare path string so an older config keeps working, defaulting
+ * such an entry to the working tree.
+ */
+export function sourceRoots(config, siteRoot) {
+  const roots = {};
+  for (const [name, value] of Object.entries(config.sources)) {
+    if (name.startsWith("$")) continue;
+    const entry = typeof value === "string" ? { path: value, ref: "worktree" } : value;
+    roots[name] = {
+      dir: resolve(siteRoot, entry.path),
+      ref: entry.ref ?? "worktree",
+      pinnedReason: entry.pinnedReason,
+    };
+  }
+  return roots;
 }
 
 const FRONT_MATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;

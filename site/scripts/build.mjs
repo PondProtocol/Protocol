@@ -27,10 +27,13 @@ import {
   DIST_DIR,
   IMPORTED_DIR,
   PUBLIC_DIR,
+  SITE_ROOT,
   WELL_KNOWN_PATH,
+  bodyHash,
   fail,
   loadConfig,
   parseFrontMatter,
+  sourceRoots,
 } from "./lib.mjs";
 
 const strict = process.argv.includes("--strict");
@@ -134,7 +137,34 @@ for (const page of config.pages) {
     );
   }
   const { data, body } = parseFrontMatter(readFileSync(file, "utf8"));
-  pages.push({ ...page, markdown: body, origin: `${page.repo}/${page.path}`, synced: data.synced });
+
+  // Layer 1 of the staleness defence. Needs no access to the sibling repositories, so it runs
+  // everywhere including on the deploy host, and catches a vendored snapshot edited by hand after
+  // it was synced. Upstream drift is layer 2, in `sync --check`; see scripts/sync.mjs.
+  if (!data.source_sha256) {
+    fail(
+      `vendored copy of ${page.repo}/${page.path} has no source_sha256.\n` +
+        `         It predates the integrity check. Run "npm run sync" in site/ and commit.`,
+    );
+  }
+  if (bodyHash(body) !== data.source_sha256) {
+    fail(
+      `vendored copy of ${page.repo}/${page.path} does not match its recorded source hash.\n` +
+        `           recorded ${data.source_sha256.slice(0, 12)}\n` +
+        `           actual   ${bodyHash(body).slice(0, 12)}\n\n` +
+        `         Files in site/imported/ are generated. Edit the source document in the ${page.repo}\n` +
+        `         repository and re-run "npm run sync" — never edit them here, or the site and the\n` +
+        `         source repository will disagree about what is true.`,
+    );
+  }
+
+  pages.push({
+    ...page,
+    markdown: body,
+    origin: `${page.repo}/${page.path}`,
+    synced: data.synced,
+    sourceRef: data.source_ref,
+  });
 }
 
 /* --------------------------------------------------- link map and rewriting */
@@ -303,9 +333,14 @@ function layout(page, html) {
     ? `<link rel="canonical" href="${esc(`https://${site.domain}${page.url}`)}">
 <meta property="og:url" content="${esc(`https://${site.domain}${page.url}`)}">`
     : `<!-- canonical omitted: site.domain is not set in content.config.json -->`;
+  // Naming the ref matters when it is not `main`: the page is then rendered from an unmerged
+  // branch, and a reader deserves to know that rather than take it as settled.
+  const pinned = page.sourceRef && page.sourceRef !== "main" && page.sourceRef !== "worktree";
   const provenance = page.repo
     ? `<p class="provenance">Source of truth: <code>${esc(page.repo)}/${esc(page.path)}</code>${
         page.synced ? ` &middot; synced ${esc(page.synced)}` : ""
+      }${
+        pinned ? ` &middot; from unmerged branch <code>${esc(page.sourceRef)}</code>` : ""
       }. Edit it there, not here.</p>`
     : "";
 
@@ -415,6 +450,24 @@ process.stdout.write(
     `  well-known          ${WELL_KNOWN_PATH} present (${statSync(wellKnown).size} bytes)\n` +
     `  launch status       ${site.launchStatus}\n`,
 );
+
+// Pins are temporary by definition, so they are reported on every build rather than only when
+// somebody thinks to look. A pin means the public site would render documentation from a branch
+// that has not been reviewed and merged.
+const roots = sourceRoots(config, SITE_ROOT);
+const pins = Object.entries(roots).filter(([, r]) => r.ref !== "main" && r.ref !== "worktree");
+if (pins.length) {
+  process.stdout.write(
+    `\n  ${pins.length} source repository/repositories pinned to an UNMERGED ref:\n` +
+      pins
+        .map(
+          ([name, r]) =>
+            `    ${name} -> ${r.ref}\n` +
+            `      ${(r.pinnedReason ?? "NO REASON RECORDED").replace(/\s+/g, " ").slice(0, 300)}\n`,
+        )
+        .join(""),
+  );
+}
 
 if (externalRepoLinks.size) {
   process.stdout.write(

@@ -1,6 +1,8 @@
 ---
 source_repo: pnd
 source_path: docs/open-questions.md
+source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_sha256: 502a568657a2c42c55a60542a01a67d396896726fce5e19f6c063efc3472d0eb
 title: Open questions — $PND
 url: /open-questions/pnd/
 section: Project status
@@ -16,10 +18,19 @@ Nothing in this list has been filled in with a guess. If a number, address, or d
 
 | Item | Value | Recorded in |
 | --- | --- | --- |
-| Issuing account for $PND | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` (checksum valid; unfunded on mainnet, testnet, and devnet at the time of writing) | `README.md`, `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md`, `SECURITY.md` |
+| Issuing account for $PND | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` (checksum valid; funded on mainnet, no `AccountSet` applied, nothing issued; absent on testnet and devnet) | `README.md`, `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md`, `SECURITY.md` |
 | Target supply | 100,000,000,000 $PND, as issuer policy rather than a ledger cap | `README.md`, `docs/token-spec.md` |
 
 Neither answer is simply "done". The supply figure is settled, but *how it is enforced* is not, and the issuer address is settled while the cold/hot split and the shared-account assumption are not. Those follow-on questions are items 1, 5, 6, 7, 10, and 11 below.
+
+## Pending operator actions
+
+Not unknowns — decisions already made that have not been applied on ledger. Listed because the documented behavior of $PND does not match the account's current state until they are.
+
+- **The issuer `AccountSet` has not been submitted.** Every account flag reads false and `Domain`, `TransferRate`, and `TickSize` are absent. Most visibly, `asfDefaultRipple` is unset, so $PND could not move between holders even once issued. `rpnd`'s `configure-issuer` command exists to apply this.
+- **No rehearsal account on testnet or devnet.** The address exists only on mainnet, so any test issuance uses different accounts.
+
+Both are verifiable at any time with `account_info` on the issuer; see [`token-spec.md`](token-spec.md#account-state-on-ledger).
 
 ## On-ledger identifiers
 
@@ -33,7 +44,7 @@ Neither answer is simply "done". The supply figure is settled, but *how it is en
 | # | Unknown | Appears in |
 | --- | --- | --- |
 | 3 | Freeze policy: individual freeze, global freeze, or permanent `asfNoFreeze` | `docs/token-spec.md`, `docs/trust-lines.md` |
-| 4 | Trust line clawback: whether the issuer sets `asfAllowTrustLineClawback`. **Time-sensitive** — the account has no trust lines today, and this flag can only be set before the first one exists | `docs/token-spec.md` |
+| 4 | Trust line clawback: whether the issuer sets `asfAllowTrustLineClawback`. **Time-sensitive, and confirmed still open** — the funded account reports `allowTrustLineClawback` false with `OwnerCount` 0 and an empty `account_lines`, and this flag can only be set before the first trust line exists | `docs/token-spec.md` |
 | 5 | Whether the 100 billion cap is hard or soft, and what mechanism enforces it | `docs/token-spec.md` |
 | 6 | Whether the issuer is blackholed after minting the full 100 billion, or stays live for controlled issuance from operational accounts. These pull in opposite directions: blackholing makes the cap permanent and independently verifiable but forfeits all future issuance and flag changes, while a live issuer keeps flexibility and leaves the cap as a promise backed by key custody | `docs/token-spec.md` |
 | 7 | What supply-verification procedure holders should treat as canonical. `gateway_balances` on the issuer is the mechanical answer, but which server, what cadence, and whether signed attestations accompany it are undecided | `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md` |

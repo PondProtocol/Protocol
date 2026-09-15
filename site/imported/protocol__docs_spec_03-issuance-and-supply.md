@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/spec/03-issuance-and-supply.md
+source_ref: worktree
+source_sha256: 8d0882add8be4d3ec8a30af6696dcf726d55ba3fcfa232343c90882ab6c17d75
 title: 03 — Issuance and supply
 url: /spec/issuance-and-supply/
 section: Specification
@@ -11,6 +13,8 @@ synced: 2026-09-15
 Skeleton. See [conventions](README.md#conventions) for the Documented / Open / TODO labels.
 
 ## 3.1 Issuance sequence
+
+**None of these steps has been run on mainnet.** The issuer account is funded and otherwise untouched — see [architecture Live state](../architecture.md#live-state). Step 1 is where the live deployment currently sits, before it.
 
 **Documented** (`rpnd/docs/issuance.md`, `rpnd/src/cli.ts`):
 
@@ -23,7 +27,7 @@ All six transactions can be printed unsigned, without network access, via `dry-r
 
 ## 3.2 Supply parameters
 
-**Documented — $PND supply is policy, not a ledger field.** The target is **100,000,000,000**, set as issuer policy. The XRP Ledger stores no supply figure for an IOU, so outstanding supply is the sum of the issuer's obligations across trust lines, read via the `gateway_balances` API call. Nothing on ledger enforces the target — [OQ-06](../open-questions.md#oq-06).
+**Documented — $PND supply is policy, not a ledger field.** The target is **100,000,000,000**, set as issuer policy. The XRP Ledger stores no supply figure for an IOU, so outstanding supply is the sum of the issuer's obligations across trust lines, read via the `gateway_balances` API call. Nothing on ledger enforces the target — [OQ-06](../open-questions.md#oq-06). No $PND is outstanding today: the issuer reports no obligations and has no trust lines.
 
 **Documented — $rPND circulating supply is capped on ledger.** `MaximumAmount` is enforced: once circulating supply reaches it, further mints fail. It bounds circulation rather than cumulative issuance, so returning tokens to the issuer frees headroom and the lifetime total minted can exceed the cap.
 
@@ -54,7 +58,7 @@ The three $rPND values are working defaults, "not ratified economics" per [`rpnd
 
 ## 3.5 Networks and launch
 
-**Documented:** Devnet is the default and has been exercised end to end, including a live check in `rpnd`'s test suite. Testnet is flagged `supportsMpt: false`, so $rPND cannot be created there. Mainnet has no faucet command, no deployment, and requires confirmed amendment support plus real metadata values.
+**Documented:** the toolkit defaults to Devnet and has been exercised there end to end, including a live check in `rpnd`'s test suite, though Devnet resets and the issuer address does not exist there now. Testnet is flagged `supportsMpt: false`, so $rPND cannot be created there, and the issuer address does not exist there either. Mainnet is where the issuer account is funded, has no faucet command, and requires confirmed amendment support plus real metadata values before any issuance.
 
 **Documented:** **$PND launches first**; $rPND design work follows — [OQ-15](../open-questions.md#oq-15). The MPT-specific parameter decisions therefore do not gate the first launch.
 

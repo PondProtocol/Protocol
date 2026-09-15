@@ -10,7 +10,17 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { DIST_DIR, WELL_KNOWN_PATH, fail, loadConfig } from "./lib.mjs";
+import {
+  DIST_DIR,
+  IMPORTED_DIR,
+  SITE_ROOT,
+  WELL_KNOWN_PATH,
+  bodyHash,
+  fail,
+  loadConfig,
+  parseFrontMatter,
+  sourceRoots,
+} from "./lib.mjs";
 
 if (!existsSync(DIST_DIR)) fail(`no site/dist — run "npm run build" first`);
 
@@ -173,6 +183,62 @@ check(
   badStatus.length === 0,
   badStatus.map((l) => `${l.label}: "${l.status}"`).join(", "),
 );
+
+// 12. Vendored snapshot integrity, independent of the same check in build.mjs. Needs no access to
+//     the sibling repositories, so it holds on the deploy host too. Upstream drift is a separate
+//     concern handled by `sync --check` in CI; see scripts/sync.mjs.
+const vendored = existsSync(IMPORTED_DIR) ? readdirSync(IMPORTED_DIR).filter((f) => !f.startsWith(".")) : [];
+const tampered = [];
+const unhashed = [];
+for (const name of vendored) {
+  const { data, body } = parseFrontMatter(readFileSync(join(IMPORTED_DIR, name), "utf8"));
+  if (!data.source_sha256) unhashed.push(name);
+  else if (bodyHash(body) !== data.source_sha256) tampered.push(name);
+}
+check("every vendored copy records a source hash", unhashed.length === 0, unhashed.join(", "));
+check("no vendored copy was edited by hand", tampered.length === 0, tampered.join(", "));
+
+// 13. A pin means the site renders documentation from an unmerged branch. That is sometimes the
+//     right call — it is right today — but it must never be silent, so a pin without a recorded
+//     reason fails, and every pin is echoed into the log below.
+const roots = sourceRoots(config, SITE_ROOT);
+const pins = Object.entries(roots).filter(([, r]) => r.ref !== "main" && r.ref !== "worktree");
+const unexplained = pins.filter(([, r]) => !r.pinnedReason).map(([n]) => n);
+check("every pinned source repository records a reason", unexplained.length === 0, unexplained.join(", "));
+
+// 14. Regression test for the specific false claim that shipped in the first revision of this PR.
+//     pnd/main and protocol/main both stated Default Ripple was enabled on the issuer, when the
+//     live account has Flags 0. Publishing that tells readers holders can pay each other in $PND.
+//     Pinned to a string rather than a document so it survives the documents being reorganised.
+//     Patterns run against tag-stripped text, not raw HTML. A markdown table cell becomes
+//     `<td>Default Ripple</td><td>Enabled on the issuer</td>`, so a pattern written against the
+//     markdown pipe syntax would never match the built output and the check would silently pass
+//     forever. Normalising first is what makes this assertion real.
+const asText = (html) =>
+  html
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[a-z]+;|&#\d+;/gi, " ")
+    .replace(/\s+/g, " ");
+
+const falseClaims = [
+  { pattern: /Default Ripple enabled \(so balances can ripple/i, what: "described as enabled in prose" },
+  { pattern: /Default Ripple\s+Enabled on the issuer/i, what: "tabulated as enabled" },
+  { pattern: /Default Ripple[^.]{0,40}\bis (?:set|enabled)\b/i, what: "asserted as currently set" },
+];
+for (const { pattern, what } of falseClaims) {
+  const hits = textFiles
+    .filter((f) => f.endsWith(".html"))
+    .filter((f) => pattern.test(asText(readFileSync(f, "utf8"))))
+    .map((f) => relative(DIST_DIR, f));
+  check(
+    `no page claims the issuer is configured (${what})`,
+    hits.length === 0,
+    hits.length
+      ? `${hits.join(", ")} — the live issuer has Flags 0, so holder-to-holder $PND payments do not work`
+      : "",
+  );
+}
 
 /* ------------------------------------------------------------------ report */
 
