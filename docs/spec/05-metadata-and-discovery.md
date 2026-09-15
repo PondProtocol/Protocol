@@ -20,25 +20,25 @@ The $rPND `[[TOKENS]]` row is commented out in the template, pending a real issu
 
 **Documented** (`rpnd/src/metadata.ts`):
 
-The blob is JSON, hex-encoded into the `MPTokenMetadata` field of `MPTokenIssuanceCreate`. Fields published: `ticker`, `name`, `desc`, `icon`, `asset_class`, `issuer_name`, `uris`, and `additional_info` (which includes `paired_iou_currency` and `token_kind`). The encoder enforces the 1024-byte XRPL cap and fails the build rather than truncating. `encode-metadata` prints the JSON, the hex, and the byte count; `status` decodes what is actually on ledger.
+The blob is JSON, hex-encoded into the `MPTokenMetadata` field of `MPTokenIssuanceCreate`. Fields published: `ticker`, `name`, `desc`, `icon`, `asset_class`, `issuer_name`, `uris`, and `additional_info` (which includes `paired_iou_currency` and `token_kind`). It is currently **249 bytes** against the 1024-byte XRPL cap; the encoder fails the build rather than truncating. On ledger the XLS-89 short keys are written (`t`, `n`, `d`, `i`, `ac`, `in`, `us`, `ai`), not the long names. `encode-metadata` prints the JSON, the hex, and the byte count; `status` decodes what is actually on ledger.
 
-**Documented:** updating metadata after issuance replaces the entire blob, unless metadata has been marked immutable.
+**Documented:** `MPTokenIssuanceSet` replaces the entire blob. `tifMPTMetadata` would freeze it permanently and is not set today.
 
-**Open:** whether to mark metadata immutable, and at what point in the launch sequence — [OQ-10](../open-questions.md#oq-10).
+**Open:** whether to freeze metadata, and at what point in the launch sequence — [OQ-10](../open-questions.md#oq-10). Freezing before production URLs land would make the `example.com` placeholders permanent, so this is ordered after [TD-01](../open-questions.md#td-01).
 
 ## 5.3 Placeholders blocking publication
 
 **TODO:** `icon` is `example.com/rpnd-icon.png` (also missing a URL scheme) and `uris[0].uri` is `https://example.com/rpnd` — [TD-01](../open-questions.md#td-01).
 
-**Open:** the canonical domain, and whether it is a Pond Protocol domain or an rPND one — [OQ-12](../open-questions.md#oq-12), [OQ-02](../open-questions.md#oq-02).
+**Open:** the canonical domain. Now that Pond Protocol is settled as the umbrella brand ([OQ-02](../open-questions.md#oq-02)), it should be a Pond Protocol domain — [OQ-12](../open-questions.md#oq-12).
 
 `rpnd/docs/tokens.md` is explicit that metadata should not be treated as public until the domain actually serves the file.
 
 ## 5.4 Naming inside metadata
 
-**Documented:** `issuer_name` is published as `rPND`, and `product` in the config is `rPND`.
+**Documented:** the brand decision is settled — Pond Protocol is the umbrella name ([OQ-02](../open-questions.md#oq-02)) — and prose plus license copyright across the repos have been aligned. The on-ledger metadata has not: `product` and `issuerName` in the config are both `rPND`, so the published `issuer_name` reads `rPND`.
 
-**Open:** whether published metadata should name Pond Protocol instead — [OQ-02](../open-questions.md#oq-02), [TD-05](../open-questions.md#td-05). Changing `issuer_name` after issuance means rewriting the on-ledger blob, so decide before the mainnet create transaction.
+**Open:** what the field should say. `issuer_name` describes the issuer while `name` and `ticker` describe the token, so "Pond Protocol" as issuer alongside `rPND` as token name is a coherent outcome rather than an oversight to correct mechanically — [OQ-24](../open-questions.md#oq-24), with the edit tracked as [TD-05](../open-questions.md#td-05). Decide before the mainnet create: afterward it costs an `MPTokenIssuanceSet` and a new byte count, and becomes impossible if metadata is frozen.
 
 ## 5.5 Consistency between the two mechanisms
 

@@ -11,12 +11,14 @@ Because the protocol's core mechanics are undecided ([OQ-01](../open-questions.m
 | Section | Covers | State |
 | --- | --- | --- |
 | [01 — Tokens](01-tokens.md) | $PND and $rPND definitions, identity, holder opt-in | Mostly documented |
-| [02 — Accounts and roles](02-accounts-and-roles.md) | Issuer, operational, holder; authority held by each | Mostly documented |
+| [02 — Accounts and roles](02-accounts-and-roles.md) | Issuer, operational, holder; authority held by each | Partly documented |
 | [03 — Issuance and supply](03-issuance-and-supply.md) | Transaction sequence, supply parameters, distribution | Partly documented |
 | [04 — Token relationship](04-token-relationship.md) | How $PND and $rPND relate | Open |
 | [05 — Metadata and discovery](05-metadata-and-discovery.md) | XLS-26 and XLS-89 publication | Mostly documented |
-| [06 — Governance and change control](06-governance-and-change-control.md) | Who may change what, and how | Open |
+| [06 — Governance and change control](06-governance-and-change-control.md) | Who may change what, and how | Partly documented |
 | [07 — Security considerations](07-security-considerations.md) | Trust assumptions, custody, failure modes | Partly documented |
+
+**$PND launches first** ([OQ-15](../open-questions.md#oq-15)), so sections 01, 02, 03, and 07 carry the near-term decisions and the MPT-specific ones can follow. One decision has a deadline rather than merely an owner: the $PND / $rPND supply scale relationship ([OQ-21](../open-questions.md#oq-21)) must be settled before any `MPTokenIssuanceCreate` meant to persist, because `MaximumAmount` is permanent from that transaction onward.
 
 ## Conventions
 
@@ -28,6 +30,6 @@ Because the protocol's core mechanics are undecided ([OQ-01](../open-questions.m
 - **Open** — a design decision nobody has made. Always carries an `OQ-nn` link. Never write an open item as settled fact, and never write a guess as a default.
 - **TODO** — decided or mechanical, just not done. Always carries a `TD-nn` link.
 
-**Citations.** On-ledger and configuration facts cite the file they come from, normally [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json) or `rpnd/src/issuance.ts`. Uncited claims about ledger behavior are bugs in this spec.
+**Citations.** On-ledger and configuration facts cite the file they come from, normally [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json), `rpnd/src/issuance.ts`, [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md), or [`pnd/docs/token-spec.md`](https://github.com/PondProtocol/PND/blob/main/docs/token-spec.md). Uncited claims about ledger behavior are bugs in this spec.
 
 **Versioning.** Undecided — [OQ-18](../open-questions.md#oq-18). For now the spec is whatever is on `main`, and there are no numbered releases.

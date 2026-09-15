@@ -15,23 +15,26 @@ All six transactions can be printed unsigned, without network access, via `dry-r
 
 ## 3.2 Supply parameters
 
-**Documented** (`rpnd/config/tokens.json`):
+**Documented — $PND supply is policy, not a ledger field.** The target is **100,000,000,000**, set as issuer policy. The XRP Ledger stores no supply figure for an IOU, so outstanding supply is the sum of the issuer's obligations across trust lines, read via the `gateway_balances` API call. Nothing on ledger enforces the target — [OQ-06](../open-questions.md#oq-06).
+
+**Documented — $rPND circulating supply is capped on ledger.** `MaximumAmount` is enforced: once circulating supply reaches it, further mints fail. It bounds circulation rather than cumulative issuance, so returning tokens to the issuer frees headroom and the lifetime total minted can exceed the cap.
 
 | Parameter | Value | Mutability |
 | --- | --- | --- |
-| $PND initial issuance | `1000000` (1,000,000 PND) | Issuer may issue more; no on-ledger cap |
+| $PND target supply | 100,000,000,000 | Policy target; ledger enforces nothing |
+| $PND initial issuance (config) | `1000000` | Devnet rehearsal default, never a supply figure |
 | $PND operational trust limit | `1000000000` | Holder-set per trust line |
-| $rPND asset scale | 6 | Fixed for the life of the issuance |
-| $rPND maximum amount | `1000000000000000` units (1,000,000,000 rPND) | Fixed for the life of the issuance |
-| $rPND initial issuance | `1000000000000` units (1,000,000 rPND) | Issuer may mint up to the maximum |
+| $rPND asset scale | 6 | **Permanent** once created |
+| $rPND maximum amount | `1000000000000000` base units (1,000,000,000 rPND in circulation) | **Permanent** once created |
+| $rPND initial issuance | `1000000000000` base units (1,000,000 rPND) | Issuer may mint up to the circulating cap |
 
-`rpnd/docs/issuance.md` warns explicitly that `AssetScale` and `MaximumAmount` must be reviewed before the create transaction because they cannot be changed afterward — [TD-09](../open-questions.md#td-09).
+The three $rPND values are working defaults, "not ratified economics" per [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md), and no issuance exists on ledger. Changing either permanent field after create requires destroying the issuance and creating a new one with a different `MPTokenIssuanceID` — [TD-09](../open-questions.md#td-09). [`pnd/docs/token-spec.md`](https://github.com/PondProtocol/PND/blob/main/docs/token-spec.md) makes the parallel point for the IOU: `initialIssuance` is a rehearsal value and must never be quoted as supply.
 
-**Open:** whether these are launch parameters or scaffolding placeholders, and what bounds $PND supply given the ledger enforces none — [OQ-06](../open-questions.md#oq-06).
+**Open — and blocking:** the 100B $PND target and the 1B $rPND default differ by 100:1 with nothing documenting a relationship between them. This is an unresolved design decision rather than a committed conflict, and it needs an answer before any create transaction — [OQ-21](../open-questions.md#oq-21).
 
 ## 3.3 Fees
 
-**Documented:** transfer rate 0 for $PND, transfer fee 0 for $rPND, tick size 5.
+**Documented:** transfer rate 0 for $PND, transfer fee 0 for $rPND, tick size 5. The create transaction omits `TransferFee` entirely while it is zero. `tifMPTTransferFee` would freeze the field and is not set.
 
 **Open:** whether zero fees are a permanent commitment or an unset default — [OQ-07](../open-questions.md#oq-07).
 
@@ -45,10 +48,14 @@ All six transactions can be printed unsigned, without network access, via `dry-r
 
 **Documented:** Devnet is the default and has been exercised end to end, including a live check in `rpnd`'s test suite. Testnet is flagged `supportsMpt: false`, so $rPND cannot be created there. Mainnet has no faucet command, no deployment, and requires confirmed amendment support plus real metadata values.
 
-**Open:** the mainnet launch checklist, sign-off authority, and whether the two tokens launch together — [OQ-15](../open-questions.md#oq-15).
+**Documented:** **$PND launches first**; $rPND design work follows — [OQ-15](../open-questions.md#oq-15). The MPT-specific parameter decisions therefore do not gate the first launch.
+
+**Open:** the mainnet launch checklist, sign-off authority, and the issuance date — [OQ-15](../open-questions.md#oq-15).
 
 **TODO:** verify mainnet MPT support against live amendment status, since the config asserts it and the README says to confirm it — [TD-03](../open-questions.md#td-03).
 
 ## 3.6 Redemption and burn
 
-**Open:** nothing anywhere documents burning, retiring, or redeeming either asset. For $PND, sending balances back to the issuer extinguishes them as a matter of ledger mechanics, but no policy says whether that is a supported path. For $rPND, no burn path is documented at all. Related: [OQ-03](../open-questions.md#oq-03).
+**Documented:** for $rPND, returning tokens to the issuer removes them from circulation and frees headroom under `MaximumAmount`, so the cap is not a lifetime issuance budget. `MPTokenIssuanceDestroy` can remove an issuance entirely, but only while no holder holds a balance, and it is not exposed in the CLI. For $PND, sending balances back to the issuer extinguishes them as a matter of ledger mechanics.
+
+**Open:** whether any of these is a supported path, and whether redemption exists as policy rather than mechanics. No repo documents a burn or retirement policy for either asset. Related: [OQ-03](../open-questions.md#oq-03).

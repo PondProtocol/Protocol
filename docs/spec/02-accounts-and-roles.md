@@ -6,17 +6,21 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 **Documented** (`rpnd/docs/issuance.md`, `rpnd/src/cli.ts`):
 
-**Issuer (cold).** Holds issuing authority for both assets. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`.
+**Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The $PND issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
 
 **Operational (hot).** Holds distributable inventory of both assets. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, and is the source account for routine distribution payments. Read from `OPERATIONAL_SEED`.
 
 **Holder.** Any account that has opted in — `TrustSet` for $PND, `MPTokenAuthorize` for $rPND. The toolkit supports an optional `HOLDER_SEED` for exercising the holder path.
 
-There is one issuer account for both assets. Nothing in the code or docs contemplates separate issuers per token.
+**Open:** whether one account issues both assets. The toolkit signs both with the single `ISSUER_SEED` wallet, and `rpnd`'s README and token spec both state the assets share an issuing account — but that describes the tooling, and the production $rPND issuer is an open decision — [OQ-22](../open-questions.md#oq-22).
+
+**Open:** whether the live deployment separates a hot account at all, and its public address — [OQ-23](../open-questions.md#oq-23).
 
 ## 2.2 Authority
 
-**Documented:** authority is exactly what the XRP Ledger grants the issuing account, no more and no less. There is no contract, hook, or off-ledger permission layer. Concretely the issuer can issue $PND without an on-ledger cap, mint $rPND up to `MaximumAmount`, lock $rPND balances, change $rPND metadata, and change its own account settings. It cannot claw back $rPND, ever.
+**Documented:** authority is exactly what the XRP Ledger grants the issuing account, no more and no less. There is no contract, hook, or off-ledger permission layer. Concretely the issuer can issue $PND without an on-ledger cap — the 100B target is policy, not enforcement — mint $rPND up to `MaximumAmount` in circulation, lock $rPND balances, replace the $rPND metadata blob, and change its own account settings. It cannot claw back $rPND, ever.
+
+Capability flags move in one direction only: `MPTokenIssuanceSet` can turn a flag on but never off. The issuer therefore has no ongoing discretion to *relinquish* an $rPND capability — it can only acquire more. Whatever is enabled at create, or enabled later, is permanent.
 
 **Open:** whether any of that authority should be constrained by policy, and how such a constraint would be made credible to holders given the ledger will not enforce it — [OQ-06](../open-questions.md#oq-06), [OQ-08](../open-questions.md#oq-08), [OQ-18](../open-questions.md#oq-18).
 
@@ -30,4 +34,4 @@ There is one issuer account for both assets. Nothing in the code or docs contemp
 
 ## 2.4 Account count and separation
 
-**Open:** whether one operational account is the intended end state, or whether distribution, market making, and treasury should be separate accounts. Only one operational account exists today.
+**Open:** whether one operational account is the intended end state, or whether distribution, market making, and treasury should be separate accounts — [OQ-23](../open-questions.md#oq-23). The toolkit contemplates exactly one.
