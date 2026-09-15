@@ -6,7 +6,7 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 **Documented** (`rpnd/docs/issuance.md`, `rpnd/src/cli.ts`):
 
-**Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The $PND issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
+**Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The $PND issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, funded on mainnet with **none of those transactions submitted yet** — see [architecture Live state](../architecture.md#live-state).
 
 **Operational (hot).** Holds distributable inventory of both assets. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, and is the source account for routine distribution payments. Read from `OPERATIONAL_SEED`.
 
@@ -14,7 +14,7 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 **Open:** whether one account issues both assets. The toolkit signs both with the single `ISSUER_SEED` wallet, and `rpnd`'s README and token spec both state the assets share an issuing account — but that describes the tooling, and the production $rPND issuer is an open decision — [OQ-22](../open-questions.md#oq-22).
 
-**Open:** whether the live deployment separates a hot account at all, and its public address — [OQ-23](../open-questions.md#oq-23).
+**Open:** whether the live deployment separates a hot account at all, and its public address — [OQ-23](../open-questions.md#oq-23). Nothing on ledger reveals one yet: the issuer has no trust lines, so no counterparty account is visible from it.
 
 ## 2.2 Authority
 
@@ -26,7 +26,7 @@ Capability flags move in one direction only: `MPTokenIssuanceSet` can turn a fla
 
 ## 2.3 Key custody
 
-**Documented:** the cold/hot split itself, and the instruction to keep the cold seed offline in production. Faucet-generated seeds are written to a gitignored `var/` directory and `fund` refuses to run on mainnet.
+**Documented:** the cold/hot split itself, and the instruction to keep the cold seed offline in production. Faucet-generated seeds are written to a gitignored `var/` directory and `fund` refuses to run on mainnet. On ledger, the issuer has no `RegularKey` and its master key is enabled, so custody today rests entirely on the master seed.
 
 **Open:** the actual custody mechanism — hardware wallet, XRPL multi-sign with a defined quorum, `SetRegularKey` rotation, or a third-party custodian — and the legal entity that controls it — [OQ-11](../open-questions.md#oq-11). Neither multi-sign nor regular-key support exists in the toolkit today, so either choice implies work in `rpnd`.
 

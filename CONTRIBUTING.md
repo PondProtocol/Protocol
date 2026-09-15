@@ -24,6 +24,18 @@ Every claim about on-ledger behavior or token parameters cites its source, norma
 
 When linking to another repo, link only files that exist on `main` today. Anything still in an open pull request gets described as such, with a link to the PR rather than to a path that will 404.
 
+## Config intent is not on-ledger fact
+
+A value in `config/tokens.json` describes a transaction someone intends to submit. It becomes a property of the ledger only when that transaction is validated, and right now almost none of them have been — the issuer account is funded and otherwise untouched.
+
+So never write "Default Ripple is enabled" when the truth is "the config would enable Default Ripple." That phrasing misleads a holder into believing something about an account they can query, and this exact error has already been found and fixed in `pnd` and here. Separate the three:
+
+1. **What the config intends** — cite the file.
+2. **What is on ledger now** — cite the query, not a remembered value.
+3. **What changes once applied** — the effect a holder would actually notice.
+
+Give the query rather than the answer where you can. Do not pin balances, ledger indexes, or sequence numbers into prose; they are stale the moment they are written. The canonical snapshot and the queries that refresh it live in [docs/architecture.md](docs/architecture.md#live-state) — update that one place and link it.
+
 ## Labels
 
 Sections use three labels consistently, defined in [docs/spec/README.md](docs/spec/README.md#conventions): **Documented** (verifiable, with a citation), **Open** (undecided, with an `OQ-nn` link), **TODO** (with a `TD-nn` link).
