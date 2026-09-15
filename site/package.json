@@ -1,0 +1,22 @@
+{
+  "name": "@pondprotocol/site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static documentation site for Pond Protocol. Aggregates the protocol, pnd, and rpnd repo documentation and serves the XLS-26 xrp-ledger.toml.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --strict && node scripts/guard.mjs",
+    "serve": "node scripts/serve.mjs",
+    "verify:live": "node scripts/verify-live.mjs"
+  },
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0"
+  }
+}
