@@ -87,7 +87,15 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 - [docs/spec/](docs/spec/README.md) — specification skeleton, one file per area
 - [docs/open-questions.md](docs/open-questions.md) — every open design question and TODO, with IDs
 - [docs/glossary.md](docs/glossary.md) — XRPL and Pond Protocol terms
+- [docs/hosting-decision.md](docs/hosting-decision.md) — where to host the documentation site and the `/.well-known/xrp-ledger.toml` identity anchor, with verified CORS evidence per host. Awaiting an owner decision
 - [CONTRIBUTING.md](CONTRIBUTING.md) — how to propose changes, and the rule against writing undecided design as settled fact
+
+## Documentation site
+
+[`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
+and serves the XLS-26 `xrp-ledger.toml`. Nothing is deployed yet: the domain is undecided and the
+host is an owner decision. See [site/README.md](site/README.md) to build it locally and
+[docs/hosting-decision.md](docs/hosting-decision.md) for the recommendation.
 
 ## Networks
 
