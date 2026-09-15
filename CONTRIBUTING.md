@@ -18,9 +18,11 @@ When an open question gets answered: write the answer into the spec section, the
 
 ## Citing facts
 
-Every claim about on-ledger behavior or token parameters cites its source, normally [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json), `rpnd/src/issuance.ts`, or `rpnd/docs/`. An uncited claim about the ledger is a bug in the spec.
+Every claim about on-ledger behavior or token parameters cites its source, normally [`rpnd/config/tokens.json`](https://github.com/PondProtocol/rPND/blob/main/config/tokens.json), `rpnd/src/issuance.ts`, [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md), or [`pnd/docs/token-spec.md`](https://github.com/PondProtocol/PND/blob/main/docs/token-spec.md). An uncited claim about the ledger is a bug in the spec.
 
-`rpnd/config/tokens.json` is the source of truth for token parameters until [OQ-17](docs/open-questions.md#oq-17) is decided. Documents here restate values for readers; they do not define them. If you find a discrepancy between this repo and that file, the file is right — fix the document and open an issue about the drift.
+`rpnd/config/tokens.json` and `rpnd/src/issuance.ts` are authoritative on any config mismatch across the organization. Documents here restate values for readers; they do not define them. If you find a discrepancy between this repo and those files, they are right — fix the document, and see [OQ-17](docs/open-questions.md#oq-17) on detecting drift rather than merely adjudicating it.
+
+When linking to another repo, link only files that exist on `main` today. Anything still in an open pull request gets described as such, with a link to the PR rather than to a path that will 404.
 
 ## Labels
 

@@ -14,6 +14,8 @@ Terms as they are used in this repo. XRPL definitions are summarized for orienta
 
 **Default Ripple** — an issuer account setting (`asfDefaultRipple`) that lets balances of its issued currency move between holders' trust lines. Enabled for the $PND issuer.
 
+**`gateway_balances`** — the XRPL API call that reports an issuing account's outstanding obligations. Because the ledger stores no supply field for an IOU, this is how $PND circulating supply is measured against its 100B policy target.
+
 **Hot account** — the operational account, holding distributable inventory and transacting routinely. Also "operational".
 
 **IOU** — on the XRP Ledger, an issued currency held on a trust line. Used in that technical sense throughout this repo. Whether $PND is also a claim on something off ledger is undecided — [OQ-05](open-questions.md#oq-05).
@@ -24,11 +26,17 @@ Terms as they are used in this repo. XRPL definitions are summarized for orienta
 
 **`MPTokenIssuanceCreate`** — the transaction that creates an MPT issuance, setting asset scale, maximum amount, flags, and metadata. The ledger returns the `MPTokenIssuanceID`.
 
-**`MPTokenIssuanceID`** — the ledger-assigned identifier that *is* the MPT's identity. The ticker is only a label.
+**`MPTokenIssuanceID`** — the ledger-assigned identifier that *is* the MPT's identity, 192 bits / 48 hex characters, derived from the issuer account and the create transaction's sequence. The ticker is only a label.
+
+**`MPTokenIssuanceSet`** — the transaction that updates an existing issuance: lock and unlock, the metadata blob, and any flag not frozen at create.
+
+**`MaximumAmount`** — the MPT's ledger-enforced supply cap, in base units. Permanent from create; raising it requires destroying the issuance and creating a new one with a new id.
 
 **OQ-nn** — an open design question in [open-questions.md](open-questions.md). Undecided by definition.
 
 **Pairing field** — `additional_info.paired_iou_currency` in the $rPND metadata, set to `PND`. Documentation for indexers only; the ledger binds nothing — [spec/04](spec/04-token-relationship.md).
+
+**Pond Protocol** — the umbrella brand for both assets and for this organization, settled per [OQ-02](open-questions.md#oq-02). The on-ledger `issuer_name` still reads `rPND` — [OQ-24](open-questions.md#oq-24).
 
 **TD-nn** — a TODO in [open-questions.md](open-questions.md): decided or mechanical, not yet done.
 
