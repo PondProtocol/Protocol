@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: README.md
 source_ref: worktree
-source_sha256: 3ca7b4d5f52d66722d5e6dae8f66f8242b9715d44baa7a00cdb0cf5c34819ec1
+source_sha256: 10d96fae8b0046b610048ac2d528a8293c426f260b71062ce6e961d42fcea6eb
 title: Overview
 url: /protocol/
 section: Protocol
@@ -101,15 +101,15 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 - [docs/spec/](docs/spec/README.md) — specification skeleton, one file per area
 - [docs/open-questions.md](docs/open-questions.md) — every open design question and TODO, with IDs
 - [docs/glossary.md](docs/glossary.md) — XRPL and Pond Protocol terms
-- [docs/hosting-decision.md](docs/hosting-decision.md) — Cloudflare Pages at `pondprotocol.pages.dev`, CORS evidence, and the dashboard settings to paste. Website host is chosen; on-ledger `Domain` stays unset
+- [docs/hosting-decision.md](docs/hosting-decision.md) — Replit at `pond.greenhead.io`, CORS evidence, and the import / custom-domain clicks. Website host is chosen; on-ledger `Domain` stays unset
 - [CONTRIBUTING.md](CONTRIBUTING.md) — how to propose changes, and the rule against writing undecided design as settled fact
 
 ## Documentation site
 
 [`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
-and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pondprotocol.pages.dev`
-(Cloudflare Pages). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
-verified live. See [site/README.md](site/README.md) for the dashboard settings to paste and
+and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pond.greenhead.io`
+(Replit, custom domain). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
+verified live. See [site/README.md](site/README.md) for the Replit run command and
 [docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
 
 ## Networks

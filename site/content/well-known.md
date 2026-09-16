@@ -5,7 +5,7 @@ metadata file at exactly one path:
 
 > **`https://{{domain}}/.well-known/xrp-ledger.toml`**
 
-`{{domain}}` is the **website host** — a Cloudflare Pages platform hostname. The issuer account's
+`{{domain}}` is the **website host** — currently `pond.greenhead.io` on Replit. The issuer account's
 on-ledger `Domain` field is unset and stays unset until CORS is verified on that live path. The
 file is therefore published, but it is not yet a completed two-way identity claim.
 
@@ -44,10 +44,9 @@ the name and the icon still cannot produce that link.
 **Only the file half exists today.** The on-ledger `Domain` is unset. This page is not asking anyone
 to set it.
 
-`{{domain}}` is a Cloudflare platform hostname, not a domain Pond Protocol registers and renews. If
-`Domain` is later set to it, that accepts a platform dependency that can only be changed while the
-issuer can still sign. After blackholing, a `pages.dev` host going away or being reassigned is
-permanent.
+`{{domain}}` is a name the owner holds, not a Cloudflare `pages.dev` hostname. If `Domain` is later
+set to it, that bind can only be changed while the issuer can still sign. After blackholing,
+whatever host is in `Domain` is frozen forever. This page is not asking anyone to set that field.
 
 This is the mechanism the [verify page](/verify/) asks you to check — and to notice is not complete.
 
@@ -114,17 +113,16 @@ cd site && npm run verify:live -- {{domain}}
 
 ## Permanence
 
-The website host is `{{domain}}`, a Cloudflare Pages platform hostname. That is enough to publish
-the docs and the TOML. It is a weaker permanence story than a domain Pond Protocol registers:
+The website host is `{{domain}}`. That is enough to publish the docs and the TOML. Binding the
+issuer `Domain` to it is a later, optional step gated on a live CORS check — not a step this page
+is asking anyone to take:
 
-- Cloudflare controls the `pages.dev` namespace. The project name `pondprotocol` is what produces
-  this URL. Losing the Cloudflare account, or someone else taking the project name later, is not
-  something an `AccountSet` can repair.
-- If the issuer's `Domain` is ever set to this host, that bind can only be changed while the issuer
-  can still sign. After blackholing, a `pages.dev` host going away or being reassigned is
-  permanent.
+- Control of `greenhead.io` is what makes this URL durable in a way `*.pages.dev` is not. Losing
+  the Replit account, or pointing DNS somewhere else, is still something an `AccountSet` cannot
+  repair once the issuer can no longer sign.
+- If the issuer's `Domain` is ever set to this host, that bind can only be changed while the
+  issuer can still sign.
 
-There is a mainnet token with the currency code `PND` in exactly that state today: blackholed
-issuer, `Domain` pointing at a host that returns HTTP 404, metadata unrecoverable forever. It is
-listed on the [verify page](/verify/). That is why `Domain` stays unset, and why a later bind to
-`pages.dev` is a platform dependency, not a domain you hold.
+There is a mainnet token with the currency code `PND` in exactly that frozen-wrong-host state
+today: blackholed issuer, `Domain` pointing at a host that returns HTTP 404, metadata unrecoverable
+forever. It is listed on the [verify page](/verify/). That is why `Domain` stays unset.

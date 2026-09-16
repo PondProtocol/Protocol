@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: docs/spec/05-metadata-and-discovery.md
 source_ref: worktree
-source_sha256: ac4591c250d4d3d999954b6c51a55af673b7e3366c1656f1a5bc6e66763263c1
+source_sha256: 36110adec0b30fec6f76c19890377cba28e96b961c55d336c3f2f7f3b36e1842
 title: 05 — Metadata and discovery
 url: /spec/metadata-and-discovery/
 section: Specification
@@ -14,7 +14,7 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 Discovery uses two independent mechanisms: an off-ledger TOML file bound to the issuer by its `Domain` field, and an on-ledger metadata blob attached to the MPT issuance.
 
-**Neither is a completed identity bind.** The website host `pondprotocol.pages.dev` will serve the
+**Neither is a completed identity bind.** The website host `pond.greenhead.io` will serve the
 XLS-26 file; the issuer has no `Domain`, so that file cannot be verified against the account. No
 MPT issuance exists, so no XLS-89 blob is published. Everything below describes the intended
 mechanism — see [architecture Live state](../architecture.md#live-state).
@@ -23,16 +23,17 @@ mechanism — see [architecture Live state](../architecture.md#live-state).
 
 **Documented** (`rpnd/config/xrp-ledger.toml.template`, `rpnd/docs/issuance.md`):
 
-The file is served at `https://pondprotocol.pages.dev/.well-known/xrp-ledger.toml` (website host,
+The file is served at `https://pond.greenhead.io/.well-known/xrp-ledger.toml` (website host,
 lowercase, no scheme in Domain-related fields). The `protocol` site copy lives at
 `site/public/.well-known/xrp-ledger.toml`. The `rpnd` template still uses placeholders
 `{{ISSUER_ADDRESS}}`, `{{ISSUER_DOMAIN}}`, `{{NETWORK}}`, and `{{RPND_ISSUANCE_ID}}` filled by
 `render-toml`.
 
 The website host is chosen. The on-ledger `Domain` stays unset until CORS is verified on the live
-path. `pondprotocol.pages.dev` is a Cloudflare platform hostname; binding `Domain` to it later
-accepts a platform dependency that can only be changed while the issuer can still sign. The
-template's own notice states that addresses in it are authoritative only once `Domain` matches.
+path. Do not set `Domain` as part of attaching this host. `pond.greenhead.io` is a subdomain of
+`greenhead.io`, a name the owner holds; binding `Domain` can only be changed while the issuer can
+still sign. The template's own notice states that addresses in it are authoritative only once
+`Domain` matches.
 
 The $rPND `[[TOKENS]]` row is commented out in the template, pending a real issuance id and explorer support for MPT rows — [TD-04](../open-questions.md#td-04).
 
@@ -52,9 +53,8 @@ The blob is JSON, hex-encoded into the `MPTokenMetadata` field of `MPTokenIssuan
 
 **TODO:** `icon` is `example.com/rpnd-icon.png` (also missing a URL scheme) and `uris[0].uri` is `https://example.com/rpnd` — [TD-01](../open-questions.md#td-01).
 
-**Open:** the on-ledger `Domain` field, and whether a registered domain later replaces the
-Cloudflare Pages hostname `pondprotocol.pages.dev` as the website host — [OQ-12](../open-questions.md#oq-12).
-The website host is chosen; the AccountRoot `Domain` is unset.
+**Open:** the on-ledger `Domain` field — [OQ-12](../open-questions.md#oq-12).
+The website host is `pond.greenhead.io`; the AccountRoot `Domain` is unset.
 
 `rpnd/docs/tokens.md` is explicit that metadata should not be treated as public until the domain actually serves the file.
 

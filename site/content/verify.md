@@ -42,9 +42,9 @@ That address is the identity. Save it, and check it against this page — served
 the **website host** `{{domain}}` — rather than against a ticker in a search box.
 
 This host is **not** the issuer's on-ledger `Domain` field. That field is unset and stays unset
-until CORS is verified on the live `/.well-known/xrp-ledger.toml` path. `{{domain}}` is a
-Cloudflare Pages platform hostname. If `Domain` is later set to it, that accepts a platform
-dependency that can only be changed while the issuer can still sign.
+until CORS is verified on the live `/.well-known/xrp-ledger.toml` path. Do not set `Domain` as
+part of attaching this host. If `Domain` is later set to `{{domain}}`, that bind can only be
+changed while the issuer can still sign.
 
 ## Canonical links to the real $PND
 
@@ -165,10 +165,9 @@ own any account, and any account can set its `Domain` to any string. What would 
 unset, so the two-way link is not established and XLS-26 consumers that require it will not treat
 the file as authoritative.
 
-`{{domain}}` is a Cloudflare Pages platform hostname, not a domain Pond Protocol registers. Binding
-`Domain` to it later would accept a platform dependency that can only be changed while the issuer
-can still sign. CORS on the live TOML path also has to be verified before that field would mean
-anything. Neither of those is a step this page is asking anyone to take.
+`{{domain}}` is a name the owner holds. Binding `Domain` to it later can only be changed while the
+issuer can still sign. CORS on the live TOML path also has to be verified before that field would
+mean anything. Neither of those is a step this page is asking anyone to take.
 
 See [xrp-ledger.toml](/xrp-ledger-toml/) for the file itself and what is in it.
 

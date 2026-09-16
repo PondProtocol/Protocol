@@ -30,7 +30,7 @@ The asymmetry is worth stating plainly for holders: an $rPND holder's dilution r
 
 ## 7.4 Metadata trust
 
-**Documented:** the on-ledger blob is mutable and replaced wholesale by `MPTokenIssuanceSet`; freezing it with `tifMPTMetadata` is available but not used. The off-ledger TOML is whatever the website host serves (`pondprotocol.pages.dev`), and is only meaningfully bound to the issuer while the AccountRoot `Domain` matches that host. `Domain` is unset today.
+**Documented:** the on-ledger blob is mutable and replaced wholesale by `MPTokenIssuanceSet`; freezing it with `tifMPTMetadata` is available but not used. The off-ledger TOML is whatever the website host serves (`pond.greenhead.io`), and is only meaningfully bound to the issuer while the AccountRoot `Domain` matches that host. `Domain` is unset today.
 
 Consequence: an attacker controlling DNS or hosting for the issuer domain can misrepresent the tokens to any XLS-26 consumer without touching the ledger. Nothing detects that today — [OQ-10](../open-questions.md#oq-10), [5.5](05-metadata-and-discovery.md#55-consistency-between-the-two-mechanisms).
 
@@ -39,7 +39,7 @@ Consequence: an attacker controlling DNS or hosting for the issuer domain can mi
 **Documented:** $PND's identity is (code, issuer address), so anyone may issue a token with the code `PND` from their own account. For $rPND, the ticker `RPND` is metadata and is likewise not unique; only the `MPTokenIssuanceID` is. Publishing the issuer address through a verified domain is the primary defense, which makes [TD-02](../open-questions.md#td-02) a security task and not just a polish task.
 
 This is the most exposed gap today: the issuer address is public and has no `Domain`. The website
-host `pondprotocol.pages.dev` will serve the TOML, but that is not an on-ledger bind — [TD-02](../open-questions.md#td-02),
+host `pond.greenhead.io` will serve the TOML, but that is not an on-ledger bind — [TD-02](../open-questions.md#td-02),
 [OQ-12](../open-questions.md#oq-12). There is no issued token whose absence would tip off a holder
 that an impersonator's `PND` is not the real one.
 

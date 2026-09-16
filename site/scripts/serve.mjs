@@ -12,6 +12,7 @@ import { extname, join, normalize } from "node:path";
 import { DIST_DIR } from "./lib.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
+const host = process.env.HOST ?? "0.0.0.0";
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -44,9 +45,9 @@ createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.statusCode = path.endsWith("404.html") ? 404 : 200;
   createReadStream(path).pipe(res);
-}).listen(port, () => {
+}).listen(port, host, () => {
   process.stdout.write(
-    `\n  serving site/dist on http://localhost:${port}\n` +
-      `  identity anchor: http://localhost:${port}/.well-known/xrp-ledger.toml\n\n`,
+    `\n  serving site/dist on http://${host}:${port}\n` +
+      `  identity anchor: http://${host}:${port}/.well-known/xrp-ledger.toml\n\n`,
   );
 });
