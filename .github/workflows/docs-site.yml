@@ -6,6 +6,11 @@ on:
     paths: ["site/**", "docs/**", "README.md", ".github/workflows/docs-site.yml"]
   pull_request:
     paths: ["site/**", "docs/**", "README.md", ".github/workflows/docs-site.yml"]
+  # A documentation change in pnd or rpnd cannot trigger this repository's workflows, so the
+  # staleness job also runs on a schedule. Without it, a correction landing in a sibling repo would
+  # sit undetected until somebody happened to touch site/ here.
+  schedule:
+    - cron: "17 6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -16,6 +21,89 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Layer 2 of the staleness defence: does each vendored copy in site/imported/ still match its
+  # source in the repository it came from?
+  #
+  # This is a separate job because it is the only one that needs the sibling repositories. The
+  # render build is deliberately hermetic — see the comment on the deploy job — so nothing else here
+  # can detect that a document was corrected upstream after it was vendored.
+  #
+  # Layer 1 (a recorded source hash, checked in every build including on the deploy host) catches a
+  # vendored file edited by hand. It cannot catch upstream drift, which is what this job is for.
+  staleness:
+    name: Vendored docs match their sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: protocol
+
+      # Reading another private repository in the same org needs a token the default GITHUB_TOKEN
+      # does not provide. Create a fine-grained PAT or GitHub App token with Contents: read on
+      # PondProtocol/PND and PondProtocol/rPND, and store it as the SIBLING_REPOS_TOKEN secret.
+      #
+      # This job fails loudly rather than skipping when the secret is missing. A staleness check
+      # that quietly does nothing is worse than none: it reports success while the site publishes
+      # documentation the source repositories have already corrected.
+      - name: Check the cross-repo token exists
+        env:
+          TOKEN: ${{ secrets.SIBLING_REPOS_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::SIBLING_REPOS_TOKEN is not set."
+            echo "This job compares site/imported/ against the pnd and rpnd repositories, which are"
+            echo "private, so it needs a token with Contents: read on both."
+            echo
+            echo "Create a fine-grained PAT (or GitHub App installation token) scoped to"
+            echo "PondProtocol/PND and PondProtocol/rPND, then add it as a repository secret named"
+            echo "SIBLING_REPOS_TOKEN."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+        with:
+          repository: PondProtocol/PND
+          path: pnd
+          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          # Full history: content.config.json may pin a source to a branch other than the default,
+          # and a shallow single-branch clone cannot resolve one.
+          fetch-depth: 0
+
+      - uses: actions/checkout@v5
+        with:
+          repository: PondProtocol/rPND
+          path: rpnd
+          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: protocol/site/package-lock.json
+
+      - name: Install
+        working-directory: protocol/site
+        run: npm ci
+
+      # Fetch whatever refs the config declares, rather than hardcoding branch names here. Keeping
+      # the ref list in one place is what stops a pin being forgotten in a second location.
+      - name: Fetch the declared source refs
+        working-directory: protocol/site
+        run: |
+          node scripts/sync.mjs --print-refs | while IFS=$'\t' read -r repo dir ref; do
+            echo "$repo -> $ref"
+            case "$ref" in
+              worktree) continue ;;
+              origin/*) git -C "$dir" fetch --quiet origin "${ref#origin/}:refs/remotes/$ref" || true ;;
+              *)        git -C "$dir" fetch --quiet origin "$ref" || true ;;
+            esac
+          done
+
+      - name: Compare vendored copies against their sources
+        working-directory: protocol/site
+        run: npm run sync -- --check
+
   # Runs on every pull request. Host-independent: it only proves the site builds and that the
   # publication guard passes, which is worth having whichever host is chosen.
   build:
@@ -74,7 +162,10 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_GITHUB_PAGES == 'true'
-    needs: build
+    # Deliberately depends on staleness as well as build. Publishing documentation that the source
+    # repositories have already corrected is the defect this whole arrangement exists to prevent, so
+    # a deploy should not proceed while that is unverified.
+    needs: [staleness, build]
     runs-on: ubuntu-latest
     environment:
       name: github-pages

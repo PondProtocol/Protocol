@@ -501,6 +501,63 @@ GitHub Enterprise Cloud. There is no cheap private-site option.
 **Owner decision required:** confirm the tier-2 calls above — specifically whether the
 `open-questions.md` files should be public — before the first deploy.
 
+### 6.1 The issuer address: settled, and now consistent
+
+**Status: resolved in favour of publishing.** The organisation's profile page previously stated that
+*"no issuer address is published yet"* and that the address was *"deliberately withheld until the
+account's funding status is confirmed"*, while `protocol/README.md`, `pnd/docs/token-spec.md` and
+this site's `/verify/` page all published `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` in full. That
+disagreement is being closed by an open pull request on the `.github` repository which publishes the
+address with the same pre-launch framing used here.
+
+The two surfaces are now deliberately aligned rather than accidentally different, and the reasoning
+is recorded below so the decision does not have to be re-argued. **Keep them aligned:** if either
+surface changes its position on the address, the other has to change with it.
+
+**Why publishing is right.** Four reasons, in order of weight:
+
+1. **The org page's own stated condition has already been met.** It withholds the address "until the
+   account's funding status is confirmed." That is now confirmed: the account is funded on mainnet
+   with `Flags` of 0, verified and written up in the correction PRs open against both `protocol` and
+   `pnd`. This is not a disagreement about principle — it is a gate that has been passed and a page
+   that has not caught up.
+2. **It is not secret, and cannot be.** The moment the account was funded it became public ledger
+   data, visible on any explorer to anyone who looks. Withholding it from one page does not conceal
+   it; it only means the project is not the one telling you what it is.
+3. **The anti-impersonation mechanism does not work without it.** `/verify/` exists because two
+   other mainnet accounts already issue `PND` and a third issues `Pnd`, one of them permanently
+   broken. The single thing that distinguishes $PND is the issuer address. A page that warns about
+   impostors without naming the real address is not a mitigation. The site's guard enforces the
+   address's presence on `/verify/` for exactly this reason.
+4. **Silence leaves a vacuum that someone else fills.** If the project has published no canonical
+   address and a trader searches the ticker, whatever they find becomes the de facto answer. Naming
+   it first is the cheapest defence available, and it costs nothing that is recoverable later.
+
+**What keeps this safe** is the pre-launch framing, not the withholding. The address is published
+alongside an explicit statement that the account is unconfigured, nothing has been issued, and
+therefore *any* token currently trading under the code `PND` is not $PND. That is both true and more
+protective than saying nothing — it converts the address from an invitation to buy into a tool for
+refusing to.
+
+**What the two surfaces must keep in common.** Both now publish the address, both state that the
+account is unconfigured and has issued nothing, both give runnable queries against the real address,
+and both say plainly that if the page and the ledger disagree the ledger wins. `/verify/` additionally
+describes the `PND` code collisions — other accounts issuing the exact code `PND`, plus the variants
+`Pnd`, `PNDN` and `PNDC` — as a **pattern**, without naming any other issuer's address.
+
+That omission is deliberate and enforced. Some of those projects may be entirely legitimate, their
+metrics change constantly, and naming them would be an accusation the site has no basis to make. The
+publication guard fails the build if any classic XRPL address other than the canonical issuer appears
+anywhere in the output, so it is a property of the build rather than an editorial habit.
+
+**Remaining step for the owner:** once the domain exists, link the org profile to `/verify/` so there
+is one canonical destination rather than two partial ones.
+
+**If the position is ever reversed,** it has to be reversed everywhere: `protocol/README.md`,
+`pnd/docs/token-spec.md`, the org profile, and this site — and it costs `/verify/` its function,
+because without the address there is nothing to distinguish $PND from the same-code tokens that
+already exist. What must not happen is the surfaces drifting apart again by accident.
+
 ---
 
 ## 7. What the owner has to do

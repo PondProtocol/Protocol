@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/spec/README.md
+source_ref: worktree
+source_sha256: 981dc80dc680b541489ad4cdb88aed0fccded3077c828145a48611c6fcf62d9e
 title: Status and conventions
 url: /spec/
 section: Specification
@@ -31,6 +33,8 @@ Because the protocol's core mechanics are undecided ([OQ-01](../open-questions.m
 ## Conventions
 
 **Normative language.** Once a section is marked normative, the key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY are to be interpreted as described in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Until then, treat descriptive text as a report on current behavior, not a requirement.
+
+**Config intent is not on-ledger fact.** Neither token exists yet, and the issuer account is funded but unconfigured. Where a section states a parameter, it separates what the config intends, what is on ledger now, and the effect once applied. The verified snapshot and the queries to refresh it are in [architecture Live state](../architecture.md#live-state) — never restate a live value from memory when a reader can query it.
 
 **Three labels, used consistently across sections:**
 

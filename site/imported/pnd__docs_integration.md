@@ -1,6 +1,8 @@
 ---
 source_repo: pnd
 source_path: docs/integration.md
+source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_sha256: 32207e6b2c23b93ba729ee086368c0fedb87de95c242254f143199900fe5d1b4
 title: Integration guide
 url: /pnd/integration/
 section: $PND — issued currency
@@ -18,7 +20,7 @@ An integration must key $PND on the pair (currency code, issuer address):
 { "currency": "PND", "issuer": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc" }
 ```
 
-Keying on `"PND"` alone will merge unrelated tokens that reuse the ticker. This matters most in search, portfolio totals, and any allowlist. Read the issuer from configuration rather than hardcoding it in application code, and note that the account is not yet funded on any network, so there is nothing to index until issuance happens.
+Keying on `"PND"` alone will merge unrelated tokens that reuse the ticker. This matters most in search, portfolio totals, and any allowlist. Read the issuer from configuration rather than hardcoding it in application code. The account is funded on mainnet but has issued nothing, so there is nothing to index yet.
 
 ## Amount encoding
 
@@ -38,15 +40,21 @@ There is no supply field to read. `gateway_balances` obligations is the closest 
 
 If you display a supply figure, derive it from obligations and label it as such. The 100 billion target is issuer policy, not a ledger cap, so do not render it as a maximum the protocol enforces — and do not compute a percentage-of-cap number that implies the ledger would reject issuance beyond it. Balances above 1 billion also carry fewer than 6 exact decimals; see the precision table in [`token-spec.md`](token-spec.md) before formatting treasury-scale amounts.
 
+## Read the issuer's configuration, do not assume it
+
+The issuer account is funded on mainnet with **no `AccountSet` applied**: every account flag is false and `Domain`, `TransferRate`, and `TickSize` are all absent. The values in this repository describe what the operator intends to set, so an integration that hardcodes them will be wrong both now and after any later change. Read them from `account_info` and treat what you find as the truth.
+
+The one that changes behavior most is rippling. `account_flags.defaultRipple` is false, and until the issuer enables it, **holders cannot pay each other in $PND** — only payments to and from the issuer work, because a holder-to-holder payment has to ripple through the issuer's trust lines. Wallets that assume any XRPL token moves peer to peer will show users a failure they cannot explain. Check the flag and, when it is false, say so in the interface rather than letting the transaction fail.
+
 ## Payments
 
 - Recipients need a trust line with headroom under their limit. A send to an account without one fails as a path error rather than creating the line for them. Wallets should detect the missing line and prompt the user to open it.
-- `TransferRate` is currently 0, so the sent amount equals the delivered amount. Do not hardcode that assumption: read `TransferRate` from the issuer's account data, because a future `AccountSet` can change it and integrations that assume zero will under-deliver.
+- `TransferRate` is absent today, which is the ledger default of no fee, and `rpnd`'s config intends to set it to 0 explicitly. Do not hardcode either: read `TransferRate` from the issuer's account data, because a later `AccountSet` can change it and integrations that assume zero will under-deliver.
 - Partial payments (`tfPartialPayment`) can deliver less than `Amount`. Credit customers from `delivered_amount` only. This is the single most common way exchanges lose money on XRPL tokens.
 
 ## DEX and order books
 
-The issuer sets `TickSize` to 5, so offers on $PND pairs are rounded to five significant digits of price. Order-entry interfaces should round quotes the same way, or users will see their price change on submission.
+The issuer intends to set `TickSize` to 5, which would round offers on $PND pairs to five significant digits of price. The field is absent on ledger today, so the current behavior is the ledger default of full precision. Read `TickSize` from the issuer's account data and round order entry to match whatever is set, or users will see their price change on submission.
 
 ## Metadata and branding
 
@@ -67,8 +75,9 @@ Do not display $PND and $rPND as one balance, and do not treat one as a wrapper 
 1. Asset identity stored as (currency, issuer) from config, not a hardcoded ticker.
 2. Amounts parsed and stored as decimal strings.
 3. Credit logic reads `delivered_amount`.
-4. `TransferRate` read from the ledger rather than assumed.
+4. `TransferRate`, `TickSize`, and `defaultRipple` read from the ledger rather than assumed.
 5. Missing-trust-line handling shows a real message and an opt-in path.
-6. Issuer address verified against this repository and against the issuer's `xrp-ledger.toml`.
+6. Holder-to-holder transfers gated on `defaultRipple` being enabled, with a clear message when it is not.
+7. Issuer address verified against this repository and against the issuer's `xrp-ledger.toml`.
 
 If you integrate $PND and something in this document is wrong or incomplete, please open an issue — integration reports are the main way this file improves.

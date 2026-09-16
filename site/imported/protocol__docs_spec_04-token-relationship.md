@@ -1,6 +1,8 @@
 ---
 source_repo: protocol
 source_path: docs/spec/04-token-relationship.md
+source_ref: worktree
+source_sha256: d6e10f17d0af2ab2ea142941189c07876603767bbc14e1f67055cbd43ef9d440
 title: 04 — Token relationship
 url: /spec/token-relationship/
 section: Specification
@@ -47,7 +49,7 @@ Stated here so the field is never mistaken for a mechanism.
 
 ## 4.4 Liquidity and price discovery
 
-**Documented:** $rPND is created without `tfMPTCanTrade`, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Flags are one-way, so it can be enabled after create but never disabled again. [rPND PR #1](https://github.com/PondProtocol/rPND/pull/1) lists DEX listings as out of scope.
+**Documented:** the config leaves `tfMPTCanTrade` off, which `rpnd/docs/rpnd-spec.md` identifies as the flag permitting DEX and AMM use. Flags are one-way, so it could be enabled after create but never disabled again. [rPND PR #1](https://github.com/PondProtocol/rPND/pull/1) lists DEX listings as out of scope.
 
 **Open:** whether the protocol intends order-book listings, an XRPL AMM pool, or no venue at all, and how price discovery is meant to work between the two assets — [OQ-14](../open-questions.md#oq-14).
 
