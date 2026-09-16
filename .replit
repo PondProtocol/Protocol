@@ -3,14 +3,13 @@
 # The GitHub repo root is not the site root. The static site lives in site/,
 # builds with `npm ci && npm run check`, and writes HTML into site/dist.
 #
-# Replit Static Deployments omit dotfiles/dot-directories from the published
-# tree. Verified 2026-09-16 on pond.greenhead.io: /.well-known/ and /.nojekyll
-# 404 while /_headers and /robots.txt 200. Two mitigations:
-#   1. Publish as Autoscale and serve with site/scripts/serve.mjs (serves
-#      .well-known/ from disk).
-#   2. A non-dot twin at /well-known/xrp-ledger.toml plus the rewrite below,
-#      so a Static publish can still answer the XLS-26 URL.
+# Replit needs BOTH .replit and replit.nix or the workspace stays in
+# recovery mode ("Nix environment is broken"). Node is the nodejs-20
+# module; replit.nix is intentionally empty so a stale package attr
+# cannot fail the env build.
 #
+# Publish as Autoscale. Replit Static omits .well-known/ (verified
+# 2026-09-16: /.well-known/ and /.nojekyll 404, /_headers 200).
 # After republish: cd site && npm run verify:live -- pond.greenhead.io
 # Leave the issuer on-ledger Domain unset until that check passes.
 
@@ -18,13 +17,19 @@ modules = ["nodejs-20"]
 run = "bash -c 'cd site && (test -d node_modules || npm ci) && npm run check && npm run serve'"
 entrypoint = "site/scripts/serve.mjs"
 hidden = ["site/node_modules", "site/dist", ".git"]
-language = "nodejs"
+language = "javascript"
 
 [nix]
 channel = "stable-24_05"
 
+[packager]
+language = "nodejs"
+
+[packager.features]
+guessImports = false
+
 [gitHubImport]
-requiredFiles = [".replit"]
+requiredFiles = [".replit", "replit.nix"]
 
 [[ports]]
 localPort = 8080

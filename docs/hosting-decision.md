@@ -607,8 +607,10 @@ are gone before changing DNS.
 
 ### What is still on the owner
 
-1. **Pull `main` in the existing Replit app and republish as Autoscale** with the table above.
-   Do not stay on Static. Leave `pond.greenhead.io` attached.
+1. **In the existing Replit app, `git fetch origin main && git reset --hard origin/main`** (not
+   Recover original configuration files). That brings `.replit` plus `replit.nix`. Type `exit` in
+   Shell or Restart compute so Nix leaves recovery mode. Then republish as **Autoscale**. Leave
+   `pond.greenhead.io` attached.
 2. **Turn on branch protection on `main`** requiring the `staleness` and `build` checks. Replit
    builds from Publish / a push and does not run GitHub Actions, so a direct push can publish a
    stale snapshot of sibling-repo docs.
