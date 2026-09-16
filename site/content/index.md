@@ -38,7 +38,7 @@ Do not type it from memory, and do not trust a ticker in a wallet dropdown.
 <a class="join-card" href="/wallets/"><strong>Wallets</strong><span>Issuer, Treasury, Operations, live flags.</span></a>
 <a class="join-card" href="/hold/"><strong>Hold safely</strong><span>Trust this issuer after launch. No seeds. No connect-wallet.</span></a>
 <a class="join-card" href="/links/"><strong>Official links</strong><span>This site, the TOML file, Bithomp. Nothing else.</span></a>
-<a class="join-card" href="/vesting/"><strong>Supply split</strong><span>10B public, 10B team, 80B to holders at 10B/month from 2027-01-01. Draft, not escrow.</span></a>
+<a class="join-card" href="/vesting/"><strong>Supply split</strong><span>10B public, 10B team, 80B to holders at 10B/month from 2027-01-01 through 2027-08-01, proportional. Snapshot + treasury payments, not escrow.</span></a>
 <a class="join-card" href="/pnd-and-rpnd/"><strong>$PND and $rPND</strong><span>Two different ledger objects. $rPND is not launching 1 Oct.</span></a>
 <a class="join-card" href="/discovery/"><strong>How wallets learn the name</strong><span>Domain + TOML. DEX About boxes may stay empty.</span></a>
 <a class="join-card" href="/xrp-ledger-toml/"><strong>xrp-ledger.toml</strong><span>The XLS-26 file this host serves.</span></a>

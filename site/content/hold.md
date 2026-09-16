@@ -54,3 +54,7 @@ ledger, not against the page that asked.
 The hold path is: this site → copy the issuer → your wallet’s trust-line
 screen. [Official links](/links/) is the short list (site, TOML, Bithomp).
 [Wallets](/wallets/) is who holds what after issuance.
+
+After launch, the holder monthly (from **2027-01-01**) is **proportional to
+$PND on a trust line**, paid by Treasury after a snapshot. You do not claim
+it here. See [Supply split](/vesting/).

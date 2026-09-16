@@ -350,19 +350,20 @@ function layout(page, html) {
       }. Edit it there, not here.</p>`
     : "";
   // Sibling-repo token-spec still names a 90B Treasury escrow. That is not the
-  // public schedule. Authored /vesting/ is the high-level target until a
-  // vesting doc lands. Never invent an airdrop from this notice.
+  // public schedule. Authored /vesting/ is the high-level split. Never invent
+  // a claim UI from this notice.
   const lockedNinety =
     /holds the 90\s*(?:B|billion).{0,40}escrow/i.test(page.markdown || "") ||
     /holding the 90\s*(?:B|billion).{0,40}escrow/i.test(page.markdown || "") ||
     /the 90B(?: \$PND)? vesting escrow/i.test(page.markdown || "");
   const supplyRevision = page.repo && lockedNinety
     ? `<div class="callout callout-critical" data-supply-revision="1">
-<p><strong>Supply split is being revised.</strong> Do not treat a 90 billion
-Treasury escrow, or ten 9 billion self-escrows, as the public schedule.
-High-level target until the vesting doc lands: 10 billion public, 10 billion
-team, 80 billion to holders at 10 billion per month from 2027-01-01. Not
-escrow, not an airdrop, not a claim. <a href="/vesting/">Supply split</a>.</p>
+<p><strong>Supply split is not a 90 billion escrow.</strong> Do not treat ten
+9 billion self-escrows as the public schedule. High-level split: 10 billion
+public, 10 billion team, 80 billion to holders at 10 billion per month from
+2027-01-01 through 2027-08-01, proportional to $PND held. Snapshot plus
+treasury payments, not TokenEscrow, not a claim.
+<a href="/vesting/">Supply split</a>.</p>
 </div>`
     : "";
 

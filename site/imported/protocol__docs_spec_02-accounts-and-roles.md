@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: docs/spec/02-accounts-and-roles.md
 source_ref: worktree
-source_sha256: adcecb1a4d92947b55dee6b4299aad390f10a2b16ced831e787bc139820b2372
+source_sha256: 38c82aa0d3a7d9a3d4b54019bacfe07995edfd9a412fa402de4c3cc167d0be5a
 title: 02 — Accounts and roles
 url: /spec/accounts-and-roles/
 section: Specification
@@ -18,9 +18,9 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 **Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, **issuing both $PND and $rPND** ([OQ-22](../open-questions.md#oq-22), decided). It is funded on mainnet with **none of those transactions submitted yet** — see [architecture Live state](../architecture.md#live-state).
 
-**Treasury.** Named account for supply that is not the trading wallet. `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` ([OQ-23](../open-questions.md#oq-23), decided). **Funded on mainnet** (~1 XRP as of the 2026-09-16 wallets snapshot); needs more XRP before launch lockups. Holds no bot-reachable key. How it will hold the 10 billion team slice and the 80 billion holder monthly is **not published as escrow** — [OQ-13](../open-questions.md#oq-13). Do not treat ten 9 billion Treasury self-escrows as the public schedule.
+**Treasury.** Named account for the 80 billion holder inventory after launch. `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` ([OQ-23](../open-questions.md#oq-23), decided). **Funded on mainnet** (~1 XRP as of the 2026-09-16 wallets snapshot); about 2 XRP without escrow. Holds no bot-reachable key. Monthly drops are snapshot plus treasury payments — **not TokenEscrow** — [OQ-13](../open-questions.md#oq-13). Do not treat ten 9 billion Treasury self-escrows as the public schedule.
 
-**Operations (hot).** Liquidity and day-to-day distribution. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, is the source account for routine distribution payments, and creates the AMM pool. `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` ([OQ-23](../open-questions.md#oq-23), decided). **Not funded on ledger** — `account_info` returns `actNotFound` on mainnet. Read from `OPERATIONAL_SEED` in the toolkit. **Operations is not a bot account.** Which slice of the 10 billion public it holds is not locked; a bot must never hold a key on it.
+**Operations (hot).** Liquidity and the 10 billion public slice. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, is the source account for routine distribution payments, and creates the AMM pool. `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` ([OQ-23](../open-questions.md#oq-23), decided). **Not funded on ledger** — `account_info` returns `actNotFound` on mainnet. Read from `OPERATIONAL_SEED` in the toolkit. **Operations is not a bot account** and not the monthly drop wallet; a bot must never hold a key on it.
 
 **Bot-ops (recommended, not created).** Any bot or automation gets its own dedicated, bounded account — a regular key, never a master seed, on a new account funded with 5–10 XRP and no $PND trust line. Not the Issuer, not Treasury, and not Operations. No address is published yet; creating and funding it is an owner action, not a decision that is still open ([OQ-25](../open-questions.md#oq-25)).
 

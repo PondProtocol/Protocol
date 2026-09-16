@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: docs/architecture.md
 source_ref: worktree
-source_sha256: 3c2ebf71748bcce7c88e148b6f2ec5e5e8d0d13d28bc7d88b1804f2ab2c6914f
+source_sha256: 115009ed79beac664f1b3ff808d670df3a85d745b416466cd16edcd543da8d91
 title: Architecture
 url: /protocol/architecture/
 section: Protocol
@@ -23,8 +23,8 @@ Config values describe what the operator *intends to submit*. None of them is on
 | | State |
 | --- | --- |
 | Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — **issues both $PND and $rPND** ([OQ-22](open-questions.md#oq-22), decided). Funded on **mainnet** only — `actNotFound` on Testnet and Devnet |
-| Treasury | `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` — named account for supply that is not the trading wallet ([OQ-23](open-questions.md#oq-23), decided). **Funded** on mainnet (~1 XRP as of 2026-09-16); needs more XRP before launch lockups. **Not** a published 90B escrow |
-| Operations | `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` — liquidity and day-to-day distribution, creates the AMM pool ([OQ-23](open-questions.md#oq-23), decided). **Not funded** — `account_info` returns `actNotFound` on mainnet. Public 10B slice is high-level, not locked here |
+| Treasury | `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` — 80B holder inventory; pays monthly after a snapshot ([OQ-23](open-questions.md#oq-23)). **Funded** on mainnet (~1 XRP as of 2026-09-16); about 2 XRP without escrow. **Not** TokenEscrow |
+| Operations | `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` — 10B public slice, AMM pool ([OQ-23](open-questions.md#oq-23)). **Not funded** — `account_info` returns `actNotFound` on mainnet |
 | Issuer account flags | `Flags` is 0 and every flag reports false, so Default Ripple, Disallow XRP, Require Destination Tag, No Freeze, Global Freeze, and trust line clawback are all **unset** |
 | Issuer `Domain`, `TransferRate`, `TickSize`, `RegularKey` | Absent — the account has no `AccountSet` applied at all |
 | Issuer trust lines | None. `account_lines` is empty and `OwnerCount` is 0 |
@@ -97,13 +97,13 @@ The toolkit signs both assets' transactions with one configured issuer wallet, a
 
 ### 3. Issuance and operations
 
-Three roles, following standard XRPL cold/hot practice, extended with a treasury account for supply that is not meant to sit on the trading wallet; a fourth role for bot automation is recommended but not yet created. High-level $PND split (being revised, **not** a signed escrow calendar): 10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01. Launch 2026-10-01 does not start the holder monthly. Mechanism TBD — [OQ-13](open-questions.md#oq-13).
+Three roles, following standard XRPL cold/hot practice, extended with a treasury account for supply that is not meant to sit on the trading wallet; a fourth role for bot automation is recommended but not yet created. High-level $PND split: 10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01 through 2027-08-01, proportional to $PND held. Launch 2026-10-01 does not start the holder monthly. Mechanism: snapshot plus treasury payments — **not TokenEscrow** — [OQ-13](open-questions.md#oq-13). Snapshot exclusions are still an owner decision.
 
 | Role | Holds | Submits |
 | --- | --- | --- |
 | Issuer (cold) — `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` | issuing authority for both assets | `AccountSet`, `Payment` of $PND, `MPTokenIssuanceCreate`, `Payment` of $rPND |
-| Treasury — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` | named non-trading supply (team + holder monthly **not** published as escrow) | whatever lockup path the vesting doc eventually names; never `Payment` of newly issued supply as a hot wallet |
-| Operations (hot) — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` | day-to-day liquidity inventory of both assets | `TrustSet` for `PND`, `MPTokenAuthorize` for $rPND, `AMMCreate`, routine distribution payments |
+| Treasury — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` | 80B holder inventory after launch 10B payments to Operations and Team | monthly holder `Payment`s after a snapshot; never minting |
+| Operations (hot) — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` | 10B public slice | `TrustSet` for `PND`, `MPTokenAuthorize` for $rPND, `AMMCreate`, routine distribution payments |
 | Bot-ops (recommended, not created) | at most a small XRP float for fees — no $PND trust line | whatever a deterministic allow-list permits a bot to sign; never a transaction from Issuer, Treasury, or Operations |
 
 The cold seed is meant to stay offline in production; the toolkit reads seeds from `ISSUER_SEED` / `OPERATIONAL_SEED` and writes faucet output to a gitignored `var/` directory on dev networks only. `fund` refuses to run on mainnet. Custody beyond "keep it offline" is undecided — [OQ-11](open-questions.md#oq-11) — except for the narrower bot question, which is decided: a bot signs only from its own dedicated account, with a regular key, never a master seed, and never a key on Operations (the liquidity wallet) or on Treasury or the Issuer.

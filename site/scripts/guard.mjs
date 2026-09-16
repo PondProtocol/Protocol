@@ -354,17 +354,31 @@ const vestingHtml = existsSync(vestingPage) ? readFileSync(vestingPage, "utf8") 
 const vestingText = asText(vestingHtml);
 check("supply-split page was built", vestingHtml.length > 0);
 check(
-  "supply-split page is the 10 / 10 / 80 target, not a signed escrow calendar",
+  "supply-split page is the 10 / 10 / 80 snapshot path, not TokenEscrow",
   /10 billion public/i.test(vestingText) &&
     /10 billion team/i.test(vestingText) &&
     /80 billion/i.test(vestingText) &&
+    /proportional to \$PND held/i.test(vestingText) &&
     vestingHtml.includes("2027-01-01") &&
-    /not published as escrow/i.test(vestingText),
+    vestingHtml.includes("2027-08-01") &&
+    /snapshot/i.test(vestingText) &&
+    /treasury payments/i.test(vestingText) &&
+    /not TokenEscrow/i.test(vestingText),
+);
+check(
+  "supply-split page does not require trust-line locking",
+  !/asfAllowTrustLineLocking/i.test(vestingHtml) &&
+    !/SetFlag:\s*17/i.test(vestingHtml),
 );
 check(
   "authored pages do not lock ten 9B escrows as the public schedule",
   !/locked as ten/i.test(walletsText) &&
     !/ten 9 billion Treasury self-escrows is the public/i.test(vestingText),
+);
+check(
+  "wallets page does not treat trust-line locking as required",
+  !/later step \*if\* escrow/i.test(walletsText) &&
+    !/asfAllowTrustLineLocking is required/i.test(walletsText),
 );
 
 const lockedNinetyHtml = [];
