@@ -17,8 +17,8 @@
 
   "site": {
     "title": "Pond Protocol",
-    "tagline": "Two XRP Ledger assets, one canonical identity.",
-    "description": "Documentation for Pond Protocol: the $PND issued currency, the $rPND Multi-Purpose Token, and the verified issuer identity that distinguishes them from same-ticker impostors.",
+    "tagline": "Where Liquidity Goes to Stay.",
+    "description": "Where Liquidity Goes to Stay. Pond Protocol issues $PND on the XRP Ledger. Verify the issuer — do not search the ticker.",
     "issuerAddress": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
     "$comment_knownAddresses": [
       "Classic XRPL addresses this project publishes on purpose (Treasury, Operations).",
@@ -94,25 +94,27 @@
     ],
     "links": [
       {
-        "label": "XRP Ledger explorer",
-        "purpose": "The issuer account itself: flags, Domain field, trust lines",
-        "url": "https://livenet.xrpl.org/accounts/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
-        "status": "unverified",
-        "note": "Route shape is deterministic and matches the explorerAccount base in rpnd/config/tokens.json. The account exists and is funded, so this should already resolve — load it and mark it verified."
+        "label": "This site",
+        "purpose": "The only docs host. Copy the issuer from here.",
+        "url": "https://pond.greenhead.io/",
+        "status": "verified",
+        "verifiedOn": "2026-09-16",
+        "note": "Official site. Not a DEX."
       },
       {
-        "label": "XRPL Meta",
-        "purpose": "The metadata record wallets read, once the TOML is published",
-        "url": "https://s1.xrplmeta.org/v2/token/PND:rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
-        "status": "unverified",
-        "note": "Domain is set. Expect an empty or absent $PND record until issuance and a crawler pass. That is not a trade page."
+        "label": "xrp-ledger.toml",
+        "purpose": "XLS-26 metadata wallets fetch from Domain",
+        "url": "https://pond.greenhead.io/.well-known/xrp-ledger.toml",
+        "status": "verified",
+        "verifiedOn": "2026-09-16",
+        "note": "Identity file. Not a trade page."
       },
       {
-        "label": "FirstLedger",
-        "purpose": "Trading page",
-        "url": "https://firstledger.net/token-v3/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc/PND",
+        "label": "Bithomp",
+        "purpose": "Issuer account explorer: flags, Domain, issuance",
+        "url": "https://bithomp.com/explorer/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
         "status": "unverified",
-        "note": "Route shape is /token-v3/{issuer}/{currency-code}, with /token-v2/ redirecting to it. For a standard three-character code the final segment is the plain code rather than the 40-character hex form. This route has already moved once, and $PND does not exist yet, so treat the URL as a best guess until somebody loads it."
+        "note": "Explorer, not a DEX. Load it and mark verified. There is no official $PND trade URL yet."
       }
     ]
   },
@@ -159,6 +161,11 @@
         { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
         { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
         { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
+        { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
+        { "authored": "links.md", "url": "/links/", "title": "Official links" },
+        { "authored": "vesting.md", "url": "/vesting/", "title": "Supply split" },
+        { "authored": "pnd-and-rpnd.md", "url": "/pnd-and-rpnd/", "title": "$PND and $rPND" },
+        { "authored": "discovery.md", "url": "/discovery/", "title": "How wallets learn the name" },
         { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" }
       ]
     },

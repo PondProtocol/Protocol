@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: docs/spec/03-issuance-and-supply.md
 source_ref: worktree
-source_sha256: 8d0882add8be4d3ec8a30af6696dcf726d55ba3fcfa232343c90882ab6c17d75
+source_sha256: 2624777171552be130a08c47a163d1c491adfb3ec457e6637f129955360ff0b6
 title: 03 — Issuance and supply
 url: /spec/issuance-and-supply/
 section: Specification
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # 03 — Issuance and supply
 
@@ -52,9 +52,11 @@ The three $rPND values are working defaults, "not ratified economics" per [`rpnd
 
 ## 3.4 Distribution
 
-**Documented:** the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole of it.
+**Documented (high-level, not signed):** owner target for $PND is **10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01.** Launch **2026-10-01** does not start the holder monthly. The earlier ten 9 billion Treasury self-escrow rehearsal is **not** the public schedule. Escrow objects are not how this page claims the holder path will work.
 
-**Open:** the distribution mechanism, allocation schedule, vesting, and lockups. Nothing exists in any repo — [OQ-13](../open-questions.md#oq-13).
+**Documented:** the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole of the toolkit.
+
+**Open:** the distribution mechanism, lockup tool, and how each named account will hold the 10 / 10 / 80 split. Nothing is signed on ledger — [OQ-13](../open-questions.md#oq-13).
 
 ## 3.5 Networks and launch
 

@@ -10,9 +10,11 @@ of the topology.
 
 ## $PND has not been issued yet
 
-The issuer can sign, and some account settings are live, but **no $PND exists
-on ledger.** `gateway_balances` has no obligations. There is no circulating
-supply, no vesting escrow, and no AMM. **Nothing here is for sale.**
+Target launch date is **2026-10-01**. That is a date on a calendar, not a live
+market. The issuer can sign, and some account settings are already on ledger,
+but **no $PND exists today.** `gateway_balances` has no obligations. There is
+no circulating supply, no vesting escrow, and no AMM. **Nothing here is for
+sale.**
 
 Any token trading under the code `PND` today is a different issuer’s asset.
 Check the address on [Verify the real $PND](/verify/) before you trust a
@@ -33,16 +35,17 @@ rely on a number.
 | Account | Live on that ledger |
 | --- | --- |
 | Issuer | Funded **1.538996 XRP**. `Domain` `pond.greenhead.io`. Default Ripple on. No Freeze on. Clawback off. Require Auth off. `OwnerCount` 0. Nothing issued. |
-| Treasury | Funded **1.000010 XRP**. No $PND trust line yet. Needs about **3.2 XRP** before the launch escrows. |
+| Treasury | Funded **1.000010 XRP**. No $PND trust line yet. Needs more XRP before launch lockups. |
 | Operations | **Not funded** (`actNotFound`). Address is reserved. Will need about **52 XRP** (50 XRP AMM, treated as spent, plus ~2 XRP of reserve). |
 | Bot-ops | **Not created.** The split is decided; there is no fourth address to publish. |
 
-Policy supply for $PND is **100 billion**, by issuer policy, not a ledger cap:
-**10 billion** unlocked at issuance, **90 billion** locked as ten **9 billion**
-self-escrows from Treasury, finishing after the 1st of each month. First
-rehearsed date **2027-01-01**. Issuance is independent — Pond keeps the issuer
-keys. **Do not blackhole this issuer before the $rPND MPT exists** on the same
-account. A shared issuer makes that trade cost $rPND forever.
+Policy supply is **100 billion**, issuer policy not a ledger cap. High-level
+target (being revised — not a signed escrow schedule): **10 billion public**,
+**10 billion team**, **80 billion to holders** at **10 billion per month**
+from **2027-01-01**. Launch is **2026-10-01**; that date does not start the
+holder monthly. Details: [Supply split](/vesting/). Issuance is independent —
+Pond keeps the issuer keys. **Do not blackhole this issuer before the $rPND
+MPT exists** on the same account.
 
 ## The accounts
 
@@ -63,8 +66,8 @@ Click an address to select the whole string, then copy.
   </p>
   <p>Cold issuing account for <strong>both</strong> $PND (IOU) and $rPND (MPT).
   Signs configuration and issuance only. Holds no bot-reachable key. After
-  launch it should not hold the circulating or escrowed $PND — those go to
-  Operations and Treasury.</p>
+  launch it should not sit on the public float or the holder monthly — those
+  jobs belong to Operations and Treasury once the split is written down.</p>
 </div>
 
 <div class="wallet">
@@ -78,12 +81,11 @@ Click an address to select the whole string, then copy.
     ·
     <a href="https://livenet.xrpl.org/accounts/{{treasuryAddress}}" target="_blank" rel="noopener noreferrer">livenet.xrpl.org</a>
   </p>
-  <p>Will hold the <strong>90 billion</strong> vesting lock. After issuance it
-  receives the full 100 billion, keeps 10 billion unescrowed long enough to
-  move that slice to Operations, and locks the rest as ten dated 9 billion
-  escrows back to itself. Holders can read the schedule on ledger. Releasing
-  a matured escrow is permissionless — anyone can submit <code>EscrowFinish</code>
-  — so Treasury does not need a bot key for releases.</p>
+  <p>Named account for supply that is not the trading wallet. How it will hold
+  the team slice and the 80 billion holder monthly is <strong>not published as
+  escrow yet</strong> — see <a href="/vesting/">Supply split</a>. Do not invent
+  an airdrop or a claim flow from this address. Needs more XRP before launch
+  lockups. No bot-reachable key.</p>
 </div>
 
 <div class="wallet">
@@ -97,12 +99,12 @@ Click an address to select the whole string, then copy.
     ·
     <a href="https://livenet.xrpl.org/accounts/{{operationsAddress}}" target="_blank" rel="noopener noreferrer">livenet.xrpl.org</a>
   </p>
-  <p>Will receive the <strong>10 billion unlocked</strong> $PND and provide the
-  XRP side of the first PND/XRP AMM. The owner set that XRP at
-  <strong>50 XRP, treated as spent</strong>. This is the hot inventory account
-  for liquidity and day-to-day distribution. It is <strong>not</strong> the
-  bot wallet. A Bithomp or explorer load today should show the account missing,
-  not a funded wallet.</p>
+  <p>Hot inventory for liquidity and day-to-day distribution. The owner set AMM
+  capital at <strong>50 XRP, treated as spent</strong> (fund about
+  <strong>52 XRP</strong>). It is <strong>not</strong> the bot wallet. Which
+  slice of the 10 billion public it holds is not locked in this snapshot. A
+  Bithomp or explorer load today should show the account missing, not a funded
+  wallet.</p>
 </div>
 
 <div class="wallet">
@@ -120,24 +122,23 @@ Click an address to select the whole string, then copy.
 
 ## How Treasury and Operations support $PND
 
-Two jobs, two accounts. Mixing them is how a hot key ends up sitting on the
-locked supply.
+Two jobs, two accounts. Mixing them is how a hot key ends up sitting on
+supply that is not meant to trade.
 
-**Treasury is for holders’ supply schedule.** The 90 billion is not “in the
-market.” It sits in dated escrows that become finishable on a public calendar.
-That is what makes the 100 billion policy checkable later: the locked slice is
-on ledger, not in a spreadsheet. Treasury is not the trading wallet and is not
-meant to seed the AMM.
+**Treasury is not the AMM wallet.** It is the named account for supply that
+should stay off the book until the holder monthly and team slice are
+specified. That specification is still being revised. This page does **not**
+say the 80 billion is already in dated escrows, and it does not offer a
+claim.
 
-**Operations is for liquidity and the unlocked float.** The 10 billion is the
-slice that can actually move at launch. The AMM deposit is what a DEX market
-buy has to fill against. Without that pool, a holder who opened a trust line
-still has nothing to trade into. Operations also makes ordinary distribution
-payments. It should never hold the 90 billion lock.
+**Operations is for liquidity.** The AMM deposit is what a DEX market buy has
+to fill against after launch. Without that pool, a holder who opened a trust
+line still has nothing to trade into. Operations also makes ordinary
+distribution payments. It is not a 90 billion lock, and it is not a bot.
 
-Until those payments and escrows exist, both roles are intent. Live today:
-Treasury exists and is under-funded for ten escrows; Operations does not exist
-on ledger yet.
+Until issuance, both roles are intent. Live today: Treasury exists and is
+light on XRP; Operations does not exist on ledger yet. High-level numbers:
+[Supply split](/vesting/).
 
 ## Issuer flags, in plain language
 
@@ -152,7 +153,7 @@ Read from `account_flags` on the issuer in the snapshot above. These are
 | Clawback | off | The issuer cannot seize $PND from a trust line. |
 | Require Auth | off | Anyone can open a $PND trust line. Issuer approval is not required. Turning this on would break issuance and the AMM. |
 | Global freeze | off | Not frozen. With No Freeze on, the issuer cannot use freeze as a later brake. |
-| Allow Trust Line Locking | off | Treasury **cannot** escrow $PND until the issuer sets this. A later launch step, not live today. |
+| Allow Trust Line Locking | off | IOU escrow is not enabled on this issuer yet. A later step *if* escrow is used; not a claim that lockups exist. |
 | Master key disabled | off | The issuer can still sign. **Keep it that way until $rPND exists** on this account. Blackholing now would delete $rPND. |
 
 `TransferRate` and `TickSize` are **absent** on the AccountRoot (ledger

@@ -20,7 +20,7 @@
 # Domain is set at that moment is frozen forever.
 #
 # Remaining TODOs in this file (each marked TODO below where it applies):
-#   1. icon — a real square image on a permanent host.
+#   1. icon — served at https://pond.greenhead.io/icon-512.png (pond-ripple mark).
 #   2. [[PRINCIPALS]] — omitted on purpose. It attaches a real name and email.
 #      XLS-26 does not require it.
 #   3. $rPND stanza — absent until MPTokenIssuanceCreate is validated.
@@ -38,10 +38,8 @@ issuer = "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc"
 name = "PND"
 desc = "The issued-currency token of Pond Protocol on the XRP Ledger."
 asset_class = "memes"
-# TODO: replace with a real square icon on a permanent host. Must include the protocol
-#       (https:// or ipfs://). Leave commented until it resolves - a broken icon URL is worse
-#       than no icon field, because consumers cache what they fetch.
-# icon = "https://pond.greenhead.io/icon-512.png"
+# icon is served from this host at /icon-512.png (pond-ripple mark, same as favicon).
+icon = "https://pond.greenhead.io/icon-512.png"
 
 [[TOKENS.URLS]]
 url = "https://pond.greenhead.io"

@@ -333,6 +333,124 @@ check(
   "wallets page does not publish a DEX trade URL",
   !/firstledger\.net\/token/i.test(walletsHtml) && !/xpmarket\.com\/dex/i.test(walletsHtml),
 );
+check(
+  "wallets page names the 2026-10-01 launch date without claiming $PND is live",
+  walletsHtml.includes("2026-10-01") && /has not been issued/i.test(walletsText),
+);
+
+const indexHtml = existsSync(index) ? readFileSync(index, "utf8") : "";
+const indexText = asText(indexHtml);
+check(
+  "landing page uses the owner tagline as-is",
+  indexHtml.includes("Where Liquidity Goes to Stay."),
+);
+check(
+  "landing page does not paraphrase the tagline as a substitute headline",
+  !/Where Liquidity Remains/i.test(indexText) && !/Liquidity Stays Here/i.test(indexText),
+);
+
+const vestingPage = join(DIST_DIR, "vesting", "index.html");
+const vestingHtml = existsSync(vestingPage) ? readFileSync(vestingPage, "utf8") : "";
+const vestingText = asText(vestingHtml);
+check("supply-split page was built", vestingHtml.length > 0);
+check(
+  "supply-split page is the 10 / 10 / 80 target, not a signed escrow calendar",
+  /10 billion public/i.test(vestingText) &&
+    /10 billion team/i.test(vestingText) &&
+    /80 billion/i.test(vestingText) &&
+    vestingHtml.includes("2027-01-01") &&
+    /not published as escrow/i.test(vestingText),
+);
+check(
+  "authored pages do not lock ten 9B escrows as the public schedule",
+  !/locked as ten/i.test(walletsText) &&
+    !/ten 9 billion Treasury self-escrows is the public/i.test(vestingText),
+);
+
+const lockedNinetyHtml = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  const locked =
+    /holds the 90\s*(?:B|billion).{0,40}escrow/i.test(html) ||
+    /holding the 90\s*(?:B|billion).{0,40}escrow/i.test(html) ||
+    /the 90B(?: \$PND)? vesting escrow/i.test(html);
+  if (locked && !html.includes('data-supply-revision="1"')) {
+    lockedNinetyHtml.push(relative(DIST_DIR, file));
+  }
+}
+check(
+  "pages that still name a 90B escrow are marked as being revised",
+  lockedNinetyHtml.length === 0,
+  lockedNinetyHtml.join(", "),
+);
+
+const holdPage = join(DIST_DIR, "hold", "index.html");
+const holdHtml = existsSync(holdPage) ? readFileSync(holdPage, "utf8") : "";
+check("hold page was built", holdHtml.length > 0);
+check(
+  "hold page forbids seeds, connect-wallet, and claim buttons",
+  /no seed/i.test(asText(holdHtml)) && /connect a wallet/i.test(asText(holdHtml)) && /claim button/i.test(asText(holdHtml)),
+);
+
+const linksPage = join(DIST_DIR, "links", "index.html");
+const linksHtml = existsSync(linksPage) ? readFileSync(linksPage, "utf8") : "";
+check(
+  "official links name site, TOML, and Bithomp only as the list",
+  linksHtml.includes("pond.greenhead.io") &&
+    linksHtml.includes("xrp-ledger.toml") &&
+    linksHtml.includes("bithomp.com/explorer"),
+);
+check(
+  "official links page has no Telegram invite and no DEX trade path",
+  !/t\.me\//i.test(linksHtml) &&
+    !/telegram\.org/i.test(linksHtml) &&
+    !/firstledger\.net\/token/i.test(linksHtml),
+);
+
+const twoPage = join(DIST_DIR, "pnd-and-rpnd", "index.html");
+check(
+  "$PND and $rPND page says $rPND is not launching 1 Oct",
+  existsSync(twoPage) && /not launching on 1 October 2026/i.test(asText(readFileSync(twoPage, "utf8"))),
+);
+
+const discPage = join(DIST_DIR, "discovery", "index.html");
+check(
+  "discovery page exists and does not invent a DEX trade URL",
+  existsSync(discPage) && !/firstledger\.net\/token/i.test(readFileSync(discPage, "utf8")),
+);
+
+const joinInputs = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  if (/<input\b/i.test(html) || /<textarea\b/i.test(html) || /<form\b/i.test(html)) {
+    joinInputs.push(relative(DIST_DIR, file));
+  }
+}
+check("no seed or wallet-connect fields in the HTML", joinInputs.length === 0, joinInputs.join(", "));
+
+const dexHits = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  if (/firstledger\.net\/token/i.test(html) || /xpmarket\.com\/dex/i.test(html) || /xmagnetic\.org\/dex/i.test(html)) {
+    dexHits.push(relative(DIST_DIR, file));
+  }
+}
+check("no guessed DEX trade URLs in HTML", dexHits.length === 0, dexHits.join(", "));
+
+const icon512 = join(DIST_DIR, "icon-512.png");
+const tomlText = existsSync(wellKnown) ? readFileSync(wellKnown, "utf8") : "";
+const tomlHasIcon = /^\s*icon\s*=/m.test(tomlText);
+if (tomlHasIcon) {
+  check(
+    "TOML icon is only set when /icon-512.png is in the build",
+    existsSync(icon512),
+  );
+}
+
+check(
+  "status chip is rendered while pre-launch",
+  config.site.launchStatus === "live" || (existsSync(index) && readFileSync(index, "utf8").includes("nothing issued yet")),
+);
 
 const authoredStale = [];
 for (const url of authoredUrls) {

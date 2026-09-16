@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: docs/open-questions.md
 source_ref: worktree
-source_sha256: 88f578a699cebff96eec59676dc8d91494495c325dc12d5eaada1f791639d291
+source_sha256: 5d696ba77575105adf343b26c1ee284b9896bdd9773e7ce5068924e07ea890c4
 title: Open questions
 url: /open-questions/
 section: Project status
@@ -177,9 +177,11 @@ items 9, 10, and 11 in `pnd/docs/open-questions.md`.
 
 **How do tokens reach holders?**
 
-Documented today: the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole mechanism. `pnd/docs/open-questions.md` explicitly refuses to name a listing or liquidity venue until one is true.
+Documented today: the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole **mechanism**. `pnd/docs/open-questions.md` explicitly refuses to name a listing or liquidity venue until one is true.
 
-Undecided: sale, airdrop, liquidity provision, faucet, or grants; plus vesting, lockups, and allocation. Nothing about allocation exists in any repo.
+High-level $PND split (owner target, **not** a signed schedule and **not** live escrow): **10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01.** Launch **2026-10-01** does not start the holder monthly. November and December 2026 are not holder-unlock months on this target. The earlier rehearsal of ten 9 billion Treasury self-escrows is **not** the public schedule. This is not an airdrop, not a claim button, and not a wallet-connect flow.
+
+Undecided: how those slices actually move (sale, liquidity provision, grants, escrow objects, or something else). Do not invent an airdrop UI, and do not claim XRPL escrow already does the holder monthly.
 
 ### OQ-14
 
@@ -264,7 +266,7 @@ Undecided: what the field should say. This is not purely mechanical — `issuer_
 
 **Bot-ops account: does it exist yet, and is Operations ever further subdivided?**
 
-Documented today: the owner has approved a bot custody split in which any bot automation signs from a dedicated, bounded account — not the Issuer, not Treasury, and not Operations. The recommended shape is a regular key (never a master seed) on a new account funded with 5–10 XRP and no $PND trust line. Operations (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, per [OQ-23](#oq-23)) holds the 10B liquidity allocation and must never double as the bot's account — a compromised bot key there would put that allocation at risk, not just a small bounded float.
+Documented today: the owner has approved a bot custody split in which any bot automation signs from a dedicated, bounded account — not the Issuer, not Treasury, and not Operations. The recommended shape is a regular key (never a master seed) on a new account funded with 5–10 XRP and no $PND trust line. Operations (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, per [OQ-23](#oq-23)) is the liquidity wallet and must never double as the bot's account — a compromised bot key there would put inventory at risk, not just a small bounded float.
 
 Undecided: whether the bot-ops account has been created and funded yet (as of this writing, no fourth address is published in any repo), and whether Operations is ever further subdivided — for example, a separate market-making account distinct from the account that holds the AMM LP position. Neither question blocks the $PND launch.
 
@@ -300,9 +302,11 @@ Also worth noting for [OQ-24](#oq-24): the issuer address carries a vanity `rPND
 
 **Is there a cold/hot split in the live deployment, and what are the account addresses? Decided: yes, and two addresses beyond the issuer are now named.**
 
-The owner has confirmed a three-account topology: **Issuer** (`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, shared per [OQ-22](#oq-22)), **Treasury** (`rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`, holding the 90B $PND vesting escrow), and **Operations** (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, holding the 10B circulating/liquidity allocation, opening the trust line, authorizing $rPND, and creating the AMM pool). `rpnd/docs/issuance.md` prescribes the mechanics — cold issuer for `AccountSet`, issuance, and create; hot accounts for the trust line, authorization, and inventory — and now names both hot-side accounts instead of one.
+The owner has confirmed a three-account topology: **Issuer** (`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, shared per [OQ-22](#oq-22)), **Treasury** (`rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`, named account for supply that is not the trading wallet), and **Operations** (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, liquidity and day-to-day distribution, opening the trust line, authorizing $rPND, and creating the AMM pool). `rpnd/docs/issuance.md` prescribes the mechanics — cold issuer for `AccountSet`, issuance, and create; hot accounts for the trust line, authorization, and inventory — and now names both hot-side accounts instead of one.
 
-**On ledger now, not merely configured:** neither Treasury nor Operations exists yet. `account_info` returns `actNotFound` for both on mainnet. Do not describe either as funded, configured, or holding a trust line until that changes.
+**High-level $PND split, being revised:** 10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01. That is **not** a signed escrow calendar. Do not publish ten 9 billion Treasury self-escrows as the public schedule. Mechanism is [OQ-13](#oq-13).
+
+**On ledger now, not merely configured:** Treasury is funded (~1 XRP as of 2026-09-16) and needs more XRP before launch lockups. Operations does not exist yet — `account_info` returns `actNotFound` on mainnet. Do not describe Operations as funded, configured, or holding a trust line until that changes. Do not describe Treasury as holding dated escrow objects; none exist.
 
 This also answers the "distribution, market making, and treasury should be separated" question this item used to carry: treasury is separated from operations. What is not decided is whether Operations is ever further subdivided, and whether a bot gets its own account — tracked as the new [OQ-25](#oq-25), because a bot must never hold Operations' key.
 

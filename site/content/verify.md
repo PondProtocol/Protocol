@@ -46,12 +46,29 @@ The website host is `{{domain}}`. As of the 2026-09-16 snapshot on [Wallets](/wa
 issuer's on-ledger `Domain` field is that same host. Binding `Domain` can only be changed while
 the issuer can still sign. **Do not blackhole** this account before the $rPND MPT exists.
 
+## Impostor board
+
+Other `PND` issuers already exist on mainnet. Ours versus not us — without naming those
+projects, because some may be legitimate and listing them would read as an accusation:
+
+| | Ours | Not us |
+| --- | --- | --- |
+| Site | `{{domain}}` | Any other host |
+| Issuer | `{{issuerAddress}}` | Any other classic address |
+| Code | `PND` (those three letters, that case) | `Pnd`, `PNDN`, `PNDC`, or `PND` from someone else |
+| Issued? | **No.** Target launch 2026-10-01 | Tokens already trading under `PND` are someone else |
+| `Domain` | `{{domain}}` | Missing, some other host, or a 404 |
+
+A matching name and icon prove nothing. At least one same-code `PND` is blackholed with a dead
+metadata host. Polish is copyable; the address is not.
+
 ## Canonical links to the real $PND
 
 <div class="callout callout-critical">
 
-**Searching for $PND is not a reliable way to find it.** Use these links, from this page, or check
-the issuer address on ledger. Nothing else.
+**Searching for $PND is not a reliable way to find it.** Ticker search is how you get scammed.
+Use [official links](/links/) or the issuer address on ledger. This site will not publish a
+DEX trade URL until $PND exists and a human has loaded the page.
 
 </div>
 
@@ -68,7 +85,7 @@ consequence is uncomfortable and worth stating plainly: **for a new token, a dir
 source you trust is the only dependable route to the real asset.** Search will show you something
 else, and what it shows you may be an impostor with a matching ticker.
 
-Hence this list. It is the most load-bearing thing on this page.
+Hence this list. It is identity — site, TOML, explorer — not a market.
 
 {{canonicalLinks}}
 
