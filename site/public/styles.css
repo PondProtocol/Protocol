@@ -1,42 +1,36 @@
 /* Pond Protocol documentation. Hand-written, no framework, no build step for CSS.
-   Light and dark are both first-class; the palette is one accent hue plus neutrals. */
+   Dark theme only. Hex values are copied from live greenhead.io — homepage computed
+   styles and named tokens on /x402 and /trader — not invented. */
 
 :root {
-  --accent: #0d7a5f;
-  --accent-soft: #e6f4ef;
-  --accent-text: #0b6b53;
-  --critical: #a5401a;
-  --critical-soft: #fdf1ea;
+  /* Homepage header background; .text-[#4A90D9]; --x402-blue / --trader-blue */
+  --accent: #4a90d9;
+  /* /x402 .x402-hero-mark background */
+  --accent-soft: #182536;
+  --accent-text: #4a90d9;
+  /* greenhead.css dark red text (#f87171); --destructive is hsl(0 84% 45%) = #d31212 */
+  --critical: #f87171;
+  --critical-soft: color-mix(in srgb, #f87171 14%, #0a0a0b);
 
-  --bg: #ffffff;
-  --bg-soft: #f7f8f7;
-  --bg-code: #f4f6f5;
-  --text: #1a1f1d;
-  --text-muted: #5c6764;
-  --border: #e2e6e4;
+  /* Homepage computed body background (.dark --background: 270 5% 4%) */
+  --bg: #0a0a0b;
+  /* --x402-card / --trader-card / --overview-card */
+  --bg-soft: #161616;
+  /* --town-card-raised / --overview-card-raised */
+  --bg-code: #1a1a1a;
+  /* Homepage computed body color (.dark --foreground: 240 5% 95%) */
+  --text: #f2f2f3;
+  /* --x402-sub / --trader-sub (computed on /trader body copy) */
+  --text-muted: #999999;
+  /* --x402-border / --trader-border / --overview-border */
+  --border: #2a2a2a;
 
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   --sidebar-w: 17rem;
   --measure: 46rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --accent: #4ecfa6;
-    --accent-soft: #10241d;
-    --accent-text: #6fdcb8;
-    --critical: #f0a184;
-    --critical-soft: #2a1710;
-
-    --bg: #0e1211;
-    --bg-soft: #151a19;
-    --bg-code: #171d1b;
-    --text: #e6ebe9;
-    --text-muted: #97a4a0;
-    --border: #252d2b;
-  }
+  color-scheme: dark;
 }
 
 *,
@@ -144,19 +138,13 @@ a:hover {
   padding: 0.4rem 0.85rem;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
-}
-
-@media (prefers-color-scheme: dark) {
-  .topnav .cta {
-    color: #06120e;
-  }
 }
 
 .topnav .cta:hover {
   background: color-mix(in srgb, var(--accent) 85%, #000);
-  color: #fff;
+  color: #ffffff;
 }
 
 /* ------------------------------------------------------------------ banner */
@@ -581,20 +569,14 @@ pre code {
   padding: 0.62rem 1.35rem;
   border-radius: 8px;
   background: var(--accent);
-  color: #fff;
+  color: #ffffff;
   font-weight: 650;
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  .button {
-    color: #06120e;
-  }
-}
-
 .button:hover {
   background: color-mix(in srgb, var(--accent) 85%, #000);
-  color: #fff;
+  color: #ffffff;
 }
 
 /* -------------------------------------------------------- provenance, footer */
