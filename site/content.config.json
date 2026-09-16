@@ -33,7 +33,7 @@
     "$comment_domain": [
       "This is the WEBSITE HOST, not the issuer's on-ledger Domain field.",
       "",
-      "  domain            = pond.greenhead.io  (Replit Static Deployment, custom domain).",
+      "  domain            = pond.greenhead.io  (Replit Autoscale, custom domain).",
       "  on-ledger Domain  = unset, and it stays unset until CORS is verified on the live",
       "                      TOML path. Do not treat this hostname as AccountRoot Domain,",
       "                      and do not set Domain as part of attaching this host.",

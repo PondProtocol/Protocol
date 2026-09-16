@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: docs/open-questions.md
 source_ref: worktree
-source_sha256: 421d2e18d8e9ed0d4018cf7983ebb3b96a3bf8717859e726f3e6afcd87d56933
+source_sha256: 88f578a699cebff96eec59676dc8d91494495c325dc12d5eaada1f791639d291
 title: Open questions
 url: /open-questions/
 section: Project status
@@ -154,8 +154,9 @@ Undecided: the legal entity that issues, and the concrete custody arrangement â€
 
 **Canonical public domain and production asset URLs.**
 
-Documented today: the **website host** is `pond.greenhead.io` (Replit Static Deployment, custom
-domain). That host is filled into `site/content.config.json` and
+Documented today: the **website host** is `pond.greenhead.io` (Replit Autoscale, custom
+domain; Git Pull / Push / Sync then Republish, same buttons as `greenhead.io`). That host is
+filled into `site/content.config.json` and
 `site/public/.well-known/xrp-ledger.toml`. `[[TOKENS.URLS]]` website and verify links use
 `https://pond.greenhead.io`. On ledger the issuer has no `Domain` at all, and it stays unset until
 CORS is verified on the live TOML path. Do not set `Domain` as part of attaching this host.
