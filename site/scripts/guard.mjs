@@ -15,6 +15,7 @@ import {
   IMPORTED_DIR,
   SITE_ROOT,
   WELL_KNOWN_PATH,
+  WELL_KNOWN_VISIBLE_PATH,
   bodyHash,
   fail,
   loadConfig,
@@ -54,6 +55,19 @@ check(
   existsSync(wellKnown) && statSync(wellKnown).isFile(),
   existsSync(wellKnown) ? "" : "missing from build output",
 );
+
+const wellKnownVisible = join(DIST_DIR, WELL_KNOWN_VISIBLE_PATH);
+check(
+  `/${WELL_KNOWN_VISIBLE_PATH} exists as the non-dot twin`,
+  existsSync(wellKnownVisible) && statSync(wellKnownVisible).isFile(),
+  existsSync(wellKnownVisible) ? "" : "missing from build output",
+);
+if (existsSync(wellKnown) && existsSync(wellKnownVisible)) {
+  check(
+    "non-dot well-known twin matches the XLS-26 file",
+    readFileSync(wellKnown).equals(readFileSync(wellKnownVisible)),
+  );
+}
 
 // 2. No forbidden marker anywhere in the output.
 for (const marker of config.forbiddenMarkers.strings) {

@@ -17,10 +17,10 @@ before acting on anything here.
 
 ## 1. The recommendation
 
-**Host the site on Replit, built from this repository, at `https://pond.greenhead.io`.** Import
-`PondProtocol/Protocol`, publish as a **Static** deployment (public directory `site/dist`, build
-`cd site && npm ci && npm run check`), and attach the custom domain `pond.greenhead.io`. The Run
-button uses the existing Node static server in `site/scripts/serve.mjs`.
+**Host the site on Replit, built from this repository, at `https://pond.greenhead.io`.** Publish
+as **Autoscale** with build `cd site && npm ci && npm run check` and run
+`cd site && node scripts/serve.mjs`. Do not publish as Static: Replit Static omits
+`.well-known/` (verified 2026-09-16). The custom domain is already `pond.greenhead.io`.
 
 The issuer's on-ledger `Domain` field stays **unset**. CORS on `/.well-known/xrp-ledger.toml` has
 to be confirmed against the live host with `npm run verify:live -- pond.greenhead.io` before that
@@ -29,12 +29,10 @@ field would mean anything. This runbook does not include setting `Domain`.
 `pond.greenhead.io` is a name the owner already holds. That is a better permanence story than
 `*.pages.dev`, which Cloudflare controls. It is still not a reason to bind `Domain` today.
 
-The CORS header is still the criterion that decides whether wallets can read the TOML. On Replit
-Static it comes from `[[deployment.responseHeaders]]` in [`.replit`](../.replit).
+The CORS header is still the criterion that decides whether wallets can read the TOML. On Autoscale
+it comes from `site/scripts/serve.mjs`. On a Static fallback it comes from
+`[[deployment.responseHeaders]]` in [`.replit`](../.replit) after a rewrite onto a non-dot twin.
 `site/public/_headers` is kept for a Cloudflare Pages fallback and is **not** what Replit reads.
-Delete the `.replit` header block and the site still looks perfect while every browser-based
-wallet silently loses the metadata. That is why `npm run verify:live` is a required step after
-DNS is attached.
 
 ### First, the framing
 
@@ -406,9 +404,10 @@ name = "Access-Control-Allow-Origin"
 value = "*"
 ```
 
-`Content-Type` is not on their reserved-headers list, so it is set on the same path. The editor
-**Run** button uses `site/scripts/serve.mjs`, which already sends both headers. If Static CORS or
-directory indexes fail live, switch Publishing to **Autoscale** and keep that Run command.
+`Content-Type` is not on their reserved-headers list, so it is set on the same path. **Do not
+publish as Static.** Verified 2026-09-16: Replit Static omits every dotfile (`.well-known/` and
+`.nojekyll` 404; `/_headers` 200). Autoscale with `serve.mjs` is the production type. A non-dot
+twin plus rewrite is the Static fallback only.
 
 The earlier objections (extra vendor, unverified pricing, static as a secondary product mode)
 still exist. The owner overrode them: `pond.greenhead.io` is already a name they hold, the
@@ -550,12 +549,18 @@ cd site && (test -d node_modules || npm ci) && npm run check && npm run serve
 
 | Publishing field | Paste this |
 | --- | --- |
-| **Deployment type** | Static |
+| **Deployment type** | **Autoscale** (not Static — Static omits `.well-known/`) |
 | **Build command** | `cd site && npm ci && npm run check` |
-| **Public directory** | `site/dist` |
+| **Run command** | `cd site && node scripts/serve.mjs` |
+| **Public directory** | `site/dist` (Static fallback only) |
 
-CORS on the identity path is **not** supplied by `site/public/_headers` on Replit. It is supplied
-by `[[deployment.responseHeaders]]` in `.replit`. After DNS is attached:
+Replit Static Deployments omit dotfiles. Verified 2026-09-16 on `pond.greenhead.io`:
+`/.well-known/xrp-ledger.toml` and `/.nojekyll` returned the HTML 404 page, while `/_headers` and
+`/robots.txt` from the same `public/` copy returned 200. Autoscale with `serve.mjs` serves the
+real `/.well-known/` path. The build also writes `well-known/xrp-ledger.toml` (no leading dot)
+and `.replit` rewrites the XLS-26 URL onto it if a Static publish is retried.
+
+CORS on Autoscale comes from `serve.mjs`. After republish:
 
 ```bash
 cd site && npm run verify:live -- pond.greenhead.io
@@ -585,8 +590,9 @@ It is the one edit on the site that could mislead a buyer, so it goes last.
    ([GitHub application settings](https://github.com/settings/applications)).
 2. Press **Run** once. Confirm `/.well-known/xrp-ledger.toml` returns 200 in the preview.
 3. **Publish** (top right, or **Replit Cloud → Publishing**). **Adjust settings**: Deployment
-   type **Static**, build and public directory from the table above. Publish. The Domains tab
-   appears only after a successful deployment.
+   type **Autoscale**, build `cd site && npm ci && npm run check`, run
+   `cd site && node scripts/serve.mjs`. Publish. The site is already imported; this is a
+   republish after pulling `main`.
 4. **Publishing → Domains → Connect your own domain** → enter `pond.greenhead.io`. Prefer guided
    DNS setup. Otherwise copy the `A` record and the `replit-verify=...` `TXT` record into
    `greenhead.io` DNS and **leave the TXT record in place** (certificate renewal depends on it).
@@ -601,8 +607,8 @@ are gone before changing DNS.
 
 ### What is still on the owner
 
-1. **Import Protocol into Replit** and publish Static with the table above. Attach
-   `pond.greenhead.io` only after a successful deployment.
+1. **Pull `main` in the existing Replit app and republish as Autoscale** with the table above.
+   Do not stay on Static. Leave `pond.greenhead.io` attached.
 2. **Turn on branch protection on `main`** requiring the `staleness` and `build` checks. Replit
    builds from Publish / a push and does not run GitHub Actions, so a direct push can publish a
    stale snapshot of sibling-repo docs.
@@ -621,7 +627,7 @@ are gone before changing DNS.
 | Cloudflare Pages building a private repo on the free plan | **Strongly implied, not directly confirmed.** Cloudflare's limits page states you "can manage both public and private repositories" without impacting the Pages site, and lists no plan gate on repository visibility. | Connect this repository in the Cloudflare dashboard before committing to the approach. It fails immediately and harmlessly if not permitted. |
 | Whether GitHub Pages can be enabled on a repository named `.github` | **Untested.** Nothing in the docs forbids it; none of ten organisations checked has it enabled. | Enable Pages on a throwaway org's `.github` repo. Not worth doing, since §3.2 recommends against it regardless. |
 | Cause of the missing CORS header on one `developers.cloudflare.com` `.well-known` path | **Unexplained.** Reproduced twice. Malformed lines in their `_headers` are a plausible but unconfirmed cause. | Not worth chasing. The actionable conclusion — verify live responses, never infer from the file — holds either way. |
-| Replit Static CORS and Content-Type on `/.well-known/xrp-ledger.toml` | **Unverified live.** Config is committed in `.replit`; Replit does not read `_headers`. | After attaching `pond.greenhead.io`: `cd site && npm run verify:live -- pond.greenhead.io` |
+| Replit Static serving of `/.well-known/` | **Fails.** 2026-09-16: `/.well-known/xrp-ledger.toml` and `/.nojekyll` 404; `/_headers` 200. | Publish Autoscale with `serve.mjs`, then `cd site && npm run verify:live -- pond.greenhead.io` |
 | That the FirstLedger route for $PND is `/token-v3/<issuer>/PND` | **Unverified**, and marked unverified on the site. The route has moved once already and the token does not exist yet. | Load it in a browser once $PND is issued, then set `status: "verified"` in `site/content.config.json`. |
 
 ---
