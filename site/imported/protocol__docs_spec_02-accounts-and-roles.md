@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: docs/spec/02-accounts-and-roles.md
 source_ref: worktree
-source_sha256: ff7c90b2cc7212c4ff0eca6d862d8246ab0cb94917946c3fa687db0d75f258be
+source_sha256: 5dca4bfc3effb42ffea78397ba2b6256bd5ff05f68c5723aa1e2ee01b30db380
 title: 02 — Accounts and roles
 url: /spec/accounts-and-roles/
 section: Specification
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # 02 — Accounts and roles
 
@@ -14,17 +14,23 @@ Skeleton. See [conventions](README.md#conventions) for the Documented / Open / T
 
 ## 2.1 Roles
 
-**Documented** (`rpnd/docs/issuance.md`, `rpnd/src/cli.ts`):
+**Documented** (`rpnd/docs/issuance.md`, `rpnd/src/cli.ts`, owner confirmation):
 
-**Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The $PND issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, funded on mainnet with **none of those transactions submitted yet** — see [architecture Live state](../architecture.md#live-state).
+**Issuer (cold).** Holds issuing authority. Submits `AccountSet` to configure itself, `Payment` to issue $PND, `MPTokenIssuanceCreate` to bring $rPND into existence, and `Payment` to mint $rPND. Its seed is meant to stay offline in production. Read from `ISSUER_SEED`. The issuer is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, **issuing both $PND and $rPND** ([OQ-22](../open-questions.md#oq-22), decided). It is funded on mainnet with **none of those transactions submitted yet** — see [architecture Live state](../architecture.md#live-state).
 
-**Operational (hot).** Holds distributable inventory of both assets. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, and is the source account for routine distribution payments. Read from `OPERATIONAL_SEED`.
+**Treasury.** Holds the 90B $PND vesting escrow and signs the `EscrowCreate` transactions that lock it. `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` ([OQ-23](../open-questions.md#oq-23), decided). **Not funded on ledger** — `account_info` returns `actNotFound` on mainnet. Holds no bot-reachable key of any kind; the escrow releases it eventually performs are permissionless, so nothing signs from Treasury except the owner's own `EscrowCreate` transactions.
+
+**Operations (hot).** Holds the 10B circulating/liquidity inventory. Submits `TrustSet` for `PND` and `MPTokenAuthorize` for $rPND, is the source account for routine distribution payments, and creates the AMM pool. `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` ([OQ-23](../open-questions.md#oq-23), decided). **Not funded on ledger** — `account_info` returns `actNotFound` on mainnet. Read from `OPERATIONAL_SEED` in the toolkit. **Operations is not a bot account.** It carries the 10B liquidity allocation; a bot must never hold a key on it.
+
+**Bot-ops (recommended, not created).** Any bot or automation gets its own dedicated, bounded account — a regular key, never a master seed, on a new account funded with 5–10 XRP and no $PND trust line. Not the Issuer, not Treasury, and not Operations. No address is published yet; creating and funding it is an owner action, not a decision that is still open ([OQ-25](../open-questions.md#oq-25)).
 
 **Holder.** Any account that has opted in — `TrustSet` for $PND, `MPTokenAuthorize` for $rPND. The toolkit supports an optional `HOLDER_SEED` for exercising the holder path.
 
-**Open:** whether one account issues both assets. The toolkit signs both with the single `ISSUER_SEED` wallet, and `rpnd`'s README and token spec both state the assets share an issuing account — but that describes the tooling, and the production $rPND issuer is an open decision — [OQ-22](../open-questions.md#oq-22).
+**Decided, formerly open:** whether one account issues both assets — yes, per [OQ-22](../open-questions.md#oq-22). The toolkit's single-`ISSUER_SEED` design already matched this; it is now a deployment decision rather than only a description of the tooling.
 
-**Open:** whether the live deployment separates a hot account at all, and its public address — [OQ-23](../open-questions.md#oq-23). Nothing on ledger reveals one yet: the issuer has no trust lines, so no counterparty account is visible from it.
+**Decided, formerly open:** whether the live deployment separates a hot account, and its public address — yes, and it splits further than a single hot account: Treasury and Operations are two separate named addresses, per [OQ-23](../open-questions.md#oq-23). Neither is visible on ledger yet — the issuer still has no trust lines, so no counterparty account is discoverable from it — but both addresses are published above and in the token repos.
+
+**Open:** whether the bot-ops account exists yet, and whether Operations is ever further subdivided — [OQ-25](../open-questions.md#oq-25).
 
 ## 2.2 Authority
 
@@ -40,8 +46,12 @@ Capability flags move in one direction only: `MPTokenIssuanceSet` can turn a fla
 
 **Open:** the actual custody mechanism — hardware wallet, XRPL multi-sign with a defined quorum, `SetRegularKey` rotation, or a third-party custodian — and the legal entity that controls it — [OQ-11](../open-questions.md#oq-11). Neither multi-sign nor regular-key support exists in the toolkit today, so either choice implies work in `rpnd`.
 
+**Decided, narrower than the full custody question:** any bot or automation signs from the dedicated bot-ops account in [2.1](#21-roles) using a regular key, never a master seed, and never a key on the Issuer, Treasury, or Operations. This does not answer the broader custody question above — hardware wallet vs. multi-sign vs. custodian for the Issuer itself is still [OQ-11](../open-questions.md#oq-11) — it only fixes where a bot's key may live.
+
 **Open:** key rotation and compromise-response procedure. Nothing is documented.
 
 ## 2.4 Account count and separation
 
-**Open:** whether one operational account is the intended end state, or whether distribution, market making, and treasury should be separate accounts — [OQ-23](../open-questions.md#oq-23). The toolkit contemplates exactly one.
+**Decided, formerly open:** treasury is separate from operations — [OQ-23](../open-questions.md#oq-23). The toolkit's config still contemplates exactly one hot account (`OPERATIONAL_SEED`); the deployment topology now has two, and the toolkit needs a second seed/address parameter (for Treasury) before it can drive both.
+
+**Open:** whether Operations is ever further subdivided — for example, a separate market-making account distinct from the one holding the AMM LP position — and whether the bot-ops account in [2.1](#21-roles) has been created. Both are [OQ-25](../open-questions.md#oq-25).

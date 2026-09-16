@@ -2,7 +2,7 @@
 source_repo: pnd
 source_path: README.md
 source_ref: main
-source_sha256: 1b6852400e8f8013fcac88b3650b931381e1ce3b735d47e0b6b519ac1690603b
+source_sha256: 1250672fbee8be95fd9386da06e076db9a5debb6d4782af27edcf5110c6a7be1
 title: Overview
 url: /pnd/overview/
 section: $PND — issued currency
@@ -18,7 +18,7 @@ This repository is the token-facing reference for $PND — what the asset is, ho
 | --- | --- |
 | Ledger type | Issued currency (IOU) on a trust line |
 | Currency code | `PND` (standard 3-character code) |
-| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — funded on mainnet, no configuration applied |
+| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — funded on mainnet, no configuration applied. **Settled: this account issues both $PND and $rPND** — see [`docs/pnd-vs-rpnd.md`](docs/pnd-vs-rpnd.md#one-issuing-account-or-two) |
 | Target supply | 100,000,000,000 $PND — an issuer policy target, not a ledger-enforced cap |
 | Networks in use | XRPL Devnet for rehearsal; mainnet issuance is not live |
 | Transfer fee | `TransferRate` 0 in the current issuer config |
@@ -40,7 +40,10 @@ Confirm the state yourself with `account_info` against the issuer rather than tr
 The issuance model follows standard XRPL gateway practice:
 
 1. The **issuer** sets its account flags once (`AccountSet`). It is the address that appears in every $PND amount: `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
-2. An **operational (hot) account** opens a trust line to the issuer, receives the initial issuance, and distributes from there. The published address above is the issuer; the operational address is a TODO, because the cold/hot split has not been made yet.
+2. The single "operational (hot) account" this README used to describe as a TODO is now two named accounts, decided by the owner:
+   - **Treasury** — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`. Holds the 90 billion $PND vesting escrow ([`docs/token-spec.md`](docs/token-spec.md)). Not yet funded — `account_info` returns `actNotFound` on mainnet.
+   - **Operations** — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`. Opens the trust line, receives the 10 billion circulating allocation, creates the AMM pool, and runs day-to-day distribution. Not yet funded — `account_info` returns `actNotFound` on mainnet.
+   Both addresses are the owner's decision, not yet applied on ledger: neither account exists yet. Do not describe them as funded, configured, or holding a trust line until `account_info` confirms it.
 3. Any other **holder** must submit their own `TrustSet` for `PND` / issuer before they can receive the token. There is no way for the issuer to push $PND to an account that has not opened a trust line.
 4. Issuance is a `Payment` from the issuer. New $PND exists the moment the issuer pays it out, and the outstanding amount is the sum of the issuer's negative trust line balances rather than a stored supply field.
 
@@ -56,6 +59,7 @@ What that means in practice:
 
 - **Outstanding supply is observable.** `gateway_balances` on the issuer reports its obligations at a given ledger, so anyone can check the live figure against the 100 billion target without trusting a listing page. Today it reports no obligations at all, because nothing has been issued.
 - **The cap is enforced by whatever the issuer does with its keys**, which is operational discipline. Some designs make it verifiable — minting the full supply once and then blackholing the issuer makes the number permanent and checkable — and others keep the issuer live for controlled issuance, which keeps flexibility and leaves the cap as a promise. Those are opposing choices and the owner has not made one; both, plus the exact enforcement mechanism, are open items in [`docs/open-questions.md`](docs/open-questions.md).
+- **Blackholing this issuer has an ordering constraint now that the shared-issuer question is settled.** The same account is also the designated $rPND issuer, and a blackholed account can never sign again — so if $rPND is ever going to exist, its `MPTokenIssuanceCreate` must happen *before* $PND's issuer is ever blackholed, never after. See [`docs/pnd-vs-rpnd.md`](docs/pnd-vs-rpnd.md#one-issuing-account-or-two) for the full constraint, including why the current $rPND config cannot even be created on mainnet yet.
 
 [`docs/token-spec.md`](docs/token-spec.md) covers how the figure interacts with precision, which matters above 1 billion.
 

@@ -13,7 +13,11 @@
 # Limits: 100 rules, 2,000 characters per line.
 #
 # After any host or DNS change, verify rather than assume:
-#     cd site && npm run verify:live -- <domain>
+#     cd site && npm run verify:live -- pondprotocol.pages.dev
+#
+# The path-specific block below is what covers /.well-known/xrp-ledger.toml.
+# XLS-26 asks for Access-Control-Allow-Origin: * and accepts text/plain or
+# application/toml. text/plain is the usual XLS-26 choice; this rule sets it.
 #
 # A note from real-world observation: a malformed line in a _headers file can stop later rules
 # from applying, and the deploy still succeeds. Header rules are not verified until you fetch the
@@ -23,7 +27,7 @@
 # in this file: without it, wallets that resolve token metadata in the browser cannot read it.
 /.well-known/xrp-ledger.toml
   Access-Control-Allow-Origin: *
-  Content-Type: application/toml; charset=utf-8
+  Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=300
   X-Content-Type-Options: nosniff
 

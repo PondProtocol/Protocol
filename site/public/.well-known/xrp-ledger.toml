@@ -1,23 +1,29 @@
 # XLS-26 token metadata for Pond Protocol.
 #
-# Served at https://<domain>/.well-known/xrp-ledger.toml
+# Served at https://pondprotocol.pages.dev/.well-known/xrp-ledger.toml
 #
-# THIS FILE IS NOT READY TO PUBLISH. Three things must be settled first, and each one is marked
-# TODO below:
+# WEBSITE HOST vs ON-LEDGER DOMAIN — these are not the same thing.
 #
-#   1. The domain. It is not chosen yet. It appears here and in site/content.config.json.
-#   2. The icon. It must be a real, square, permanently hosted image.
-#   3. The issuer's on-ledger Domain field, which must be set to the same domain with AccountSet
-#      and stored as the hex of the LOWERCASE ASCII. A mixed-case value silently breaks the
-#      two-way link that makes everything in this file authoritative.
+#   Website host (this file):  pondprotocol.pages.dev
+#     Lowercase, no scheme. This is the Cloudflare Pages hostname the docs site
+#     deploys to. HTTPS URLs in [[TOKENS.URLS]] use https://pondprotocol.pages.dev.
 #
-# Order of operations, which matters:
-#   a. Choose the domain and register it for as long as the registrar allows.
-#   b. Deploy this file and confirm the headers:  cd site && npm run verify:live -- <domain>
-#   c. Only then submit AccountSet with Domain = <domain>.
+#   On-ledger issuer Domain:   UNSET, and it stays unset.
+#     CORS on this path has not been verified against a live deploy. XLS-26 is
+#     not a two-way link until Domain matches this host AND the file is served
+#     with Access-Control-Allow-Origin: *.
 #
-# Doing (c) before (b) publishes a pointer to a file that is not being served correctly, and the
-# ecosystem caches what it finds.
+# pondprotocol.pages.dev is a Cloudflare platform hostname, not a domain Pond
+# Protocol registers and renews. If Domain is later set to it, that accepts a
+# platform dependency that can only be changed while the issuer can still sign.
+# After blackholing, a pages.dev host going away or being reassigned is
+# permanent.
+#
+# Remaining TODOs in this file (each marked TODO below where it applies):
+#   1. icon — a real square image on a permanent host.
+#   2. [[PRINCIPALS]] — omitted on purpose. It attaches a real name and email.
+#      XLS-26 does not require it.
+#   3. $rPND stanza — absent until MPTokenIssuanceCreate is validated.
 #
 # Field reference: https://xls.xrpl.org/xls/XLS-0026-iou-token-metadata.html
 
@@ -35,17 +41,15 @@ asset_class = "memes"
 # TODO: replace with a real square icon on a permanent host. Must include the protocol
 #       (https:// or ipfs://). Leave commented until it resolves - a broken icon URL is worse
 #       than no icon field, because consumers cache what they fetch.
-# icon = "https://REPLACE-WITH-YOUR-DOMAIN.example/icon-512.png"
+# icon = "https://pondprotocol.pages.dev/icon-512.png"
 
 [[TOKENS.URLS]]
-# TODO: replace REPLACE-WITH-YOUR-DOMAIN.example once the domain is chosen.
-url = "https://REPLACE-WITH-YOUR-DOMAIN.example"
+url = "https://pondprotocol.pages.dev"
 type = "website"
 title = "Official website"
 
 [[TOKENS.URLS]]
-# TODO: replace with the real documentation URL once the domain is chosen.
-url = "https://REPLACE-WITH-YOUR-DOMAIN.example/verify/"
+url = "https://pondprotocol.pages.dev/verify/"
 type = "document"
 title = "Verify the issuer"
 
@@ -59,3 +63,4 @@ title = "Verify the issuer"
 
 # [[PRINCIPALS]] is intentionally omitted. It attaches a real name and email address to the
 # project, which is a disclosure decision rather than a technical one. XLS-26 does not require it.
+# TODO: decide whether to include [[PRINCIPALS]] once a real contact is chosen. Do not invent one.

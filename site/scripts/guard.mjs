@@ -106,20 +106,31 @@ for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
 }
 check("no navigable link points at a placeholder domain", linkHits.length === 0, linkHits.join(", "));
 
-// 6. The identity anchor must not claim a placeholder domain as its own website.
+// 6. The identity anchor names the website host and does not claim a placeholder.
 //
-// While the domain is undecided the file is expected to carry the placeholder plus TODO markers,
-// so this check only asserts that the TODOs are still there to be found. verify-live.mjs is what
-// refuses a real deployment that still has them.
+// Remaining TODOs (icon, PRINCIPALS) are still expected. The website host is not the issuer's
+// on-ledger Domain field — that stays unset. verify-live.mjs is what checks a real deploy.
 if (existsSync(wellKnown)) {
   const toml = readFileSync(wellKnown, "utf8");
   const hasPlaceholder = /REPLACE-WITH-YOUR-DOMAIN/.test(toml);
-  const hasTodo = /TODO/.test(toml);
+  const host = config.site.domain;
   check(
-    "xrp-ledger.toml placeholders are marked TODO",
-    !hasPlaceholder || hasTodo,
-    "the file contains a placeholder domain but no TODO marker, so nothing flags it before deploy",
+    "xrp-ledger.toml does not use a placeholder domain",
+    !hasPlaceholder,
+    "REPLACE-WITH-YOUR-DOMAIN is still in the file",
   );
+  if (host) {
+    check(
+      "xrp-ledger.toml names the configured website host",
+      toml.includes(host) && toml.includes(`https://${host}`),
+      `expected ${host} and https://${host} in the TOML`,
+    );
+    check(
+      "xrp-ledger.toml does not claim the on-ledger Domain is set",
+      /on-ledger issuer Domain:\s+UNSET/i.test(toml),
+      "the file must keep website host and on-ledger Domain distinct",
+    );
+  }
 }
 
 // 7. Pre-launch wording must be present while launchStatus is not live.
@@ -189,13 +200,17 @@ check(
 //      The verify page describes the PND-code collisions as a pattern on purpose. Some of those
 //      projects may be entirely legitimate, their metrics change constantly, and naming them would
 //      be an accusation this site has no basis to make. This check makes that a property of the
-//      build rather than an editorial habit: any classic XRPL address that is not the canonical
-//      issuer fails it.
+//      build rather than an editorial habit: any classic XRPL address that is not this project's
+//      own published accounts (issuer plus knownAddresses) fails it.
 const addressPattern = /\br[1-9A-HJ-NP-Za-km-z]{24,34}\b/g;
+const allowedAddresses = new Set([
+  config.site.issuerAddress,
+  ...(config.site.knownAddresses ?? []),
+]);
 const foreignAddresses = new Map();
 for (const file of textFiles) {
   for (const [match] of readFileSync(file, "utf8").matchAll(addressPattern)) {
-    if (match === config.site.issuerAddress) continue;
+    if (allowedAddresses.has(match)) continue;
     // The null address is what blackholing sets a regular key to. Naming it identifies no project.
     if (/^rrrrrrrrrrrrrrrrrrrr[A-Za-z0-9]*$/.test(match)) continue;
     if (!foreignAddresses.has(match)) foreignAddresses.set(match, relative(DIST_DIR, file));

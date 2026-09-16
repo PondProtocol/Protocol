@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: docs/open-questions.md
 source_ref: worktree
-source_sha256: e3ee47d86100c6e706e41433f2fd6da6ca6dcd79c1cdc3d69460c95a3f142a3f
+source_sha256: 4059f422bcd3155ea076387dea94e3d8bdbd5b91ce675234fd3be11862eebb92
 title: Open questions
 url: /open-questions/
 section: Project status
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Open questions and TODOs
 
@@ -61,11 +61,10 @@ Citations below name files by path. All of them are on `main` in their repos:
 | [OQ-19](#oq-19) | Pre-mainnet audit of issuance and custody. | [spec/07](spec/07-security-considerations.md) |
 | [OQ-20](#oq-20) | Repo visibility and license choice for a spec repo. | This repo |
 | [OQ-21](#oq-21) | **Supply scale relationship between $PND and $rPND.** | [spec/03](spec/03-issuance-and-supply.md), [spec/04](spec/04-token-relationship.md) |
-| [OQ-22](#oq-22) | Does the same account issue $rPND? | [spec/02](spec/02-accounts-and-roles.md) |
-| [OQ-23](#oq-23) | Is there a cold/hot split in the live deployment? | [spec/02](spec/02-accounts-and-roles.md) |
 | [OQ-24](#oq-24) | Should on-ledger `issuer_name` read "Pond Protocol"? | [spec/05](spec/05-metadata-and-discovery.md) |
+| [OQ-25](#oq-25) | Bot-ops account: does it exist yet, and is Operations ever further subdivided? | [spec/02](spec/02-accounts-and-roles.md) |
 
-Decided: [OQ-02](#oq-02), [OQ-06](#oq-06), [OQ-15](#oq-15) (sequencing), [OQ-16](#oq-16). Completed: [TD-06](#td-06), [TD-07](#td-07), [TD-08](#td-08), [TD-11](#td-11).
+Decided: [OQ-02](#oq-02), [OQ-06](#oq-06), [OQ-15](#oq-15) (sequencing), [OQ-16](#oq-16), [OQ-22](#oq-22) (shared issuer), [OQ-23](#oq-23) (Treasury/Operations split and addresses). Completed: [TD-06](#td-06), [TD-07](#td-07), [TD-08](#td-08), [TD-11](#td-11).
 
 Every item that touches a configured value now distinguishes what the config intends from what is on ledger now. The verified snapshot and the queries to refresh it are in [architecture Live state](architecture.md#live-state); [TD-12](#td-12) tracks auditing the other repos for the same error.
 
@@ -155,9 +154,24 @@ Undecided: the legal entity that issues, and the concrete custody arrangement �
 
 **Canonical public domain and production asset URLs.**
 
-Documented today: placeholders. `icon` is `example.com/rpnd-icon.png`, `uris[0].uri` is `https://example.com/rpnd`, the toml template has `replace-me@example.com`, and `ISSUER_DOMAIN` is empty. On ledger the issuer has no `Domain` at all, so there is no verifiable link between the account and any domain today. `rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the file. Now that [OQ-02](#oq-02) is decided, the domain should be a Pond Protocol one.
+Documented today: the **website host** is `pondprotocol.pages.dev` (Cloudflare Pages, free). That
+host is filled into `site/content.config.json` and `site/public/.well-known/xrp-ledger.toml`.
+`[[TOKENS.URLS]]` website and verify links use `https://pondprotocol.pages.dev`. On ledger the
+issuer has no `Domain` at all, and it stays unset until CORS is verified on the live TOML path.
+`rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the
+file — the file will be served; the two-way bind will not exist while `Domain` is unset.
 
-Undecided: the domain itself. Tracked as items 9, 10, and 11 in `pnd/docs/open-questions.md`.
+`$rPND` production URLs are still placeholders: `icon` is `example.com/rpnd-icon.png` and
+`uris[0].uri` is `https://example.com/rpnd`. The TOML has no `[[PRINCIPALS]]` (a disclosure
+decision) and no icon yet.
+
+`pondprotocol.pages.dev` is a Cloudflare platform hostname, not a domain Pond Protocol registers.
+Binding the on-ledger `Domain` to it later would accept a platform dependency that can only be
+changed while the issuer can still sign.
+
+Undecided: whether a registered domain later replaces `pages.dev` as the website host; whether
+`Domain` is ever set, and to which host; the icon; `[[PRINCIPALS]]`. Tracked as items 9, 10, and 11
+in `pnd/docs/open-questions.md`.
 
 ### OQ-13
 
@@ -195,7 +209,7 @@ Decided, and consistent across repos: `rpnd/config/tokens.json` and `rpnd/src/is
 
 Still open: how drift is *detected* rather than merely adjudicated. Three documents in three repos now restate the same config values by hand. `pnd` ships `scripts/check-docs.mjs`; this repo has no CI ([TD-10](#td-10)). Worth deciding whether a shared check reads `config/tokens.json` and verifies the prose, and where it lives.
 
-A live example of exactly this drift: `rpnd`'s README states that both assets "come from the same issuing account" and `rpnd/docs/rpnd-spec.md` says the same, while the owner treats the $rPND issuer as undecided — see [OQ-22](#oq-22).
+A past example of exactly this drift, now resolved: `rpnd`'s README and `docs/rpnd-spec.md` stated that both assets "come from the same issuing account" while this page still recorded the $rPND issuer as undecided. The owner has since confirmed the shared issuer — see [OQ-22](#oq-22) — so the two now agree.
 
 ### OQ-18
 
@@ -238,24 +252,6 @@ Undecided: whether the two figures should relate, and if so how. As they stand t
 
 Not a parameter conflict today, and not launch-blocking: the $rPND figures have never been issued and are explicitly provisional, and **$PND launches first** ([OQ-15](#oq-15)). Treat this as an input to the $rPND tokenomics work, which owns the answer. Related: [OQ-03](#oq-03), the same question in mechanism terms rather than numbers.
 
-### OQ-22
-
-**Does the same account issue $rPND?**
-
-Documented today: `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is the $PND issuer, and `account_objects` on it is empty, so no `MPTokenIssuance` exists from it — the question is still fully open on ledger. The toolkit signs every issuance transaction for both assets with the single wallet from `ISSUER_SEED`, and `rpnd`'s README and `docs/rpnd-spec.md` both state that the two assets come from the same issuing account. `pnd/docs/pnd-vs-rpnd.md` is more careful, listing "no guarantee the two are issued by the same account, beyond the operator choosing to do so" among the things the pairing field does not establish.
-
-Undecided: whether the production $rPND issuance actually comes from that account or a separate one. Until it is settled, `rpnd`'s statement is a description of the tooling, not of a deployment decision — one of the two needs correcting, which makes this an instance of [OQ-17](#oq-17). A shared issuer couples the two assets' key risk and their `AccountSet` configuration; separate issuers decouple them but need a second custody arrangement.
-
-Also worth noting for [OQ-24](#oq-24): the issuer address carries a vanity `rPND` prefix. Unlike metadata, an address cannot be rebranded — changing it means a new account and a new asset identity for $PND.
-
-### OQ-23
-
-**Is there a cold/hot split in the live deployment, and what is the operational address?**
-
-Documented today: `rpnd/docs/issuance.md` prescribes the split — cold issuer for `AccountSet`, issuance, and create; hot operational account for the trust line, authorization, and inventory. The toolkit reads both from separate seeds. `pnd/docs/token-spec.md` and `pnd/docs/open-questions.md` list the operational address as unpublished.
-
-Undecided: whether the deployment behind `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` actually has a separate operational account, and if so its public address. Also whether one operational account is the intended end state or whether distribution, market making, and treasury should be separated.
-
 ### OQ-24
 
 **Should the on-ledger `issuer_name` read "Pond Protocol"?**
@@ -263,6 +259,14 @@ Undecided: whether the deployment behind `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` ac
 Documented today: prose across all four repos now uses Pond Protocol branding, and `rpnd`'s LICENSE copyright has been aligned. The on-ledger metadata has **not** followed: `config/tokens.json` still has `product: "rPND"` and `issuerName: "rPND"`, so the XLS-89 `issuer_name` field would publish `rPND`. `rpnd/docs/rpnd-spec.md` flags this as an owner decision rather than a docs edit, "because it changes the encoded metadata blob and its byte count."
 
 Undecided: what the field should say. This is not purely mechanical — `issuer_name` describes the *issuer*, while `name` and `ticker` describe the token, so "Pond Protocol" as issuer with `rPND` as token name is coherent and arguably more correct than either alone. Decide before the mainnet create, since changing it afterward costs an `MPTokenIssuanceSet` and is impossible if metadata is frozen ([OQ-10](#oq-10)). Mechanical follow-through is [TD-05](#td-05).
+
+### OQ-25
+
+**Bot-ops account: does it exist yet, and is Operations ever further subdivided?**
+
+Documented today: the owner has approved a bot custody split in which any bot automation signs from a dedicated, bounded account — not the Issuer, not Treasury, and not Operations. The recommended shape is a regular key (never a master seed) on a new account funded with 5–10 XRP and no $PND trust line. Operations (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, per [OQ-23](#oq-23)) holds the 10B liquidity allocation and must never double as the bot's account — a compromised bot key there would put that allocation at risk, not just a small bounded float.
+
+Undecided: whether the bot-ops account has been created and funded yet (as of this writing, no fourth address is published in any repo), and whether Operations is ever further subdivided — for example, a separate market-making account distinct from the account that holds the AMM LP position. Neither question blocks the $PND launch.
 
 ## Decided
 
@@ -282,6 +286,26 @@ Two consequences to carry into the spec: holders rely on issuer discipline rathe
 
 **The `pnd` repo has a defined scope: the token-facing reference for $PND.** Resolved by [PND PR #1](https://github.com/PondProtocol/PND/pull/1), now merged, which added a README, `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md`, `docs/pnd-vs-rpnd.md`, its own open-questions register, SECURITY.md, and a docs check script. It defers to `rpnd`'s config on any mismatch, which is the division [OQ-17](#oq-17) records.
 
+### OQ-22
+
+**Does the same account issue $rPND? Decided: yes.**
+
+The owner has confirmed that `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — the $PND issuer — is also the $rPND issuer. Live state at the time of confirmation: funded with 2.539034 XRP, `Flags` `0`, `OwnerCount` `0`, `account_objects` empty, so no `MPTokenIssuance` exists from it yet and nothing about the decision depends on anything already being on ledger. `rpnd`'s README and `docs/rpnd-spec.md` already stated the two assets come from the same issuing account; that statement is now a deployment decision, not just a description of the tooling, closing the [OQ-17](#oq-17) instance this used to be.
+
+**Consequence, decided along with it:** a shared issuer couples the two assets' account flags, `Domain`, and reserve exposure, exactly as flagged when this was open — see [spec/02](spec/02-accounts-and-roles.md). It also introduces a **blackholing ordering constraint**: a blackholed account can never sign again, so if $rPND is ever created, its `MPTokenIssuanceCreate` must happen before the issuer is ever blackholed. That ordering is moot in practice today because the current $rPND config sets `ImmutableFlags`, which requires the `DynamicMPT` amendment (not enabled on mainnet); the create returns `temDISABLED` as configured. Blackholing is therefore blocked until the config drops `ImmutableFlags` or `DynamicMPT` activates — independently of the ordering constraint, not instead of it. See `rpnd/docs/issuance.md#one-cold-account-or-two` and `pnd/docs/pnd-vs-rpnd.md#one-issuing-account-or-two` for the full reasoning.
+
+Also worth noting for [OQ-24](#oq-24): the issuer address carries a vanity `rPND` prefix. Unlike metadata, an address cannot be rebranded — changing it means a new account and a new asset identity for $PND.
+
+### OQ-23
+
+**Is there a cold/hot split in the live deployment, and what are the account addresses? Decided: yes, and two addresses beyond the issuer are now named.**
+
+The owner has confirmed a three-account topology: **Issuer** (`rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, shared per [OQ-22](#oq-22)), **Treasury** (`rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`, holding the 90B $PND vesting escrow), and **Operations** (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, holding the 10B circulating/liquidity allocation, opening the trust line, authorizing $rPND, and creating the AMM pool). `rpnd/docs/issuance.md` prescribes the mechanics — cold issuer for `AccountSet`, issuance, and create; hot accounts for the trust line, authorization, and inventory — and now names both hot-side accounts instead of one.
+
+**On ledger now, not merely configured:** neither Treasury nor Operations exists yet. `account_info` returns `actNotFound` for both on mainnet. Do not describe either as funded, configured, or holding a trust line until that changes.
+
+This also answers the "distribution, market making, and treasury should be separated" question this item used to carry: treasury is separated from operations. What is not decided is whether Operations is ever further subdivided, and whether a bot gets its own account — tracked as the new [OQ-25](#oq-25), because a bot must never hold Operations' key.
+
 ## TODOs
 
 ### TD-01
@@ -290,7 +314,13 @@ Replace the placeholder $rPND asset values in `rpnd/config/tokens.json` before a
 
 ### TD-02
 
-Publish issuer metadata: pick the domain, run `render-toml`, replace `replace-me@example.com` in the `[[PRINCIPALS]]` block, serve the file at `https://<domain>/.well-known/xrp-ledger.toml`, then re-run `configure-issuer --domain <host>` so the AccountRoot `Domain` matches. Blocked by [OQ-12](#oq-12). This is a security task as much as a polish one — see [spec/07](spec/07-security-considerations.md#75-impersonation).
+Publish issuer metadata. The website host is `pondprotocol.pages.dev` and the TOML in
+`site/public/.well-known/xrp-ledger.toml` already names it. Remaining: a real square icon on a
+permanent host, whether to include `[[PRINCIPALS]]` (do not invent a contact), and confirming CORS
+on the live path with `cd site && npm run verify:live -- pondprotocol.pages.dev`. The on-ledger
+`Domain` field stays unset until that live check passes. `pages.dev` is a Cloudflare platform
+hostname — binding `Domain` to it later accepts a platform dependency that can only be changed
+while the issuer can still sign. See [spec/07](spec/07-security-considerations.md#75-impersonation).
 
 ### TD-03
 
@@ -340,6 +370,6 @@ One thing to pass back to whoever owns that repo: its profile README describes `
 
 This page is protocol-level. Per-repo placeholders live with their repos, and duplication would drift:
 
-- **[`pnd/docs/open-questions.md`](https://github.com/PondProtocol/PND/blob/main/docs/open-questions.md)** — 16 items covering unpublished addresses, issuer policy flags, publication identity, and timeline. Overlaps: their 6 with [OQ-06](#oq-06), their 15 with [OQ-03](#oq-03) and [OQ-04](#oq-04), their 16 with [OQ-01](#oq-01), their 4 and 5 with [OQ-08](#oq-08). Their items 1, 2, and 6 are now partly answered by the issuer address and the 100B target recorded here.
+- **[`pnd/docs/open-questions.md`](https://github.com/PondProtocol/PND/blob/main/docs/open-questions.md)** — 16 remaining numbered items covering issuer policy flags, publication identity, and timeline, plus a "Recently answered" table for closed ones. Overlaps: their 6 with [OQ-06](#oq-06) and now also with [OQ-22](#oq-22)'s blackholing ordering constraint, their 15 with [OQ-03](#oq-03) and [OQ-04](#oq-04), their 16 with [OQ-01](#oq-01), their 4 and 5 with [OQ-08](#oq-08). Their former items 1 (operational address) and 11 (shared issuer) are fully answered and recorded in their "Recently answered" table — matching [OQ-22](#oq-22) and [OQ-23](#oq-23) here.
 - **[`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md)** — owner TODOs inline against the parameters they affect: `issuerName`, the three permanent supply parameters, placeholder URLs, flag freezing, and the $PND relationship.
 - **[`.github/SECURITY.md`](https://github.com/PondProtocol/.github/blob/main/SECURITY.md)** — org owner TODOs for the disclosure contact and response timelines.

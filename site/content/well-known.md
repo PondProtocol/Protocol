@@ -5,9 +5,9 @@ metadata file at exactly one path:
 
 > **`https://{{domain}}/.well-known/xrp-ledger.toml`**
 
-That file, plus the issuer account's `Domain` field pointing back at this domain, is the whole of
-Pond Protocol's verifiable identity claim. Everything a wallet shows you about $PND — the name, the
-icon, the description, the links — resolves through it.
+`{{domain}}` is the **website host** — a Cloudflare Pages platform hostname. The issuer account's
+on-ledger `Domain` field is unset and stays unset until CORS is verified on that live path. The
+file is therefore published, but it is not yet a completed two-way identity claim.
 
 ## Why the path is exact
 
@@ -22,26 +22,34 @@ The requirements, as specified:
 | Path | `/.well-known/xrp-ledger.toml`, lowercase |
 | Transport | HTTPS with a CA-signed certificate. Content over plain HTTP **should not** be trusted |
 | `Access-Control-Allow-Origin` | `*` |
-| `Content-Type` | `application/toml`; consumers should also accept `text/plain` |
-| Issuer `Domain` field | Must match this domain **exactly**, stored as hex of the lowercase ASCII |
+| `Content-Type` | `text/plain` (usual XLS-26 choice); `application/toml` is also accepted |
+| Issuer `Domain` field | Must match the host **exactly**, stored as hex of the lowercase ASCII, with no scheme. **Unset today.** |
 
 The CORS header is the one most often missed, because a missing `Access-Control-Allow-Origin` is
 invisible in a browser address bar and invisible to `curl` unless you look for it. What breaks is
 every browser-based consumer — which is most wallets.
 
-## How the identity claim works
+## How the identity claim works — only one half is live
 
 Neither half proves anything alone:
 
 - Anyone can host an `xrp-ledger.toml` claiming to own any account.
 - Any account operator can set the `Domain` field to any string they like.
 
-The claim comes from the two agreeing. Publishing the file requires control of this domain. Setting
+The claim comes from the two agreeing. Publishing the file requires control of this host. Setting
 the `Domain` field requires the issuer's signing keys. When the file names the issuer *and* the
-issuer names the domain, the same entity controls both — and a squatter who has copied the ticker,
+issuer names the host, the same entity controls both — and a squatter who has copied the ticker,
 the name and the icon still cannot produce that link.
 
-This is the mechanism the [verify page](/verify/) asks you to check.
+**Only the file half exists today.** The on-ledger `Domain` is unset. This page is not asking anyone
+to set it.
+
+`{{domain}}` is a Cloudflare platform hostname, not a domain Pond Protocol registers and renews. If
+`Domain` is later set to it, that accepts a platform dependency that can only be changed while the
+issuer can still sign. After blackholing, a `pages.dev` host going away or being reassigned is
+permanent.
+
+This is the mechanism the [verify page](/verify/) asks you to check — and to notice is not complete.
 
 ## Who reads it
 
@@ -49,10 +57,11 @@ XRPL Meta crawls the ledger for issuing accounts with a `Domain` field set, fetc
 TOML it finds, and serves the result through a public API. Consumers of that feed include Xaman,
 the Xaman DEX, Crossmark, GemWallet and XRP Toolkit.
 
-The practical consequence: one file and one `AccountSet` transaction propagate a token's name, icon,
-description and links across those consumers, with no per-wallet application or approval. XLS-26
-exists precisely because the alternative was contacting every wallet and explorer individually and
-repeating it for every change.
+The practical consequence: one file and a matching on-ledger `Domain` would propagate a token's
+name, icon, description and links across those consumers, with no per-wallet application or
+approval. XLS-26 exists precisely because the alternative was contacting every wallet and explorer
+individually and repeating it for every change. **That propagation does not start while `Domain` is
+unset**, which is the current state.
 
 ### What it does not do
 
@@ -91,12 +100,13 @@ Expected in the response:
 
 ```
 HTTP/2 200
-content-type: application/toml
+content-type: text/plain
 access-control-allow-origin: *
 ```
 
-The repository that builds this site ships that check as a script, so it can be run against any
-host before the issuer's `Domain` field is committed to it:
+The repository that builds this site ships that check as a script, so it can be run against the
+website host after a deploy. A pass means the file is being served correctly. It does not mean the
+on-ledger `Domain` should be set:
 
 ```bash
 cd site && npm run verify:live -- {{domain}}
@@ -104,12 +114,17 @@ cd site && npm run verify:live -- {{domain}}
 
 ## Permanence
 
-One note on why the domain matters more than the file. If the issuer account is ever blackholed —
-a common trust signal on XRPL, and a one-way door — its `Domain` field becomes permanently
-unchangeable. From that point on, losing the domain means the token's metadata breaks and can never
-be repaired by anyone.
+The website host is `{{domain}}`, a Cloudflare Pages platform hostname. That is enough to publish
+the docs and the TOML. It is a weaker permanence story than a domain Pond Protocol registers:
+
+- Cloudflare controls the `pages.dev` namespace. The project name `pondprotocol` is what produces
+  this URL. Losing the Cloudflare account, or someone else taking the project name later, is not
+  something an `AccountSet` can repair.
+- If the issuer's `Domain` is ever set to this host, that bind can only be changed while the issuer
+  can still sign. After blackholing, a `pages.dev` host going away or being reassigned is
+  permanent.
 
 There is a mainnet token with the currency code `PND` in exactly that state today: blackholed
 issuer, `Domain` pointing at a host that returns HTTP 404, metadata unrecoverable forever. It is
-listed on the [verify page](/verify/). Treat this domain's renewal as a protocol-critical
-dependency.
+listed on the [verify page](/verify/). That is why `Domain` stays unset, and why a later bind to
+`pages.dev` is a platform dependency, not a domain you hold.

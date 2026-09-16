@@ -21,7 +21,9 @@ const types = {
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".txt": "text/plain; charset=utf-8",
-  ".toml": "application/toml; charset=utf-8",
+  // XLS-26's usual choice for xrp-ledger.toml is text/plain; public/_headers
+  // sets the same on the live path. Other .toml files, if any, follow it.
+  ".toml": "text/plain; charset=utf-8",
 };
 
 if (!existsSync(DIST_DIR)) {

@@ -32,7 +32,7 @@ Issuer account settings, none of which has been applied:
 | Require Destination Tag | off | not set | No change |
 | `TransferRate` | 0 | absent | No observable change; absent already means no transfer fee |
 | `TickSize` | 5 | absent | Rounds $PND order-book prices to 5 significant digits |
-| `Domain` | operator-supplied | absent | Required before XLS-26 metadata means anything — [05](05-metadata-and-discovery.md) |
+| `Domain` | unset (website host is `pondprotocol.pages.dev`) | absent | Would bind the issuer to the host serving `xrp-ledger.toml`. Stays unset until CORS is verified live. `pages.dev` is a Cloudflare platform hostname |
 | No Freeze | not configured | not set | Freeze capability remains with the issuer — [OQ-08](../open-questions.md#oq-08) |
 | Trust line clawback | not configured | not set, **and still settable** | Only settable while the account has never had a trust line. The first `TrustSet` closes it forever |
 

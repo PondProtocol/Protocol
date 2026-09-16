@@ -3,9 +3,10 @@
 Static site that aggregates the documentation from `protocol`, `pnd` and `rpnd`, and serves the
 XLS-26 metadata file at `/.well-known/xrp-ledger.toml`.
 
-**Nothing here is deployed yet.** The domain has not been chosen and the host has not been picked.
-See [`docs/hosting-decision.md`](../docs/hosting-decision.md) for the recommendation, the verified
-evidence behind it, and what the owner has to decide.
+The **website host** is `pondprotocol.pages.dev` (Cloudflare Pages, free). The issuer's on-ledger
+`Domain` field is unset and stays unset until CORS is verified on the live TOML path. See
+[`docs/hosting-decision.md`](../docs/hosting-decision.md) for the CORS evidence, the Cloudflare
+Pages settings to paste, and why `pages.dev` is a platform hostname rather than a domain you hold.
 
 ## Quick start
 
@@ -42,14 +43,15 @@ The site is about 700 lines of Node in `scripts/` plus one hand-written styleshe
 **two direct dependencies** (`markdown-it`, `markdown-it-anchor`) totalling nine packages including
 transitive ones. That is a deliberate trade, and these are the reasons:
 
-**The output has to be host-neutral.** The host is not decided. Plain HTML and CSS with no runtime
-JavaScript deploys identically to Cloudflare Pages, GitHub Pages, or anything else that serves a
-directory, so the hosting decision stays reversible instead of being welded into a framework
-adapter.
+**The output has to be host-neutral.** Plain HTML and CSS with no runtime JavaScript deploys
+identically to Cloudflare Pages, GitHub Pages, or anything else that serves a directory, so the
+hosting decision stays reversible instead of being welded into a framework adapter. The chosen host
+is Cloudflare Pages at `pondprotocol.pages.dev`.
 
-**One path has to be byte-exact.** `/.well-known/xrp-ledger.toml` is where the issuer's on-ledger
-`Domain` field points, and a dot-prefixed directory is exactly the thing static site generators
-quietly drop. Two real instances of that, both verified rather than assumed:
+**One path has to be byte-exact.** `/.well-known/xrp-ledger.toml` is served from the website host.
+The issuer's on-ledger `Domain` field does **not** point at it yet. A dot-prefixed directory is
+exactly the thing static site generators quietly drop. Two real instances of that, both verified
+rather than assumed:
 
 - Jekyll 4.4.1 excludes dot-directories from its output with a zero exit code and no warning. A
   tree containing `.well-known/xrp-ledger.toml` produced a `_site` with no `.well-known` in it.
@@ -182,22 +184,63 @@ site/
   dist/                 build output. Gitignored.
 ```
 
+## Cloudflare Pages settings
+
+Create a **Pages** project, not a Worker. In the dashboard: **Workers & Pages → Create → Pages →
+Connect to Git**. If the form has a **Deploy command** field, you are in the Worker flow — cancel
+and start again from Pages.
+
+Paste these. The public URL is `https://pondprotocol.pages.dev` only if the **project name** is
+exactly `pondprotocol`.
+
+| Dashboard field | Paste this | Do not use |
+| --- | --- | --- |
+| Product | **Pages** (Connect to Git) | Worker / `npx wrangler deploy` |
+| Project name | `pondprotocol` | `pond` — that URL is `pond.pages.dev` |
+| Production branch | `main` | |
+| Framework preset | None (leave blank) | |
+| Root directory | `site` | `/` |
+| Build command | `npm ci && npm run check` | empty / None |
+| Build output directory | `dist` | |
+| **Deploy command** | **empty** — do not fill this in | `npx wrangler deploy` |
+
+`dist` is relative to the root directory, so the uploaded files are `site/dist`. Set
+`NODE_VERSION=22` if the dashboard asks (matches
+[`.github/workflows/docs-site.yml`](../.github/workflows/docs-site.yml)).
+
+A project already named `pond` cannot be renamed onto `pondprotocol.pages.dev`. Cloudflare's
+known issue: `*.pages.dev` subdomains cannot be changed. Delete `pond` and create a new Pages
+project named `pondprotocol`.
+
+`npm run check` is `build --strict` plus the publication guard — the same command CI runs. Do not
+substitute `npm run build`; that skips the guard. This site is static HTML. There is no Worker
+and no Wrangler config; `npx wrangler deploy` fails with "Could not detect a directory containing
+static files" because it is the wrong product.
+
+`site/public/_headers` is copied into the output and is what sets
+`Access-Control-Allow-Origin: *` and `Content-Type: text/plain` on `/.well-known/xrp-ledger.toml`.
+Cloudflare Pages does not send CORS by default. After the first production deploy:
+
+```bash
+cd site && npm run verify:live -- pondprotocol.pages.dev
+```
+
 ## Before going live
 
-In order. Each step depends on the previous one.
+In order.
 
-1. **Choose the domain** and register it for as long as the registrar allows. It must be one you
-   will hold indefinitely — see the note in `content.config.json`.
-2. **Set `site.domain`** in `content.config.json`. That switches on canonical tags and replaces the
-   placeholder everywhere it appears.
-3. **Fill in `public/.well-known/xrp-ledger.toml`.** Every outstanding item is marked `TODO`:
-   the domain, the icon URL, and the decision about `[[PRINCIPALS]]`.
-4. **Deploy, then check the live headers:** `npm run verify:live -- <domain>`. Do not skip this.
-   A missing CORS header is invisible in a browser and breaks every wallet that resolves metadata
+1. **Create a Cloudflare Pages project** named `pondprotocol` with the settings above. If a Worker
+   project named `pond` already exists, delete it — it cannot be renamed onto this URL.
+2. **Confirm `site.domain`** in `content.config.json` is `pondprotocol.pages.dev` (already set).
+3. **Remaining TODOs in `public/.well-known/xrp-ledger.toml`:** a real square icon on a permanent
+   host, and whether to include `[[PRINCIPALS]]`. The website host is filled in. Do not invent a
+   contact or social link.
+4. **After deploy, check the live headers:** `npm run verify:live -- pondprotocol.pages.dev`. A
+   missing CORS header is invisible in a browser and breaks every wallet that resolves metadata
    client-side.
-5. **Only then** submit `AccountSet` with `Domain` set to that host, hex-encoded from the
-   **lowercase** ASCII. Doing this before step 4 publishes a pointer to a file that is not being
-   served correctly, and the ecosystem caches what it finds.
-6. **Set `launchStatus` to `live`** once the issuer is configured and $PND has actually been
-   issued — and not before. That flag controls the "$PND has not launched" warning, and it is the
-   one edit on this site that could mislead a buyer.
+5. **Leave the issuer `Domain` field unset.** CORS has not been verified live yet. This host is a
+   Cloudflare platform hostname; binding `Domain` to it later accepts a platform dependency that
+   can only be changed while the issuer can still sign.
+6. **Leave `launchStatus` at `pre-launch`** until the issuer is configured and $PND has actually
+   been issued. That flag controls the "$PND has not launched" warning, and it is the one edit on
+   this site that could mislead a buyer.

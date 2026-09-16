@@ -2,7 +2,7 @@
 source_repo: pnd
 source_path: docs/open-questions.md
 source_ref: main
-source_sha256: 502a568657a2c42c55a60542a01a67d396896726fce5e19f6c063efc3472d0eb
+source_sha256: 2027bce551db99d883e1967b63b1b3732f8c572ad0f06052601bf51ccefbda76
 title: Open questions — $PND
 url: /open-questions/pnd/
 section: Project status
@@ -20,8 +20,11 @@ Nothing in this list has been filled in with a guess. If a number, address, or d
 | --- | --- | --- |
 | Issuing account for $PND | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` (checksum valid; funded on mainnet, no `AccountSet` applied, nothing issued; absent on testnet and devnet) | `README.md`, `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md`, `SECURITY.md` |
 | Target supply | 100,000,000,000 $PND, as issuer policy rather than a ledger cap | `README.md`, `docs/token-spec.md` |
+| Shared issuer for $PND and $rPND (formerly item 11) | **Yes.** `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` issues both. Confirmed by the owner; live state verified (funded 2.539034 XRP, `Flags` 0, `OwnerCount` 0, nothing configured or issued) | `README.md`, `docs/token-spec.md`, `docs/pnd-vs-rpnd.md`; `rpnd` spec |
+| Cold/hot split — Treasury and Operations addresses (formerly item 1) | **Treasury** `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` (holds the 90B escrow) and **Operations** `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` (holds the 10B liquidity/distribution allocation, creates the AMM pool). Both addresses are decided; **neither account is funded yet** — `account_info` returns `actNotFound` for both on mainnet | `README.md`, `docs/token-spec.md` |
+| `pnd.operationalTrustLimit` (formerly item 10) | `rpnd`'s `config/tokens.json` on `main` now sets it to `100000000000` — the full 100 billion — fixed in commit `0d99cd4`. The `1,000,000,000` figure this repo previously recorded was stale | `rpnd` config |
 
-Neither answer is simply "done". The supply figure is settled, but *how it is enforced* is not, and the issuer address is settled while the cold/hot split and the shared-account assumption are not. Those follow-on questions are items 1, 5, 6, 7, 10, and 11 below.
+None of these answers is simply "done" in every dimension. The supply figure is settled, but *how it is enforced* is not. The issuer address and the shared-issuer question are settled, and the Treasury/Operations addresses are settled, but none of the three accounts is configured or funded on ledger yet — see [`token-spec.md`](token-spec.md#account-state-on-ledger) before assuming otherwise. Follow-on questions are items 5, 6, and 7 below — item 6 now also carries the blackholing/shared-issuer ordering constraint.
 
 ## Pending operator actions
 
@@ -34,9 +37,10 @@ Both are verifiable at any time with `account_info` on the issuer; see [`token-s
 
 ## On-ledger identifiers
 
+Item 1 (operational address) is answered — see [Recently answered](#recently-answered). It resolved to two accounts, not one: Treasury and Operations.
+
 | # | Unknown | Appears in |
 | --- | --- | --- |
-| 1 | Operational (hot) distribution address. The cold/hot split has not been made, so the published address currently serves as issuer with no separate distributor | `README.md`, `docs/token-spec.md` |
 | 2 | Mainnet `MPTokenIssuanceID` for $rPND, once created | `docs/pnd-vs-rpnd.md` (referenced, not stated) |
 
 ## Issuer policy
@@ -46,17 +50,14 @@ Both are verifiable at any time with `account_info` on the issuer; see [`token-s
 | 3 | Freeze policy: individual freeze, global freeze, or permanent `asfNoFreeze` | `docs/token-spec.md`, `docs/trust-lines.md` |
 | 4 | Trust line clawback: whether the issuer sets `asfAllowTrustLineClawback`. **Time-sensitive, and confirmed still open** — the funded account reports `allowTrustLineClawback` false with `OwnerCount` 0 and an empty `account_lines`, and this flag can only be set before the first trust line exists | `docs/token-spec.md` |
 | 5 | Whether the 100 billion cap is hard or soft, and what mechanism enforces it | `docs/token-spec.md` |
-| 6 | Whether the issuer is blackholed after minting the full 100 billion, or stays live for controlled issuance from operational accounts. These pull in opposite directions: blackholing makes the cap permanent and independently verifiable but forfeits all future issuance and flag changes, while a live issuer keeps flexibility and leaves the cap as a promise backed by key custody | `docs/token-spec.md` |
+| 6 | Whether the issuer is blackholed after minting the full 100 billion, or stays live for controlled issuance from operational accounts. These pull in opposite directions: blackholing makes the cap permanent and independently verifiable but forfeits all future issuance and flag changes, while a live issuer keeps flexibility and leaves the cap as a promise backed by key custody. **Ordering constraint, now that the shared-issuer question (formerly item 11) is settled:** this account is also the $rPND issuer, and a blackholed account can never sign again, so $rPND's `MPTokenIssuanceCreate` must happen before any blackholing, or $rPND can never be created on this address. The current $rPND config cannot even be created on mainnet today regardless — see [`pnd-vs-rpnd.md`](pnd-vs-rpnd.md#one-issuing-account-or-two) | `docs/token-spec.md`, `docs/pnd-vs-rpnd.md` |
 | 7 | What supply-verification procedure holders should treat as canonical. `gateway_balances` on the issuer is the mechanical answer, but which server, what cadence, and whether signed attestations accompany it are undecided | `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md` |
 | 8 | What $PND represents: backing, redeemability, and the legal issuing entity | `README.md`, `docs/token-spec.md` |
 | 9 | Whether `TransferRate` stays at 0 long term | `docs/integration.md` (integrators are told to read it from the ledger) |
 
 ## Cross-repo configuration
 
-| # | Unknown | Appears in |
-| --- | --- | --- |
-| 10 | `pnd.operationalTrustLimit` in `rpnd`'s `config/tokens.json` is 1,000,000,000 — one hundredth of the 100 billion target, so a single operational account with that limit cannot take delivery of the full supply. Decide whether to raise the limit, distribute across multiple accounts, or leave it as a deliberate per-account ceiling. The change belongs in `rpnd`, not here | `rpnd` config; consequence noted in `docs/token-spec.md` |
-| 11 | Whether `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is also the $rPND issuer. `rpnd`'s tooling assumes one cold account issues both assets and its [`docs/rpnd-spec.md`](https://github.com/pondprotocol/rpnd/blob/main/docs/rpnd-spec.md#identity) still records the issuer as a TODO. The owner published this address for $PND only. Sharing one account couples the two assets' flags, `Domain`, and reserve exposure, so confirm before either issuance — and fill in `rpnd`'s spec at the same time | `docs/pnd-vs-rpnd.md`; `rpnd` spec |
+Items 10 (`operationalTrustLimit`) and 11 (shared issuer) are answered — see [Recently answered](#recently-answered).
 
 ## Publication and identity
 

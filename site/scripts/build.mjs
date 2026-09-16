@@ -48,9 +48,8 @@ const esc = (s) =>
 
 /* ---------------------------------------------------------- substitutions
  *
- * The domain is not chosen yet, so it exists in exactly one place - content.config.json - and is
- * substituted into authored pages. Nothing hardcodes it, which is what makes swapping in the real
- * domain a one-line edit rather than a search-and-replace across the site.
+ * The website host lives in exactly one place - content.config.json - and is substituted into
+ * authored pages. It is the Cloudflare Pages hostname, not the issuer's on-ledger Domain field.
  */
 const domainConfigured = Boolean(site.domain);
 const displayDomain = site.domain || site.domainPlaceholder;

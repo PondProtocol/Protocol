@@ -38,8 +38,13 @@ this notice is gone.
 | **Status** | {{issuerAddressStatus}} |
 | **Ledger type** | Issued currency (IOU), held on a trust line |
 
-That address is the identity. Save it, and check it against this page — served over HTTPS from the
-domain the issuer account itself points at — rather than against a ticker in a search box.
+That address is the identity. Save it, and check it against this page — served over HTTPS from
+the **website host** `{{domain}}` — rather than against a ticker in a search box.
+
+This host is **not** the issuer's on-ledger `Domain` field. That field is unset and stays unset
+until CORS is verified on the live `/.well-known/xrp-ledger.toml` path. `{{domain}}` is a
+Cloudflare Pages platform hostname. If `Domain` is later set to it, that accepts a platform
+dependency that can only be changed while the issuer can still sign.
 
 ## Canonical links to the real $PND
 
@@ -93,8 +98,8 @@ Open the account and read it directly:
 
 **What you should see right now:** an account that exists, is funded, and is otherwise empty. No
 `Domain`, no flags set, no trust lines, no tokens issued. That is the expected pre-launch state, not
-a fault. When the account is configured, `Domain` will read exactly the domain serving this page and
-this section will say so.
+a fault. The website host is `{{domain}}`; the on-ledger `Domain` is unset and is not going to be
+set as part of putting this page online.
 
 ### 2. Four queries against a public node
 
@@ -135,9 +140,10 @@ objects, no obligations. Two fields to read once that changes:
 
 - **`account_data.Flags`** — `lsfDefaultRipple` must be set before holders can pay each other in
   $PND. It is not set today, so holder-to-holder $PND payments do not work yet.
-- **`account_data.Domain`** — stored as hex of the **lowercase** ASCII domain. Decode it and it must
-  equal the domain serving this page exactly. A mixed-case value does not satisfy the match, so it
-  breaks the link below even though it looks correct.
+- **`account_data.Domain`** — stored as hex of the **lowercase** ASCII host, with no scheme. Today
+  it is absent. That is correct. It is not supposed to equal `{{domain}}` yet. If it is ever set,
+  decode it and compare it to the host serving this page *exactly* — a mixed-case value looks right
+  and still fails the match.
 
 ```bash
 python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <HEX>
@@ -146,18 +152,23 @@ python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <HEX>
 Balances, ledger indexes and sequence numbers are deliberately quoted nowhere on this page, because
 they go stale within minutes. Run the queries against a current validated ledger instead.
 
-### 3. The two-way link
+### 3. The two-way link — not live yet
 
 Neither half of the identity claim proves anything on its own. Anyone can host a file claiming to
-own any account, and any account can set its `Domain` to any string. What matters is that **both
-halves agree**:
+own any account, and any account can set its `Domain` to any string. What would matter is that
+**both halves agree**:
 
 1. The issuer account's `Domain` field points at `{{domain}}`.
 2. `https://{{domain}}/.well-known/xrp-ledger.toml` names that same issuer address.
 
-Only the holder of the issuer's keys can do the first. Only whoever controls the domain can do the
-second. When they match, the same entity did both. That is the strongest identity claim an XRP
-Ledger token issuer can make, and it is the one thing a squatter reusing the ticker cannot forge.
+**Only (2) exists today.** The file is served from the website host. The on-ledger `Domain` is
+unset, so the two-way link is not established and XLS-26 consumers that require it will not treat
+the file as authoritative.
+
+`{{domain}}` is a Cloudflare Pages platform hostname, not a domain Pond Protocol registers. Binding
+`Domain` to it later would accept a platform dependency that can only be changed while the issuer
+can still sign. CORS on the live TOML path also has to be verified before that field would mean
+anything. Neither of those is a step this page is asking anyone to take.
 
 See [xrp-ledger.toml](/xrp-ledger-toml/) for the file itself and what is in it.
 
@@ -236,7 +247,8 @@ make.
   `PND` token has none at all. Neither polish nor its absence tells you anything.
 - **Believe the ledger over any page, including this one.** If this site and `account_info`
   disagree, the ledger is right and this page is stale or fake.
-- **Trust this domain over any other.** If something claims to be Pond Protocol and is not on
-  `{{domain}}`, treat it as unrelated until you have checked the issuer address on ledger.
+- **Trust this website host over any other site.** If something claims to be Pond Protocol and is
+  not on `{{domain}}`, treat it as unrelated until you have checked the issuer address on ledger.
+  The on-ledger `Domain` is still unset, so this host is a website, not a completed XLS-26 bind.
 - **Nobody from Pond Protocol will ever ask for your seed or private key,** or ask you to import a
   wallet into a site. There is no situation in which that request is legitimate.

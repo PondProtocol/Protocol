@@ -2,11 +2,11 @@
 source_repo: rpnd
 source_path: docs/rpnd-spec.md
 source_ref: main
-source_sha256: c47621c408a1565348506ea64da5e75aeb3947cea3e6cb588e07df542280f7aa
+source_sha256: 235e9fa9d7fa1084b74029016a810e457ce49345bf1f8be1d971e5a25f788a79
 title: Token specification
 url: /rpnd/
 section: $rPND — Multi-Purpose Token
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # $rPND token spec
 
@@ -31,13 +31,15 @@ This file and the config it describes are authoritative for $rPND across Pond Pr
 | Issuer name | `rPND` | `rpnd.issuerName` |
 | Asset class | `other` | `rpnd.assetClass` |
 | On-ledger id | `MPTokenIssuanceID`, 192-bit / 48 hex chars | assigned by the ledger |
-| Issuer account | **TODO — undecided** | `ISSUER_SEED` |
+| Issuer account | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — **settled: shared with $PND** | `ISSUER_SEED` |
 
 The `MPTokenIssuanceID` is derived by the ledger from the issuer account and the sequence of the create transaction. It does not exist until `MPTokenIssuanceCreate` is validated, and it differs per network. `src/state.ts` persists it to `var/<network>-issuance.json`; `extractMptIssuanceId` in `src/issuance.ts` reads it out of the transaction metadata.
 
 A ticker is not an identity. Only the `MPTokenIssuanceID` identifies $rPND. Any other issuance using ticker `RPND` is a different token.
 
-The $rPND issuer account is deliberately still undecided. The owner has designated `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` as the **$PND issuer only**; it must not be recorded here as the $rPND issuer until that call is made. Issuing both assets from one cold account couples their account flags, `Domain`, and reserve exposure — see [`issuance.md`](issuance.md#one-cold-account-or-two).
+**The $rPND issuer account is settled, not a TODO.** The owner has confirmed `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — the same account designated for $PND — as the $rPND issuer too. Live state at the time of confirmation: funded with 2.539034 XRP, `Flags` `0`, `OwnerCount` `0`, nothing configured or issued from it on any network. Issuing both assets from one cold account couples their account flags, `Domain`, and reserve exposure, and it creates a blackholing ordering constraint — see [`issuance.md`](issuance.md#one-cold-account-or-two).
+
+**The ordering constraint, stated once here because it is easy to miss elsewhere in this file:** a blackholed account can never sign again, so `MPTokenIssuanceCreate` must be submitted before this issuer is ever blackholed, or $rPND can never be created on this address. That ordering is moot today because the create below cannot succeed on mainnet at all — see the `DynamicMPT` warning above — so blackholing is blocked on both grounds until one of them clears.
 
 TODO (owner): `issuerName` is `rPND`, so the on-ledger `issuer_name` reads `rPND` rather than `Pond Protocol`. Prose in this organization's repos now uses Pond Protocol branding; whether the XLS-89 field should follow is an issuance decision, not a docs edit, because it changes the encoded metadata blob and its byte count. Decide before the mainnet create.
 
@@ -185,7 +187,7 @@ These must hold for any $rPND issuance produced by this repo. The tests in `test
 
 Both are Pond Protocol tokens, and they are two unrelated ledger assets. $PND is an IOU identified by code `PND` plus the issuer address and held on trust lines; $rPND is an MPT identified by its `MPTokenIssuanceID` and held in `MPToken` objects. A $PND balance confers no claim on $rPND or the reverse.
 
-Whether they share an issuing account is **undecided**. The tooling assumes one cold account today, but that is a default rather than a design — see [`issuance.md`](issuance.md#one-cold-account-or-two) for the coupling a shared account would create.
+**They share an issuing account, and that is now settled rather than assumed.** `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` issues both — see [`issuance.md`](issuance.md#one-cold-account-or-two) for the coupling this creates and the blackholing ordering constraint it introduces.
 
 `paired_iou_currency` in the metadata is a hint for indexers and operators. The ledger enforces no ratio, no peg, and no atomic conversion between an IOU and an MPT.
 
