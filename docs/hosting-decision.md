@@ -647,9 +647,10 @@ TOML path stay put. Changing the website host in the TOML is a docs edit. Changi
 
 1. **Delete `pond` if it exists, then create a Pages project named `pondprotocol`** with the table
    above. Do not reuse the Worker create flow. `*.pages.dev` cannot be renamed.
-2. **Add `SIBLING_REPOS_TOKEN` and branch protection on `main`.** Cloudflare Pages builds from a
-   push and does not run the GitHub Actions staleness job, so a direct push can publish a stale
-   snapshot of sibling-repo docs.
+2. **Turn on branch protection on `main`** requiring the `staleness` and `build` checks. Cloudflare
+   Pages builds from a push and does not run GitHub Actions, so a direct push can publish a stale
+   snapshot of sibling-repo docs. `SIBLING_REPOS_TOKEN` is optional now that `PND` and `rPND` are
+   public; set it only if those repos go private again.
 3. **Run `verify:live` against the production URL** once the first deploy finishes.
 4. **Optionally register a real domain later** and point it at the same project. That is the
    better long-term host for an on-ledger `Domain`, because you control renewal. Not a step for

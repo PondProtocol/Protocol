@@ -114,11 +114,9 @@ is where the defect actually enters — at merge time. Two consequences worth kn
 
 - **Cloudflare Pages does not run these checks.** It builds from a push. Require the `staleness` and
   `build` checks in branch protection on `main`, or a direct push can publish a stale snapshot.
-- **Layer 2 needs a cross-repo token.** `pnd` and `rpnd` are private, and the default
-  `GITHUB_TOKEN` cannot read them. The job fails loudly with setup instructions when
-  `SIBLING_REPOS_TOKEN` is absent, rather than skipping — a freshness check that quietly does
-  nothing is worse than none, because it reports success while the site publishes corrected-away
-  text.
+- **Layer 2 clones `pnd` and `rpnd`.** Those repositories are public, so CI uses the default
+  `GITHUB_TOKEN`. `SIBLING_REPOS_TOKEN` is optional — set it only if the siblings go private again
+  or the default token is not enough. The job must not skip when the secret is absent.
 
 ### Pinned sources
 
