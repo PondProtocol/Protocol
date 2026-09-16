@@ -119,23 +119,29 @@ for (const page of imported) {
 
   if (existsSync(target)) {
     const { data, body } = parseFrontMatter(readFileSync(target, "utf8"));
-    // The recorded hash is the comparison, not the byte-compare: it also detects a vendored file
-    // that was hand-edited after being synced, which a source-to-vendored diff would blame on the
-    // source.
-    if (data.source_sha256 === hash && bodyHash(body) === hash) continue;
+    const contentMatches = data.source_sha256 === hash && bodyHash(body) === hash;
+    // The recorded ref is compared as well as the content. A branch that merges unchanged leaves the
+    // content identical while the recorded ref becomes wrong, and that ref is rendered into each
+    // page's provenance line — so skipping on content alone published "from unmerged branch ..."
+    // about a branch that had already merged.
+    const refMatches = data.source_ref === roots[page.repo].ref;
+    if (contentMatches && refMatches) continue;
 
     if (checkOnly) {
       drift.push({
         doc: `${page.repo}/${page.path}`,
-        reason:
-          data.source_sha256 !== hash
+        reason: !contentMatches
+          ? data.source_sha256 !== hash
             ? `source changed at ref "${roots[page.repo].ref}" (vendored ${String(
                 data.source_sha256,
               ).slice(0, 12)}, source ${hash.slice(0, 12)})`
             : `vendored copy was edited by hand (recorded ${String(data.source_sha256).slice(
                 0,
                 12,
-              )}, actual ${bodyHash(body).slice(0, 12)})`,
+              )}, actual ${bodyHash(body).slice(0, 12)})`
+          : `recorded ref "${data.source_ref}" no longer matches the configured ref "${
+              roots[page.repo].ref
+            }" — the content is identical but the provenance shown on the page would be wrong`,
       });
       continue;
     }
@@ -179,8 +185,49 @@ if (existsSync(IMPORTED_DIR)) {
 const pins = Object.entries(roots).filter(([, r]) => r.ref !== "main" && r.ref !== "worktree");
 if (pins.length) {
   process.stdout.write(
-    `\n  ${pins.length} source(s) pinned to an unmerged ref:\n` +
+    `\n  ${pins.length} source(s) pinned to a non-default ref:\n` +
       pins.map(([n, r]) => `    ${n} -> ${r.ref}\n`).join(""),
+  );
+}
+
+/**
+ * A pin whose branch has already merged is obsolete bookkeeping, and it does NOT show up as drift:
+ * if the branch merged unchanged, every hash still matches and the freshness check passes. That gap
+ * was found by watching this exact case go green after PND PR #3 merged, so it is checked directly:
+ * if the pinned ref is an ancestor of the repository's default branch, the pin has served its
+ * purpose and must be removed.
+ */
+const obsoletePins = [];
+for (const [name, r] of pins) {
+  for (const main of ["origin/main", "main"]) {
+    try {
+      execFileSync("git", ["-C", r.dir, "merge-base", "--is-ancestor", r.ref, main], {
+        stdio: "ignore",
+      });
+      obsoletePins.push({ name, ref: r.ref, main });
+      break;
+    } catch {
+      // Not an ancestor of this candidate, or the candidate does not exist. Try the next.
+    }
+  }
+}
+
+if (obsoletePins.length && checkOnly) {
+  fail(
+    `${obsoletePins.length} pinned source(s) point at a branch that has already merged:\n\n` +
+      obsoletePins
+        .map((p) => `           ${p.name} -> ${p.ref}\n             fully contained in ${p.main}\n`)
+        .join("") +
+      `\n         The pin existed to avoid vendoring from a branch that was still being corrected.\n` +
+      `         That correction has landed, so the pin is now stale bookkeeping that hides which\n` +
+      `         version the site actually publishes.\n\n` +
+      `         Fix: set sources.<repo>.ref to "main" in content.config.json, drop pinnedReason,\n` +
+      `         then run "npm run sync" and commit.`,
+  );
+}
+if (obsoletePins.length) {
+  process.stdout.write(
+    `\n  WARNING: ${obsoletePins.length} pin(s) point at an already-merged branch — repoint to "main"\n`,
   );
 }
 

@@ -207,6 +207,43 @@ check(
   [...foreignAddresses].map(([a, f]) => `${a} in ${f}`).join(", "),
 );
 
+// 11c. Code blocks on authored pages must fit the content column without horizontal scrolling.
+//
+//      Found the hard way: the four verify-page queries ran to 106 characters against roughly 77
+//      that fit, so `overflow-x: auto` did its job and hid the trailing comment explaining what each
+//      query was for. Nothing looked broken, the information was just gone unless you thought to
+//      scroll sideways inside a code block. Commands meant to be copy-pasted must be fully visible.
+//
+//      Scoped to authored pages on purpose. Vendored documents carry ASCII architecture diagrams
+//      that legitimately need width and are not this site's to reformat; those are reported by the
+//      build rather than failed here.
+const CODE_WIDTH = 78;
+const authoredUrls = new Set(config.pages.filter((p) => p.authored && p.publish).map((p) => p.url));
+const overlong = [];
+for (const url of authoredUrls) {
+  const file = join(DIST_DIR, url === "/" ? "index.html" : `${url.replace(/^\/|\/$/g, "")}/index.html`);
+  if (!existsSync(file)) continue;
+  const html = readFileSync(file, "utf8");
+  for (const [, block] of html.matchAll(/<pre><code[^>]*>([\s\S]*?)<\/code><\/pre>/g)) {
+    for (const raw of block.split("\n")) {
+      const line = raw
+        .replace(/<[^>]+>/g, "")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, "&")
+        .trimEnd();
+      if (line.length > CODE_WIDTH) overlong.push(`${url} (${line.length} chars): ${line.slice(0, 50)}…`);
+    }
+  }
+}
+check(
+  `authored code blocks fit ${CODE_WIDTH} columns`,
+  overlong.length === 0,
+  overlong.join(" | "),
+);
+
 // 12. Vendored snapshot integrity, independent of the same check in build.mjs. Needs no access to
 //     the sibling repositories, so it holds on the deploy host too. Upstream drift is a separate
 //     concern handled by `sync --check` in CI; see scripts/sync.mjs.

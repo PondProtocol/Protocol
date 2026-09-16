@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: docs/pnd-vs-rpnd.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: ffa6b993201ecd4f70842e9ce8aa6d76330f3f5bceb0961a84aae0a37bfe848b
 title: $PND and $rPND compared
 url: /protocol/two-tokens/
 section: Protocol
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # $PND and $rPND
 

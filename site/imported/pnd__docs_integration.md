@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: docs/integration.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: 32207e6b2c23b93ba729ee086368c0fedb87de95c242254f143199900fe5d1b4
 title: Integration guide
 url: /pnd/integration/
 section: $PND — issued currency
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Integrating $PND
 

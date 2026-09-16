@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: docs/token-spec.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: 5927a62aa418f2edeb48986c7077f4243b50c5dcc4a60948dfc06695ed691413
 title: Token specification
 url: /pnd/
 section: $PND — issued currency
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # $PND token specification
 
