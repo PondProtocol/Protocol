@@ -12,12 +12,14 @@ Config values describe what the operator *intends to submit*. None of them is on
 
 | | State |
 | --- | --- |
-| $PND issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`, funded on **mainnet** only — `actNotFound` on Testnet and Devnet |
-| Account flags | `Flags` is 0 and every flag reports false, so Default Ripple, Disallow XRP, Require Destination Tag, No Freeze, Global Freeze, and trust line clawback are all **unset** |
-| `Domain`, `TransferRate`, `TickSize`, `RegularKey` | Absent — the account has no `AccountSet` applied at all |
-| Trust lines | None. `account_lines` is empty and `OwnerCount` is 0 |
+| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — **issues both $PND and $rPND** ([OQ-22](open-questions.md#oq-22), decided). Funded on **mainnet** only — `actNotFound` on Testnet and Devnet |
+| Treasury | `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` — holds the 90B $PND vesting escrow ([OQ-23](open-questions.md#oq-23), decided). **Not funded** — `account_info` returns `actNotFound` on mainnet |
+| Operations | `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` — holds the 10B circulating allocation, creates the AMM pool ([OQ-23](open-questions.md#oq-23), decided). **Not funded** — `account_info` returns `actNotFound` on mainnet |
+| Issuer account flags | `Flags` is 0 and every flag reports false, so Default Ripple, Disallow XRP, Require Destination Tag, No Freeze, Global Freeze, and trust line clawback are all **unset** |
+| Issuer `Domain`, `TransferRate`, `TickSize`, `RegularKey` | Absent — the account has no `AccountSet` applied at all |
+| Issuer trust lines | None. `account_lines` is empty and `OwnerCount` is 0 |
 | $PND outstanding | None. `gateway_balances` reports no obligations |
-| $rPND | No issuance. `account_objects` is empty, so no `MPTokenIssuance` exists from this account |
+| $rPND | No issuance. `account_objects` is empty, so no `MPTokenIssuance` exists from the issuer |
 
 Two consequences that expire, so worth acting on rather than noting:
 
@@ -79,22 +81,24 @@ The `displayDecimals` value of 6 is XLS-26 presentation metadata, not an account
 
 Capability flags are one-way: `MPTokenIssuanceSet` can enable a flag but never disable one. Flags set at create would therefore be permanent, and flags left off could be added later but never withdrawn afterward. `MaximumAmount` bounds **circulating** supply rather than cumulative issuance — returning tokens to the issuer frees headroom to mint again.
 
-The toolkit signs both assets' transactions with one configured issuer wallet, and `rpnd`'s own docs describe the two as sharing an issuing account. Whether the production $rPND issuance actually uses the $PND account is still an owner decision — [OQ-22](open-questions.md#oq-22).
+The toolkit signs both assets' transactions with one configured issuer wallet, and that is now the confirmed production design, not just a description of the tooling: the owner has decided the $rPND issuance uses the same account as $PND — [OQ-22](open-questions.md#oq-22). A blackholed account can never sign again, so this decision creates an ordering constraint: `MPTokenIssuanceCreate` must happen before the issuer is ever blackholed, if $rPND is ever going to exist. That ordering is moot today because the current $rPND config cannot be created on mainnet — it sets `ImmutableFlags`, which requires the `DynamicMPT` amendment, not enabled on mainnet.
 
 **The link between them is metadata only.** `paired_iou_currency: "PND"` in the $rPND blob tells indexers the two are related. The ledger enforces nothing: no shared supply, no conversion, no atomic anything. Any real relationship is undesigned — [OQ-03](open-questions.md#oq-03), [OQ-04](open-questions.md#oq-04).
 
 ### 3. Issuance and operations
 
-Two roles, following standard XRPL cold/hot practice, both driven by the `rpnd` CLI:
+Three roles, following standard XRPL cold/hot practice, extended with a treasury account for the escrow design; a fourth role for bot automation is recommended but not yet created:
 
 | Role | Holds | Submits |
 | --- | --- | --- |
-| Issuer (cold) | issuing authority for both assets | `AccountSet`, `Payment` of $PND, `MPTokenIssuanceCreate`, `Payment` of $rPND |
-| Operational (hot) | distributable inventory of both assets | `TrustSet` for `PND`, `MPTokenAuthorize` for $rPND |
+| Issuer (cold) — `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` | issuing authority for both assets | `AccountSet`, `Payment` of $PND, `MPTokenIssuanceCreate`, `Payment` of $rPND |
+| Treasury — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` | the 90B $PND vesting escrow | `EscrowCreate` (locking), never `Payment` of newly issued supply |
+| Operations (hot) — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` | the 10B circulating/liquidity inventory of both assets | `TrustSet` for `PND`, `MPTokenAuthorize` for $rPND, `AMMCreate`, routine distribution payments |
+| Bot-ops (recommended, not created) | at most a small XRP float for fees — no $PND trust line | whatever a deterministic allow-list permits a bot to sign; never a transaction from Issuer, Treasury, or Operations |
 
-The cold seed is meant to stay offline in production; the toolkit reads seeds from `ISSUER_SEED` / `OPERATIONAL_SEED` and writes faucet output to a gitignored `var/` directory on dev networks only. `fund` refuses to run on mainnet. Custody beyond "keep it offline" is undecided — [OQ-11](open-questions.md#oq-11).
+The cold seed is meant to stay offline in production; the toolkit reads seeds from `ISSUER_SEED` / `OPERATIONAL_SEED` and writes faucet output to a gitignored `var/` directory on dev networks only. `fund` refuses to run on mainnet. Custody beyond "keep it offline" is undecided — [OQ-11](open-questions.md#oq-11) — except for the narrower bot question, which is decided: a bot signs only from its own dedicated account, with a regular key, never a master seed, and never a key on Operations (which carries the 10B liquidity allocation) or on Treasury or the Issuer.
 
-This is the procedure the tooling implements. Whether the live deployment behind `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` actually separates a hot account, and what its public address is, is open — [OQ-23](open-questions.md#oq-23).
+This is the procedure the tooling implements, though the tooling itself still only models one hot account (`OPERATIONAL_SEED`) and has no Treasury or bot-ops concept yet. The live deployment's topology is decided — Issuer, Treasury, and Operations are all named addresses — [OQ-23](open-questions.md#oq-23) — but none of the three non-issuer accounts is funded on ledger, and the toolkit needs extending before it can drive the Treasury role.
 
 Local issuance state (issuer address, operational address, `rpndIssuanceId`) is cached per network in `var/<network>-issuance.json`. That file is convenience, not authority: the ledger is authoritative, and `status` re-reads the `MPTokenIssuance` ledger entry to decode published metadata.
 
