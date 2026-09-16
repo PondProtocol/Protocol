@@ -25,7 +25,7 @@ The two assets are **different kinds of on-ledger object and are not interchange
 
 **$rPND — MPT.** A Multi-Purpose Token with the XLS-89 ticker `RPND`, **not yet created**. Holders would opt in with `MPTokenAuthorize`, and amounts are expressed as `{ mpt_issuance_id, value }` in base units at an asset scale of 6. The create transaction would make it transferable and lockable with transfer fee 0 and **clawback permanently disabled** via `tifMPTCanClawback` in `ImmutableFlags`. Capability flags are one-way, so whatever is enabled at create is permanent and the unset flags can be added later but never withdrawn. `MaximumAmount` caps circulating supply rather than cumulative issuance, since burns free headroom to mint again. Its supply parameters are working defaults; [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) calls them "not ratified economics."
 
-The issuance toolkit signs transactions for both assets with one configured issuer wallet. Whether the production $rPND issuance comes from the same account as $PND, and whether the live deployment has a separate operational account, are still open — [OQ-22](docs/open-questions.md#oq-22) and [OQ-23](docs/open-questions.md#oq-23).
+The issuance toolkit signs transactions for both assets with one configured issuer wallet, and that is now the confirmed design: the owner has settled that the production $rPND issuance comes from the same account as $PND — [OQ-22](docs/open-questions.md#oq-22). The live deployment's account topology is also settled beyond the single "operational account" this repo used to describe: **Treasury** (`rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`, the 90B vesting escrow) and **Operations** (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, the 10B liquidity/distribution allocation and AMM pool) are two separate named accounts — see [OQ-23](docs/open-questions.md#oq-23) for what remains open (a bot-ops account is recommended but not yet created, and neither Treasury nor Operations is funded on ledger yet).
 
 **What links them today.** The $rPND XLS-89 metadata carries `additional_info.paired_iou_currency = "PND"`. That field is documentation for indexers and operators. As [`rpnd/docs/tokens.md`](https://github.com/PondProtocol/rPND/blob/main/docs/tokens.md) states plainly, *the ledger does not atomically bind the IOU and the MPT*, and `rpnd/docs/rpnd-spec.md` adds that a $PND balance confers no claim on $rPND or the reverse. Any stronger relationship — a peg, a redemption or conversion path, a supply invariant across the two — is a protocol-level design decision that has **not been made or documented anywhere yet**. Tracked as [OQ-03](docs/open-questions.md#oq-03) and [OQ-04](docs/open-questions.md#oq-04) in mechanism terms, and [OQ-21](docs/open-questions.md#oq-21) in supply terms.
 
@@ -65,10 +65,12 @@ The issuance toolkit signs transactions for both assets with one configured issu
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Two roles carry authority in the procedure the toolkit implements, following standard XRPL practice:
+Three roles carry authority in the procedure the toolkit implements, following standard XRPL practice, and a fourth is recommended but not yet created:
 
-- **Issuer (cold)** — runs `AccountSet`, issues $PND, and creates $rPND. Its seed is meant to stay offline in production. For $PND this is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
-- **Operational (hot)** — opens the $PND trust line, authorizes $rPND, and holds inventory for distribution. No public address for the live deployment ([OQ-23](docs/open-questions.md#oq-23)).
+- **Issuer (cold)** — `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Runs `AccountSet`, issues $PND, and creates $rPND — **for both tokens**, settled by the owner ([OQ-22](docs/open-questions.md#oq-22)). Its seed is meant to stay offline in production.
+- **Treasury** — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`. Holds the 90B $PND vesting escrow. Not funded on ledger yet ([OQ-23](docs/open-questions.md#oq-23)).
+- **Operations (hot)** — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`. Opens the $PND trust line, authorizes $rPND, holds the 10B distribution/liquidity inventory, and creates the AMM pool. Not funded on ledger yet.
+- **Bot-ops (recommended, not created)** — any automation gets a dedicated, bounded fifth-role account of its own, never a key on Operations, Treasury, or the Issuer. Operations carries the 10B liquidity allocation and must not double as a bot's wallet.
 
 Not shown, because it does not exist yet: any layer that performs settlement, redemption, or conversion between the two assets, and any holder-facing distribution mechanism. See [docs/architecture.md](docs/architecture.md) for the longer version and [docs/open-questions.md](docs/open-questions.md) for what is undefined.
 
