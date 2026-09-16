@@ -5,9 +5,11 @@ metadata file at exactly one path:
 
 > **`https://{{domain}}/.well-known/xrp-ledger.toml`**
 
-`{{domain}}` is the **website host** — currently `pond.greenhead.io` on Replit. The issuer account's
-on-ledger `Domain` field is unset and stays unset until CORS is verified on that live path. The
-file is therefore published, but it is not yet a completed two-way identity claim.
+`{{domain}}` is the **website host** — currently `pond.greenhead.io` on Replit. As of the
+2026-09-16 snapshot the issuer's on-ledger `Domain` field is that same host, so the two-way
+XLS-26 link is in place. Re-check `account_info` if this page might be stale. Live flags
+(Default Ripple, No Freeze, clawback off) are stated on [Wallets](/wallets/), not in the TOML
+file.
 
 ## Why the path is exact
 
@@ -23,13 +25,13 @@ The requirements, as specified:
 | Transport | HTTPS with a CA-signed certificate. Content over plain HTTP **should not** be trusted |
 | `Access-Control-Allow-Origin` | `*` |
 | `Content-Type` | `text/plain` (usual XLS-26 choice); `application/toml` is also accepted |
-| Issuer `Domain` field | Must match the host **exactly**, stored as hex of the lowercase ASCII, with no scheme. **Unset today.** |
+| Issuer `Domain` field | Must match the host **exactly**, stored as hex of the lowercase ASCII, with no scheme. **Set to `{{domain}}` on the 2026-09-16 snapshot.** |
 
 The CORS header is the one most often missed, because a missing `Access-Control-Allow-Origin` is
 invisible in a browser address bar and invisible to `curl` unless you look for it. What breaks is
 every browser-based consumer — which is most wallets.
 
-## How the identity claim works — only one half is live
+## How the identity claim works
 
 Neither half proves anything alone:
 
@@ -41,14 +43,15 @@ the `Domain` field requires the issuer's signing keys. When the file names the i
 issuer names the host, the same entity controls both — and a squatter who has copied the ticker,
 the name and the icon still cannot produce that link.
 
-**Only the file half exists today.** The on-ledger `Domain` is unset. This page is not asking anyone
-to set it.
+**Both halves exist on the 2026-09-16 snapshot:** the file names the issuer, and `Domain` is
+`{{domain}}`. Wallets that wait on XRPL Meta may still show an empty $PND record until issuance.
 
-`{{domain}}` is a name the owner holds, not a Cloudflare `pages.dev` hostname. If `Domain` is later
-set to it, that bind can only be changed while the issuer can still sign. After blackholing,
-whatever host is in `Domain` is frozen forever. This page is not asking anyone to set that field.
+`{{domain}}` is a name the owner holds, not a Cloudflare `pages.dev` hostname. The `Domain` bind
+can only be changed while the issuer can still sign. After blackholing, whatever host is in
+`Domain` is frozen forever. **Do not blackhole** before the $rPND MPT exists on this account.
 
-This is the mechanism the [verify page](/verify/) asks you to check — and to notice is not complete.
+This is the mechanism the [verify page](/verify/) asks you to check. Issuer flags belong on
+[Wallets](/wallets/), not in this file.
 
 ## Who reads it
 
@@ -56,11 +59,11 @@ XRPL Meta crawls the ledger for issuing accounts with a `Domain` field set, fetc
 TOML it finds, and serves the result through a public API. Consumers of that feed include Xaman,
 the Xaman DEX, Crossmark, GemWallet and XRP Toolkit.
 
-The practical consequence: one file and a matching on-ledger `Domain` would propagate a token's
+The practical consequence: one file and a matching on-ledger `Domain` propagate a token's
 name, icon, description and links across those consumers, with no per-wallet application or
 approval. XLS-26 exists precisely because the alternative was contacting every wallet and explorer
-individually and repeating it for every change. **That propagation does not start while `Domain` is
-unset**, which is the current state.
+individually and repeating it for every change. **$PND still has not been issued**, so crawlers
+can bind the host and still have no token supply to show.
 
 ### What it does not do
 
@@ -104,8 +107,8 @@ access-control-allow-origin: *
 ```
 
 The repository that builds this site ships that check as a script, so it can be run against the
-website host after a deploy. A pass means the file is being served correctly. It does not mean the
-on-ledger `Domain` should be set:
+website host after a deploy. A pass means the file is being served correctly. It does not mean
+$PND has been issued:
 
 ```bash
 cd site && npm run verify:live -- {{domain}}
@@ -113,16 +116,16 @@ cd site && npm run verify:live -- {{domain}}
 
 ## Permanence
 
-The website host is `{{domain}}`. That is enough to publish the docs and the TOML. Binding the
-issuer `Domain` to it is a later, optional step gated on a live CORS check — not a step this page
-is asking anyone to take:
+The website host is `{{domain}}`. On the 2026-09-16 snapshot the issuer `Domain` is already that
+host. That bind can only be changed while the issuer can still sign:
 
 - Control of `greenhead.io` is what makes this URL durable in a way `*.pages.dev` is not. Losing
   the Replit account, or pointing DNS somewhere else, is still something an `AccountSet` cannot
   repair once the issuer can no longer sign.
-- If the issuer's `Domain` is ever set to this host, that bind can only be changed while the
-  issuer can still sign.
+- **Do not blackhole** until the $rPND MPT exists on this issuer. A shared issuer makes that
+  trade cost $rPND forever.
 
-There is a mainnet token with the currency code `PND` in exactly that frozen-wrong-host state
+There is a mainnet token with the currency code `PND` in a frozen-wrong-host state
 today: blackholed issuer, `Domain` pointing at a host that returns HTTP 404, metadata unrecoverable
-forever. It is listed on the [verify page](/verify/). That is why `Domain` stays unset.
+forever. It is listed on the [verify page](/verify/). That is why this issuer must keep the
+ability to sign until $rPND exists.

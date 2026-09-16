@@ -24,15 +24,17 @@ instead. A direct link from a source you trust is the dependable route.
 
 <p><a class="button" href="/verify/">Verify the real $PND &rarr;</a></p>
 
-That page carries the canonical issuer address, the direct links to where $PND can actually be
-viewed and traded, and how to confirm all of it against the ledger yourself.
+That page carries the canonical issuer address and how to confirm it against the ledger.
+[Wallets](/wallets/) lists the issuer, Treasury, and Operations accounts, the live flags, and
+how each one will support $PND. There is still nothing to trade.
 
 </div>
 
 ## Where to go
 
 **If you want to hold or trade $PND** — read [Verify the issuer](/verify/) first, then
-[Holding $PND](/pnd/holding/) for how trust lines work and what they cost.
+[Wallets](/wallets/) for the accounts that will hold and move it. $PND has not been issued.
+[Holding $PND](/pnd/holding/) covers how trust lines work and what they cost.
 
 **If you are integrating** — [Integration guide](/pnd/integration/) covers displaying and moving
 $PND, and [Token specification](/pnd/) is the parameter reference.

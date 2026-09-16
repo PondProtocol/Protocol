@@ -96,9 +96,14 @@ function canonicalLinksHtml() {
   return `<div class="canon">${warning}<ul class="canon-list">\n${rows}\n</ul></div>`;
 }
 
+if (!site.treasuryAddress) fail("site.treasuryAddress missing from content.config.json");
+if (!site.operationsAddress) fail("site.operationsAddress missing from content.config.json");
+
 const substitutions = {
   "{{issuerAddress}}": site.issuerAddress,
   "{{issuerAddressStatus}}": site.issuerAddressStatus,
+  "{{treasuryAddress}}": site.treasuryAddress,
+  "{{operationsAddress}}": site.operationsAddress,
   "{{domain}}": displayDomain,
   "{{title}}": site.title,
   "{{tagline}}": site.tagline,
@@ -322,8 +327,8 @@ function tocHtml(html) {
 }
 
 const banner = isPreLaunch
-  ? `<div class="banner" role="status"><strong>$PND has not launched.</strong> The issuer account is
-     funded but not yet configured, and no $PND has been issued. Any token trading under the code
+  ? `<div class="banner" role="status"><strong>$PND has not launched.</strong> No $PND has been
+     issued. Any token trading under the code
      <code>PND</code> today is <strong>not</strong> $PND. <a href="/verify/">How to verify &rarr;</a></div>`
   : "";
 
@@ -367,6 +372,7 @@ ${canonical}
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>${esc(site.title)}</a>
   <nav class="topnav" aria-label="Primary">
     <a href="/verify/" class="cta">Verify the real $PND</a>
+    <a href="/wallets/">Wallets</a>
     <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
     <a href="/protocol/">Protocol</a>
   </nav>

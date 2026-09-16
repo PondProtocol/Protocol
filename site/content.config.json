@@ -25,6 +25,8 @@
       "The publication guard forbids every other classic address so third-party PND issuers",
       "are never named. The issuer itself is site.issuerAddress, not this list."
     ],
+    "treasuryAddress": "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b",
+    "operationsAddress": "rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in",
     "knownAddresses": [
       "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b",
       "rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in"
@@ -34,13 +36,13 @@
       "This is the WEBSITE HOST, not the issuer's on-ledger Domain field.",
       "",
       "  domain            = pond.greenhead.io  (Replit Autoscale, custom domain).",
-      "  on-ledger Domain  = unset, and it stays unset until CORS is verified on the live",
-      "                      TOML path. Do not treat this hostname as AccountRoot Domain,",
-      "                      and do not set Domain as part of attaching this host.",
+      "  on-ledger Domain  = pond.greenhead.io as of the 2026-09-16 wallets snapshot.",
+      "                      Live flags live on /wallets/, not in xrp-ledger.toml comments.",
+      "                      Do not edit the TOML Domain comments to claim No Freeze.",
       "",
-      "pond.greenhead.io is a subdomain of greenhead.io, a name the owner holds. That is a",
-      "better permanence story than a Cloudflare pages.dev hostname, but binding Domain is",
-      "still gated on a live CORS check and can only be changed while the issuer can sign.",
+      "pond.greenhead.io is a subdomain of greenhead.io, a name the owner holds. Binding",
+      "Domain can only be changed while the issuer can still sign. Do not blackhole before",
+      "the $rPND MPT exists on this same account.",
       "",
       "{{domain}} in authored pages, canonical tags, and og:url all read this value. Keep it",
       "lowercase and without a scheme so it can match an AccountRoot Domain later if one is set."
@@ -52,17 +54,17 @@
     "$comment_launchStatus": [
       "launchStatus drives the sitewide banner and the wording on /verify/.",
       "",
-      "  pre-launch : the issuer account exists and is funded but has no account settings, no",
-      "               Domain, and no issuance. The site states that no $PND exists yet and that",
-      "               anything trading under the code PND is therefore not $PND.",
-      "  live       : the issuer has been configured, Domain matches this host, and $PND has",
-      "               been issued. Only set this after the checks on /verify/ actually pass.",
+      "  pre-launch : the issuer is funded and may already have Domain / Default Ripple /",
+      "               No Freeze, but $PND has not been issued. The site states that no $PND",
+      "               exists yet and that anything trading under the code PND is not $PND.",
+      "  live       : Domain matches this host and $PND has been issued. Only set this after",
+      "               the checks on /verify/ actually pass.",
       "",
-      "Leave this at pre-launch until the AccountSet and issuance transactions are validated.",
-      "Setting it to live early is the one edit on this site that could mislead a buyer."
+      "Leave this at pre-launch until issuance is validated. Setting it to live early is the",
+      "one edit on this site that could mislead a buyer. Live flags belong on /wallets/."
     ],
     "launchStatus": "pre-launch",
-    "issuerAddressStatus": "planned issuer account — funded, not yet configured on ledger"
+    "issuerAddressStatus": "funded issuer — Domain, Default Ripple, and No Freeze set; nothing issued"
   },
 
   "canonicalLinks": {
@@ -103,7 +105,7 @@
         "purpose": "The metadata record wallets read, once the TOML is published",
         "url": "https://s1.xrplmeta.org/v2/token/PND:rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
         "status": "unverified",
-        "note": "Returns nothing useful until the issuer Domain field is set and the crawler has run. Expect an empty or absent record before then; that is the correct pre-launch result, not a fault."
+        "note": "Domain is set. Expect an empty or absent $PND record until issuance and a crawler pass. That is not a trade page."
       },
       {
         "label": "FirstLedger",
@@ -156,6 +158,7 @@
       "pages": [
         { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
         { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
+        { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
         { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" }
       ]
     },
