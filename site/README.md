@@ -200,25 +200,28 @@ That is `npm ci && npm run check` followed by `site/scripts/serve.mjs`, which bi
 honours `PORT`. `npm run check` is `build --strict` plus the publication guard — do not substitute
 `npm run build`; that skips the guard.
 
-**Publish as Static.** In the Publishing tool: **Adjust settings → Deployment type → Static**.
+**Publish as Autoscale** (not Static). Replit Static omits every dotfile: on 2026-09-16
+`/.well-known/xrp-ledger.toml` and `/.nojekyll` 404'd while `/_headers` and `/robots.txt` 200'd.
+`serve.mjs` is what actually serves the XLS-26 path. In the Publishing tool: **Adjust settings →
+Deployment type → Autoscale**.
 
 | Setting | Value |
 | --- | --- |
-| Deployment type | **Static** |
+| Deployment type | **Autoscale** (not Static) |
 | Build command | `cd site && npm ci && npm run check` |
-| Public directory | `site/dist` |
+| Run command | `cd site && node scripts/serve.mjs` |
+| Public directory | `site/dist` (used only if you stay on Static) |
 
-CORS on `/.well-known/xrp-ledger.toml` is set in `.replit` as
-`[[deployment.responseHeaders]]`. Replit does **not** read `site/public/_headers`. After the
-custom domain is attached:
+The build also writes a non-dot twin at `site/dist/well-known/xrp-ledger.toml` and `.replit`
+rewrites `/.well-known/xrp-ledger.toml` onto it, so a Static republish can still work. Prefer
+Autoscale. CORS on Autoscale comes from `serve.mjs` (`Access-Control-Allow-Origin: *`,
+`Content-Type: text/plain` on `.toml`). After republish:
 
 ```bash
 cd site && npm run verify:live -- pond.greenhead.io
 ```
 
-If directory URLs 404 or CORS is missing on the live TOML, switch Deployment type to **Autoscale**
-and use the same Run command. `serve.mjs` already sends `Access-Control-Allow-Origin: *` and
-`Content-Type: text/plain` on `.toml`.
+**Leave the issuer `Domain` field unset** until that check passes.
 
 ### Import and custom domain (owner clicks)
 
@@ -246,8 +249,8 @@ before publishing DNS.
 
 In order.
 
-1. **Import this repository into Replit** and publish Static with the settings above. Attach
-   `pond.greenhead.io` only after a successful deployment.
+1. **Pull this repo in the existing Replit app and republish as Autoscale** with the settings
+   above. Do not stay on Static — it drops `.well-known/`.
 2. **Confirm `site.domain`** in `content.config.json` is `pond.greenhead.io` (already set).
 3. **Remaining TODOs in `public/.well-known/xrp-ledger.toml`:** a real square icon on a permanent
    host, and whether to include `[[PRINCIPALS]]`. The website host is filled in. Do not invent a

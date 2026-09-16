@@ -12,6 +12,14 @@ export const DIST_DIR = join(SITE_ROOT, "dist");
 /** The one path that anchors the token's on-ledger identity. XLS-26 fixes it exactly. */
 export const WELL_KNOWN_PATH = ".well-known/xrp-ledger.toml";
 
+/**
+ * Non-dot twin of WELL_KNOWN_PATH. Replit Static Deployments omit dotfiles and
+ * dot-directories from the published tree (verified 2026-09-16: `/.well-known/` and
+ * `/.nojekyll` 404 while `/_headers` and `/robots.txt` 200). The build writes this
+ * copy so a rewrite can serve the XLS-26 URL from a path the host actually uploads.
+ */
+export const WELL_KNOWN_VISIBLE_PATH = "well-known/xrp-ledger.toml";
+
 export function loadConfig() {
   const cfg = JSON.parse(readFileSync(join(SITE_ROOT, "content.config.json"), "utf8"));
   const pages = [];

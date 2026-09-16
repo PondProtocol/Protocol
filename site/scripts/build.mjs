@@ -29,6 +29,7 @@ import {
   PUBLIC_DIR,
   SITE_ROOT,
   WELL_KNOWN_PATH,
+  WELL_KNOWN_VISIBLE_PATH,
   bodyHash,
   fail,
   loadConfig,
@@ -430,6 +431,15 @@ if (!existsSync(wellKnown) || !statSync(wellKnown).isFile()) {
   );
 }
 
+// Replit Static omits dot-directories from the published tree. Verified 2026-09-16 against
+// pond.greenhead.io: /.well-known/xrp-ledger.toml and /.nojekyll 404, while /_headers and
+// /robots.txt (non-dot files from the same public/ copy) return 200. Keep the RFC 8615 path
+// for hosts that serve it, and a non-dot twin so a rewrite (and Autoscale) can still answer
+// the XLS-26 URL.
+const wellKnownVisible = join(DIST_DIR, WELL_KNOWN_VISIBLE_PATH);
+mkdirSync(dirname(wellKnownVisible), { recursive: true });
+writeFileSync(wellKnownVisible, readFileSync(wellKnown));
+
 /* ------------------------------------------------------------------ summary */
 
 const files = [];
@@ -448,6 +458,7 @@ process.stdout.write(
     `  documents excluded  ${excluded} (see content.config.json "excluded")\n` +
     `  files in dist/      ${files.length}\n` +
     `  well-known          ${WELL_KNOWN_PATH} present (${statSync(wellKnown).size} bytes)\n` +
+    `  well-known twin     ${WELL_KNOWN_VISIBLE_PATH} present (${statSync(wellKnownVisible).size} bytes)\n` +
     `  launch status       ${site.launchStatus}\n`,
 );
 

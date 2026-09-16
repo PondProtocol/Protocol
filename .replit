@@ -3,11 +3,15 @@
 # The GitHub repo root is not the site root. The static site lives in site/,
 # builds with `npm ci && npm run check`, and writes HTML into site/dist.
 #
-# Run (editor preview): Node static server in site/scripts/serve.mjs.
-# Publish: Static Deployment of site/dist. CORS on the XLS-26 path is set
-# below — Replit does not read site/public/_headers (that file is for a
-# Cloudflare Pages fallback). After attaching pond.greenhead.io, verify:
-#   cd site && npm run verify:live -- pond.greenhead.io
+# Replit Static Deployments omit dotfiles/dot-directories from the published
+# tree. Verified 2026-09-16 on pond.greenhead.io: /.well-known/ and /.nojekyll
+# 404 while /_headers and /robots.txt 200. Two mitigations:
+#   1. Publish as Autoscale and serve with site/scripts/serve.mjs (serves
+#      .well-known/ from disk).
+#   2. A non-dot twin at /well-known/xrp-ledger.toml plus the rewrite below,
+#      so a Static publish can still answer the XLS-26 URL.
+#
+# After republish: cd site && npm run verify:live -- pond.greenhead.io
 # Leave the issuer on-ledger Domain unset until that check passes.
 
 modules = ["nodejs-20"]
@@ -27,12 +31,24 @@ localPort = 8080
 externalPort = 80
 
 [deployment]
-deploymentTarget = "static"
+deploymentTarget = "autoscale"
 build = ["bash", "-c", "cd site && npm ci && npm run check"]
+run = ["bash", "-c", "cd site && node scripts/serve.mjs"]
 publicDir = "site/dist"
-ignorePorts = true
+ignorePorts = false
+
+# Static fallback: the host strips .well-known/, so map the XLS-26 URL onto
+# the non-dot twin the build writes into site/dist/well-known/.
+[[deployment.rewrites]]
+from = "/.well-known/xrp-ledger.toml"
+to = "/well-known/xrp-ledger.toml"
+
+[[deployment.rewrites]]
+from = "/.well-known/*"
+to = "/well-known/*"
 
 # XLS-26: wallets fetch this path from the browser. Missing CORS is silent.
+# Match both the canonical URL and the non-dot twin.
 [[deployment.responseHeaders]]
 path = "/.well-known/xrp-ledger.toml"
 name = "Access-Control-Allow-Origin"
@@ -45,6 +61,21 @@ value = "text/plain; charset=utf-8"
 
 [[deployment.responseHeaders]]
 path = "/.well-known/xrp-ledger.toml"
+name = "X-Content-Type-Options"
+value = "nosniff"
+
+[[deployment.responseHeaders]]
+path = "/well-known/xrp-ledger.toml"
+name = "Access-Control-Allow-Origin"
+value = "*"
+
+[[deployment.responseHeaders]]
+path = "/well-known/xrp-ledger.toml"
+name = "Content-Type"
+value = "text/plain; charset=utf-8"
+
+[[deployment.responseHeaders]]
+path = "/well-known/xrp-ledger.toml"
 name = "X-Content-Type-Options"
 value = "nosniff"
 
