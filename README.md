@@ -13,7 +13,7 @@ Pond Protocol is the umbrella brand for both assets, and this repository is the 
 >
 > The *protocol* that relates the two tokens is not yet specified. Everything in `docs/spec/` is a skeleton. See **[docs/open-questions.md](docs/open-questions.md)** for the decisions that are still owner calls.
 >
-> **Sequencing:** **$PND launches first**; $rPND design work follows. The near-term open questions are therefore the $PND ones — what the IOU represents, freeze policy, custody, the domain, and distribution.
+> **Sequencing:** **$PND launches first**; $rPND design work follows. The near-term open questions are therefore the $PND ones — what the IOU represents, freeze policy, custody, metadata publication, and distribution.
 >
 > **Blocking the $rPND create, not the first launch:** $PND targets a supply of 100B while $rPND's provisional `MaximumAmount` is 1B in circulation — a 100:1 difference with no documented relationship. The $rPND figure is a working default that has never been issued, but it becomes permanent at create time. See [OQ-21](docs/open-questions.md#oq-21).
 
@@ -91,15 +91,16 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 - [docs/spec/](docs/spec/README.md) — specification skeleton, one file per area
 - [docs/open-questions.md](docs/open-questions.md) — every open design question and TODO, with IDs
 - [docs/glossary.md](docs/glossary.md) — XRPL and Pond Protocol terms
-- [docs/hosting-decision.md](docs/hosting-decision.md) — where to host the documentation site and the `/.well-known/xrp-ledger.toml` identity anchor, with verified CORS evidence per host. Awaiting an owner decision
+- [docs/hosting-decision.md](docs/hosting-decision.md) — Cloudflare Pages at `pondprotocol.pages.dev`, CORS evidence, and the dashboard settings to paste. Website host is chosen; on-ledger `Domain` stays unset
 - [CONTRIBUTING.md](CONTRIBUTING.md) — how to propose changes, and the rule against writing undecided design as settled fact
 
 ## Documentation site
 
 [`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
-and serves the XLS-26 `xrp-ledger.toml`. Nothing is deployed yet: the domain is undecided and the
-host is an owner decision. See [site/README.md](site/README.md) to build it locally and
-[docs/hosting-decision.md](docs/hosting-decision.md) for the recommendation.
+and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pondprotocol.pages.dev`
+(Cloudflare Pages). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
+verified live. See [site/README.md](site/README.md) for the dashboard settings to paste and
+[docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
 
 ## Networks
 

@@ -2,7 +2,7 @@
 source_repo: pnd
 source_path: docs/token-spec.md
 source_ref: main
-source_sha256: 5927a62aa418f2edeb48986c7077f4243b50c5dcc4a60948dfc06695ed691413
+source_sha256: c5e6f4905e466b62eae2b664eeb6e173ed429301dac408aa3cc4c0337d20a176
 title: Token specification
 url: /pnd/
 section: $PND — issued currency
@@ -18,9 +18,10 @@ $PND is an XRP Ledger issued currency (IOU). This file describes the asset as it
 | --- | --- |
 | Currency code | `PND` |
 | Code form | standard 3-character (not the 160-bit hex form) |
-| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` |
+| Issuer | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` — **issues both $PND and $rPND**, decided by the owner |
 | Issuer account ID | `F3D28C5718EC76EF8AD0666C77EC0E8954FCC85E` |
-| Operational (hot) account | TODO — the cold/hot split has not been made, so no distribution address exists |
+| Treasury account | `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` — holds the 90B vesting escrow. **Not funded** — `account_info` returns `actNotFound` on mainnet |
+| Operations account | `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` — receives the 10B circulating allocation, creates the AMM pool, runs day-to-day operations. **Not funded** — `account_info` returns `actNotFound` on mainnet |
 | Asset class (XLS-26) | `other` |
 | Display decimals | 6 |
 
@@ -139,6 +140,10 @@ Only issuer behavior, in one of two broad shapes:
 These two are in direct tension, and the tension is the point: **a cap that is verifiable is a cap that cannot be adjusted, and an issuer that stays live cannot offer more than a promise.** Intermediate arrangements exist — multi-signing the issuer, publishing signed attestations, or committing to a review cadence — and they trade off along the same axis rather than escaping it.
 
 The owner has not chosen. Until a choice is published here, treat 100 billion as a stated intention enforced by operational discipline, and treat `gateway_balances` as the way to check whether that intention is being kept.
+
+**The blackholing branch now carries an ordering constraint, because the issuer is shared.** `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` is the settled issuer for both $PND and $rPND. A blackholed account can never sign again, so if $rPND is ever going to exist on this address, its `MPTokenIssuanceCreate` must be submitted **before** this issuer is ever blackholed — not after, and not "later once things settle." Blackholing first forecloses $rPND on this address permanently.
+
+That ordering is moot in practice today, because the current $rPND config cannot be created on mainnet at all: it sets `ImmutableFlags` (to freeze clawback off), which requires the `DynamicMPT` amendment, and `DynamicMPT` is not enabled on mainnet — the create transaction returns `temDISABLED`. See [`pnd-vs-rpnd.md`](pnd-vs-rpnd.md#one-issuing-account-or-two) for the full reasoning. So blackholing this issuer is blocked on two independent grounds until either the $rPND config drops `ImmutableFlags` or `DynamicMPT` activates on mainnet — whichever comes first should be the one that unblocks blackholing, not a launch-day assumption.
 
 ### Related open items
 

@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: README.md
 source_ref: worktree
-source_sha256: 90ee7247cc4ac6193f8928e4b24f51c35115ae9e58b0a7133cb4fe4dd8c185e6
+source_sha256: 3ca7b4d5f52d66722d5e6dae8f66f8242b9715d44baa7a00cdb0cf5c34819ec1
 title: Overview
 url: /protocol/
 section: Protocol
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Pond Protocol
 
@@ -23,7 +23,7 @@ Pond Protocol is the umbrella brand for both assets, and this repository is the 
 >
 > The *protocol* that relates the two tokens is not yet specified. Everything in `docs/spec/` is a skeleton. See **[docs/open-questions.md](docs/open-questions.md)** for the decisions that are still owner calls.
 >
-> **Sequencing:** **$PND launches first**; $rPND design work follows. The near-term open questions are therefore the $PND ones — what the IOU represents, freeze policy, custody, the domain, and distribution.
+> **Sequencing:** **$PND launches first**; $rPND design work follows. The near-term open questions are therefore the $PND ones — what the IOU represents, freeze policy, custody, metadata publication, and distribution.
 >
 > **Blocking the $rPND create, not the first launch:** $PND targets a supply of 100B while $rPND's provisional `MaximumAmount` is 1B in circulation — a 100:1 difference with no documented relationship. The $rPND figure is a working default that has never been issued, but it becomes permanent at create time. See [OQ-21](docs/open-questions.md#oq-21).
 
@@ -35,7 +35,7 @@ The two assets are **different kinds of on-ledger object and are not interchange
 
 **$rPND — MPT.** A Multi-Purpose Token with the XLS-89 ticker `RPND`, **not yet created**. Holders would opt in with `MPTokenAuthorize`, and amounts are expressed as `{ mpt_issuance_id, value }` in base units at an asset scale of 6. The create transaction would make it transferable and lockable with transfer fee 0 and **clawback permanently disabled** via `tifMPTCanClawback` in `ImmutableFlags`. Capability flags are one-way, so whatever is enabled at create is permanent and the unset flags can be added later but never withdrawn. `MaximumAmount` caps circulating supply rather than cumulative issuance, since burns free headroom to mint again. Its supply parameters are working defaults; [`rpnd/docs/rpnd-spec.md`](https://github.com/PondProtocol/rPND/blob/main/docs/rpnd-spec.md) calls them "not ratified economics."
 
-The issuance toolkit signs transactions for both assets with one configured issuer wallet. Whether the production $rPND issuance comes from the same account as $PND, and whether the live deployment has a separate operational account, are still open — [OQ-22](docs/open-questions.md#oq-22) and [OQ-23](docs/open-questions.md#oq-23).
+The issuance toolkit signs transactions for both assets with one configured issuer wallet, and that is now the confirmed design: the owner has settled that the production $rPND issuance comes from the same account as $PND — [OQ-22](docs/open-questions.md#oq-22). The live deployment's account topology is also settled beyond the single "operational account" this repo used to describe: **Treasury** (`rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`, the 90B vesting escrow) and **Operations** (`rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`, the 10B liquidity/distribution allocation and AMM pool) are two separate named accounts — see [OQ-23](docs/open-questions.md#oq-23) for what remains open (a bot-ops account is recommended but not yet created, and neither Treasury nor Operations is funded on ledger yet).
 
 **What links them today.** The $rPND XLS-89 metadata carries `additional_info.paired_iou_currency = "PND"`. That field is documentation for indexers and operators. As [`rpnd/docs/tokens.md`](https://github.com/PondProtocol/rPND/blob/main/docs/tokens.md) states plainly, *the ledger does not atomically bind the IOU and the MPT*, and `rpnd/docs/rpnd-spec.md` adds that a $PND balance confers no claim on $rPND or the reverse. Any stronger relationship — a peg, a redemption or conversion path, a supply invariant across the two — is a protocol-level design decision that has **not been made or documented anywhere yet**. Tracked as [OQ-03](docs/open-questions.md#oq-03) and [OQ-04](docs/open-questions.md#oq-04) in mechanism terms, and [OQ-21](docs/open-questions.md#oq-21) in supply terms.
 
@@ -75,10 +75,12 @@ The issuance toolkit signs transactions for both assets with one configured issu
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Two roles carry authority in the procedure the toolkit implements, following standard XRPL practice:
+Three roles carry authority in the procedure the toolkit implements, following standard XRPL practice, and a fourth is recommended but not yet created:
 
-- **Issuer (cold)** — runs `AccountSet`, issues $PND, and creates $rPND. Its seed is meant to stay offline in production. For $PND this is `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
-- **Operational (hot)** — opens the $PND trust line, authorizes $rPND, and holds inventory for distribution. No public address for the live deployment ([OQ-23](docs/open-questions.md#oq-23)).
+- **Issuer (cold)** — `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`. Runs `AccountSet`, issues $PND, and creates $rPND — **for both tokens**, settled by the owner ([OQ-22](docs/open-questions.md#oq-22)). Its seed is meant to stay offline in production.
+- **Treasury** — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`. Holds the 90B $PND vesting escrow. Not funded on ledger yet ([OQ-23](docs/open-questions.md#oq-23)).
+- **Operations (hot)** — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`. Opens the $PND trust line, authorizes $rPND, holds the 10B distribution/liquidity inventory, and creates the AMM pool. Not funded on ledger yet.
+- **Bot-ops (recommended, not created)** — any automation gets a dedicated, bounded fifth-role account of its own, never a key on Operations, Treasury, or the Issuer. Operations carries the 10B liquidity allocation and must not double as a bot's wallet.
 
 Not shown, because it does not exist yet: any layer that performs settlement, redemption, or conversion between the two assets, and any holder-facing distribution mechanism. See [docs/architecture.md](docs/architecture.md) for the longer version and [docs/open-questions.md](docs/open-questions.md) for what is undefined.
 
@@ -99,15 +101,16 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 - [docs/spec/](docs/spec/README.md) — specification skeleton, one file per area
 - [docs/open-questions.md](docs/open-questions.md) — every open design question and TODO, with IDs
 - [docs/glossary.md](docs/glossary.md) — XRPL and Pond Protocol terms
-- [docs/hosting-decision.md](docs/hosting-decision.md) — where to host the documentation site and the `/.well-known/xrp-ledger.toml` identity anchor, with verified CORS evidence per host. Awaiting an owner decision
+- [docs/hosting-decision.md](docs/hosting-decision.md) — Cloudflare Pages at `pondprotocol.pages.dev`, CORS evidence, and the dashboard settings to paste. Website host is chosen; on-ledger `Domain` stays unset
 - [CONTRIBUTING.md](CONTRIBUTING.md) — how to propose changes, and the rule against writing undecided design as settled fact
 
 ## Documentation site
 
 [`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
-and serves the XLS-26 `xrp-ledger.toml`. Nothing is deployed yet: the domain is undecided and the
-host is an owner decision. See [site/README.md](site/README.md) to build it locally and
-[docs/hosting-decision.md](docs/hosting-decision.md) for the recommendation.
+and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pondprotocol.pages.dev`
+(Cloudflare Pages). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
+verified live. See [site/README.md](site/README.md) for the dashboard settings to paste and
+[docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
 
 ## Networks
 

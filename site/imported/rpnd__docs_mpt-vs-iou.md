@@ -2,11 +2,11 @@
 source_repo: rpnd
 source_path: docs/mpt-vs-iou.md
 source_ref: main
-source_sha256: 8063a3e1fa2c3794a62a288c1bc985b4b00a1bae624996adfe5b0c5db7f6fcd3
+source_sha256: e14f1083b78576595c1a946f7d42c35b8c3cca0da0539dc504f563b7a92a763b
 title: Why $rPND is an MPT
 url: /rpnd/why-mpt/
 section: $rPND — Multi-Purpose Token
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Why $rPND is an MPT
 
@@ -55,6 +55,6 @@ This is a comparison of ledger primitives. The economic relationship between the
 
 $PND is an issued currency with code `PND`. This repo does not convert it to an MPT, and the tradeoff table above shows why that is defensible on its own terms: an IOU works in every wallet, explorer, and venue today, with no dependency on the MPTokens amendment, and it can be traded on the DEX — which an MPT still cannot. The `pnd` repo documents $PND for holders and integrators, and covers the same comparison from the IOU side.
 
-Whether $rPND is issued from the same cold account is undecided; see [`issuance.md`](issuance.md#one-cold-account-or-two).
+$rPND is issued from the same cold account as $PND — settled by the owner, not undecided; see [`issuance.md`](issuance.md#one-cold-account-or-two) for the coupling and the blackholing ordering constraint it creates.
 
 TODO (owner): the economic division of roles between the two tokens is not yet defined in the `protocol` repo. State it in [`../README.md`](../README.md) once decided. What is true on ledger today: they are separate assets, the pairing is recorded only as `additional_info.paired_iou_currency` metadata, and no ledger mechanism binds them.

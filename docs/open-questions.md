@@ -144,9 +144,24 @@ Undecided: the legal entity that issues, and the concrete custody arrangement �
 
 **Canonical public domain and production asset URLs.**
 
-Documented today: placeholders. `icon` is `example.com/rpnd-icon.png`, `uris[0].uri` is `https://example.com/rpnd`, the toml template has `replace-me@example.com`, and `ISSUER_DOMAIN` is empty. On ledger the issuer has no `Domain` at all, so there is no verifiable link between the account and any domain today. `rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the file. Now that [OQ-02](#oq-02) is decided, the domain should be a Pond Protocol one.
+Documented today: the **website host** is `pondprotocol.pages.dev` (Cloudflare Pages, free). That
+host is filled into `site/content.config.json` and `site/public/.well-known/xrp-ledger.toml`.
+`[[TOKENS.URLS]]` website and verify links use `https://pondprotocol.pages.dev`. On ledger the
+issuer has no `Domain` at all, and it stays unset until CORS is verified on the live TOML path.
+`rpnd/docs/tokens.md` says metadata should not be treated as public until the domain serves the
+file — the file will be served; the two-way bind will not exist while `Domain` is unset.
 
-Undecided: the domain itself. Tracked as items 9, 10, and 11 in `pnd/docs/open-questions.md`.
+`$rPND` production URLs are still placeholders: `icon` is `example.com/rpnd-icon.png` and
+`uris[0].uri` is `https://example.com/rpnd`. The TOML has no `[[PRINCIPALS]]` (a disclosure
+decision) and no icon yet.
+
+`pondprotocol.pages.dev` is a Cloudflare platform hostname, not a domain Pond Protocol registers.
+Binding the on-ledger `Domain` to it later would accept a platform dependency that can only be
+changed while the issuer can still sign.
+
+Undecided: whether a registered domain later replaces `pages.dev` as the website host; whether
+`Domain` is ever set, and to which host; the icon; `[[PRINCIPALS]]`. Tracked as items 9, 10, and 11
+in `pnd/docs/open-questions.md`.
 
 ### OQ-13
 
@@ -289,7 +304,13 @@ Replace the placeholder $rPND asset values in `rpnd/config/tokens.json` before a
 
 ### TD-02
 
-Publish issuer metadata: pick the domain, run `render-toml`, replace `replace-me@example.com` in the `[[PRINCIPALS]]` block, serve the file at `https://<domain>/.well-known/xrp-ledger.toml`, then re-run `configure-issuer --domain <host>` so the AccountRoot `Domain` matches. Blocked by [OQ-12](#oq-12). This is a security task as much as a polish one — see [spec/07](spec/07-security-considerations.md#75-impersonation).
+Publish issuer metadata. The website host is `pondprotocol.pages.dev` and the TOML in
+`site/public/.well-known/xrp-ledger.toml` already names it. Remaining: a real square icon on a
+permanent host, whether to include `[[PRINCIPALS]]` (do not invent a contact), and confirming CORS
+on the live path with `cd site && npm run verify:live -- pondprotocol.pages.dev`. The on-ledger
+`Domain` field stays unset until that live check passes. `pages.dev` is a Cloudflare platform
+hostname — binding `Domain` to it later accepts a platform dependency that can only be changed
+while the issuer can still sign. See [spec/07](spec/07-security-considerations.md#75-impersonation).
 
 ### TD-03
 

@@ -2,7 +2,7 @@
 source_repo: pnd
 source_path: docs/pnd-vs-rpnd.md
 source_ref: main
-source_sha256: ffa6b993201ecd4f70842e9ce8aa6d76330f3f5bceb0961a84aae0a37bfe848b
+source_sha256: 2aba4c8b2a00a63495eb411ffe7af4270ebe8a89528e693e69f6a534e2c34dcf
 title: $PND and $rPND compared
 url: /protocol/two-tokens/
 section: Protocol
@@ -56,9 +56,21 @@ Anything that behaves as if $rPND is a wrapped or redeemable form of $PND is ass
 
 ## One issuing account, or two?
 
-`rpnd`'s tooling and docs assume a single cold account issues both assets, and its spec still records the issuer address as a TODO. This repository publishes `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` as the $PND issuer on the owner's instruction, which said nothing about $rPND.
+**Settled: one.** The owner has confirmed that `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` issues both $PND and $rPND. This was an open question in earlier revisions of this document and in `rpnd`'s spec; it is no longer open. Live state at the time of confirmation: the account is funded with 2.539034 XRP, `Flags` reads `0`, `OwnerCount` reads `0`, and nothing has been configured or issued from it — the decision is about which account will issue both tokens, not a statement about anything already on ledger.
 
-So the assumption is untested: whether that address is also the $rPND issuer needs the owner's confirmation, and it is worth settling before either issuance, because sharing one account couples the two assets' flags, `Domain`, and reserve exposure. Recorded as an open question here and in `rpnd`.
+Sharing one account couples the two assets exactly as previously flagged:
+
+- **Account flags are shared.** `asfNoFreeze`, `asfAllowTrustLineClawback`, `asfRequireAuth`, and global freeze apply to the whole account, so a $PND policy choice also becomes $rPND's posture.
+- **`Domain` is shared.** One `xrp-ledger.toml` covers both assets.
+- **Reserve and key exposure are shared.** One compromised or unusable cold key affects both assets at once.
+
+### The blackholing trap this creates
+
+Because one account issues both, blackholing is not a decision that can be made about $PND in isolation anymore. A blackholed account can never sign again — no `AccountSet`, no `Payment`, and no `MPTokenIssuanceCreate`. So **if $rPND is ever going to exist, its `MPTokenIssuanceCreate` must be submitted before this issuer is ever blackholed.** Blackhole first, and $rPND can never be created on this address, full stop; there is no account recovery and no second attempt.
+
+This compounds with a second, independent blocker. The $rPND config currently committed in `rpnd` (`config/tokens.json`) sets `ImmutableFlags` on the create transaction, to freeze `tfMPTCanClawback` permanently off. `ImmutableFlags` requires the **`DynamicMPT`** amendment. `DynamicMPT` is **not enabled on mainnet today** — `rpnd/docs/rpnd-spec.md` records that the exact create transaction this repo would submit returns `temDISABLED` on a network that mirrors mainnet's amendment set (Testnet), while the identical transaction with `ImmutableFlags` removed returns `tesSUCCESS`.
+
+So, stated plainly: **blackholing this issuer is blocked on two independent grounds today.** It should not happen before $rPND has been created on it, if $rPND is ever going to exist — and separately, the $rPND config as currently written cannot even be created on mainnet, so there is nothing yet to sequence before the blackhole. Either of two things clears the second blocker: the $rPND config drops `ImmutableFlags` (accepting "no clawback" as unenforced policy until `DynamicMPT` activates, rather than a ledger-frozen guarantee), or `DynamicMPT` itself activates on mainnet. Do not treat "blackhole once `Domain` points somewhere permanent" — the recommendation for the FirstLedger trust signal — as sufficient on its own; check both that $rPND already exists on this address (if it is ever going to) and that one of the two `DynamicMPT`/`ImmutableFlags` conditions above has been cleared.
 
 ## Undecided
 

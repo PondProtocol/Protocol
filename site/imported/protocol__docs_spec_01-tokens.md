@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: docs/spec/01-tokens.md
 source_ref: worktree
-source_sha256: 7341efe87018a7bfa74d41dc2458c10c9a6d8704db4a69e425539c49f99cb20e
+source_sha256: d507e51126359f9e244db6a5a4571617918da28011495d9a372ac1a7422e9976
 title: 01 — Tokens
 url: /spec/tokens/
 section: Specification
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # 01 — Tokens
 
@@ -42,7 +42,7 @@ Issuer account settings, none of which has been applied:
 | Require Destination Tag | off | not set | No change |
 | `TransferRate` | 0 | absent | No observable change; absent already means no transfer fee |
 | `TickSize` | 5 | absent | Rounds $PND order-book prices to 5 significant digits |
-| `Domain` | operator-supplied | absent | Required before XLS-26 metadata means anything — [05](05-metadata-and-discovery.md) |
+| `Domain` | unset (website host is `pondprotocol.pages.dev`) | absent | Would bind the issuer to the host serving `xrp-ledger.toml`. Stays unset until CORS is verified live. `pages.dev` is a Cloudflare platform hostname |
 | No Freeze | not configured | not set | Freeze capability remains with the issuer — [OQ-08](../open-questions.md#oq-08) |
 | Trust line clawback | not configured | not set, **and still settable** | Only settable while the account has never had a trust line. The first `TrustSet` closes it forever |
 

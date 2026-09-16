@@ -73,7 +73,7 @@ Its issuer settings are config intent, not live state. None has been applied:
 | Require Destination Tag | off | not set | No change; config and ledger agree |
 | `TransferRate` | 0 | absent | Absent already means no transfer fee, so applying it changes nothing observable |
 | `TickSize` | 5 | absent | Rounds order-book prices for $PND pairs to 5 significant digits. Absent means the ledger default applies |
-| `Domain` | operator-supplied | absent | Binds the issuer to the host serving `xrp-ledger.toml`. Absent means XLS-26 metadata cannot be verified at all |
+| `Domain` | unset (website host is `pondprotocol.pages.dev`) | absent | Would bind the issuer to the host serving `xrp-ledger.toml`. Absent means XLS-26 metadata cannot be verified against the account. Stays unset until CORS is verified live |
 
 The `displayDecimals` value of 6 is XLS-26 presentation metadata, not an account setting, and never appears on the AccountRoot.
 
@@ -106,10 +106,18 @@ Local issuance state (issuer address, operational address, `rpndIssuanceId`) is 
 
 Discovery is split across two mechanisms, one off ledger and one on:
 
-- **XLS-26, off ledger.** An `xrp-ledger.toml` served at `https://<domain>/.well-known/xrp-ledger.toml`, listing `[[ACCOUNTS]]`, `[[CURRENCIES]]`, and `[[TOKENS]]`. It is bound to the issuer by setting the AccountRoot `Domain` field to the same host — the template's own notice says addresses are authoritative only once `Domain` matches. The $rPND row is commented out in the template pending a real issuance id.
+- **XLS-26, off ledger.** An `xrp-ledger.toml` served at
+  `https://pondprotocol.pages.dev/.well-known/xrp-ledger.toml`. That is the **website host**, a
+  Cloudflare Pages platform hostname. It is bound to the issuer only if the AccountRoot `Domain`
+  field is set to the same host (`pondprotocol.pages.dev`, lowercase, no scheme) — and that field
+  is unset, and stays unset until CORS is verified on the live path. Binding `Domain` to a
+  `pages.dev` host would accept a platform dependency that can only be changed while the issuer can
+  still sign. The $rPND row is omitted pending a real issuance id.
 - **XLS-89, on ledger.** A JSON blob (ticker, name, desc, icon, asset class, issuer name, URIs, `additional_info`) hex-encoded into `MPTokenMetadata`, currently 249 bytes against a 1024-byte cap, validated by the toolkit before submission. `MPTokenIssuanceSet` replaces the whole blob; `tifMPTMetadata` would freeze it permanently and is not set — [OQ-10](open-questions.md#oq-10). The published `issuer_name` still reads `rPND` rather than `Pond Protocol` — [OQ-24](open-questions.md#oq-24).
 
-Both currently point at `example.com` placeholders, so neither is publishable yet — [OQ-12](open-questions.md#oq-12), [TD-01](open-questions.md#td-01), [TD-02](open-questions.md#td-02).
+Both currently point at incomplete metadata: the website host is filled in for XLS-26, the $rPND
+icon and URI are still `example.com` placeholders, and the on-ledger `Domain` is unset —
+[OQ-12](open-questions.md#oq-12), [TD-01](open-questions.md#td-01), [TD-02](open-questions.md#td-02).
 
 ### 5. Specification
 
@@ -139,7 +147,7 @@ What a holder must trust today, stated plainly because the spec cannot yet softe
 
 1. **The issuer's discretion over supply.** $rPND circulation is capped on ledger at `MaximumAmount`, though burns free headroom, so the cap is not a lifetime issuance budget. $PND, as an IOU, has no on-ledger cap at all; the operational trust limit bounds one line, not total issuance. The 100B $PND target is operator policy the ledger will not enforce, verifiable only by reading issuer obligations via `gateway_balances` — [OQ-06](open-questions.md#oq-06). How the two figures relate is undecided — [OQ-21](open-questions.md#oq-21).
 2. **The issuer's lock capability over $rPND.** `tfMPTCanLock` is set, and one-way flag semantics make it permanent — the issuer cannot renounce lock authority later. Clawback, by contrast, is permanently impossible. $PND has no freeze flags configured either way, so it retains the ledger's default freeze capability — [OQ-08](open-questions.md#oq-08).
-3. **The issuer's control of metadata.** The $rPND blob is mutable, and the off-ledger toml is whatever the domain serves. Both describe the asset; neither constrains it — [OQ-10](open-questions.md#oq-10).
+3. **The issuer's control of metadata.** The $rPND blob is mutable, and the off-ledger toml is whatever the website host (`pondprotocol.pages.dev`) serves. Both describe the asset; neither constrains it — [OQ-10](open-questions.md#oq-10). The on-ledger `Domain` is unset, so the TOML is not a completed XLS-26 bind.
 4. **Off-ledger obligations, if any exist.** Nothing documents $PND as a claim against anyone — [OQ-05](open-questions.md#oq-05).
 5. **Key custody.** A compromised cold key is a compromised protocol. There is no multi-sign or regular-key support in the toolkit today — [OQ-11](open-questions.md#oq-11).
 
@@ -150,7 +158,7 @@ Named explicitly so nobody assumes it exists:
 - Any settlement, redemption, or conversion path between $PND and $rPND
 - Any peg, price oracle, or reserve accounting
 - Any smart-contract or hook logic (the design is plain XRPL transactions)
-- Any holder-facing application, wallet, or website
+- Any holder-facing application or wallet (the documentation site at `pondprotocol.pages.dev` is not one)
 - Any trading venue, order book presence, or AMM pool
 - Any governance mechanism, on ledger or off
 - Any issued token. The issuer account is funded on mainnet, but it has no `AccountSet` applied, no trust lines, no obligations, and no MPT issuance — see [Live state](#live-state)

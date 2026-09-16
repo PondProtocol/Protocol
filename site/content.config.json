@@ -20,21 +20,31 @@
     "tagline": "Two XRP Ledger assets, one canonical identity.",
     "description": "Documentation for Pond Protocol: the $PND issued currency, the $rPND Multi-Purpose Token, and the verified issuer identity that distinguishes them from same-ticker impostors.",
     "issuerAddress": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
+    "$comment_knownAddresses": [
+      "Classic XRPL addresses this project publishes on purpose (Treasury, Operations).",
+      "The publication guard forbids every other classic address so third-party PND issuers",
+      "are never named. The issuer itself is site.issuerAddress, not this list."
+    ],
+    "knownAddresses": [
+      "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b",
+      "rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in"
+    ],
 
     "$comment_domain": [
-      "The domain is not chosen yet. Set \"domain\" to the real apex once it is registered - for",
-      "example \"pondprotocol.xyz\" - and everything that needs it picks it up: the {{domain}}",
-      "placeholder in authored pages, the canonical and og:url tags, and the sitemap.",
+      "This is the WEBSITE HOST, not the issuer's on-ledger Domain field.",
       "",
-      "While \"domain\" is empty the site renders domainPlaceholder as visible text so the reader",
-      "can see a decision is outstanding, and emits NO canonical or og:url tags at all. A canonical",
-      "URL pointing at a domain that does not exist is worse than having none.",
+      "  domain            = pondprotocol.pages.dev  (Cloudflare Pages, free).",
+      "  on-ledger Domain  = unset, and it stays unset until CORS is verified on the live",
+      "                      TOML path. Do not treat this hostname as AccountRoot Domain.",
       "",
-      "The domain must be one you will hold indefinitely. Once the issuer's on-ledger Domain field",
-      "points at it, and especially if the issuer is ever blackholed, losing the domain breaks the",
-      "token's metadata permanently. Treat its renewal as a protocol-critical dependency."
+      "pondprotocol.pages.dev is a Cloudflare platform hostname, not a domain Pond Protocol",
+      "registers and renews. Binding Domain to it later accepts a platform dependency that can",
+      "only be changed while the issuer can still sign.",
+      "",
+      "{{domain}} in authored pages, canonical tags, and og:url all read this value. Keep it",
+      "lowercase and without a scheme so it can match an AccountRoot Domain later if one is set."
     ],
-    "domain": "",
+    "domain": "pondprotocol.pages.dev",
     "domainPlaceholder": "REPLACE-WITH-YOUR-DOMAIN.example",
     "repoUrlBase": "https://github.com/PondProtocol",
 

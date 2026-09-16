@@ -1,7 +1,16 @@
 # Where to host the Pond Protocol site
 
-**Status: recommendation awaiting an owner decision.** Nothing is deployed. The domain is not
-chosen. No repository has been created.
+**Status: decided.** The public docs site deploys to Cloudflare Pages at
+**`https://pondprotocol.pages.dev`**. That is the **website host**. The issuer's on-ledger `Domain`
+field is unset and stays unset until CORS is verified on the live TOML path.
+
+`pondprotocol.pages.dev` is a Cloudflare platform hostname, not a domain Pond Protocol registers.
+Binding `Domain` to it later accepts a platform dependency that can only be changed while the
+issuer can still sign.
+
+Dashboard settings to paste are in [§7](#7-cloudflare-pages-settings-to-paste). A first create named
+`pond` with `npx wrangler deploy` is the Worker flow and will not produce this URL — delete it and
+create a Pages project named `pondprotocol`.
 
 Every header claim in this document was checked against a live host on **2026-09-15** by fetching
 real responses. Every build claim was checked by running the build. Where I could not verify
@@ -12,8 +21,14 @@ before acting on anything here.
 
 ## 1. The recommendation
 
-**Host the site on Cloudflare Pages, built from this repository, on a domain you register and hold
-indefinitely, with the apex as canonical and `www` redirecting to it.**
+**Host the site on Cloudflare Pages, built from this repository, at the free platform URL
+`pondprotocol.pages.dev`.** A domain you register can be pointed at the same project later. Do not
+treat `pages.dev` as the on-ledger `Domain` until CORS is verified live — and understand that
+binding `Domain` to a platform hostname is a dependency you can only change while the issuer can
+still sign.
+
+The project name must be `pondprotocol` to get that URL. Production branch `main`. Build settings
+are in [§7](#7-cloudflare-pages-settings-to-paste).
 
 One reason above all others: Cloudflare Pages is the only candidate that lets you set **both**
 `Access-Control-Allow-Origin` and `Content-Type` on `/.well-known/xrp-ledger.toml`, from a file
@@ -139,7 +154,7 @@ access-control-allow-origin: *
 ```
 
 **`_headers` can set `Content-Type` on a path inside `.well-known/`.** That is exactly what this
-project needs for `application/toml`, and it is exactly what GitHub Pages cannot do.
+project needs — XLS-26's usual choice is `text/plain` — and it is exactly what GitHub Pages cannot do.
 
 ### 2.4 A caveat that argues for verifying every deploy
 
@@ -332,7 +347,7 @@ does all three:
 And regardless of all three, verify the deployed result:
 
 ```bash
-cd site && npm run verify:live -- <domain>
+cd site && npm run verify:live -- pondprotocol.pages.dev
 ```
 
 None of this is a problem on Cloudflare Pages, which serves the directory it is given — but the
@@ -550,8 +565,9 @@ metrics change constantly, and naming them would be an accusation the site has n
 publication guard fails the build if any classic XRPL address other than the canonical issuer appears
 anywhere in the output, so it is a property of the build rather than an editorial habit.
 
-**Remaining step for the owner:** once the domain exists, link the org profile to `/verify/` so there
-is one canonical destination rather than two partial ones.
+**Remaining step for the owner:** once the site is live, link the org profile to
+`https://pondprotocol.pages.dev/verify/` so there is one canonical destination rather than two
+partial ones. Do not point the issuer `Domain` at this host as part of that step.
 
 **If the position is ever reversed,** it has to be reversed everywhere: `protocol/README.md`,
 `pnd/docs/token-spec.md`, the org profile, and this site — and it costs `/verify/` its function,
@@ -560,50 +576,86 @@ already exist. What must not happen is the surfaces drifting apart again by acci
 
 ---
 
-## 7. What the owner has to do
+## 7. Cloudflare Pages settings to paste
 
-Ordered. Each step depends on the one before it, and step 5 must not precede step 4.
+Create a **Pages** project, not a Worker. Dashboard path: **Workers & Pages → Create application →
+Pages → Connect to Git**, repository `PondProtocol/Protocol`. If the form shows a **Deploy command**
+defaulting to `npx wrangler deploy`, that is the Worker create flow — cancel it. This site is static
+HTML with no Wrangler config; that command fails with `Could not detect a directory containing static
+files`.
 
-**1. Choose and register the domain.** This gates everything else and it is the highest-stakes item.
-It must be a domain you will hold **indefinitely**. Register it for the longest term the registrar
-allows and treat its renewal as protocol-critical: once the issuer's `Domain` field points at it,
-and especially if the issuer is ever blackholed, losing the domain breaks the token's metadata
-permanently and unfixably. There is a mainnet `PND` token in exactly that state right now.
-Registering through Cloudflare collapses registrar, DNS and host into one account.
+These values match [`site/package.json`](../site/package.json) and
+[`.github/workflows/docs-site.yml`](../.github/workflows/docs-site.yml). Do not guess.
 
-**2. Create the Cloudflare Pages project.** Connect it to this repository, set the build to
-`npm ci && npm run check` with output directory `site/dist` and root directory `site`. No new GitHub
-repository is needed.
+| Dashboard field | Paste this |
+| --- | --- |
+| **Product** | Pages (not Worker) |
+| **Project name** | `pondprotocol` |
+| **Production branch** | `main` |
+| **Framework preset** | None — leave blank |
+| **Root directory** | `site` (not `/`) |
+| **Build command** | `npm ci && npm run check` |
+| **Build output directory** | `dist` (relative to `site`; files land in `site/dist`) |
+| **Deploy command** | **empty** — do not set `npx wrangler deploy` |
+| **Node.js version** | `22` — environment variable `NODE_VERSION=22` if asked |
 
-**3. Point the domain at it.** Add the apex as a custom domain in Cloudflare Pages; Cloudflare
-creates the flattened record. Add `www` and redirect it to the apex. TLS is issued and renewed
-automatically — do not attempt to manage certificates by hand.
+**A project named `pond` cannot be renamed to get this URL.** Cloudflare's documented known issue:
+`*.pages.dev` subdomains cannot be changed. Delete `pond` and create a new Pages project named
+`pondprotocol`. Renaming the existing project, if the dashboard offers it, does not move the
+hostname off `pond.pages.dev`.
 
-**4. Verify the identity anchor. Do not skip this.**
+`npm run check` is `node scripts/build.mjs --strict && node scripts/guard.mjs`. Using `npm run build`
+alone skips the publication guard.
+
+`site/public/_headers` is copied into `dist/` and covers `/.well-known/xrp-ledger.toml` with a
+path-specific rule:
+
+```
+/.well-known/xrp-ledger.toml
+  Access-Control-Allow-Origin: *
+  Content-Type: text/plain; charset=utf-8
+```
+
+Cloudflare Pages does **not** send CORS by default. After the first production deploy:
 
 ```bash
-cd site && npm run verify:live -- <your-domain>
+cd site && npm run verify:live -- pondprotocol.pages.dev
 ```
 
 That checks HTTPS status, `Access-Control-Allow-Origin`, `Content-Type`, and that the body has the
 right stanzas and no leftover placeholders. A missing CORS header is invisible in a browser, so
 looking at the page in a browser is not a substitute.
 
-**5. Only then set the issuer `Domain` field.** `AccountSet` with `Domain` set to the same host,
-hex-encoded from the **lowercase** ASCII. Doing this before step 4 publishes a pointer at a file
-that is not being served correctly, and the ecosystem caches what it finds.
+**Leave the issuer `Domain` field unset.** CORS has not been verified live. `pages.dev` is a
+Cloudflare platform hostname; binding `Domain` to it later accepts a platform dependency that can
+only be changed while the issuer can still sign.
 
-**6. Fill in the remaining TODOs** in `site/public/.well-known/xrp-ledger.toml`: the domain, a real
-square icon on a permanent host, and whether to include `[[PRINCIPALS]]` (which attaches a real name
-and email to the project — a disclosure decision).
+Remaining TODOs in `site/public/.well-known/xrp-ledger.toml` after this host is filled in: a real
+square icon on a permanent host, and whether to include `[[PRINCIPALS]]` (a disclosure decision —
+do not invent a contact). `$rPND` has no stanza until it exists on ledger.
 
-**7. Flip `launchStatus` to `live`** in `site/content.config.json` only once the issuer is configured
+**Flip `launchStatus` to `live`** in `site/content.config.json` only once the issuer is configured
 and $PND has actually been issued. That flag controls the sitewide "$PND has not launched" warning.
 It is the one edit on the site that could mislead a buyer, so it goes last.
 
-**No plan upgrade is required** for the recommended path. **No new repository is required.** If you
-choose GitHub Pages instead, both of those change: you need either a paid GitHub plan or one new
-**public** repository — created by you, not by an agent, and not `.github`.
+**No plan upgrade is required.** **No new repository is required.** If you later attach a domain
+you register, add it as a custom domain on this same Pages project; the `_headers` file and the
+TOML path stay put. Changing the website host in the TOML is a docs edit. Changing an on-ledger
+`Domain`, if one is ever set, is not.
+
+### What is still on the owner
+
+1. **Delete `pond` if it exists, then create a Pages project named `pondprotocol`** with the table
+   above. Do not reuse the Worker create flow. `*.pages.dev` cannot be renamed.
+2. **Add `SIBLING_REPOS_TOKEN` and branch protection on `main`.** Cloudflare Pages builds from a
+   push and does not run the GitHub Actions staleness job, so a direct push can publish a stale
+   snapshot of sibling-repo docs.
+3. **Run `verify:live` against the production URL** once the first deploy finishes.
+4. **Optionally register a real domain later** and point it at the same project. That is the
+   better long-term host for an on-ledger `Domain`, because you control renewal. Not a step for
+   this deploy.
+5. **Confirm the tier-2 calls** in §6 — specifically whether the `open-questions.md` files stay
+   public — if that has not been settled.
 
 ---
 
@@ -651,4 +703,4 @@ All checks 2026-09-15.
 | Replit static hosting | Replit docs, deployment types | Static tier: no backend, docs sites listed as ideal |
 | Replit header config | Replit docs, static config | `[[deployment.responseHeaders]]` can set CORS; `Content-Type` not reserved |
 | This site's build | `npm run check` in `site/` | 24 pages, `.well-known/xrp-ledger.toml` at the exact path, 31 guard checks pass |
-| Local serving | `npm run serve`, then `curl -I` | 200, `application/toml`, `access-control-allow-origin: *` |
+| Local serving | `npm run serve`, then `curl -I` | 200, `text/plain`, `access-control-allow-origin: *` |
