@@ -38,33 +38,25 @@ jobs:
         with:
           path: protocol
 
-      # Reading another private repository in the same org needs a token the default GITHUB_TOKEN
-      # does not provide. Create a fine-grained PAT or GitHub App token with Contents: read on
-      # PondProtocol/PND and PondProtocol/rPND, and store it as the SIBLING_REPOS_TOKEN secret.
-      #
-      # This job fails loudly rather than skipping when the secret is missing. A staleness check
-      # that quietly does nothing is worse than none: it reports success while the site publishes
-      # documentation the source repositories have already corrected.
-      - name: Check the cross-repo token exists
+      # PND and rPND are public, so the default GITHUB_TOKEN can clone them. SIBLING_REPOS_TOKEN
+      # is an optional override (private-repo fallback, or a PAT if the default token is not
+      # enough). Do not fail when it is unset — that was correct while the siblings were private
+      # and is now a false blocker. A missing clone still fails the checkout step itself.
+      - name: Sibling clone auth
         env:
-          TOKEN: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          HAS_SIBLING_TOKEN: ${{ secrets.SIBLING_REPOS_TOKEN != '' }}
         run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::error::SIBLING_REPOS_TOKEN is not set."
-            echo "This job compares site/imported/ against the pnd and rpnd repositories, which are"
-            echo "private, so it needs a token with Contents: read on both."
-            echo
-            echo "Create a fine-grained PAT (or GitHub App installation token) scoped to"
-            echo "PondProtocol/PND and PondProtocol/rPND, then add it as a repository secret named"
-            echo "SIBLING_REPOS_TOKEN."
-            exit 1
+          if [ "$HAS_SIBLING_TOKEN" = "true" ]; then
+            echo "Cloning PND and rPND with SIBLING_REPOS_TOKEN"
+          else
+            echo "Cloning PND and rPND with GITHUB_TOKEN (repos are public)"
           fi
 
       - uses: actions/checkout@v5
         with:
           repository: PondProtocol/PND
           path: pnd
-          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          token: ${{ secrets.SIBLING_REPOS_TOKEN || github.token }}
           # Full history: content.config.json may pin a source to a branch other than the default,
           # and a shallow single-branch clone cannot resolve one.
           fetch-depth: 0
@@ -73,7 +65,7 @@ jobs:
         with:
           repository: PondProtocol/rPND
           path: rpnd
-          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          token: ${{ secrets.SIBLING_REPOS_TOKEN || github.token }}
           fetch-depth: 0
 
       - uses: actions/setup-node@v5
