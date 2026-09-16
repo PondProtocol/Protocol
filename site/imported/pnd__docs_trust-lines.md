@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: docs/trust-lines.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: c1cba9af361a2c4fc737dfc141151c766cc55d2ce871c095ffce2a14a253483c
 title: Holding $PND
 url: /pnd/holding/
 section: $PND — issued currency
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Holding $PND
 

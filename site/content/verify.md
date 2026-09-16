@@ -98,14 +98,23 @@ this section will say so.
 
 ### 2. Four queries against a public node
 
-Nothing between you and the ledger. Each one answers a different question:
+Nothing between you and the ledger. Copy all four:
 
 ```
-account_info     {{issuerAddress}}   # account flags, Domain, TransferRate, TickSize
-account_lines    {{issuerAddress}}   # trust lines — who holds $PND
-account_objects  {{issuerAddress}}   # MPT issuance objects — whether $rPND exists
-gateway_balances {{issuerAddress}}   # outstanding obligations — how much $PND was issued
+account_info     {{issuerAddress}}
+account_lines    {{issuerAddress}}
+account_objects  {{issuerAddress}}
+gateway_balances {{issuerAddress}}
 ```
+
+Each answers a different question:
+
+| Query | What it tells you |
+| --- | --- |
+| `account_info` | Account flags, `Domain`, `TransferRate`, `TickSize` |
+| `account_lines` | Trust lines — who holds $PND |
+| `account_objects` | MPT issuance objects — whether $rPND exists |
+| `gateway_balances` | Outstanding obligations — how much $PND was issued |
 
 As a single runnable command:
 
@@ -131,7 +140,7 @@ objects, no obligations. Two fields to read once that changes:
   breaks the link below even though it looks correct.
 
 ```bash
-python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <DOMAIN_HEX_FROM_RESPONSE>
+python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <HEX>
 ```
 
 Balances, ledger indexes and sequence numbers are deliberately quoted nowhere on this page, because

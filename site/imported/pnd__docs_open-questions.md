@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: docs/open-questions.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: 502a568657a2c42c55a60542a01a67d396896726fce5e19f6c063efc3472d0eb
 title: Open questions — $PND
 url: /open-questions/pnd/
 section: Project status
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # Open questions
 

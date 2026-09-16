@@ -118,8 +118,12 @@
       "",
       "`pinnedReason` is REQUIRED whenever `ref` is not \"main\" or \"worktree\". A pin means this site",
       "is vendoring documentation from an unmerged branch, which is a temporary state that must be",
-      "visible rather than discovered later. The build prints a warning for every pin and the guard",
-      "fails if a pin has no reason."
+      "visible rather than discovered later. The build prints a warning for every pin, the guard",
+      "fails if a pin has no reason, and `sync --check` fails once the pinned branch has merged.",
+      "",
+      "There are no pins right now. `pnd` was pinned to its correction branch while PND PR #3 was",
+      "open, because pnd/main still presented Default Ripple as enabled on an issuer whose Flags are",
+      "0. That PR has merged, so all three sources read from their default branch again."
     ],
     "protocol": {
       "path": "..",
@@ -127,8 +131,7 @@
     },
     "pnd": {
       "path": "../../pnd",
-      "ref": "origin/cursor/pnd-issuer-funded-state-7b41",
-      "pinnedReason": "PND PR #3 corrects the same false claim this site would otherwise publish: pnd/main still presents Default Ripple as enabled on the issuer, when Flags is 0 on the live account and holder-to-holder $PND payments therefore do not work. Vendoring from pnd/main would republish that. UNPIN TO \"main\" the moment PND PR #3 merges — the staleness check will fail until you do, which is the intended reminder."
+      "ref": "main"
     },
     "rpnd": {
       "path": "../../rpnd",

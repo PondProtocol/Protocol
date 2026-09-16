@@ -71,7 +71,9 @@ a separate, per-product question, and in at least one significant case the answe
 To check what the ecosystem currently holds for $PND:
 
 ```bash
-curl -sS "https://s1.xrplmeta.org/v2/token/PND:{{issuerAddress}}" | python3 -m json.tool
+ISSUER={{issuerAddress}}
+curl -sS "https://s1.xrplmeta.org/v2/token/PND:$ISSUER" \
+  | python3 -m json.tool
 ```
 
 ## Verifying this domain serves it correctly

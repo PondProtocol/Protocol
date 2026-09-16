@@ -1,12 +1,12 @@
 ---
 source_repo: pnd
 source_path: README.md
-source_ref: origin/cursor/pnd-issuer-funded-state-7b41
+source_ref: main
 source_sha256: 1b6852400e8f8013fcac88b3650b931381e1ce3b735d47e0b6b519ac1690603b
 title: Overview
 url: /pnd/overview/
 section: $PND — issued currency
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # PND
 
