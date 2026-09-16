@@ -96,9 +96,14 @@ function canonicalLinksHtml() {
   return `<div class="canon">${warning}<ul class="canon-list">\n${rows}\n</ul></div>`;
 }
 
+if (!site.treasuryAddress) fail("site.treasuryAddress missing from content.config.json");
+if (!site.operationsAddress) fail("site.operationsAddress missing from content.config.json");
+
 const substitutions = {
   "{{issuerAddress}}": site.issuerAddress,
   "{{issuerAddressStatus}}": site.issuerAddressStatus,
+  "{{treasuryAddress}}": site.treasuryAddress,
+  "{{operationsAddress}}": site.operationsAddress,
   "{{domain}}": displayDomain,
   "{{title}}": site.title,
   "{{tagline}}": site.tagline,
@@ -322,8 +327,8 @@ function tocHtml(html) {
 }
 
 const banner = isPreLaunch
-  ? `<div class="banner" role="status"><strong>$PND has not launched.</strong> The issuer account is
-     funded but not yet configured, and no $PND has been issued. Any token trading under the code
+  ? `<div class="banner" role="status"><strong>$PND has not launched.</strong> Target
+     1 October 2026. No $PND has been issued. Any token trading under the code
      <code>PND</code> today is <strong>not</strong> $PND. <a href="/verify/">How to verify &rarr;</a></div>`
   : "";
 
@@ -343,6 +348,23 @@ function layout(page, html) {
       }${
         pinned ? ` &middot; from unmerged branch <code>${esc(page.sourceRef)}</code>` : ""
       }. Edit it there, not here.</p>`
+    : "";
+  // Sibling-repo token-spec still names a 90B Treasury escrow. That is not the
+  // public schedule. Authored /vesting/ is the high-level split. Never invent
+  // a claim UI from this notice.
+  const lockedNinety =
+    /holds the 90\s*(?:B|billion).{0,40}escrow/i.test(page.markdown || "") ||
+    /holding the 90\s*(?:B|billion).{0,40}escrow/i.test(page.markdown || "") ||
+    /the 90B(?: \$PND)? vesting escrow/i.test(page.markdown || "");
+  const supplyRevision = page.repo && lockedNinety
+    ? `<div class="callout callout-critical" data-supply-revision="1">
+<p><strong>Supply split is not a 90 billion escrow.</strong> Do not treat ten
+9 billion self-escrows as the public schedule. High-level split: 10 billion
+public, 10 billion team, 80 billion to holders at 10 billion per month from
+2027-01-01 through 2027-08-01, proportional to $PND held. Snapshot plus
+treasury payments, not TokenEscrow, not a claim.
+<a href="/vesting/">Supply split</a>.</p>
+</div>`
     : "";
 
   return `<!DOCTYPE html>
@@ -366,9 +388,15 @@ ${canonical}
 <header class="topbar">
   <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>${esc(site.title)}</a>
   <nav class="topnav" aria-label="Primary">
+    ${
+      isPreLaunch
+        ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>`
+        : ""
+    }
     <a href="/verify/" class="cta">Verify the real $PND</a>
-    <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
-    <a href="/protocol/">Protocol</a>
+    <a href="/hold/">Hold</a>
+    <a href="/wallets/">Wallets</a>
+    <a href="/links/">Links</a>
   </nav>
 </header>
 ${banner}
@@ -376,7 +404,7 @@ ${banner}
   <aside class="sidebar" aria-label="Documentation">${navHtml(page.url)}</aside>
   <main id="main">
     ${tocHtml(html)}
-    <article class="prose">${html}</article>
+    <article class="prose">${supplyRevision}${html}</article>
     ${provenance}
   </main>
 </div>

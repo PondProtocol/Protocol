@@ -1,65 +1,45 @@
 # Pond Protocol
 
-{{tagline}}
+<img class="hero-icon" src="/icon-512.png" width="96" height="96" alt="">
 
-Pond Protocol is the umbrella for two XRP Ledger assets. They are different kinds of on-ledger
-object, they are not interchangeable, and neither confers a claim on the other:
+<p class="hero-tagline">{{tagline}}</p>
 
-| Token | Ledger type | Identifier |
-| --- | --- | --- |
-| **$PND** | Issued currency (IOU), held on trust lines | currency code `PND` |
-| **$rPND** | Multi-Purpose Token (MPT) | ticker `RPND`, plus an `MPTokenIssuanceID` assigned at create time |
+Pond Protocol issues $PND on the XRP Ledger.
+
+<div class="hero-status" role="status">
+  <span class="status-chip">Pre-launch · nothing issued yet</span>
+  <span>Launches <strong>1 October 2026</strong>. $PND has not launched. There is nothing to buy.</span>
+</div>
 
 <div class="callout callout-critical">
 
-## Start here: verify the issuer
+## Verify. Do not search.
 
-Anyone can issue a token with the currency code `PND`, and several accounts already have. A ticker
-is not an identity — only the pair **(currency code, issuer address)** is.
+Ticker search is how you get scammed. Anyone can issue the code `PND`. Several
+accounts already have. A search box will show you *a* PND. It will not show you
+ours unless you already know the issuer.
 
-Worse, **searching for a token is not a reliable way to find it.** On XRPL trading front-ends,
-tokens with real liquidity and tens of thousands of holders have been verified as unreachable by
-searching either their ticker or their issuer address, while unrelated same-ticker tokens appear
-instead. A direct link from a source you trust is the dependable route.
+The identity is the pair **(currency code, issuer address)**. Copy this address.
+Do not type it from memory, and do not trust a ticker in a wallet dropdown.
 
-<p><a class="button" href="/verify/">Verify the real $PND &rarr;</a></p>
+<p><code class="addr">{{issuerAddress}}</code></p>
 
-That page carries the canonical issuer address, the direct links to where $PND can actually be
-viewed and traded, and how to confirm all of it against the ledger yourself.
+<p>
+<a class="button" href="/verify/">Verify the real $PND &rarr;</a>
+<a class="button button-quiet" href="/hold/">How to hold it safely</a>
+</p>
 
 </div>
 
-## Where to go
+## Join from here
 
-**If you want to hold or trade $PND** — read [Verify the issuer](/verify/) first, then
-[Holding $PND](/pnd/holding/) for how trust lines work and what they cost.
-
-**If you are integrating** — [Integration guide](/pnd/integration/) covers displaying and moving
-$PND, and [Token specification](/pnd/) is the parameter reference.
-
-**If you are an indexer or wallet** — [xrp-ledger.toml](/xrp-ledger-toml/) explains the XLS-26
-metadata this domain serves and how it links back to the issuer account.
-
-**If you want the design** — [Architecture](/protocol/architecture/) describes what exists today,
-the [specification](/spec/) is the (still skeletal) normative description, and
-[open questions](/open-questions/) is the honest list of what has not been decided.
-
-## Current status
-
-The two tokens exist as working, tested issuance code. The **protocol that relates them does not
-exist yet** — there is no peg, no redemption path, no conversion mechanism, and no supply invariant
-across the two assets. The only on-ledger link is a metadata field on $rPND recording
-`paired_iou_currency = "PND"`, which is documentation for indexers and nothing more.
-
-$PND launches first. $rPND cannot trade anywhere on mainnet today: MPT DEX and AMM support arrives
-with a ledger amendment that is not yet enabled, so $rPND can currently be held and sent but not
-traded.
-
-We would rather publish that plainly than imply a finished system. The
-[open questions](/open-questions/) page is the full list, including the ones that are still owner
-decisions.
-
-## Source
-
-Documentation on this site is generated from the project repositories, so the pages here and the
-repository documents do not drift apart. Each page names the file it came from at the bottom.
+<div class="join">
+<a class="join-card" href="/verify/"><strong>Verify</strong><span>Issuer address, impostor board, ledger checks.</span></a>
+<a class="join-card" href="/wallets/"><strong>Wallets</strong><span>Issuer, Treasury, Operations, live flags.</span></a>
+<a class="join-card" href="/hold/"><strong>Hold safely</strong><span>Trust this issuer after launch. No seeds. No connect-wallet.</span></a>
+<a class="join-card" href="/links/"><strong>Official links</strong><span>This site, the TOML file, Bithomp. Nothing else.</span></a>
+<a class="join-card" href="/vesting/"><strong>Supply split</strong><span>10B public, 10B team, 80B to holders at 10B/month from 2027-01-01 through 2027-08-01, proportional. Snapshot + treasury payments, not escrow.</span></a>
+<a class="join-card" href="/pnd-and-rpnd/"><strong>$PND and $rPND</strong><span>Two different ledger objects. $rPND is not launching 1 Oct.</span></a>
+<a class="join-card" href="/discovery/"><strong>How wallets learn the name</strong><span>Domain + TOML. DEX About boxes may stay empty.</span></a>
+<a class="join-card" href="/xrp-ledger-toml/"><strong>xrp-ledger.toml</strong><span>The XLS-26 file this host serves.</span></a>
+</div>

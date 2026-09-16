@@ -122,8 +122,9 @@ check("no navigable link points at a placeholder domain", linkHits.length === 0,
 
 // 6. The identity anchor names the website host and does not claim a placeholder.
 //
-// Remaining TODOs (icon, PRINCIPALS) are still expected. The website host is not the issuer's
-// on-ledger Domain field — that stays unset. verify-live.mjs is what checks a real deploy.
+// Remaining TODOs (icon, PRINCIPALS) are still expected. Live Domain and flags belong on
+// authored HTML (/wallets/), not in TOML comments. The TOML file must keep the comment that
+// distinguishes website host from on-ledger Domain rather than claiming No Freeze there.
 if (existsSync(wellKnown)) {
   const toml = readFileSync(wellKnown, "utf8");
   const hasPlaceholder = /REPLACE-WITH-YOUR-DOMAIN/.test(toml);
@@ -154,11 +155,16 @@ if (config.site.launchStatus !== "live") {
     "pre-launch notice is rendered on the landing page",
     existsSync(index) && readFileSync(index, "utf8").includes("has not launched"),
   );
-  check(
-    "verify page states no $PND has been issued",
-    existsSync(join(DIST_DIR, "verify", "index.html")) &&
-      readFileSync(join(DIST_DIR, "verify", "index.html"), "utf8").includes("has not been issued"),
-  );
+    check(
+      "verify page states no $PND has been issued",
+      existsSync(join(DIST_DIR, "verify", "index.html")) &&
+        readFileSync(join(DIST_DIR, "verify", "index.html"), "utf8").includes("has not been issued"),
+    );
+    check(
+      "wallets page states no $PND has been issued",
+      existsSync(join(DIST_DIR, "wallets", "index.html")) &&
+        readFileSync(join(DIST_DIR, "wallets", "index.html"), "utf8").includes("has not been issued"),
+    );
 }
 
 // 8. Verifying the issuer is a core function of the site, so it must be reachable in one click
@@ -295,14 +301,9 @@ const pins = Object.entries(roots).filter(([, r]) => r.ref !== "main" && r.ref !
 const unexplained = pins.filter(([, r]) => !r.pinnedReason).map(([n]) => n);
 check("every pinned source repository records a reason", unexplained.length === 0, unexplained.join(", "));
 
-// 14. Regression test for the specific false claim that shipped in the first revision of this PR.
-//     pnd/main and protocol/main both stated Default Ripple was enabled on the issuer, when the
-//     live account has Flags 0. Publishing that tells readers holders can pay each other in $PND.
-//     Pinned to a string rather than a document so it survives the documents being reorganised.
-//     Patterns run against tag-stripped text, not raw HTML. A markdown table cell becomes
-//     `<td>Default Ripple</td><td>Enabled on the issuer</td>`, so a pattern written against the
-//     markdown pipe syntax would never match the built output and the check would silently pass
-//     forever. Normalising first is what makes this assertion real.
+// 14. Authored pages must match the live issuer snapshot, not the Flags-0 era.
+//     Vendored spec docs can lag until those repos are synced; they are not this check.
+//     Default Ripple and No Freeze are on as of 2026-09-16; $PND is still unissued.
 const asText = (html) =>
   html
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, " ")
@@ -310,24 +311,178 @@ const asText = (html) =>
     .replace(/&[a-z]+;|&#\d+;/gi, " ")
     .replace(/\s+/g, " ");
 
-const falseClaims = [
-  { pattern: /Default Ripple enabled \(so balances can ripple/i, what: "described as enabled in prose" },
-  { pattern: /Default Ripple\s+Enabled on the issuer/i, what: "tabulated as enabled" },
-  { pattern: /Default Ripple[^.]{0,40}\bis (?:set|enabled)\b/i, what: "asserted as currently set" },
-];
-for (const { pattern, what } of falseClaims) {
-  const hits = textFiles
-    .filter((f) => f.endsWith(".html"))
-    .filter((f) => pattern.test(asText(readFileSync(f, "utf8"))))
-    .map((f) => relative(DIST_DIR, f));
+const walletsPage = join(DIST_DIR, "wallets", "index.html");
+const walletsHtml = existsSync(walletsPage) ? readFileSync(walletsPage, "utf8") : "";
+const walletsText = asText(walletsHtml);
+check("wallets page was built", walletsHtml.length > 0);
+check(
+  "wallets page shows the issuer, Treasury, and Operations addresses",
+  walletsHtml.includes(config.site.issuerAddress) &&
+    walletsHtml.includes(config.site.treasuryAddress) &&
+    walletsHtml.includes(config.site.operationsAddress),
+);
+check(
+  "wallets page does not invent a bot-ops address",
+  /no address/i.test(walletsText) && /not created/i.test(walletsText),
+);
+check(
+  "wallets page states Default Ripple and No Freeze from live account_flags",
+  /Default Ripple/i.test(walletsText) && /No Freeze/i.test(walletsText),
+);
+check(
+  "wallets page does not publish a DEX trade URL",
+  !/firstledger\.net\/token/i.test(walletsHtml) && !/xpmarket\.com\/dex/i.test(walletsHtml),
+);
+check(
+  "wallets page names the 2026-10-01 launch date without claiming $PND is live",
+  walletsHtml.includes("2026-10-01") && /has not been issued/i.test(walletsText),
+);
+
+const indexHtml = existsSync(index) ? readFileSync(index, "utf8") : "";
+const indexText = asText(indexHtml);
+check(
+  "landing page uses the owner tagline as-is",
+  indexHtml.includes("Where Liquidity Goes to Stay."),
+);
+check(
+  "landing page does not paraphrase the tagline as a substitute headline",
+  !/Where Liquidity Remains/i.test(indexText) && !/Liquidity Stays Here/i.test(indexText),
+);
+
+const vestingPage = join(DIST_DIR, "vesting", "index.html");
+const vestingHtml = existsSync(vestingPage) ? readFileSync(vestingPage, "utf8") : "";
+const vestingText = asText(vestingHtml);
+check("supply-split page was built", vestingHtml.length > 0);
+check(
+  "supply-split page is the 10 / 10 / 80 snapshot path, not TokenEscrow",
+  /10 billion public/i.test(vestingText) &&
+    /10 billion team/i.test(vestingText) &&
+    /80 billion/i.test(vestingText) &&
+    /proportional to \$PND held/i.test(vestingText) &&
+    vestingHtml.includes("2027-01-01") &&
+    vestingHtml.includes("2027-08-01") &&
+    /snapshot/i.test(vestingText) &&
+    /treasury payments/i.test(vestingText) &&
+    /not TokenEscrow/i.test(vestingText),
+);
+check(
+  "supply-split page does not require trust-line locking",
+  !/asfAllowTrustLineLocking/i.test(vestingHtml) &&
+    !/SetFlag:\s*17/i.test(vestingHtml),
+);
+check(
+  "authored pages do not lock ten 9B escrows as the public schedule",
+  !/locked as ten/i.test(walletsText) &&
+    !/ten 9 billion Treasury self-escrows is the public/i.test(vestingText),
+);
+check(
+  "wallets page does not treat trust-line locking as required",
+  !/later step \*if\* escrow/i.test(walletsText) &&
+    !/asfAllowTrustLineLocking is required/i.test(walletsText),
+);
+
+const lockedNinetyHtml = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  const locked =
+    /holds the 90\s*(?:B|billion).{0,40}escrow/i.test(html) ||
+    /holding the 90\s*(?:B|billion).{0,40}escrow/i.test(html) ||
+    /the 90B(?: \$PND)? vesting escrow/i.test(html);
+  if (locked && !html.includes('data-supply-revision="1"')) {
+    lockedNinetyHtml.push(relative(DIST_DIR, file));
+  }
+}
+check(
+  "pages that still name a 90B escrow are marked as being revised",
+  lockedNinetyHtml.length === 0,
+  lockedNinetyHtml.join(", "),
+);
+
+const holdPage = join(DIST_DIR, "hold", "index.html");
+const holdHtml = existsSync(holdPage) ? readFileSync(holdPage, "utf8") : "";
+check("hold page was built", holdHtml.length > 0);
+check(
+  "hold page forbids seeds, connect-wallet, and claim buttons",
+  /no seed/i.test(asText(holdHtml)) && /connect a wallet/i.test(asText(holdHtml)) && /claim button/i.test(asText(holdHtml)),
+);
+
+const linksPage = join(DIST_DIR, "links", "index.html");
+const linksHtml = existsSync(linksPage) ? readFileSync(linksPage, "utf8") : "";
+check(
+  "official links name site, TOML, and Bithomp only as the list",
+  linksHtml.includes("pond.greenhead.io") &&
+    linksHtml.includes("xrp-ledger.toml") &&
+    linksHtml.includes("bithomp.com/explorer"),
+);
+check(
+  "official links page has no Telegram invite and no DEX trade path",
+  !/t\.me\//i.test(linksHtml) &&
+    !/telegram\.org/i.test(linksHtml) &&
+    !/firstledger\.net\/token/i.test(linksHtml),
+);
+
+const twoPage = join(DIST_DIR, "pnd-and-rpnd", "index.html");
+check(
+  "$PND and $rPND page says $rPND is not launching 1 Oct",
+  existsSync(twoPage) && /not launching on 1 October 2026/i.test(asText(readFileSync(twoPage, "utf8"))),
+);
+
+const discPage = join(DIST_DIR, "discovery", "index.html");
+check(
+  "discovery page exists and does not invent a DEX trade URL",
+  existsSync(discPage) && !/firstledger\.net\/token/i.test(readFileSync(discPage, "utf8")),
+);
+
+const joinInputs = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  if (/<input\b/i.test(html) || /<textarea\b/i.test(html) || /<form\b/i.test(html)) {
+    joinInputs.push(relative(DIST_DIR, file));
+  }
+}
+check("no seed or wallet-connect fields in the HTML", joinInputs.length === 0, joinInputs.join(", "));
+
+const dexHits = [];
+for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
+  const html = readFileSync(file, "utf8");
+  if (/firstledger\.net\/token/i.test(html) || /xpmarket\.com\/dex/i.test(html) || /xmagnetic\.org\/dex/i.test(html)) {
+    dexHits.push(relative(DIST_DIR, file));
+  }
+}
+check("no guessed DEX trade URLs in HTML", dexHits.length === 0, dexHits.join(", "));
+
+const icon512 = join(DIST_DIR, "icon-512.png");
+const tomlText = existsSync(wellKnown) ? readFileSync(wellKnown, "utf8") : "";
+const tomlHasIcon = /^\s*icon\s*=/m.test(tomlText);
+if (tomlHasIcon) {
   check(
-    `no page claims the issuer is configured (${what})`,
-    hits.length === 0,
-    hits.length
-      ? `${hits.join(", ")} — the live issuer has Flags 0, so holder-to-holder $PND payments do not work`
-      : "",
+    "TOML icon is only set when /icon-512.png is in the build",
+    existsSync(icon512),
   );
 }
+
+check(
+  "status chip is rendered while pre-launch",
+  config.site.launchStatus === "live" || (existsSync(index) && readFileSync(index, "utf8").includes("nothing issued yet")),
+);
+
+const authoredStale = [];
+for (const url of authoredUrls) {
+  const file = join(DIST_DIR, url === "/" ? "index.html" : `${url.replace(/^\/|\/$/g, "")}/index.html`);
+  if (!existsSync(file)) continue;
+  const text = asText(readFileSync(file, "utf8"));
+  if (/on-ledger Domain(?: field)? is unset/i.test(text) || /Domain stays unset/i.test(text)) {
+    authoredStale.push(`${url} claims Domain is unset`);
+  }
+  if (/has no account settings, no Domain/i.test(text)) {
+    authoredStale.push(`${url} claims the issuer has no account settings`);
+  }
+}
+check(
+  "authored pages do not claim Domain is unset",
+  authoredStale.length === 0,
+  authoredStale.join("; "),
+);
 
 /* ------------------------------------------------------------------ report */
 

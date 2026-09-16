@@ -20,8 +20,9 @@ issue tokens under the exact code `PND`, and others use the near-identical varia
 
 ## $PND has not been issued yet
 
-The issuer account is funded but has no account settings, no `Domain`, and no issuance. There is no
-$PND in circulation, there is no $PND liquidity pool, and there is nothing to buy.
+The issuer is funded and has `Domain`, Default Ripple, and No Freeze set. **No $PND has been
+issued.** There is no $PND in circulation, there is no $PND liquidity pool, and there is nothing
+to buy. Account roles and live flags: [Wallets](/wallets/).
 
 **Therefore: every token currently trading under the code `PND` is not $PND.** If you find one and
 buy it, you have bought an unrelated asset from an unrelated issuer. Come back to this page when
@@ -41,17 +42,33 @@ this notice is gone.
 That address is the identity. Save it, and check it against this page — served over HTTPS from
 the **website host** `{{domain}}` — rather than against a ticker in a search box.
 
-This host is **not** the issuer's on-ledger `Domain` field. That field is unset and stays unset
-until CORS is verified on the live `/.well-known/xrp-ledger.toml` path. Do not set `Domain` as
-part of attaching this host. If `Domain` is later set to `{{domain}}`, that bind can only be
-changed while the issuer can still sign.
+The website host is `{{domain}}`. As of the 2026-09-16 snapshot on [Wallets](/wallets/), the
+issuer's on-ledger `Domain` field is that same host. Binding `Domain` can only be changed while
+the issuer can still sign. **Do not blackhole** this account before the $rPND MPT exists.
+
+## Impostor board
+
+Other `PND` issuers already exist on mainnet. Ours versus not us — without naming those
+projects, because some may be legitimate and listing them would read as an accusation:
+
+| | Ours | Not us |
+| --- | --- | --- |
+| Site | `{{domain}}` | Any other host |
+| Issuer | `{{issuerAddress}}` | Any other classic address |
+| Code | `PND` (those three letters, that case) | `Pnd`, `PNDN`, `PNDC`, or `PND` from someone else |
+| Issued? | **No.** Target launch 2026-10-01 | Tokens already trading under `PND` are someone else |
+| `Domain` | `{{domain}}` | Missing, some other host, or a 404 |
+
+A matching name and icon prove nothing. At least one same-code `PND` is blackholed with a dead
+metadata host. Polish is copyable; the address is not.
 
 ## Canonical links to the real $PND
 
 <div class="callout callout-critical">
 
-**Searching for $PND is not a reliable way to find it.** Use these links, from this page, or check
-the issuer address on ledger. Nothing else.
+**Searching for $PND is not a reliable way to find it.** Ticker search is how you get scammed.
+Use [official links](/links/) or the issuer address on ledger. This site will not publish a
+DEX trade URL until $PND exists and a human has loaded the page.
 
 </div>
 
@@ -68,7 +85,7 @@ consequence is uncomfortable and worth stating plainly: **for a new token, a dir
 source you trust is the only dependable route to the real asset.** Search will show you something
 else, and what it shows you may be an impostor with a matching ticker.
 
-Hence this list. It is the most load-bearing thing on this page.
+Hence this list. It is identity — site, TOML, explorer — not a market.
 
 {{canonicalLinks}}
 
@@ -96,10 +113,9 @@ Open the account and read it directly:
 
 - `https://livenet.xrpl.org/accounts/{{issuerAddress}}`
 
-**What you should see right now:** an account that exists, is funded, and is otherwise empty. No
-`Domain`, no flags set, no trust lines, no tokens issued. That is the expected pre-launch state, not
-a fault. The website host is `{{domain}}`; the on-ledger `Domain` is unset and is not going to be
-set as part of putting this page online.
+**What you should see right now:** an account that exists and is funded. `Domain` is
+`{{domain}}`. Default Ripple and No Freeze are on. No trust lines, no tokens issued. That is the
+expected pre-issuance state, not a fault. Live flag detail is on [Wallets](/wallets/).
 
 ### 2. Four queries against a public node
 
@@ -135,15 +151,14 @@ curl -sS https://xrplcluster.com/ \
   }' | python3 -m json.tool
 ```
 
-**As things stand, those four return an unconfigured account:** no flags set, no trust lines, no
-objects, no obligations. Two fields to read once that changes:
+**As things stand:** Default Ripple and No Freeze are on, `Domain` is set, and there are still no
+trust lines, no objects, and no obligations. Two fields to read:
 
-- **`account_data.Flags`** — `lsfDefaultRipple` must be set before holders can pay each other in
-  $PND. It is not set today, so holder-to-holder $PND payments do not work yet.
-- **`account_data.Domain`** — stored as hex of the **lowercase** ASCII host, with no scheme. Today
-  it is absent. That is correct. It is not supposed to equal `{{domain}}` yet. If it is ever set,
-  decode it and compare it to the host serving this page *exactly* — a mixed-case value looks right
-  and still fails the match.
+- **`account_flags.defaultRipple` / `noFreeze`** — both true on the 2026-09-16 snapshot. See
+  [Wallets](/wallets/) for the rest of the flag table in plain language.
+- **`account_data.Domain`** — stored as hex of the **lowercase** ASCII host, with no scheme.
+  Decode it and compare it to the host serving this page *exactly* — a mixed-case value looks
+  right and still fails the match. On that snapshot it is `{{domain}}`.
 
 ```bash
 python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <HEX>
@@ -152,24 +167,24 @@ python3 -c "import sys; print(bytes.fromhex(sys.argv[1]).decode())" <HEX>
 Balances, ledger indexes and sequence numbers are deliberately quoted nowhere on this page, because
 they go stale within minutes. Run the queries against a current validated ledger instead.
 
-### 3. The two-way link — not live yet
+### 3. The two-way link
 
 Neither half of the identity claim proves anything on its own. Anyone can host a file claiming to
-own any account, and any account can set its `Domain` to any string. What would matter is that
+own any account, and any account can set its `Domain` to any string. What matters is that
 **both halves agree**:
 
 1. The issuer account's `Domain` field points at `{{domain}}`.
 2. `https://{{domain}}/.well-known/xrp-ledger.toml` names that same issuer address.
 
-**Only (2) exists today.** The file is served from the website host. The on-ledger `Domain` is
-unset, so the two-way link is not established and XLS-26 consumers that require it will not treat
-the file as authoritative.
+**Both halves exist on the 2026-09-16 snapshot.** Re-check `account_info` if this page might be
+stale. Wallets that wait for the crawler may still show an empty $PND record until issuance —
+that is not a listing, and it is not something to buy.
 
-`{{domain}}` is a name the owner holds. Binding `Domain` to it later can only be changed while the
-issuer can still sign. CORS on the live TOML path also has to be verified before that field would
-mean anything. Neither of those is a step this page is asking anyone to take.
+`{{domain}}` is a name the owner holds. Binding `Domain` can only be changed while the issuer can
+still sign. After blackholing, whatever host is in `Domain` is frozen forever. Do not blackhole
+before the $rPND MPT exists on this account.
 
-See [xrp-ledger.toml](/xrp-ledger-toml/) for the file itself and what is in it.
+See [xrp-ledger.toml](/xrp-ledger-toml/) for the file itself and [Wallets](/wallets/) for flags.
 
 ## Why this page exists
 
@@ -248,6 +263,7 @@ make.
   disagree, the ledger is right and this page is stale or fake.
 - **Trust this website host over any other site.** If something claims to be Pond Protocol and is
   not on `{{domain}}`, treat it as unrelated until you have checked the issuer address on ledger.
-  The on-ledger `Domain` is still unset, so this host is a website, not a completed XLS-26 bind.
+  On the 2026-09-16 snapshot the on-ledger `Domain` is this host; still check the address on
+  ledger rather than trusting a copy of this page.
 - **Nobody from Pond Protocol will ever ask for your seed or private key,** or ask you to import a
   wallet into a site. There is no situation in which that request is legitimate.

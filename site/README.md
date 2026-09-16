@@ -3,11 +3,10 @@
 Static site that aggregates the documentation from `protocol`, `pnd` and `rpnd`, and serves the
 XLS-26 metadata file at `/.well-known/xrp-ledger.toml`.
 
-The **website host** is `pond.greenhead.io` (Replit Autoscale, custom domain). The
-issuer's on-ledger `Domain` field is unset and stays unset until CORS is verified on the live
-TOML path. Do not set `Domain` as part of attaching this host. See
-[`docs/hosting-decision.md`](../docs/hosting-decision.md) for the CORS evidence and the Replit
-Git Pull / Push / Sync and Republish clicks.
+The **website host** is `pond.greenhead.io` (Replit Autoscale, custom domain). As of 2026-09-16
+the issuer's on-ledger `Domain` is that same host. Live flags belong on `/wallets/`, not in
+`xrp-ledger.toml` comments. See [`docs/hosting-decision.md`](../docs/hosting-decision.md) for
+the CORS evidence and the Replit Git Pull / Push / Sync and Republish clicks.
 
 ## Quick start
 
@@ -51,7 +50,7 @@ of being welded into a framework adapter. The chosen host is Replit Autoscale at
 `pond.greenhead.io`.
 
 **One path has to be byte-exact.** `/.well-known/xrp-ledger.toml` is served from the website host.
-The issuer's on-ledger `Domain` field does **not** point at it yet. A dot-prefixed directory is
+The issuer's on-ledger `Domain` field now points at that host. A dot-prefixed directory is
 exactly the thing static site generators quietly drop. Two real instances of that, both verified
 rather than assumed:
 
@@ -169,7 +168,7 @@ list fail `--strict`, which forces an explicit decision rather than a silent omi
 ```
 site/
   content.config.json   allowlist, navigation, site constants. The control surface.
-  content/              authored pages (index, verify, xrp-ledger.toml explainer)
+  content/              authored pages (index, verify, wallets, xrp-ledger.toml explainer)
   imported/             vendored copies of allowlisted repo docs. Generated; commit them.
   public/               copied verbatim into dist/
     .well-known/
@@ -198,7 +197,7 @@ The repo-root [`.replit`](../.replit) is the config Replit reads on import and o
 2. Top right **Publish** / Republish. Do **not** change Deployment type, build, or run in Adjust
    settings — those UI edits rewrite `.replit` locally and are what made Pull start a rebase.
 3. After it goes live: `cd site && npm run verify:live -- pond.greenhead.io`.
-4. **Leave the issuer `Domain` field unset.**
+4. **Do not blackhole** the issuer. `Domain` is already `pond.greenhead.io`. $rPND is not created.
 
 **One-time catch-up** if this clone is still diverged from the earlier rebase: Git pane → **Abort
 rebase** if a rebase is in progress → **Pull**. If Pull still says local and GitHub have diverged
@@ -238,7 +237,7 @@ Autoscale. CORS on Autoscale comes from `serve.mjs` (`Access-Control-Allow-Origi
 cd site && npm run verify:live -- pond.greenhead.io
 ```
 
-**Leave the issuer `Domain` field unset** until that check passes.
+**Do not blackhole** the issuer. `Domain` is already `pond.greenhead.io`; $rPND does not exist yet.
 
 Replit recovery mode ("Nix environment is broken") happens when `.replit` is present without
 `replit.nix`. Both files are in the repo root. Do **not** click Recover original configuration
@@ -262,8 +261,8 @@ Only for a new import. The live app `@GreenheadLabs/PondGreenheadio` already exi
    DNS is on Cloudflare, the `A` record must be **DNS only** (grey cloud), not proxied. Remove
    any extra `A` or `AAAA` on the same hostname.
 5. Wait for **Verified**, then run `npm run verify:live -- pond.greenhead.io`.
-6. **Leave the issuer `Domain` field unset.** CORS has not been verified live yet. Do not set
-   `Domain` as part of this attach.
+6. **Do not blackhole.** Issuer `Domain` is already `pond.greenhead.io`. CORS was verified live.
+   Do not treat Publish as a reason to disable the master key.
 
 `pond.greenhead.io` previously served a Greenhead agent database, now at `database.greenhead.io`.
 Pointing `pond` at this Replit app is intended, but confirm leftover Greenhead records are gone
@@ -282,8 +281,8 @@ In order.
 4. **After deploy, check the live headers:** `npm run verify:live -- pond.greenhead.io`. A
    missing CORS header is invisible in a browser and breaks every wallet that resolves metadata
    client-side.
-5. **Leave the issuer `Domain` field unset.** Binding `Domain` can only be changed while the
-   issuer can still sign.
-6. **Leave `launchStatus` at `pre-launch`** until the issuer is configured and $PND has actually
-   been issued. That flag controls the "$PND has not launched" warning, and it is the one edit on
-   this site that could mislead a buyer.
+5. **Do not blackhole.** Issuer `Domain` is `pond.greenhead.io`. Binding can only change while
+   the issuer can still sign, and $rPND is not created yet.
+6. **Leave `launchStatus` at `pre-launch`** until $PND has actually been issued. That flag
+   controls the "$PND has not launched" warning, and it is the one edit on this site that
+   could mislead a buyer. Live flags are on `/wallets/`.

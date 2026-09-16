@@ -17,14 +17,16 @@
 
   "site": {
     "title": "Pond Protocol",
-    "tagline": "Two XRP Ledger assets, one canonical identity.",
-    "description": "Documentation for Pond Protocol: the $PND issued currency, the $rPND Multi-Purpose Token, and the verified issuer identity that distinguishes them from same-ticker impostors.",
+    "tagline": "Where Liquidity Goes to Stay.",
+    "description": "Where Liquidity Goes to Stay. Pond Protocol issues $PND on the XRP Ledger. Verify the issuer — do not search the ticker.",
     "issuerAddress": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
     "$comment_knownAddresses": [
       "Classic XRPL addresses this project publishes on purpose (Treasury, Operations).",
       "The publication guard forbids every other classic address so third-party PND issuers",
       "are never named. The issuer itself is site.issuerAddress, not this list."
     ],
+    "treasuryAddress": "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b",
+    "operationsAddress": "rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in",
     "knownAddresses": [
       "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b",
       "rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in"
@@ -34,13 +36,13 @@
       "This is the WEBSITE HOST, not the issuer's on-ledger Domain field.",
       "",
       "  domain            = pond.greenhead.io  (Replit Autoscale, custom domain).",
-      "  on-ledger Domain  = unset, and it stays unset until CORS is verified on the live",
-      "                      TOML path. Do not treat this hostname as AccountRoot Domain,",
-      "                      and do not set Domain as part of attaching this host.",
+      "  on-ledger Domain  = pond.greenhead.io as of the 2026-09-16 wallets snapshot.",
+      "                      Live flags live on /wallets/, not in xrp-ledger.toml comments.",
+      "                      Do not edit the TOML Domain comments to claim No Freeze.",
       "",
-      "pond.greenhead.io is a subdomain of greenhead.io, a name the owner holds. That is a",
-      "better permanence story than a Cloudflare pages.dev hostname, but binding Domain is",
-      "still gated on a live CORS check and can only be changed while the issuer can sign.",
+      "pond.greenhead.io is a subdomain of greenhead.io, a name the owner holds. Binding",
+      "Domain can only be changed while the issuer can still sign. Do not blackhole before",
+      "the $rPND MPT exists on this same account.",
       "",
       "{{domain}} in authored pages, canonical tags, and og:url all read this value. Keep it",
       "lowercase and without a scheme so it can match an AccountRoot Domain later if one is set."
@@ -52,17 +54,17 @@
     "$comment_launchStatus": [
       "launchStatus drives the sitewide banner and the wording on /verify/.",
       "",
-      "  pre-launch : the issuer account exists and is funded but has no account settings, no",
-      "               Domain, and no issuance. The site states that no $PND exists yet and that",
-      "               anything trading under the code PND is therefore not $PND.",
-      "  live       : the issuer has been configured, Domain matches this host, and $PND has",
-      "               been issued. Only set this after the checks on /verify/ actually pass.",
+      "  pre-launch : the issuer is funded and may already have Domain / Default Ripple /",
+      "               No Freeze, but $PND has not been issued. The site states that no $PND",
+      "               exists yet and that anything trading under the code PND is not $PND.",
+      "  live       : Domain matches this host and $PND has been issued. Only set this after",
+      "               the checks on /verify/ actually pass.",
       "",
-      "Leave this at pre-launch until the AccountSet and issuance transactions are validated.",
-      "Setting it to live early is the one edit on this site that could mislead a buyer."
+      "Leave this at pre-launch until issuance is validated. Setting it to live early is the",
+      "one edit on this site that could mislead a buyer. Live flags belong on /wallets/."
     ],
     "launchStatus": "pre-launch",
-    "issuerAddressStatus": "planned issuer account — funded, not yet configured on ledger"
+    "issuerAddressStatus": "funded issuer — Domain, Default Ripple, and No Freeze set; nothing issued"
   },
 
   "canonicalLinks": {
@@ -92,25 +94,27 @@
     ],
     "links": [
       {
-        "label": "XRP Ledger explorer",
-        "purpose": "The issuer account itself: flags, Domain field, trust lines",
-        "url": "https://livenet.xrpl.org/accounts/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
-        "status": "unverified",
-        "note": "Route shape is deterministic and matches the explorerAccount base in rpnd/config/tokens.json. The account exists and is funded, so this should already resolve — load it and mark it verified."
+        "label": "This site",
+        "purpose": "The only docs host. Copy the issuer from here.",
+        "url": "https://pond.greenhead.io/",
+        "status": "verified",
+        "verifiedOn": "2026-09-16",
+        "note": "Official site. Not a DEX."
       },
       {
-        "label": "XRPL Meta",
-        "purpose": "The metadata record wallets read, once the TOML is published",
-        "url": "https://s1.xrplmeta.org/v2/token/PND:rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
-        "status": "unverified",
-        "note": "Returns nothing useful until the issuer Domain field is set and the crawler has run. Expect an empty or absent record before then; that is the correct pre-launch result, not a fault."
+        "label": "xrp-ledger.toml",
+        "purpose": "XLS-26 metadata wallets fetch from Domain",
+        "url": "https://pond.greenhead.io/.well-known/xrp-ledger.toml",
+        "status": "verified",
+        "verifiedOn": "2026-09-16",
+        "note": "Identity file. Not a trade page."
       },
       {
-        "label": "FirstLedger",
-        "purpose": "Trading page",
-        "url": "https://firstledger.net/token-v3/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc/PND",
+        "label": "Bithomp",
+        "purpose": "Issuer account explorer: flags, Domain, issuance",
+        "url": "https://bithomp.com/explorer/rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc",
         "status": "unverified",
-        "note": "Route shape is /token-v3/{issuer}/{currency-code}, with /token-v2/ redirecting to it. For a standard three-character code the final segment is the plain code rather than the 40-character hex form. This route has already moved once, and $PND does not exist yet, so treat the URL as a best guess until somebody loads it."
+        "note": "Explorer, not a DEX. Load it and mark verified. There is no official $PND trade URL yet."
       }
     ]
   },
@@ -156,6 +160,12 @@
       "pages": [
         { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
         { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
+        { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
+        { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
+        { "authored": "links.md", "url": "/links/", "title": "Official links" },
+        { "authored": "vesting.md", "url": "/vesting/", "title": "Supply split" },
+        { "authored": "pnd-and-rpnd.md", "url": "/pnd-and-rpnd/", "title": "$PND and $rPND" },
+        { "authored": "discovery.md", "url": "/discovery/", "title": "How wallets learn the name" },
         { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" }
       ]
     },

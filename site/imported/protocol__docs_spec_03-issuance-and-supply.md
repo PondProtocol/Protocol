@@ -2,11 +2,11 @@
 source_repo: protocol
 source_path: docs/spec/03-issuance-and-supply.md
 source_ref: worktree
-source_sha256: 8d0882add8be4d3ec8a30af6696dcf726d55ba3fcfa232343c90882ab6c17d75
+source_sha256: fc956303189de8f9e9cc4c5325fd74560cdf2ea2048942de43238bf2698cba7f
 title: 03 — Issuance and supply
 url: /spec/issuance-and-supply/
 section: Specification
-synced: 2026-09-15
+synced: 2026-09-16
 ---
 # 03 — Issuance and supply
 
@@ -52,9 +52,11 @@ The three $rPND values are working defaults, "not ratified economics" per [`rpnd
 
 ## 3.4 Distribution
 
-**Documented:** the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole of it.
+**Documented (high-level):** owner split for $PND is **10 billion public, 10 billion team, 80 billion to holders at 10 billion per month from 2027-01-01 through 2027-08-01, proportional to $PND held.** Launch **2026-10-01** does not start the holder monthly. Mechanism: snapshot plus treasury payments — **not TokenEscrow**. The earlier ten 9 billion Treasury self-escrow rehearsal is **not** the public schedule. Snapshot exclusions remain an owner decision.
 
-**Open:** the distribution mechanism, allocation schedule, vesting, and lockups. Nothing exists in any repo — [OQ-13](../open-questions.md#oq-13).
+**Documented:** the operational account holds inventory, and `send-pnd` / `send-rpnd` perform individual payments. That is the whole of the toolkit.
+
+**Open:** the signed exclusion set, the team destination, and failed-payment remainder. Nothing is ledger-enforced — [OQ-13](../open-questions.md#oq-13).
 
 ## 3.5 Networks and launch
 
