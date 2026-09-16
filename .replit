@@ -8,25 +8,37 @@
 # module; replit.nix is intentionally empty so a stale package attr
 # cannot fail the env build.
 #
-# Publish as Autoscale. Replit Static omits .well-known/ (verified
-# 2026-09-16: /.well-known/ and /.nojekyll 404, /_headers 200).
-# After republish: cd site && npm run verify:live -- pond.greenhead.io
+# Git + publish (same buttons as the other Greenhead Replit apps):
+#   Git pane → Pull / Push / Sync, then Publishing → Publish / Republish.
+#   Do not change Deployment type, build, or run in the UI — those edits
+#   rewrite this file locally and are what made Pull start a rebase.
+#   pull.rebase is forced off on boot so Pull merges instead of rebasing.
+#
+# Publish as Autoscale with serve.mjs. That is how greenhead.io serves
+# /.well-known/xrp-ledger.toml (a Node process, not Static). Replit Static
+# omits .well-known/ (verified 2026-09-16: /.well-known/ and /.nojekyll 404,
+# /_headers 200). After republish:
+#   cd site && npm run verify:live -- pond.greenhead.io
 # Leave the issuer on-ledger Domain unset until that check passes.
+# Do not click Recover original configuration files.
 
 modules = ["nodejs-20"]
 run = "bash -c 'cd site && (test -d node_modules || npm ci) && npm run check && npm run serve'"
 entrypoint = "site/scripts/serve.mjs"
-hidden = ["site/node_modules", "site/dist", ".git"]
+hidden = ["site/node_modules", "site/dist", ".git", ".config", ".cache"]
 language = "javascript"
+onBoot = "git config pull.rebase false"
 
 [nix]
 channel = "stable-24_05"
 
 [packager]
 language = "nodejs"
+ignoredPaths = [".git", "site/node_modules", "site/dist", ".config", ".cache"]
 
 [packager.features]
 guessImports = false
+enabledForHosting = false
 
 [gitHubImport]
 requiredFiles = [".replit", "replit.nix"]
@@ -42,8 +54,9 @@ run = ["bash", "-c", "cd site && node scripts/serve.mjs"]
 publicDir = "site/dist"
 ignorePorts = false
 
-# Static fallback: the host strips .well-known/, so map the XLS-26 URL onto
-# the non-dot twin the build writes into site/dist/well-known/.
+# Static fallback only: the host strips .well-known/, so map the XLS-26 URL onto
+# the non-dot twin the build writes into site/dist/well-known/. Production is
+# Autoscale; these rules matter if someone republishes as Static by mistake.
 [[deployment.rewrites]]
 from = "/.well-known/xrp-ledger.toml"
 to = "/well-known/xrp-ledger.toml"

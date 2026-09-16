@@ -98,9 +98,9 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 
 [`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
 and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pond.greenhead.io`
-(Replit, custom domain). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
-verified live. See [site/README.md](site/README.md) for the Replit run command and
-[docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
+(Replit Autoscale, custom domain). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
+verified live. See [site/README.md](site/README.md) for Git Pull / Sync and Republish
+and [docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
 
 ## Networks
 

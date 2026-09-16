@@ -144,8 +144,9 @@ Undecided: the legal entity that issues, and the concrete custody arrangement â€
 
 **Canonical public domain and production asset URLs.**
 
-Documented today: the **website host** is `pond.greenhead.io` (Replit Static Deployment, custom
-domain). That host is filled into `site/content.config.json` and
+Documented today: the **website host** is `pond.greenhead.io` (Replit Autoscale, custom
+domain; Git Pull / Push / Sync then Republish, same buttons as `greenhead.io`). That host is
+filled into `site/content.config.json` and
 `site/public/.well-known/xrp-ledger.toml`. `[[TOKENS.URLS]]` website and verify links use
 `https://pond.greenhead.io`. On ledger the issuer has no `Domain` at all, and it stays unset until
 CORS is verified on the live TOML path. Do not set `Domain` as part of attaching this host.

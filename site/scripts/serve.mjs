@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Local preview server for site/dist/.
+ * Serves site/dist/. Used for local preview (`npm run serve`) and as the Autoscale
+ * production process (`cd site && node scripts/serve.mjs`).
  *
- * Deliberately serves .well-known/ and applies the same Content-Type and CORS headers that
- * public/_headers asks the host for, so a local check and a production check look the same.
- * Node standard library only; this is not part of the deployed site.
+ * Deliberately serves .well-known/ (Replit Static omits that directory) and applies the
+ * same Content-Type and CORS headers that public/_headers asks a static host for, so a
+ * local check and a production check look the same. Node standard library only.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";

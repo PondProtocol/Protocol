@@ -3,11 +3,11 @@
 Static site that aggregates the documentation from `protocol`, `pnd` and `rpnd`, and serves the
 XLS-26 metadata file at `/.well-known/xrp-ledger.toml`.
 
-The **website host** is `pond.greenhead.io` (Replit Static Deployment, custom domain). The
+The **website host** is `pond.greenhead.io` (Replit Autoscale, custom domain). The
 issuer's on-ledger `Domain` field is unset and stays unset until CORS is verified on the live
 TOML path. Do not set `Domain` as part of attaching this host. See
 [`docs/hosting-decision.md`](../docs/hosting-decision.md) for the CORS evidence and the Replit
-import / custom-domain clicks.
+Git Pull / Push / Sync and Republish clicks.
 
 ## Quick start
 
@@ -35,7 +35,7 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 | `npm run sync -- --print-refs` | Print `repo<TAB>dir<TAB>ref` for each source. Used by CI to fetch the declared refs. |
 | `npm run build` | Render `content/` + `imported/` into `dist/`. No network, no sibling repos needed. |
 | `npm run check` | `build --strict` plus the publication guard. This is what CI runs. |
-| `npm run serve` | Preview `dist/` locally with the same headers `_headers` asks the host for. |
+| `npm run serve` | Preview `dist/` locally, and the same process Replit Autoscale runs in production. |
 | `npm run verify:live -- <domain>` | Fetch a **deployed** site and check the identity anchor's status, CORS header, content type and body. |
 
 ## Why this is not a framework
@@ -45,9 +45,10 @@ The site is about 700 lines of Node in `scripts/` plus one hand-written styleshe
 transitive ones. That is a deliberate trade, and these are the reasons:
 
 **The output has to be host-neutral.** Plain HTML and CSS with no runtime JavaScript deploys
-identically to Replit Static, Cloudflare Pages, GitHub Pages, or anything else that serves a
-directory, so the hosting decision stays reversible instead of being welded into a framework
-adapter. The chosen host is Replit at `pond.greenhead.io`.
+identically to Replit Autoscale (`serve.mjs`), Replit Static (fallback), Cloudflare Pages, GitHub
+Pages, or anything else that serves a directory, so the hosting decision stays reversible instead
+of being welded into a framework adapter. The chosen host is Replit Autoscale at
+`pond.greenhead.io`.
 
 **One path has to be byte-exact.** `/.well-known/xrp-ledger.toml` is served from the website host.
 The issuer's on-ledger `Domain` field does **not** point at it yet. A dot-prefixed directory is
@@ -188,9 +189,25 @@ site/
 
 ## Replit settings
 
-The repo-root [`.replit`](../.replit) is the config Replit reads on import.
+The repo-root [`.replit`](../.replit) is the config Replit reads on import and on Publish.
 
-**Run command** (editor preview, also the Autoscale fallback):
+**Git + Publish** — same buttons as the other Greenhead Replit apps (`greenhead.io` already serves
+`/.well-known/xrp-ledger.toml` this way):
+
+1. **Tools → Git** → **Pull** or **Sync** (turn auto-sync on if the other apps use it).
+2. Top right **Publish** / Republish. Do **not** change Deployment type, build, or run in Adjust
+   settings — those UI edits rewrite `.replit` locally and are what made Pull start a rebase.
+3. After it goes live: `cd site && npm run verify:live -- pond.greenhead.io`.
+4. **Leave the issuer `Domain` field unset.**
+
+**One-time catch-up** if this clone is still diverged from the earlier rebase: Git pane → **Abort
+rebase** if a rebase is in progress → **Pull**. If Pull still says local and GitHub have diverged
+because of Replit-only commits, Git pane menu → reset this branch to `origin/main` **once**. Then
+Pull / Sync are the update path. Do not click Recover original configuration files.
+
+`.replit` runs `git config pull.rebase false` on boot so later Pulls merge instead of rebasing.
+
+**Run command** (editor preview; Autoscale publish uses the shorter `deployment.run`):
 
 ```bash
 cd site && (test -d node_modules || npm ci) && npm run check && npm run serve
@@ -202,8 +219,8 @@ honours `PORT`. `npm run check` is `build --strict` plus the publication guard �
 
 **Publish as Autoscale** (not Static). Replit Static omits every dotfile: on 2026-09-16
 `/.well-known/xrp-ledger.toml` and `/.nojekyll` 404'd while `/_headers` and `/robots.txt` 200'd.
-`serve.mjs` is what actually serves the XLS-26 path. In the Publishing tool: **Adjust settings →
-Deployment type → Autoscale**.
+`serve.mjs` is what actually serves the XLS-26 path. These values are already in `.replit`; paste
+them only if Publishing was reset and this is the first Autoscale publish:
 
 | Setting | Value |
 | --- | --- |
@@ -224,12 +241,12 @@ cd site && npm run verify:live -- pond.greenhead.io
 **Leave the issuer `Domain` field unset** until that check passes.
 
 Replit recovery mode ("Nix environment is broken") happens when `.replit` is present without
-`replit.nix`. Both files are in the repo root. After they land on `main`: in Shell,
-`git fetch origin main && git reset --hard origin/main`, then **do not** click Recover original
-configuration files. Type `exit` in Shell (or Command Palette → Restart compute) so Nix rebuilds.
-Publishing type must be **Autoscale**.
+`replit.nix`. Both files are in the repo root. Do **not** click Recover original configuration
+files. If Nix is stuck after a Pull, type `exit` in Shell or Command Palette → Restart compute.
 
 ### Import and custom domain (owner clicks)
+
+Only for a new import. The live app `@GreenheadLabs/PondGreenheadio` already exists.
 
 1. Open [replit.com/import](https://replit.com/import) → **GitHub** → connect the GitHub account →
    choose **PondProtocol/Protocol** → **Import**. Public-repo shortcut:
@@ -237,7 +254,8 @@ Publishing type must be **Autoscale**.
    Replit OAuth app access to PondProtocol at GitHub **Settings → Applications**.
 2. Press **Run** once and confirm `/.well-known/xrp-ledger.toml` returns 200 locally.
 3. **Publish** (top right, or **Replit Cloud → Publishing**). Adjust settings as in the table
-   above, then publish. The Domains tab is available only after a successful deployment.
+   above **once**, then publish. Later updates are Git Pull / Sync then Publish. The Domains tab
+   is available only after a successful deployment.
 4. **Publishing → Domains → Connect your own domain** → enter `pond.greenhead.io`. Prefer the
    guided DNS setup; otherwise copy the `A` and `replit-verify=...` `TXT` records Replit shows
    into the `greenhead.io` DNS. Keep the TXT record permanently (certificate renewal). If that
@@ -255,8 +273,8 @@ before publishing DNS.
 
 In order.
 
-1. **Pull this repo in the existing Replit app and republish as Autoscale** with the settings
-   above. Do not stay on Static — it drops `.well-known/`.
+1. **Git pane → Pull / Sync, then Publish** on the existing Replit app. Stay on Autoscale.
+   Static drops `.well-known/`.
 2. **Confirm `site.domain`** in `content.config.json` is `pond.greenhead.io` (already set).
 3. **Remaining TODOs in `public/.well-known/xrp-ledger.toml`:** a real square icon on a permanent
    host, and whether to include `[[PRINCIPALS]]`. The website host is filled in. Do not invent a
@@ -264,8 +282,8 @@ In order.
 4. **After deploy, check the live headers:** `npm run verify:live -- pond.greenhead.io`. A
    missing CORS header is invisible in a browser and breaks every wallet that resolves metadata
    client-side.
-5. **Leave the issuer `Domain` field unset.** CORS has not been verified live yet. Binding
-   `Domain` can only be changed while the issuer can still sign.
+5. **Leave the issuer `Domain` field unset.** Binding `Domain` can only be changed while the
+   issuer can still sign.
 6. **Leave `launchStatus` at `pre-launch`** until the issuer is configured and $PND has actually
    been issued. That flag controls the "$PND has not launched" warning, and it is the one edit on
    this site that could mislead a buyer.

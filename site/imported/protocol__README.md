@@ -2,7 +2,7 @@
 source_repo: protocol
 source_path: README.md
 source_ref: worktree
-source_sha256: 10d96fae8b0046b610048ac2d528a8293c426f260b71062ce6e961d42fcea6eb
+source_sha256: d8473193025686e3efa280fec948db52056d0e848722199c60ebf353a1d5e086
 title: Overview
 url: /protocol/
 section: Protocol
@@ -108,9 +108,9 @@ Not shown, because it does not exist yet: any layer that performs settlement, re
 
 [`site/`](site/) builds a static documentation site that aggregates the docs from all three repos
 and serves the XLS-26 `xrp-ledger.toml`. The **website host** is `pond.greenhead.io`
-(Replit, custom domain). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
-verified live. See [site/README.md](site/README.md) for the Replit run command and
-[docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
+(Replit Autoscale, custom domain). The issuer's on-ledger `Domain` field is unset and stays unset until CORS is
+verified live. See [site/README.md](site/README.md) for Git Pull / Sync and Republish
+and [docs/hosting-decision.md](docs/hosting-decision.md) for the CORS evidence.
 
 ## Networks
 
