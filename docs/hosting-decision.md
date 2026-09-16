@@ -1,16 +1,12 @@
 # Where to host the Pond Protocol site
 
-**Status: decided.** The public docs site deploys to Cloudflare Pages at
-**`https://pondprotocol.pages.dev`**. That is the **website host**. The issuer's on-ledger `Domain`
-field is unset and stays unset until CORS is verified on the live TOML path.
+**Status: decided.** The public docs site deploys to Replit at **`https://pond.greenhead.io`**.
+That is the **website host**. The issuer's on-ledger `Domain` field is unset and stays unset until
+CORS is verified on the live TOML path. Do not set `Domain` as part of attaching this host.
 
-`pondprotocol.pages.dev` is a Cloudflare platform hostname, not a domain Pond Protocol registers.
-Binding `Domain` to it later accepts a platform dependency that can only be changed while the
-issuer can still sign.
-
-Dashboard settings to paste are in [§7](#7-cloudflare-pages-settings-to-paste). A first create named
-`pond` with `npx wrangler deploy` is the Worker flow and will not produce this URL — delete it and
-create a Pages project named `pondprotocol`.
+`pond.greenhead.io` is a subdomain of `greenhead.io`, a name the owner holds. Import / custom-domain
+clicks are in [§7](#7-replit-settings-to-paste). A previous Cloudflare Pages plan at
+`pondprotocol.pages.dev` is superseded.
 
 Every header claim in this document was checked against a live host on **2026-09-15** by fetching
 real responses. Every build claim was checked by running the build. Where I could not verify
@@ -21,50 +17,30 @@ before acting on anything here.
 
 ## 1. The recommendation
 
-**Host the site on Cloudflare Pages, built from this repository, at the free platform URL
-`pondprotocol.pages.dev`.** A domain you register can be pointed at the same project later. Do not
-treat `pages.dev` as the on-ledger `Domain` until CORS is verified live — and understand that
-binding `Domain` to a platform hostname is a dependency you can only change while the issuer can
-still sign.
+**Host the site on Replit, built from this repository, at `https://pond.greenhead.io`.** Import
+`PondProtocol/Protocol`, publish as a **Static** deployment (public directory `site/dist`, build
+`cd site && npm ci && npm run check`), and attach the custom domain `pond.greenhead.io`. The Run
+button uses the existing Node static server in `site/scripts/serve.mjs`.
 
-The project name must be `pondprotocol` to get that URL. Production branch `main`. Build settings
-are in [§7](#7-cloudflare-pages-settings-to-paste).
+The issuer's on-ledger `Domain` field stays **unset**. CORS on `/.well-known/xrp-ledger.toml` has
+to be confirmed against the live host with `npm run verify:live -- pond.greenhead.io` before that
+field would mean anything. This runbook does not include setting `Domain`.
 
-One reason above all others: Cloudflare Pages is the only candidate that lets you set **both**
-`Access-Control-Allow-Origin` and `Content-Type` on `/.well-known/xrp-ledger.toml`, from a file
-committed next to the site, reviewable in a pull request. GitHub Pages gives you the CORS header
-automatically but offers no way to set any header at all, so the content type of a `.toml` file is
-whatever GitHub decides and you cannot change it.
+`pond.greenhead.io` is a name the owner already holds. That is a better permanence story than
+`*.pages.dev`, which Cloudflare controls. It is still not a reason to bind `Domain` today.
 
-Two consequences worth having explicitly:
-
-- **No new repository is required, and no plan upgrade is required.** Cloudflare Pages builds from
-  a private GitHub repository, so the site can live here in `protocol` while it is private, and
-  only the built output becomes public.
-- **The decision stays reversible.** The build emits plain HTML and CSS with no runtime JavaScript.
-  Moving to GitHub Pages later is a change of deploy target, not a rewrite. A working GitHub
-  Actions workflow for exactly that is already committed at
-  [`.github/workflows/docs-site.yml`](../.github/workflows/docs-site.yml), disabled behind a
-  repository variable.
-
-**The honest cost of this recommendation:** on Cloudflare Pages the CORS header comes from
-`site/public/_headers`. Delete that file and the site still looks perfect while every
-browser-based wallet silently loses the ability to read your token metadata. On GitHub Pages that
-particular mistake is impossible. This is a real trade — explicit, testable configuration against
-an unconfigurable default — and it is why `npm run verify:live` exists and why §7 makes running it
-a required step rather than a suggestion.
+The CORS header is still the criterion that decides whether wallets can read the TOML. On Replit
+Static it comes from `[[deployment.responseHeaders]]` in [`.replit`](../.replit).
+`site/public/_headers` is kept for a Cloudflare Pages fallback and is **not** what Replit reads.
+Delete the `.replit` header block and the site still looks perfect while every browser-based
+wallet silently loses the metadata. That is why `npm run verify:live` is a required step after
+DNS is attached.
 
 ### First, the framing
 
-The owner asked whether to build the site "using Cursor" or "import to Replit to host". Neither is
-quite the question.
-
-**"Using Cursor" is not a hosting option.** Cursor is the editor. It writes the site — it wrote the
-one in [`site/`](../site/) — but it does not serve anything. Something else has to answer the HTTP
-request. These are two independent choices and only the second one is on the table here.
-
-**Replit is a hosting option, and a more capable one than I expected.** See §5. It is still not the
-right choice, but the reason is not the one usually given.
+Cursor is the editor. It writes the site — it wrote the one in [`site/`](../site/) — but it does
+not serve anything. Replit answers the HTTP request. Those are two independent choices; this
+document is about the second one.
 
 ---
 
@@ -347,7 +323,7 @@ does all three:
 And regardless of all three, verify the deployed result:
 
 ```bash
-cd site && npm run verify:live -- pondprotocol.pages.dev
+cd site && npm run verify:live -- pond.greenhead.io
 ```
 
 None of this is a problem on Cloudflare Pages, which serves the directory it is given — but the
@@ -412,55 +388,36 @@ not give you a private site. There is no half-way option on the plans you are li
 
 ---
 
-## 5. Replit, and why it is still not the choice
+## 5. Replit is the chosen host
 
-**I was wrong about the shape of this objection, so here is what I actually found.** Replit has a
-first-class **Static Deployments** type. Per their docs, it hosts "your app's files, such as HTML,
-CSS, and JavaScript, on a cloud server that uses caching," with "no backend server," billed on
-"only the data your site serves," and it explicitly lists documentation sites as an ideal use.
+Replit has a first-class **Static Deployments** type. Per their docs, it hosts "your app's files,
+such as HTML, CSS, and JavaScript, on a cloud server that uses caching," with "no backend server,"
+billed on "only the data your site serves," and it explicitly lists documentation sites as an
+ideal use.
 
-It can also set the header that matters. From Replit's static deployment configuration docs, in
-`.replit`:
+It can set the header that matters. From Replit's static deployment configuration docs, in
+`.replit` — this repository now commits the block with `*` on the TOML path, not the docs'
+example value of `"origin"`:
 
 ```toml
 [[deployment.responseHeaders]]
-path = "/*"
+path = "/.well-known/xrp-ledger.toml"
 name = "Access-Control-Allow-Origin"
-value = "origin"
+value = "*"
 ```
 
-`Content-Type` is not on their reserved-headers list, so it is presumably settable too.
+`Content-Type` is not on their reserved-headers list, so it is set on the same path. The editor
+**Run** button uses `site/scripts/serve.mjs`, which already sends both headers. If Static CORS or
+directory indexes fail live, switch Publishing to **Autoscale** and keep that Run command.
 
-So **the "always-on cost" argument does not apply** to Replit's static tier — there is no process
-being kept alive. And capability is not the objection either. I should not repeat a criticism I just
-disproved.
+The earlier objections (extra vendor, unverified pricing, static as a secondary product mode)
+still exist. The owner overrode them: `pond.greenhead.io` is already a name they hold, the
+Greenhead agent database that used to live there has moved to `database.greenhead.io`, and they
+will import this GitHub repo rather than relocating source off GitHub. GitHub remains the source
+of truth; Replit is the file host.
 
-The honest objections are smaller and different:
-
-**It adds a third vendor for no benefit.** The site needs a registrar, a DNS host, and a file host.
-Cloudflare can be all three. Replit can be only the third, so choosing it means DNS somewhere else
-and hosting here — more accounts, more renewals, more places a lapse breaks the identity anchor.
-For a file whose whole value is that it never goes away, minimising that count is the entire game.
-
-**It probably costs money, and I did not verify how much.** Publishing on Replit requires a paid
-plan or usage-based billing. I did **not** verify current pricing or free-tier terms and I am not
-going to guess at numbers. Both alternatives are free at this scale. To check: read
-`replit.com/pricing` in a browser. Even a small recurring cost is a subscription on the critical
-path of the token's metadata, which is a liability with no matching benefit.
-
-**Static is a secondary mode of the product.** Replit's own docs note Static Deployments are "not
-compatible with Replit Apps created using Agent," because the platform is oriented around
-agent-built full-stack applications. For an artifact that must stay reachable for years, a host
-whose primary business is serving static assets at the edge is a better structural bet than one
-where static hosting is a side path. This is a judgement about product direction, not a defect.
-
-**"Import to Replit" specifically means moving the source.** The site is generated from three GitHub
-repositories. Relocating it away from where its sources live adds a sync problem that neither
-alternative has.
-
-**Verdict: capable, unnecessary, and it makes the dependency graph worse.** Not chosen. If it ever
-is chosen, the `.replit` header block above is the required configuration and `verify:live` is the
-check.
+**Verdict: chosen.** Config is [`.replit`](../.replit). `verify:live` is the check. Issuer
+`Domain` stays unset.
 
 ---
 
@@ -566,7 +523,7 @@ publication guard fails the build if any classic XRPL address other than the can
 anywhere in the output, so it is a property of the build rather than an editorial habit.
 
 **Remaining step for the owner:** once the site is live, link the org profile to
-`https://pondprotocol.pages.dev/verify/` so there is one canonical destination rather than two
+`https://pond.greenhead.io/verify/` so there is one canonical destination rather than two
 partial ones. Do not point the issuer `Domain` at this host as part of that step.
 
 **If the position is ever reversed,** it has to be reversed everywhere: `protocol/README.md`,
@@ -576,59 +533,40 @@ already exist. What must not happen is the surfaces drifting apart again by acci
 
 ---
 
-## 7. Cloudflare Pages settings to paste
+## 7. Replit settings to paste
 
-Create a **Pages** project, not a Worker. Dashboard path: **Workers & Pages → Create application →
-Pages → Connect to Git**, repository `PondProtocol/Protocol`. If the form shows a **Deploy command**
-defaulting to `npx wrangler deploy`, that is the Worker create flow — cancel it. This site is static
-HTML with no Wrangler config; that command fails with `Could not detect a directory containing static
-files`.
+These values match [`site/package.json`](../site/package.json) and [`.replit`](../.replit). Do not
+guess. The GitHub repo root is **not** the site root — the static build lives in `site/` and
+writes `site/dist`.
 
-These values match [`site/package.json`](../site/package.json) and
-[`.github/workflows/docs-site.yml`](../.github/workflows/docs-site.yml). Do not guess.
-
-| Dashboard field | Paste this |
-| --- | --- |
-| **Product** | Pages (not Worker) |
-| **Project name** | `pondprotocol` |
-| **Production branch** | `main` |
-| **Framework preset** | None — leave blank |
-| **Root directory** | `site` (not `/`) |
-| **Build command** | `npm ci && npm run check` |
-| **Build output directory** | `dist` (relative to `site`; files land in `site/dist`) |
-| **Deploy command** | **empty** — do not set `npx wrangler deploy` |
-| **Node.js version** | `22` — environment variable `NODE_VERSION=22` if asked |
-
-**A project named `pond` cannot be renamed to get this URL.** Cloudflare's documented known issue:
-`*.pages.dev` subdomains cannot be changed. Delete `pond` and create a new Pages project named
-`pondprotocol`. Renaming the existing project, if the dashboard offers it, does not move the
-hostname off `pond.pages.dev`.
-
-`npm run check` is `node scripts/build.mjs --strict && node scripts/guard.mjs`. Using `npm run build`
-alone skips the publication guard.
-
-`site/public/_headers` is copied into `dist/` and covers `/.well-known/xrp-ledger.toml` with a
-path-specific rule:
-
-```
-/.well-known/xrp-ledger.toml
-  Access-Control-Allow-Origin: *
-  Content-Type: text/plain; charset=utf-8
-```
-
-Cloudflare Pages does **not** send CORS by default. After the first production deploy:
+**Run command** (editor preview, and Autoscale fallback):
 
 ```bash
-cd site && npm run verify:live -- pondprotocol.pages.dev
+cd site && (test -d node_modules || npm ci) && npm run check && npm run serve
+```
+
+`npm run check` is `node scripts/build.mjs --strict && node scripts/guard.mjs`. Using
+`npm run build` alone skips the publication guard.
+
+| Publishing field | Paste this |
+| --- | --- |
+| **Deployment type** | Static |
+| **Build command** | `cd site && npm ci && npm run check` |
+| **Public directory** | `site/dist` |
+
+CORS on the identity path is **not** supplied by `site/public/_headers` on Replit. It is supplied
+by `[[deployment.responseHeaders]]` in `.replit`. After DNS is attached:
+
+```bash
+cd site && npm run verify:live -- pond.greenhead.io
 ```
 
 That checks HTTPS status, `Access-Control-Allow-Origin`, `Content-Type`, and that the body has the
 right stanzas and no leftover placeholders. A missing CORS header is invisible in a browser, so
 looking at the page in a browser is not a substitute.
 
-**Leave the issuer `Domain` field unset.** CORS has not been verified live. `pages.dev` is a
-Cloudflare platform hostname; binding `Domain` to it later accepts a platform dependency that can
-only be changed while the issuer can still sign.
+**Leave the issuer `Domain` field unset.** CORS has not been verified live. Do not set `Domain` as
+part of this attach. Binding `Domain` can only be changed while the issuer can still sign.
 
 Remaining TODOs in `site/public/.well-known/xrp-ledger.toml` after this host is filled in: a real
 square icon on a permanent host, and whether to include `[[PRINCIPALS]]` (a disclosure decision —
@@ -638,22 +576,38 @@ do not invent a contact). `$rPND` has no stanza until it exists on ledger.
 and $PND has actually been issued. That flag controls the sitewide "$PND has not launched" warning.
 It is the one edit on the site that could mislead a buyer, so it goes last.
 
-**No plan upgrade is required.** **No new repository is required.** If you later attach a domain
-you register, add it as a custom domain on this same Pages project; the `_headers` file and the
-TOML path stay put. Changing the website host in the TOML is a docs edit. Changing an on-ledger
-`Domain`, if one is ever set, is not.
+### Import and custom-domain clicks
+
+1. Open [https://replit.com/import](https://replit.com/import) → **GitHub** → connect GitHub →
+   choose **PondProtocol/Protocol** → **Import**. Public-repo shortcut:
+   `https://replit.com/github.com/PondProtocol/Protocol`. If the org is missing from the picker,
+   grant the Replit OAuth app access to PondProtocol
+   ([GitHub application settings](https://github.com/settings/applications)).
+2. Press **Run** once. Confirm `/.well-known/xrp-ledger.toml` returns 200 in the preview.
+3. **Publish** (top right, or **Replit Cloud → Publishing**). **Adjust settings**: Deployment
+   type **Static**, build and public directory from the table above. Publish. The Domains tab
+   appears only after a successful deployment.
+4. **Publishing → Domains → Connect your own domain** → enter `pond.greenhead.io`. Prefer guided
+   DNS setup. Otherwise copy the `A` record and the `replit-verify=...` `TXT` record into
+   `greenhead.io` DNS and **leave the TXT record in place** (certificate renewal depends on it).
+   If that DNS is on Cloudflare, set the `A` record to **DNS only** (grey cloud), not proxied.
+   Keep a single `A` on that hostname; remove `AAAA`.
+5. Wait for **Verified** (minutes to 48 hours). Then run `verify:live`.
+6. **Leave the issuer `Domain` field unset.**
+
+`pond.greenhead.io` previously served a Greenhead agent database. That app is now at
+`database.greenhead.io`. Attaching `pond` here is intended, but confirm leftover Greenhead records
+are gone before changing DNS.
 
 ### What is still on the owner
 
-1. **Delete `pond` if it exists, then create a Pages project named `pondprotocol`** with the table
-   above. Do not reuse the Worker create flow. `*.pages.dev` cannot be renamed.
-2. **Add `SIBLING_REPOS_TOKEN` and branch protection on `main`.** Cloudflare Pages builds from a
-   push and does not run the GitHub Actions staleness job, so a direct push can publish a stale
-   snapshot of sibling-repo docs.
-3. **Run `verify:live` against the production URL** once the first deploy finishes.
-4. **Optionally register a real domain later** and point it at the same project. That is the
-   better long-term host for an on-ledger `Domain`, because you control renewal. Not a step for
-   this deploy.
+1. **Import Protocol into Replit** and publish Static with the table above. Attach
+   `pond.greenhead.io` only after a successful deployment.
+2. **Turn on branch protection on `main`** requiring the `staleness` and `build` checks. Replit
+   builds from Publish / a push and does not run GitHub Actions, so a direct push can publish a
+   stale snapshot of sibling-repo docs.
+3. **Run `verify:live` against `pond.greenhead.io`** once DNS is Verified.
+4. **Leave issuer `Domain` unset** until that live CORS check passes. Not a step for this deploy.
 5. **Confirm the tier-2 calls** in §6 — specifically whether the `open-questions.md` files stay
    public — if that has not been settled.
 
@@ -667,7 +621,7 @@ TOML path stay put. Changing the website host in the TOML is a docs edit. Changi
 | Cloudflare Pages building a private repo on the free plan | **Strongly implied, not directly confirmed.** Cloudflare's limits page states you "can manage both public and private repositories" without impacting the Pages site, and lists no plan gate on repository visibility. | Connect this repository in the Cloudflare dashboard before committing to the approach. It fails immediately and harmlessly if not permitted. |
 | Whether GitHub Pages can be enabled on a repository named `.github` | **Untested.** Nothing in the docs forbids it; none of ten organisations checked has it enabled. | Enable Pages on a throwaway org's `.github` repo. Not worth doing, since §3.2 recommends against it regardless. |
 | Cause of the missing CORS header on one `developers.cloudflare.com` `.well-known` path | **Unexplained.** Reproduced twice. Malformed lines in their `_headers` are a plausible but unconfirmed cause. | Not worth chasing. The actionable conclusion — verify live responses, never infer from the file — holds either way. |
-| Replit pricing and free-tier terms for Static Deployments | **Not verified. Deliberately not estimated.** | Read `replit.com/pricing` in a browser. |
+| Replit Static CORS and Content-Type on `/.well-known/xrp-ledger.toml` | **Unverified live.** Config is committed in `.replit`; Replit does not read `_headers`. | After attaching `pond.greenhead.io`: `cd site && npm run verify:live -- pond.greenhead.io` |
 | That the FirstLedger route for $PND is `/token-v3/<issuer>/PND` | **Unverified**, and marked unverified on the site. The route has moved once already and the token does not exist yet. | Load it in a browser once $PND is issued, then set `status: "verified"` in `site/content.config.json`. |
 
 ---

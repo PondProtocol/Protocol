@@ -1,9 +1,14 @@
-# Cloudflare Pages custom response headers.
+# Cloudflare Pages custom response headers (fallback host).
+#
+# Production hosting is Replit at pond.greenhead.io. Replit Static Deployments do
+# NOT read this file — CORS there is set in the repo-root `.replit`
+# `[[deployment.responseHeaders]]` block. Keep this file so a Cloudflare Pages
+# fallback still sends the XLS-26 headers. Deleting it (or the `.replit` block)
+# silently breaks every browser-based XLS-26 consumer while the site itself
+# keeps looking fine.
 #
 # Cloudflare Pages does NOT send Access-Control-Allow-Origin by default. Verified 2026-09-15:
 # static assets on Cloudflare Pages sites without a _headers file return no CORS header at all.
-# This file is what supplies it, so deleting it silently breaks every browser-based XLS-26
-# consumer while the site itself keeps looking fine.
 #
 # GitHub Pages ignores this file entirely - it sends Access-Control-Allow-Origin: * on everything
 # and offers no way to configure headers. If you deploy there, the CORS rule below is redundant
@@ -13,7 +18,7 @@
 # Limits: 100 rules, 2,000 characters per line.
 #
 # After any host or DNS change, verify rather than assume:
-#     cd site && npm run verify:live -- pondprotocol.pages.dev
+#     cd site && npm run verify:live -- pond.greenhead.io
 #
 # The path-specific block below is what covers /.well-known/xrp-ledger.toml.
 # XLS-26 asks for Access-Control-Allow-Origin: * and accepts text/plain or

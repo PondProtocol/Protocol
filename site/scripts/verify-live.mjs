@@ -2,7 +2,7 @@
 /**
  * Check a deployed host actually serves the identity anchor correctly.
  *
- *   node scripts/verify-live.mjs pondprotocol.pages.dev
+ *   node scripts/verify-live.mjs pond.greenhead.io
  *
  * Run this after every host or DNS change. Both candidate hosts can serve this file with the wrong
  * headers, and both failures are invisible in a browser: XLS-26 consumers are the ones that break.
@@ -17,7 +17,7 @@ const domain = process.argv[2]?.replace(/^https?:\/\//, "").replace(/\/$/, "");
 if (!domain) {
   process.stderr.write(
     `usage: node scripts/verify-live.mjs <domain>\n` +
-      `   eg: node scripts/verify-live.mjs pondprotocol.pages.dev\n`,
+      `   eg: node scripts/verify-live.mjs pond.greenhead.io\n`,
   );
   process.exit(2);
 }
@@ -72,8 +72,8 @@ process.stdout.write(
   failed
     ? `\n  ${failed} check(s) failed. The issuer Domain field stays unset.\n\n`
     : `\n  headers and body look correct on the website host ${domain}.\n` +
-        `  The issuer Domain field stays unset. ${domain} is a Cloudflare\n` +
-        `  platform hostname; binding Domain to it later accepts a platform\n` +
-        `  dependency that can only be changed while the issuer can still sign.\n\n`,
+        `  The issuer Domain field stays unset. Do not set Domain as part of\n` +
+        `  attaching this host. Binding Domain can only be changed while the\n` +
+        `  issuer can still sign.\n\n`,
 );
 process.exit(failed ? 1 : 0);

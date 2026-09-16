@@ -1,23 +1,23 @@
 # XLS-26 token metadata for Pond Protocol.
 #
-# Served at https://pondprotocol.pages.dev/.well-known/xrp-ledger.toml
+# Served at https://pond.greenhead.io/.well-known/xrp-ledger.toml
 #
 # WEBSITE HOST vs ON-LEDGER DOMAIN — these are not the same thing.
 #
-#   Website host (this file):  pondprotocol.pages.dev
-#     Lowercase, no scheme. This is the Cloudflare Pages hostname the docs site
-#     deploys to. HTTPS URLs in [[TOKENS.URLS]] use https://pondprotocol.pages.dev.
+#   Website host (this file):  pond.greenhead.io
+#     Lowercase, no scheme. This is the Replit custom domain the docs site
+#     deploys to. HTTPS URLs in [[TOKENS.URLS]] use https://pond.greenhead.io.
 #
 #   On-ledger issuer Domain:   UNSET, and it stays unset.
 #     CORS on this path has not been verified against a live deploy. XLS-26 is
 #     not a two-way link until Domain matches this host AND the file is served
-#     with Access-Control-Allow-Origin: *.
+#     with Access-Control-Allow-Origin: *. Do not set Domain as part of
+#     attaching this host.
 #
-# pondprotocol.pages.dev is a Cloudflare platform hostname, not a domain Pond
-# Protocol registers and renews. If Domain is later set to it, that accepts a
-# platform dependency that can only be changed while the issuer can still sign.
-# After blackholing, a pages.dev host going away or being reassigned is
-# permanent.
+# pond.greenhead.io is a name the owner holds (a subdomain of greenhead.io).
+# That is a better permanence story than a Cloudflare pages.dev hostname, but
+# it is still not a reason to bind Domain today. After blackholing, whatever
+# Domain is set at that moment is frozen forever.
 #
 # Remaining TODOs in this file (each marked TODO below where it applies):
 #   1. icon — a real square image on a permanent host.
@@ -41,15 +41,15 @@ asset_class = "memes"
 # TODO: replace with a real square icon on a permanent host. Must include the protocol
 #       (https:// or ipfs://). Leave commented until it resolves - a broken icon URL is worse
 #       than no icon field, because consumers cache what they fetch.
-# icon = "https://pondprotocol.pages.dev/icon-512.png"
+# icon = "https://pond.greenhead.io/icon-512.png"
 
 [[TOKENS.URLS]]
-url = "https://pondprotocol.pages.dev"
+url = "https://pond.greenhead.io"
 type = "website"
 title = "Official website"
 
 [[TOKENS.URLS]]
-url = "https://pondprotocol.pages.dev/verify/"
+url = "https://pond.greenhead.io/verify/"
 type = "document"
 title = "Verify the issuer"
 

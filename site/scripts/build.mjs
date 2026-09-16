@@ -49,7 +49,8 @@ const esc = (s) =>
 /* ---------------------------------------------------------- substitutions
  *
  * The website host lives in exactly one place - content.config.json - and is substituted into
- * authored pages. It is the Cloudflare Pages hostname, not the issuer's on-ledger Domain field.
+ * authored pages. It is the website host (currently pond.greenhead.io), not the issuer's
+ * on-ledger Domain field.
  */
 const domainConfigured = Boolean(site.domain);
 const displayDomain = site.domain || site.domainPlaceholder;
@@ -401,7 +402,7 @@ for (const page of pages) {
   writeFileSync(join(dir, "index.html"), layout(page, html));
 }
 
-// 404. GitHub Pages and Cloudflare Pages both serve /404.html for unmatched paths.
+// 404. GitHub Pages, Cloudflare Pages, and Replit Static all serve /404.html for unmatched paths.
 writeFileSync(
   join(DIST_DIR, "404.html"),
   layout(

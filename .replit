@@ -1,0 +1,54 @@
+# Pond Protocol documentation site.
+#
+# The GitHub repo root is not the site root. The static site lives in site/,
+# builds with `npm ci && npm run check`, and writes HTML into site/dist.
+#
+# Run (editor preview): Node static server in site/scripts/serve.mjs.
+# Publish: Static Deployment of site/dist. CORS on the XLS-26 path is set
+# below — Replit does not read site/public/_headers (that file is for a
+# Cloudflare Pages fallback). After attaching pond.greenhead.io, verify:
+#   cd site && npm run verify:live -- pond.greenhead.io
+# Leave the issuer on-ledger Domain unset until that check passes.
+
+modules = ["nodejs-20"]
+run = "bash -c 'cd site && (test -d node_modules || npm ci) && npm run check && npm run serve'"
+entrypoint = "site/scripts/serve.mjs"
+hidden = ["site/node_modules", "site/dist", ".git"]
+language = "nodejs"
+
+[nix]
+channel = "stable-24_05"
+
+[gitHubImport]
+requiredFiles = [".replit"]
+
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[deployment]
+deploymentTarget = "static"
+build = ["bash", "-c", "cd site && npm ci && npm run check"]
+publicDir = "site/dist"
+ignorePorts = true
+
+# XLS-26: wallets fetch this path from the browser. Missing CORS is silent.
+[[deployment.responseHeaders]]
+path = "/.well-known/xrp-ledger.toml"
+name = "Access-Control-Allow-Origin"
+value = "*"
+
+[[deployment.responseHeaders]]
+path = "/.well-known/xrp-ledger.toml"
+name = "Content-Type"
+value = "text/plain; charset=utf-8"
+
+[[deployment.responseHeaders]]
+path = "/.well-known/xrp-ledger.toml"
+name = "X-Content-Type-Options"
+value = "nosniff"
+
+[[deployment.responseHeaders]]
+path = "/.well-known/*"
+name = "Access-Control-Allow-Origin"
+value = "*"
