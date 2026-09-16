@@ -350,6 +350,8 @@ function layout(page, html) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0b">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(page.description ?? site.description)}">
 ${canonical}
