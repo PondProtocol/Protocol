@@ -223,6 +223,12 @@ cd site && npm run verify:live -- pond.greenhead.io
 
 **Leave the issuer `Domain` field unset** until that check passes.
 
+Replit recovery mode ("Nix environment is broken") happens when `.replit` is present without
+`replit.nix`. Both files are in the repo root. After they land on `main`: in Shell,
+`git fetch origin main && git reset --hard origin/main`, then **do not** click Recover original
+configuration files. Type `exit` in Shell (or Command Palette → Restart compute) so Nix rebuilds.
+Publishing type must be **Autoscale**.
+
 ### Import and custom domain (owner clicks)
 
 1. Open [replit.com/import](https://replit.com/import) → **GitHub** → connect the GitHub account →
