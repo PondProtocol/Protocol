@@ -169,6 +169,7 @@ a:hover {
   background: color-mix(in srgb, var(--accent) 72%, #ffffff);
   color: #ffffff;
   border: 1px solid color-mix(in srgb, var(--accent) 75%, #0a0a0b);
+  text-transform: uppercase;
 }
 
 .topnav .status-chip {
@@ -187,9 +188,9 @@ a:hover {
 }
 
 .topnav a.nav-verify-chip {
-  color: var(--critical);
+  color: #ffffff;
   text-decoration: none;
-  text-transform: none;
+  text-transform: uppercase;
 }
 
 .topnav .cta {
