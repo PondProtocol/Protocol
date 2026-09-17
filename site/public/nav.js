@@ -1,5 +1,5 @@
 /**
- * Docs sidebar: collapse on desktop, drawer on mobile, remember both.
+ * Docs sidebar: collapse on desktop, drawer on mobile.
  * The edge chevron (.docs-rail) is the open/close control. No wallet connect.
  */
 (() => {
@@ -14,7 +14,6 @@
   const backdrop = document.querySelector("[data-docs-backdrop]");
   const railText = rail?.querySelector(".visually-hidden");
   const KEY_COLLAPSED = "pond-docs-nav-collapsed";
-  const KEY_GROUPS = "pond-docs-nav-groups";
   const mq = window.matchMedia("(max-width: 780px)");
 
   const isMobile = () => mq.matches;
@@ -29,6 +28,7 @@
   function setDesktopCollapsed(collapsed, persist) {
     root.classList.toggle("is-collapsed", collapsed);
     html.classList.toggle("docs-collapsed", collapsed);
+    if (!collapsed) openAllGroups();
     setRail(!collapsed);
     if (persist) {
       try {
@@ -42,8 +42,15 @@
   function setMobileOpen(open) {
     root.classList.toggle("is-open", open);
     document.body.classList.toggle("docs-open", open);
+    if (open) openAllGroups();
     openers.forEach((b) => b.setAttribute("aria-expanded", String(open)));
     setRail(open);
+  }
+
+  function openAllGroups() {
+    root.querySelectorAll("details[data-nav-group]").forEach((details) => {
+      details.open = true;
+    });
   }
 
   function applyViewport() {
@@ -57,28 +64,8 @@
     }
   }
 
-  let stored = {};
-  try {
-    stored = JSON.parse(localStorage.getItem(KEY_GROUPS) || "{}") || {};
-  } catch {
-    stored = {};
-  }
-
   root.querySelectorAll("details[data-nav-group]").forEach((details) => {
-    const id = details.dataset.navGroup;
-    const hasActive = Boolean(details.querySelector("a.active"));
-    if (hasActive) details.open = true;
-    else if (Object.prototype.hasOwnProperty.call(stored, id)) details.open = Boolean(stored[id]);
-    else details.open = id === "start-here";
-
-    details.addEventListener("toggle", () => {
-      stored[id] = details.open;
-      try {
-        localStorage.setItem(KEY_GROUPS, JSON.stringify(stored));
-      } catch {
-        /* private mode */
-      }
-    });
+    details.open = true;
   });
 
   applyViewport();

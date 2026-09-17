@@ -310,8 +310,7 @@ function navHtml(currentUrl) {
     const visible = group.pages.filter((p) => p.publish !== false);
     if (!visible.length) continue;
     const id = navGroupId(group.section);
-    const hasActive = visible.some((p) => p.url === currentUrl);
-    const open = hasActive || id === "start-here" ? " open" : "";
+    const open = " open";
     out += `<details class="nav-group" data-nav-group="${esc(id)}"${open}>`;
     out += `<summary class="nav-group-title">${esc(group.section)}</summary><ul>`;
     for (const p of visible) {
@@ -334,6 +333,7 @@ function heroHtml() {
   return `<section class="hero" aria-labelledby="hero-tagline">
   <img class="hero-art" src="/hero.png" width="1920" height="1080" alt="">
   <div class="hero-veil" aria-hidden="true"></div>
+  <div class="hero-signal" aria-hidden="true"><span></span></div>
   <div class="hero-inner">
     <p class="hero-kicker">Pond Protocol</p>
     <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>
