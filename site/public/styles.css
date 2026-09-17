@@ -284,6 +284,43 @@ html.docs-collapsed .docs-rail {
   height: 0.95rem;
 }
 
+.docs-rail-orbit {
+  fill: none;
+  stroke: color-mix(in srgb, var(--accent-bright) 70%, transparent);
+  stroke-width: 0.7;
+}
+
+.docs-rail-core {
+  fill: var(--accent);
+  stroke: var(--accent-bright);
+  stroke-width: 0.55;
+}
+
+.docs-rail-orbiting-orb {
+  transform-origin: 8px 8px;
+  animation: docs-orbital-spin 2.4s linear infinite;
+}
+
+.docs-rail-orb {
+  fill: var(--accent-bright);
+  filter: drop-shadow(0 0 1.5px var(--accent-bright));
+}
+
+@keyframes docs-orbital-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-rail-orbiting-orb {
+    animation: none;
+  }
+}
+
 html.docs-collapsed .docs-rail-icon {
   transform: rotate(180deg);
 }

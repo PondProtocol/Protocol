@@ -470,7 +470,13 @@ ${banner}
 ${isHome ? heroHtml() : ""}
 <div class="docs-backdrop" data-docs-backdrop></div>
 <button type="button" class="docs-rail" data-docs-toggle aria-expanded="true" aria-controls="docs-nav" title="Collapse documentation menu">
-  <svg class="docs-rail-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <svg class="docs-rail-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+    <ellipse class="docs-rail-orbit" cx="8" cy="8" rx="6" ry="2.8" transform="rotate(-24 8 8)"/>
+    <circle class="docs-rail-core" cx="8" cy="8" r="2.7"/>
+    <g class="docs-rail-orbiting-orb">
+      <circle class="docs-rail-orb" cx="14" cy="8" r="1.25"/>
+    </g>
+  </svg>
   <span class="visually-hidden">Collapse documentation menu</span>
 </button>
 <div class="shell">
