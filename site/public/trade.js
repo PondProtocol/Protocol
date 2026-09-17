@@ -191,17 +191,21 @@
           </div>
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
+        <div class="trade-chart-symbol-bar">
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark">X</span><strong data-chart-symbol>XRP / USD</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source">CoinGecko</span></div>
+          <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
+        </div>
         <div class="trade-overview-toolbar">
           <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>XRP / USD · Validated ledger</strong></div>
           <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
           <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
-          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active" data-chart-indicator="sma">SMA</button><button type="button" data-chart-indicator="ema">EMA</button><button type="button" data-chart-indicator="rsi">RSI</button><button type="button" data-chart-indicator="macd">MACD</button><button type="button" data-chart-indicator="bollinger">Bollinger Bands</button></div>
+          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" data-chart-indicator="sma">SMA</button><button type="button" data-chart-indicator="ema">EMA</button><button type="button" data-chart-indicator="rsi">RSI</button><button type="button" data-chart-indicator="macd">MACD</button><button type="button" class="is-active" data-chart-indicator="bollinger">Bollinger Bands</button></div>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
-            <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 360" role="img" aria-label="Live XRP price chart"></svg>
+            <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 480" role="img" aria-label="Live XRP price chart"></svg>
             <span class="trade-chart-source" data-chart-source>Source: CoinGecko public market data</span>
           </div>
           <div class="trade-chart-empty-state" data-chart-empty-state>
