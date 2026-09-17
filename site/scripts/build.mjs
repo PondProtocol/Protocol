@@ -494,10 +494,68 @@ ${isHome ? heroHtml() : ""}
 </div>
 <footer class="footer">
   <div class="footer-inner">
-    <p><strong>${esc(site.title)}</strong> &middot; documentation. Licensed Apache-2.0.</p>
-    <p class="muted">Asset identity on the XRP Ledger is the pair (currency code, issuer address),
-    never the code alone. A different issuer using the code <code>PND</code> is a different token.
-    <a href="/verify/">Check the issuer address</a> before you trust anything calling itself $PND.</p>
+    <div class="footer-main">
+      <div class="footer-brand">
+        <a class="footer-logo" href="/" aria-label="${esc(site.title)} home"><img src="/icon-512.png" width="36" height="36" alt=""><span>${esc(site.title)}</span></a>
+        <p class="footer-tagline">${esc(site.tagline)}</p>
+        <a class="footer-back-to-top" href="#site-view">Back to top <span aria-hidden="true">⌃</span></a>
+      </div>
+      <nav class="footer-column" aria-label="Protocol links">
+        <h2>Protocol</h2>
+        <a href="/protocol/">Overview</a>
+        <a href="/protocol/architecture/">Architecture</a>
+        <a href="/protocol/two-tokens/">Two tokens</a>
+        <a href="/discovery/">Discovery</a>
+        <a href="/verify/">Verify the issuer</a>
+      </nav>
+      <nav class="footer-column" aria-label="Markets and assets">
+        <h2>Markets &amp; assets</h2>
+        <a href="/trade/">Trade terminal</a>
+        <a href="/pond/">Pond</a>
+        <a href="/pnd/">$PND</a>
+        <a href="/rpnd/">$rPND</a>
+        <a href="/hold/">Holding safely</a>
+      </nav>
+      <nav class="footer-column footer-column-stacked" aria-label="Resources and company">
+        <div>
+          <h2>Resources</h2>
+          <a href="/wallets/">Wallets</a>
+          <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
+          <a href="/links/">Official links</a>
+          <a href="/open-questions/">Open questions</a>
+        </div>
+        <div>
+          <h2>Company</h2>
+          <a href="/team/">Meet the team</a>
+          <a href="/links/">Contact &amp; official links</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-social">
+        <a class="footer-social-link" href="${esc(site.repoUrlBase)}" target="_blank" rel="noopener noreferrer" aria-label="Pond Protocol on GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.51c.47.09.64-.2.64-.45v-1.68c-2.6.57-3.15-1.1-3.15-1.1-.43-1.09-1.05-1.38-1.05-1.38-.85-.58.06-.57.06-.57.94.07 1.44.97 1.44.97.84 1.43 2.21 1.02 2.75.78.09-.61.33-1.02.6-1.26-2.08-.24-4.27-1.04-4.27-4.65 0-1.03.37-1.87.97-2.53-.1-.24-.42-1.2.09-2.5 0 0 .79-.25 2.6.97A9 9 0 0 1 12 7.31c.8 0 1.61.11 2.36.33 1.8-1.22 2.59-.97 2.59-.97.51 1.3.19 2.26.1 2.5.6.66.96 1.5.96 2.53 0 3.62-2.2 4.4-4.29 4.64.34.3.64.87.64 1.76v2.61c0 .25.17.54.65.45A9.5 9.5 0 0 0 12 2.5Z"/></svg>
+          <span>GitHub</span>
+        </a>
+        <a class="footer-social-link" href="/verify/" aria-label="Verify the Pond issuer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 7 3v5.25c0 4.4-2.94 8.3-7 9.75-4.06-1.45-7-5.35-7-9.75V6l7-3Zm3.35 6.4-4.08 4.08-2.1-2.1-1.06 1.06 3.16 3.16 5.14-5.14-1.06-1.06Z"/></svg>
+          <span>Verify</span>
+        </a>
+      </div>
+      <div class="footer-legal">
+        <div class="footer-legal-links">
+          <a href="/protocol/">Protocol</a>
+          <span aria-hidden="true">|</span>
+          <a href="/links/">Official links</a>
+          <span aria-hidden="true">|</span>
+          <a href="/verify/">Issuer verification</a>
+          <span aria-hidden="true">|</span>
+          <a href="/protocol/security/">Security</a>
+        </div>
+        <p>© 2026 ${esc(site.title)}. Documentation licensed Apache-2.0.</p>
+        <p class="footer-integrity">The issuer address is the source of truth for $PND identity. <a href="/verify/">Check it before you trust a balance or link.</a></p>
+      </div>
+    </div>
   </div>
 </footer>
 </div>
