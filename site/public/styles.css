@@ -3626,6 +3626,49 @@ body.trade-disclaimer-open {
   grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
 }
 
+.trade-chart-market-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-code) 72%, transparent);
+}
+
+.trade-chart-pair-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.trade-chart-pair-tabs button,
+.trade-chart-overlay {
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.trade-chart-pair-tabs button:hover,
+.trade-chart-pair-tabs button.is-active,
+.trade-chart-overlay:hover,
+.trade-chart-overlay.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-chart-overlay {
+  flex: none;
+  color: var(--accent-bright);
+}
+
 .trade-overview-chart,
 .trade-overview-card {
   min-width: 0;
@@ -4136,7 +4179,8 @@ body.page-trade .trade-detail-panels {
 }
 
 body.page-trade .trade-overview-toolbar,
-body.page-trade .trade-overview-tools {
+body.page-trade .trade-overview-tools,
+body.page-trade .trade-chart-market-controls {
   background: color-mix(in srgb, var(--bg-code) 72%, transparent);
 }
 
@@ -4151,6 +4195,15 @@ body.page-trade .trade-overview-card {
 }
 
 @media (max-width: 780px) {
+  .trade-chart-market-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trade-chart-overlay {
+    align-self: flex-start;
+  }
+
   body.page-trade .trade-terminal-head {
     align-items: flex-start;
   }

@@ -183,21 +183,29 @@
 
     <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="chart" aria-label="Market chart" hidden>
       <section class="trade-overview-chart">
+        <div class="trade-chart-market-controls">
+          <div class="trade-chart-pair-tabs" data-control-group="chart-pair" aria-label="Chart pair">
+            <button type="button" class="is-active" data-chart-pair="xrp-usd">XRP / USD</button>
+            <button type="button" data-chart-pair="pnd-xrp">PND / XRP</button>
+            <button type="button" data-chart-pair="pnd-usd">PND / USD</button>
+          </div>
+          <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
+        </div>
         <div class="trade-overview-toolbar">
-          <div><p class="trade-kicker">Market overview</p><strong>$PND / XRP · Validated ledger</strong></div>
+          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>XRP / USD · Validated ledger</strong></div>
           <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active">1H</button><button type="button">4H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
         </div>
         <div class="trade-overview-tools">
           <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
-          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active">SMA</button><button type="button">EMA</button><button type="button">RSI</button><button type="button">MACD</button><button type="button">Bollinger</button></div>
+          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active">SMA</button><button type="button">EMA</button><button type="button">RSI</button><button type="button">MACD</button><button type="button">Bollinger Bands</button></div>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-grid"></div>
           <span class="trade-chart-mark">P</span>
-          <strong>TradingView-style analytics activate after verification</strong>
-          <span>Candles, volume, indicators, and crosshair data will come from the selected XRPL market.</span>
+          <strong data-chart-empty-title>XRP / USD chart activates after verification</strong>
+          <span data-chart-empty-copy>Candles, volume, indicators, and crosshair data will come from the selected XRPL market.</span>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i>Price</span><span><i class="trade-legend-bar"></i>Volume</span><span>Indicators unavailable</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>XRP / USD</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-overlay>Overlay off</span><span>Indicators gated</span></div>
       </section>
       <aside class="trade-overview-sidebar">
         <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated">Not verified</strong></div></div>
@@ -448,6 +456,39 @@
       });
     }
 
+    function setupChartControls() {
+      const pairLabels = {
+        "xrp-usd": "XRP / USD",
+        "pnd-xrp": "PND / XRP",
+        "pnd-usd": "PND / USD",
+      };
+      const pairButtons = $$("[data-chart-pair]");
+      const overlay = $("[data-chart-overlay]");
+      if (!pairButtons.length || !overlay) return;
+
+      pairButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const label = pairLabels[button.dataset.chartPair] || "XRP / USD";
+          setText("[data-chart-pair-label]", `${label} · Validated ledger`);
+          setText("[data-chart-empty-title]", `${label} chart activates after verification`);
+          setText("[data-chart-legend-primary]", label);
+        });
+      });
+
+      overlay.addEventListener("click", () => {
+        const active = overlay.getAttribute("aria-pressed") !== "true";
+        overlay.setAttribute("aria-pressed", String(active));
+        overlay.classList.toggle("is-active", active);
+        setText("[data-chart-legend-overlay]", active ? "Overlay on" : "Overlay off");
+        setText(
+          "[data-chart-empty-copy]",
+          active
+            ? "The selected pair and its comparison series will overlay after verified market data is available."
+            : "Candles, volume, indicators, and crosshair data will come from the selected XRPL market.",
+        );
+      });
+    }
+
     function setupTabs() {
       $$("[data-tab-group]").forEach((tabBar) => {
         const group = tabBar.dataset.tabGroup;
@@ -567,6 +608,7 @@
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
+    setupChartControls();
     setupDisclaimer();
     const initialMode = window.location.hash === "#agent"
       ? "agent"
