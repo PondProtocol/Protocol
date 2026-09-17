@@ -354,9 +354,7 @@ function heroHtml() {
 }
 
 function protocolSnapshotHtml() {
-  return `<section class="protocol-snapshot" aria-label="Protocol snapshot">
-  <div class="protocol-snapshot-inner">
-    <div class="protocol-snapshot-title"><span class="protocol-snapshot-dot" aria-hidden="true"></span><strong>Protocol snapshot</strong><span>Pre-launch</span></div>
+  const snapshotContent = `<div class="protocol-snapshot-title"><span class="protocol-snapshot-dot" aria-hidden="true"></span><strong>Protocol snapshot</strong><span>Pre-launch</span></div>
     <div class="protocol-snapshot-group">
       <span class="protocol-snapshot-label">Network</span>
       <div class="protocol-snapshot-items">
@@ -383,6 +381,12 @@ function protocolSnapshotHtml() {
         <span><b>Total supply</b><strong>100B planned</strong></span>
         <span><b>Open supply</b><strong>Not issued</strong></span>
       </div>
+    </div>`;
+  return `<section class="protocol-snapshot" aria-label="Protocol snapshot">
+  <div class="protocol-snapshot-inner" tabindex="0" aria-label="Scrolling protocol snapshot; hover or focus to pause">
+    <div class="protocol-snapshot-track">
+      <div class="protocol-snapshot-set">${snapshotContent}</div>
+      <div class="protocol-snapshot-set" aria-hidden="true">${snapshotContent}</div>
     </div>
   </div>
 </section>`;
