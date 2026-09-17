@@ -360,7 +360,6 @@ function protocolSnapshotHtml() {
       <div class="protocol-snapshot-items">
         <span><i class="snapshot-status is-live" aria-hidden="true"></i>Live <strong>XRP</strong></span>
         <span><i class="snapshot-status is-testnet" aria-hidden="true"></i>Testnet <strong>XRP</strong></span>
-        <span><i class="snapshot-status is-planned" aria-hidden="true"></i>EVM <strong>Planned</strong></span>
       </div>
     </div>
     <div class="protocol-snapshot-group">

@@ -357,7 +357,7 @@ html.docs-collapsed .docs-rail-icon {
 
 .protocol-snapshot-inner {
   width: min(100%, 96rem);
-  min-height: 3.75rem;
+  min-height: 3rem;
   margin: 0 auto;
   overflow: hidden;
   outline: none;
@@ -408,15 +408,16 @@ html.docs-collapsed .docs-rail-icon {
 .protocol-snapshot-group {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex: none;
   min-width: max-content;
-  padding: 0.62rem 0.85rem;
+  padding: 0.4rem 0.65rem;
   border-right: 1px solid #28313a;
 }
 
 .protocol-snapshot-title {
   gap: 0.35rem;
-  padding-left: clamp(0.8rem, 3vw, 2rem);
+  padding-left: clamp(0.65rem, 2vw, 1.25rem);
   color: #f1f4f7;
   font-size: 0.69rem;
   font-weight: 750;
@@ -455,6 +456,7 @@ html.docs-collapsed .docs-rail-icon {
 .protocol-snapshot-items {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0;
 }
 
@@ -462,7 +464,7 @@ html.docs-collapsed .docs-rail-icon {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0 0.72rem;
+  padding: 0 0.55rem;
   border-left: 1px solid #313b45;
   color: #c3cbd2;
   font-family: var(--mono);
@@ -501,10 +503,6 @@ html.docs-collapsed .docs-rail-icon {
   color: #f2bd62;
 }
 
-.protocol-snapshot-set > .protocol-snapshot-group:nth-child(2) .protocol-snapshot-items > span:nth-child(3) strong {
-  color: #89a9c8;
-}
-
 .protocol-snapshot-set > .protocol-snapshot-group:nth-child(3) .protocol-snapshot-items > span:nth-child(1) strong {
   color: #77bfff;
 }
@@ -538,10 +536,6 @@ html.docs-collapsed .docs-rail-icon {
 .snapshot-status.is-testnet {
   background: #e1b365;
   box-shadow: 0 0 8px rgb(225 179 101 / 0.45);
-}
-
-.snapshot-status.is-planned {
-  background: #8795a5;
 }
 
 /* ------------------------------------------------------------------- shell */
