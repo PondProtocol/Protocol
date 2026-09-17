@@ -193,23 +193,29 @@
         </div>
         <div class="trade-overview-toolbar">
           <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>XRP / USD · Validated ledger</strong></div>
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active">1H</button><button type="button">4H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
           <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
-          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active">SMA</button><button type="button">EMA</button><button type="button">RSI</button><button type="button">MACD</button><button type="button">Bollinger Bands</button></div>
+          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active" data-chart-indicator="sma">SMA</button><button type="button" data-chart-indicator="ema">EMA</button><button type="button" data-chart-indicator="rsi">RSI</button><button type="button" data-chart-indicator="macd">MACD</button><button type="button" data-chart-indicator="bollinger">Bollinger Bands</button></div>
         </div>
         <div class="trade-overview-plot">
-          <div class="trade-chart-grid"></div>
-          <span class="trade-chart-mark">P</span>
-          <strong data-chart-empty-title>XRP / USD chart activates after verification</strong>
-          <span data-chart-empty-copy>Candles, volume, indicators, and crosshair data will come from the selected XRPL market.</span>
+          <div class="trade-chart-live" data-chart-live hidden>
+            <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 360" role="img" aria-label="Live XRP price chart"></svg>
+            <span class="trade-chart-source" data-chart-source>Source: CoinGecko public market data</span>
+          </div>
+          <div class="trade-chart-empty-state" data-chart-empty-state>
+            <div class="trade-chart-grid"></div>
+            <span class="trade-chart-mark">P</span>
+            <strong data-chart-empty-title>XRP / USD chart is loading</strong>
+            <span data-chart-empty-copy>Fetching live XRP market data…</span>
+          </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>XRP / USD</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-overlay>Overlay off</span><span>Indicators gated</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>XRP / USD</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>CoinGecko data</span></div>
       </section>
       <aside class="trade-overview-sidebar">
-        <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated">Not verified</strong></div></div>
-        <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong>—</strong></div><span class="trade-overview-note">Choose indicators above to prepare the view. No values are shown until market data is verified.</span></div>
+        <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Loading</strong></div></div>
+        <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Select an indicator to plot it over the live XRP series.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
       </aside>
     </section>
@@ -462,16 +468,118 @@
         "pnd-xrp": "PND / XRP",
         "pnd-usd": "PND / USD",
       };
+      const rangeDays = { "1h": 1, "4h": 2, "1d": 7, "1w": 7, all: 365 };
+      const rangePoints = { "1h": 12, "4h": 24, "1d": 48, "1w": 168, all: 365 };
+      const chartState = { pair: "xrp-usd", range: "1h", indicator: "sma", data: null };
       const pairButtons = $$("[data-chart-pair]");
+      const rangeButtons = $$("[data-chart-range]");
+      const indicatorButtons = $$("[data-chart-indicator]");
       const overlay = $("[data-chart-overlay]");
-      if (!pairButtons.length || !overlay) return;
+      const liveChart = $("[data-chart-live]");
+      const emptyChart = $("[data-chart-empty-state]");
+      const svg = $("[data-chart-svg]");
+      if (!pairButtons.length || !overlay || !liveChart || !emptyChart || !svg) return null;
+
+      const numberFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
+      const compactFormat = new Intl.NumberFormat("en-US", {
+        notation: "compact",
+        maximumFractionDigits: 2,
+      });
+      const formatUsd = (value) => {
+        if (!Number.isFinite(value)) return "—";
+        return `$${numberFormat.format(value)}`;
+      };
+      const formatVolume = (value) => (Number.isFinite(value) ? `$${compactFormat.format(value)}` : "—");
+      const formatPercent = (value) => {
+        if (!Number.isFinite(value)) return "—";
+        return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+      };
+      const setChartEmpty = (title, copy) => {
+        setText("[data-chart-empty-title]", title);
+        setText("[data-chart-empty-copy]", copy);
+        liveChart.hidden = true;
+        emptyChart.hidden = false;
+      };
+      const setLiveStatus = (live) => {
+        const status = $("[data-chart-stat-status]");
+        if (!status) return;
+        status.classList.toggle("is-gated", !live);
+        status.classList.toggle("is-live", live);
+        status.textContent = live ? "Live XRP market" : "Not verified";
+      };
+      const resetChartStats = () => {
+        setText("[data-chart-stat-price]", "—");
+        setText("[data-chart-stat-change]", "—");
+        setText("[data-chart-stat-volume]", "—");
+        setText("[data-chart-stat-sma]", "—");
+        setText("[data-chart-stat-rsi]", "—");
+        setText("[data-chart-stat-macd]", "—");
+        setLiveStatus(false);
+      };
+      const movingAverage = (values, period) =>
+        values.map((value, index) => {
+          if (index < period - 1) return null;
+          const slice = values.slice(index - period + 1, index + 1);
+          return slice.reduce((sum, item) => sum + item, 0) / period;
+        });
+      const exponentialAverage = (values, period) => {
+        const multiplier = 2 / (period + 1);
+        let previous = values[0];
+        return values.map((value, index) => {
+          if (index === 0) return previous;
+          previous = (value - previous) * multiplier + previous;
+          return index < period - 1 ? null : previous;
+        });
+      };
+      const relativeStrength = (values, period) =>
+        values.map((_, index) => {
+          if (index < period) return null;
+          let gains = 0;
+          let losses = 0;
+          for (let cursor = index - period + 1; cursor <= index; cursor += 1) {
+            const change = values[cursor] - values[cursor - 1];
+            if (change >= 0) gains += change;
+            else losses -= change;
+          }
+          if (losses === 0) return 100;
+          return 100 - 100 / (1 + gains / losses);
+        });
+      const pathFor = (series, x, y) =>
+        series
+          .map((value, index) => (value == null ? "" : `${index ? "L" : "M"} ${x(index)} ${y(value)}`))
+          .filter(Boolean)
+          .join(" ");
+      const svgText = (x, y, text, className, anchor = "start") =>
+        `<text x="${x}" y="${y}" class="${className}" text-anchor="${anchor}">${text}</text>`;
 
       pairButtons.forEach((button) => {
         button.addEventListener("click", () => {
           const label = pairLabels[button.dataset.chartPair] || "XRP / USD";
-          setText("[data-chart-pair-label]", `${label} · Validated ledger`);
-          setText("[data-chart-empty-title]", `${label} chart activates after verification`);
+          chartState.pair = button.dataset.chartPair;
+          setText("[data-chart-pair-label]", chartState.pair === "xrp-usd" ? `${label} · Live market` : `${label} · Validated ledger`);
           setText("[data-chart-legend-primary]", label);
+          if (chartState.pair === "xrp-usd") {
+            loadXrpData();
+          } else {
+            chartState.data = null;
+            resetChartStats();
+            setChartEmpty(`${label} chart activates after verification`, "PND market data will appear after the issuer and market are verified.");
+          }
+        });
+      });
+
+      rangeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          chartState.range = button.dataset.chartRange || "1h";
+          if (chartState.pair === "xrp-usd") loadXrpData();
+        });
+      });
+
+      indicatorButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          chartState.indicator = button.dataset.chartIndicator || "sma";
+          setText("[data-chart-legend-indicator]", button.textContent.trim());
+          if (chartState.data) renderChart();
         });
       });
 
@@ -486,7 +594,146 @@
             ? "The selected pair and its comparison series will overlay after verified market data is available."
             : "Candles, volume, indicators, and crosshair data will come from the selected XRPL market.",
         );
+        if (chartState.data) renderChart();
       });
+
+      function renderChart() {
+        const points = chartState.data?.points || [];
+        if (points.length < 2) return;
+        const values = points.map((point) => point.value);
+        const volumes = points.map((point) => point.volume || 0);
+        const width = 1000;
+        const height = 360;
+        const left = 58;
+        const right = 18;
+        const top = 18;
+        const bottom = 38;
+        const volumeHeight = 54;
+        const plotRight = width - right;
+        const plotBottom = height - bottom - volumeHeight;
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const padding = Math.max((maxValue - minValue) * 0.12, maxValue * 0.002);
+        const low = minValue - padding;
+        const high = maxValue + padding;
+        const x = (index) => left + (index / Math.max(points.length - 1, 1)) * (plotRight - left);
+        const y = (value) => plotBottom - ((value - low) / Math.max(high - low, 0.000001)) * (plotBottom - top);
+        const maxVolume = Math.max(...volumes, 1);
+        const volumeY = (value) => plotBottom + 8 + (1 - value / maxVolume) * volumeHeight;
+        const pricePath = pathFor(values, x, y);
+        const areaPath = `${pricePath} L ${x(values.length - 1)} ${plotBottom} L ${x(0)} ${plotBottom} Z`;
+        const grid = [];
+        for (let index = 0; index < 5; index += 1) {
+          const gridY = top + (index / 4) * (plotBottom - top);
+          const gridValue = high - (index / 4) * (high - low);
+          grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
+          grid.push(svgText(left - 8, gridY + 3, formatUsd(gridValue), "trade-chart-axis-label", "end"));
+        }
+        const bars = volumes
+          .map((volume, index) => {
+            const barWidth = Math.max(2, ((plotRight - left) / points.length) * 0.58);
+            const barHeight = Math.max(1, (volume / maxVolume) * volumeHeight);
+            return `<rect class="trade-chart-volume" x="${x(index) - barWidth / 2}" y="${plotBottom + volumeHeight - barHeight}" width="${barWidth}" height="${barHeight}" rx="1"/>`;
+          })
+          .join("");
+        const labelIndexes = [0, Math.floor((points.length - 1) / 2), points.length - 1];
+        const labels = labelIndexes
+          .map((index) => svgText(x(index), height - 12, new Date(points[index].time).toLocaleDateString(undefined, { month: "short", day: "numeric" }), "trade-chart-axis-label", index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"))
+          .join("");
+        const indicator = chartState.indicator;
+        const sma = movingAverage(values, 20);
+        const ema = exponentialAverage(values, 20);
+        const changes = values.map((value, index) => (index ? value - values[index - 1] : 0));
+        const macdFast = exponentialAverage(values, 12);
+        const macdSlow = exponentialAverage(values, 26);
+        const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
+        const macdSignal = exponentialAverage(macd.filter((value) => value != null), 9);
+        const macdAligned = macd.map((value, index) => (value == null ? null : macdSignal[Math.max(0, index - 25)]));
+        const rsi = relativeStrength(values, 14);
+        const mean = movingAverage(values, 20);
+        const standardDeviation = values.map((_, index) => {
+          if (index < 19) return null;
+          const slice = values.slice(index - 19, index + 1);
+          const average = mean[index];
+          return Math.sqrt(slice.reduce((sum, value) => sum + (value - average) ** 2, 0) / 20);
+        });
+        const upper = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value + standardDeviation[index] * 2));
+        const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
+        let indicatorPaths = "";
+        let indicatorClass = "trade-chart-indicator";
+        if (indicator === "sma") indicatorPaths = `<path class="${indicatorClass}" d="${pathFor(sma, x, y)}"/>`;
+        if (indicator === "ema") indicatorPaths = `<path class="${indicatorClass} is-secondary" d="${pathFor(ema, x, y)}"/>`;
+        if (indicator === "bollinger") {
+          indicatorPaths = `<path class="${indicatorClass}" d="${pathFor(upper, x, y)}"/><path class="${indicatorClass} is-secondary" d="${pathFor(lower, x, y)}"/>`;
+        }
+        const lowerSeries = indicator === "rsi" ? rsi : indicator === "macd" ? macd : null;
+        if (lowerSeries) {
+          const lowerValues = lowerSeries.filter((value) => value != null);
+          const lowerMin = indicator === "rsi" ? 0 : Math.min(...lowerValues, 0);
+          const lowerMax = indicator === "rsi" ? 100 : Math.max(...lowerValues, 0);
+          const lowerTop = plotBottom + 8;
+          const lowerBottom = height - bottom - 4;
+          const lowerY = (value) => lowerBottom - ((value - lowerMin) / Math.max(lowerMax - lowerMin, 0.000001)) * (lowerBottom - lowerTop);
+          indicatorPaths = `<line class="trade-chart-subgrid" x1="${left}" x2="${plotRight}" y1="${lowerY(indicator === "rsi" ? 70 : 0)}" y2="${lowerY(indicator === "rsi" ? 70 : 0)}"/><path class="${indicatorClass}" d="${pathFor(lowerSeries, x, lowerY)}"/>`;
+          if (indicator === "macd") indicatorPaths += `<path class="${indicatorClass} is-secondary" d="${pathFor(macdAligned, x, lowerY)}"/>`;
+        }
+        const overlayPath = overlay.getAttribute("aria-pressed") === "true"
+          ? `<path class="trade-chart-overlay-line" d="${pathFor(sma, x, y)}"/>`
+          : "";
+        svg.innerHTML = `${grid.join("")}<path class="trade-chart-area" d="${areaPath}"/><path class="trade-chart-price" d="${pricePath}"/>${indicatorPaths}${overlayPath}${bars}${labels}`;
+        liveChart.hidden = false;
+        emptyChart.hidden = true;
+        setText("[data-chart-stat-sma]", formatUsd(sma[sma.length - 1]));
+        setText("[data-chart-stat-rsi]", Number.isFinite(rsi[rsi.length - 1]) ? rsi[rsi.length - 1].toFixed(1) : "—");
+        setText("[data-chart-stat-macd]", Number.isFinite(macd[macd.length - 1]) ? macd[macd.length - 1].toFixed(4) : "—");
+      }
+
+      async function loadXrpData() {
+        const days = rangeDays[chartState.range] || 1;
+        const limit = rangePoints[chartState.range] || 24;
+        const label = pairLabels[chartState.pair];
+        setText("[data-chart-pair-label]", `${label} · Live market`);
+        setText("[data-chart-empty-title]", "XRP / USD chart is loading");
+        setText("[data-chart-empty-copy]", "Fetching live XRP market data…");
+        setChartEmpty("XRP / USD chart is loading", "Fetching live XRP market data…");
+        setLiveStatus(false);
+        try {
+          const [historyResponse, summaryResponse] = await Promise.all([
+            fetch(`https://api.coingecko.com/api/v3/coins/ripple/market_chart?vs_currency=usd&days=${days}`),
+            fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true"),
+          ]);
+          if (!historyResponse.ok || !summaryResponse.ok) throw new Error("The public XRP market feed is unavailable.");
+          const history = await historyResponse.json();
+          const summary = await summaryResponse.json();
+          const volumesByTime = new Map((history.total_volumes || []).map(([time, volume]) => [time, volume]));
+          const allPoints = (history.prices || [])
+            .map(([time, value]) => ({ time, value: Number(value), volume: Number(volumesByTime.get(time) || 0) }))
+            .filter((point) => Number.isFinite(point.value));
+          const points = allPoints.slice(-limit);
+          if (points.length < 2) throw new Error("The public XRP market feed returned too little history.");
+          const livePrice = Number(summary.ripple?.usd) || points[points.length - 1].value;
+          const change = Number(summary.ripple?.usd_24h_change);
+          const volume = Number(summary.ripple?.usd_24h_vol);
+          chartState.data = { points, livePrice, change, volume };
+          setText("[data-price]", formatUsd(livePrice));
+          setText("[data-chart-stat-price]", formatUsd(livePrice));
+          setText("[data-chart-stat-change]", formatPercent(change));
+          setText("[data-chart-stat-volume]", formatVolume(volume));
+          setText("[data-chart-source-label]", "CoinGecko live");
+          setLiveStatus(true);
+          renderChart();
+        } catch (error) {
+          chartState.data = null;
+          resetChartStats();
+          setChartEmpty("XRP / USD chart unavailable", error.message || "The public market feed did not respond.");
+        }
+      }
+
+      const load = () => {
+        if (chartState.pair === "xrp-usd") loadXrpData();
+      };
+      window.setInterval(load, 60000);
+      return { load };
     }
 
     function setupTabs() {
