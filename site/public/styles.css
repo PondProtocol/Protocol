@@ -830,10 +830,20 @@ code.addr {
   text-decoration: none;
 }
 
+.button span {
+  display: inline-block;
+  margin-left: 0.35rem;
+  transition: transform 0.18s ease;
+}
+
 .button:hover {
   background: linear-gradient(135deg, #b7dcff, var(--accent));
   color: #ffffff;
   box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.button:hover span {
+  transform: translate(0.15rem, -0.15rem);
 }
 
 .button-quiet {
@@ -937,7 +947,7 @@ code.addr {
 .hero-inner {
   width: min(100%, 82rem);
   margin: 0 auto;
-  padding: clamp(5rem, 14vh, 9rem) clamp(1rem, 4vw, 2.5rem) clamp(2.6rem, 6vh, 4.2rem);
+  padding: clamp(2.5rem, 7vh, 5rem) clamp(1rem, 4vw, 2.5rem) 0;
 }
 
 .hero-kicker {
@@ -950,9 +960,9 @@ code.addr {
 }
 
 .hero-tagline {
-  margin: 0 0 1.1rem;
-  max-width: 11ch;
-  font-size: clamp(2.5rem, 7vw, 4.6rem);
+  margin: 0 0 0.8rem;
+  max-width: 14ch;
+  font-size: clamp(2.4rem, 5vw, 4rem);
   font-weight: 720;
   line-height: 0.98;
   letter-spacing: -0.045em;
@@ -961,7 +971,7 @@ code.addr {
 
 .hero-lede {
   max-width: 36rem;
-  margin: 0 0 1.2rem;
+  margin: 0 0 0.85rem;
   color: #c8c8cc;
   font-size: 1.06rem;
   line-height: 1.6;
@@ -972,13 +982,15 @@ code.addr {
   align-items: center;
   gap: 0.85rem;
   flex-wrap: wrap;
-  margin: 0 0 1.25rem;
+  margin: 0 0 0.9rem;
   color: var(--text-muted);
   font-size: 0.95rem;
 }
 
 .status-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.18rem 0.65rem;
   border-radius: 999px;
   background: var(--critical-soft);
@@ -991,12 +1003,28 @@ code.addr {
   white-space: nowrap;
 }
 
+.status-chip::before {
+  content: "";
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 50%, transparent);
+  animation: status-pulse 2.4s ease-out infinite;
+}
+
+@keyframes status-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 45%, transparent); }
+  70% { box-shadow: 0 0 0 0.35rem color-mix(in srgb, currentColor 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent); }
+}
+
 .hero-id {
   display: inline-flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin: 0 0 1.45rem;
-  padding: 0.9rem 1.1rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
   max-width: 100%;
   background: color-mix(in srgb, var(--bg) 72%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent-bright) 28%, var(--border));
@@ -1018,6 +1046,82 @@ code.addr {
 
 .hero-actions .button-quiet {
   margin-left: 0;
+}
+
+.hero-readout {
+  position: absolute;
+  right: clamp(1rem, 5vw, 5rem);
+  bottom: clamp(1rem, 3vh, 2rem);
+  width: min(17rem, calc(100vw - 2rem));
+  padding: 0.85rem 0.9rem 0.75rem;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-bright) 24%, var(--border));
+  border-radius: 14px;
+  box-shadow: 0 16px 42px rgb(0 0 0 / 0.3), inset 0 1px 0 rgb(255 255 255 / 0.04);
+  backdrop-filter: blur(16px);
+  z-index: 1;
+}
+
+html.has-nav-js:not(.docs-collapsed) .hero-readout {
+  right: calc(var(--sidebar-w) + 2rem);
+}
+
+.hero-readout-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+  color: var(--text);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-readout-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px var(--accent-bright);
+}
+
+.hero-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.hero-readout-grid div {
+  min-width: 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+}
+
+.hero-readout-grid span,
+.hero-readout-grid strong {
+  display: block;
+}
+
+.hero-readout-grid span {
+  margin-bottom: 0.18rem;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.hero-readout-grid strong {
+  color: var(--text);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+@media (min-width: 781px) {
+  .hero-inner,
+  .hero-readout {
+    transform: translateY(-2.5rem);
+  }
 }
 
 .hero-icon {
@@ -1184,6 +1288,15 @@ code.addr {
 
   .hero-tagline {
     max-width: 12ch;
+  }
+
+  .hero-inner {
+    padding-top: clamp(3rem, 8vh, 5rem);
+    padding-bottom: 2rem;
+  }
+
+  .hero-readout {
+    display: none;
   }
 
   .hero-actions .button {
