@@ -433,6 +433,11 @@ ${canonical}
 <script>
   (() => {
     const root = document.documentElement;
+    window.addEventListener("unhandledrejection", (event) => {
+      if (event.reason?.message === "Transition was skipped") {
+        event.preventDefault();
+      }
+    });
     root.classList.add("has-nav-js");
     try {
       if (localStorage.getItem("pond-docs-nav-collapsed") === "1") {
