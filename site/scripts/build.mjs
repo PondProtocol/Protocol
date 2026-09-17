@@ -430,6 +430,19 @@ ${canonical}
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(page.description ?? site.description)}">
 <meta property="og:type" content="website">
+<script>
+  (() => {
+    const root = document.documentElement;
+    root.classList.add("has-nav-js");
+    try {
+      if (localStorage.getItem("pond-docs-nav-collapsed") === "1") {
+        root.classList.add("docs-collapsed");
+      }
+    } catch {
+      /* private mode */
+    }
+  })();
+</script>
 <link rel="stylesheet" href="/styles.css">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
@@ -446,6 +459,9 @@ ${canonical}
         : ""
     }
     <a href="/verify/" class="cta">Verify the real $PND</a>
+    <a href="/rpnd/">$rPND</a>
+    <a href="/pnd/">$PND</a>
+    <a href="/protocol/">Protocol</a>
     <a href="/hold/">Hold</a>
     <a href="/wallets/">Wallets</a>
     <a href="/links/">Links</a>
@@ -468,7 +484,7 @@ ${isHome ? heroHtml() : ""}
     ${provenance}
   </main>
   <aside class="sidebar" id="docs-nav" aria-label="Documentation">
-    <p class="sidebar-label">Docs</p>
+    <p class="sidebar-label"><span class="sidebar-label-mark" aria-hidden="true"></span><span>Docs</span><span class="sidebar-label-meta">Index</span></p>
     <div class="sidebar-body" id="docs-nav-body">
       ${navHtml(page.url)}
     </div>

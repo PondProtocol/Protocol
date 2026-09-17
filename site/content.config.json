@@ -168,7 +168,8 @@
     {
       "section": "$PND",
       "pages": [
-        { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/", "title": "Token specification", "publish": true },
+        { "authored": "pnd.md", "url": "/pnd/", "title": "$PND" },
+        { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/specification/", "title": "Token specification", "publish": true },
         { "repo": "pnd", "path": "docs/trust-lines.md", "url": "/pnd/holding/", "title": "Holding $PND", "publish": true },
         { "repo": "pnd", "path": "docs/integration.md", "url": "/pnd/integration/", "title": "Integration guide", "publish": true },
         { "repo": "pnd", "path": "README.md", "url": "/pnd/overview/", "title": "Overview", "publish": true },
@@ -179,7 +180,8 @@
     {
       "section": "$rPND",
       "pages": [
-        { "repo": "rpnd", "path": "docs/rpnd-spec.md", "url": "/rpnd/", "title": "Token specification", "publish": true },
+        { "authored": "rpnd.md", "url": "/rpnd/", "title": "$rPND" },
+        { "repo": "rpnd", "path": "docs/rpnd-spec.md", "url": "/rpnd/specification/", "title": "Token specification", "publish": true },
         { "repo": "rpnd", "path": "docs/mpt-vs-iou.md", "url": "/rpnd/why-mpt/", "title": "Why $rPND is an MPT", "publish": true },
         { "repo": "rpnd", "path": "docs/tokens.md", "url": "/rpnd/identity/", "title": "Token identity", "publish": true }
       ]
@@ -187,7 +189,8 @@
     {
       "section": "Protocol",
       "pages": [
-        { "repo": "protocol", "path": "README.md", "url": "/protocol/", "title": "Overview", "publish": true },
+        { "authored": "protocol.md", "url": "/protocol/", "title": "Protocol" },
+        { "repo": "protocol", "path": "README.md", "url": "/protocol/overview/", "title": "Overview", "publish": true },
         { "repo": "protocol", "path": "docs/architecture.md", "url": "/protocol/architecture/", "title": "Architecture", "publish": true },
         { "repo": "pnd", "path": "docs/pnd-vs-rpnd.md", "url": "/protocol/two-tokens/", "title": "$PND and $rPND compared", "publish": true },
         { "repo": "protocol", "path": "docs/glossary.md", "url": "/protocol/glossary/", "title": "Glossary", "publish": true },
