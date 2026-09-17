@@ -608,7 +608,6 @@ ${isHome ? heroHtml() : ""}
 </div>
 <script src="/nav.js" defer></script>
 <script src="/trade.js" defer></script>
-${page.url === "/trade/" ? '<script src="/agentic.js" defer></script>' : ""}
 </body>
 </html>
 `;
