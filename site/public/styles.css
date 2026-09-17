@@ -153,16 +153,23 @@ a:hover {
 }
 
 .topnav .cta {
+  display: inline-flex;
+  align-items: center;
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
   background: var(--accent);
   color: #ffffff;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .topnav .status-chip {
-  padding: 0.14rem 0.5rem;
-  font-size: 0.64rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .topnav .status-chip {
