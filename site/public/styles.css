@@ -2887,13 +2887,32 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   color: #a5cfff;
 }
 
-.footer p {
-  margin: 0;
-}
-
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 780px) {
+  .footer {
+    padding: 3.2rem 1rem 2rem;
+  }
+
+  .footer-main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.6rem 1.5rem;
+    min-height: auto;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-bottom {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+
+  .footer-legal {
+    grid-column: auto;
+  }
+
   .shell {
     grid-template-columns: 1fr;
     padding-top: 1.5rem;
