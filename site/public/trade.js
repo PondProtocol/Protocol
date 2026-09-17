@@ -56,6 +56,7 @@
        <button type="button" data-tab="dex" aria-selected="false">DEX</button>
        <button type="button" data-tab="amm" aria-selected="false">AMM</button>
        <button type="button" data-tab="data" aria-selected="false">Data</button>
+       <button type="button" data-tab="agent" aria-selected="false">Agent</button>
         <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>Chart route gated</span></span>
     </nav>
 
@@ -283,6 +284,53 @@
       <div class="trade-data-integrity"><span class="trade-check-icon" data-state="error">!</span><div><strong>Data is gated until the asset and market are verified.</strong><span>When live, this view will combine XRPL ledger state, verified AMM data, DEX offers, holder counts, and time-based market statistics.</span></div></div>
     </section>
 
+    <section class="trade-mode-view trade-mode-workspace trade-agent-view" data-mode-view="agent" aria-label="Agent trading workspace" hidden>
+      <section class="trade-agent-main">
+        <div class="trade-agent-heading">
+          <div>
+            <p class="trade-kicker">Agent trading</p>
+            <h2>Non-custodial execution for software agents.</h2>
+            <p>Connect with a classic address, read verified market state, and prepare unsigned XRPL transactions for signing inside your own agent.</p>
+          </div>
+          <span class="trade-agent-status"><i></i> Staged until market verification</span>
+        </div>
+        <div class="trade-agent-flow">
+          <div><b>01</b><strong>Challenge</strong><span>Request a short-lived address-bound session.</span></div>
+          <div><b>02</b><strong>Sign locally</strong><span>Keep the seed or private key in the agent's secret store.</span></div>
+          <div><b>03</b><strong>Prepare</strong><span>Receive an unsigned TrustSet or limit offer.</span></div>
+          <div><b>04</b><strong>Submit</strong><span>Verify and broadcast the signed transaction.</span></div>
+        </div>
+        <div class="trade-agent-api">
+          <div class="trade-agent-api-head"><div><p class="trade-kicker">Agent API</p><h3>Small surface, predictable flow.</h3></div><span>Bearer session</span></div>
+          <div class="trade-agent-endpoints">
+            <div><code>POST /api/trade/auth/challenge</code><span>Address-bound challenge</span></div>
+            <div><code>POST /api/trade/auth/verify</code><span>Short-lived session</span></div>
+            <div><code>GET /api/trade/book?pair=PND_XRP</code><span>Public order book</span></div>
+            <div><code>POST /api/trade/prepare/offer</code><span>Unsigned limit offer</span></div>
+            <div><code>POST /api/trade/prepare/cancel</code><span>Unsigned cancellation</span></div>
+            <div><code>POST /api/trade/submit</code><span>Signed blob submission</span></div>
+          </div>
+          <div class="trade-agent-command"><code>curl -X POST https://pond.greenhead.io/api/trade/auth/challenge -H 'content-type: application/json' -d '{"address":"r..."}'</code><button type="button" data-copy-value="curl -X POST https://pond.greenhead.io/api/trade/auth/challenge -H 'content-type: application/json' -d '{&quot;address&quot;:&quot;r...&quot;}'">Copy</button></div>
+        </div>
+      </section>
+      <aside class="trade-agent-sidebar">
+        <div class="trade-agent-card">
+          <p class="trade-kicker">Agent session</p>
+          <h3>Connect by address</h3>
+          <div class="trade-agent-session"><span>Status</span><strong>Not connected</strong></div>
+          <button type="button" class="trade-connect-button" disabled>Connect agent</button>
+          <small>No seed, private key, or mnemonic is accepted here.</small>
+        </div>
+        <div class="trade-agent-card">
+          <p class="trade-kicker">Transaction boundary</p>
+          <div class="trade-agent-check"><span>✓</span><strong>Unsigned preparation only</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Allowlisted transaction types</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Issuer and amount checks</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Self-custody signing</strong></div>
+        </div>
+      </aside>
+    </section>
+
     <section class="trade-detail-window">
       <nav class="trade-detail-tabs" aria-label="Token details" data-tab-group="detail">
         <button type="button" class="is-active" data-tab="transactions" aria-selected="true">Pool transactions</button>
@@ -314,73 +362,6 @@
             <div><span>Network</span><strong data-network-label>XRPL Testnet</strong></div>
           </div>
         </div>
-      </div>
-    </section>
-  `;
-
-  const simpleBuyMarkup = `
-    <header class="trade-simple-head">
-      <div class="trade-simple-brand">
-        <span class="trade-token-mark">P</span>
-        <div>
-          <p class="trade-kicker">Pond Protocol</p>
-          <strong>Buy $PND</strong>
-          <span>Simple, verified, self-custody</span>
-        </div>
-      </div>
-      <div class="trade-network" role="group" aria-label="Trading network">
-        <span class="trade-network-label">Network</span>
-        <button type="button" class="trade-network-button is-active" data-network="testnet" aria-pressed="true">Testnet</button>
-        <button type="button" class="trade-network-button" data-network="production" aria-pressed="false">Production</button>
-      </div>
-      <button type="button" class="trade-icon-button" aria-label="Refresh ledger" data-refresh>↻</button>
-    </header>
-
-    <div class="trade-simple-status">
-      <span><i class="trade-simple-status-dot" data-network-dot></i><strong>Pre-launch</strong></span>
-      <span data-ledger-status>Checking selected ledger…</span>
-    </div>
-
-    <div class="trade-buy-layout" data-mode-view="buy" aria-label="Buy $PND">
-      <section class="trade-buy-intro">
-        <p class="trade-kicker">The safe path to $PND</p>
-        <h1>Verify first.<br><em>Buy when live.</em></h1>
-        <p class="trade-buy-lede">$PND has not been issued and no verified market is live yet. This page will become the simplest place to buy once the issuer, market, and transaction route are confirmed.</p>
-        <div class="trade-buy-actions">
-          <a class="trade-buy-primary" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
-          <a class="trade-buy-secondary" href="/start/">New to Pond? Start here</a>
-        </div>
-        <div class="trade-buy-steps" aria-label="Buying steps">
-          <div><b>01</b><strong>Confirm identity</strong><span>Match PND with the canonical issuer address.</span></div>
-          <div><b>02</b><strong>Wait for a live market</strong><span>Only use a pool or offer book published here.</span></div>
-          <div><b>03</b><strong>Buy with your wallet</strong><span>Sign only in your own self-custody wallet.</span></div>
-        </div>
-      </section>
-
-      <aside class="trade-buy-side">
-        <section class="trade-buy-identity">
-          <div class="trade-buy-card-head"><div><p class="trade-kicker">Asset identity</p><h2>$PND / XRP</h2></div><span class="trade-buy-badge">Not live</span></div>
-          <div class="trade-buy-identity-row"><span>Network</span><strong data-network-label>XRPL Testnet</strong></div>
-          <div class="trade-buy-identity-row"><span>Currency</span><strong>PND · issued currency</strong></div>
-          <div class="trade-buy-identity-row trade-buy-issuer"><span>Canonical issuer</span><code data-issuer-value>Loading issuer…</code></div>
-          <p class="trade-buy-ledger"><i data-issuer-icon>!</i><span><strong data-issuer-status>Checking issuer account</strong><small data-issuer-detail>Network state is read directly from XRPL.</small></span></p>
-        </section>
-
-        <section class="trade-buy-widget" aria-label="Buy $PND">
-          <div class="trade-buy-card-head"><div><p class="trade-kicker">Buy ticket</p><h2>Ready when live</h2></div><span class="trade-buy-lock">Locked</span></div>
-          <div class="trade-buy-disabled-field"><span>Amount</span><strong>Available after launch</strong><b>PND</b></div>
-          <button type="button" class="trade-buy-disabled" disabled>Buy $PND when live</button>
-          <p>No wallet connection or payment is requested before a verified market exists.</p>
-        </section>
-      </aside>
-    </div>
-
-    <section class="trade-buy-checks" aria-labelledby="trade-buy-checks-title">
-      <div class="trade-buy-checks-head"><div><p class="trade-kicker">Launch gate</p><h2 id="trade-buy-checks-title">Three checks before any purchase</h2></div><span data-buy-gate>Purchase route gated</span></div>
-      <div class="trade-buy-check-grid">
-        <div><span>1</span><strong>Issuer</strong><p>PND and its issuer address must match the verification page.</p></div>
-        <div><span>2</span><strong>Market</strong><p>A verified XRPL pool or offer book must be live.</p></div>
-        <div><span>3</span><strong>Signing</strong><p>Your wallet signs locally. Never share a seed or private key.</p></div>
       </div>
     </section>
   `;
@@ -421,7 +402,7 @@
     const root = document.getElementById("trade-app");
     if (!root || root.dataset.ready === "1") return;
     root.dataset.ready = "1";
-    root.innerHTML = simpleBuyMarkup;
+    root.innerHTML = terminalMarkup;
     const issuer = root.dataset.issuer && !root.dataset.issuer.includes("{{")
       ? root.dataset.issuer
       : "";
@@ -453,11 +434,11 @@
 
     function setMode(mode) {
       const labels = {
-        buy: "Purchase route gated",
         amm: "AMM route gated",
         dex: "Offers route gated",
         chart: "Chart route gated",
         data: "Data route gated",
+        agent: "Agent route gated",
       };
       $$("[data-tab-group='mode'] [data-tab]").forEach((button) => {
         const active = button.dataset.tab === mode;
@@ -929,7 +910,11 @@
     setupControlGroups();
     chartController = setupChartControls();
     setupDisclaimer();
-    const initialMode = "buy";
+    const initialMode = window.location.hash === "#agent"
+      ? "agent"
+      : window.location.hash === "#data"
+        ? "data"
+        : "chart";
     setMode(initialMode);
     setNetworkButtons();
     refresh();
