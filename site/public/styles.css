@@ -1319,6 +1319,7 @@ code.addr {
 
 .page-trade .shell {
   max-width: 100rem;
+  padding-top: 1rem;
 }
 
 .page-trade .prose {
@@ -1336,7 +1337,7 @@ code.addr {
 
 .page-trade .trade-app {
   width: 100%;
-  margin: 2rem 0 1.25rem;
+  margin: 0 0 1.25rem;
   padding: clamp(0.7rem, 1.8vw, 1.25rem);
   overflow: hidden;
   background:
@@ -2134,6 +2135,16 @@ code.addr {
 
 .trade-footnote {
   max-width: 58rem;
+}
+
+@media (min-width: 781px) {
+  .page-trade .trade-app {
+    height: min(760px, calc(100svh - 10rem));
+    min-height: 34rem;
+    overflow-y: auto;
+    scrollbar-color: color-mix(in srgb, var(--accent) 55%, var(--border)) transparent;
+    scrollbar-width: thin;
+  }
 }
 
 @media (max-width: 1040px) {

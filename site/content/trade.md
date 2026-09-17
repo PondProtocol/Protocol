@@ -1,9 +1,3 @@
-# Trade $PND and $rPND
-
-The Pond trading terminal is non-custodial and network-aware. It will only
-enable a transaction after the selected network, asset identity, market, and
-liquidity have all been verified.
-
 <div class="trade-app" id="trade-app" data-issuer="{{issuerAddress}}"></div>
 
 <p class="trade-footnote"><strong>Pre-launch protection:</strong> $PND has not
