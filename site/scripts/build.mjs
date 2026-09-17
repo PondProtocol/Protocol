@@ -349,15 +349,42 @@ function heroHtml() {
       <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
       <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
     </p>
-  </div>
-  <aside class="hero-readout" aria-label="Protocol snapshot">
-    <div class="hero-readout-head"><span class="hero-readout-dot" aria-hidden="true"></span>Protocol snapshot</div>
-    <div class="hero-readout-grid">
-      <div><span>Network</span><strong>XRP Ledger</strong></div>
-      <div><span>Asset</span><strong>$PND · IOU</strong></div>
-      <div><span>Launch</span><strong>01 Oct 2026</strong></div>
+   </div>
+</section>`;
+}
+
+function protocolSnapshotHtml() {
+  return `<section class="protocol-snapshot" aria-label="Protocol snapshot">
+  <div class="protocol-snapshot-inner">
+    <div class="protocol-snapshot-title"><span class="protocol-snapshot-dot" aria-hidden="true"></span><strong>Protocol snapshot</strong><span>Pre-launch</span></div>
+    <div class="protocol-snapshot-group">
+      <span class="protocol-snapshot-label">Network</span>
+      <div class="protocol-snapshot-items">
+        <span><i class="snapshot-status is-live" aria-hidden="true"></i>Live <strong>XRP</strong></span>
+        <span><i class="snapshot-status is-testnet" aria-hidden="true"></i>Testnet <strong>XRP</strong></span>
+        <span><i class="snapshot-status is-planned" aria-hidden="true"></i>EVM <strong>Planned</strong></span>
+      </div>
     </div>
-  </aside>
+    <div class="protocol-snapshot-group">
+      <span class="protocol-snapshot-label">Assets</span>
+      <div class="protocol-snapshot-items">
+        <span><strong>$PND</strong><em>IOU · not issued</em></span>
+        <span><strong>$rPND</strong><em>MPT · planned</em></span>
+      </div>
+    </div>
+    <div class="protocol-snapshot-group protocol-snapshot-users">
+      <span class="protocol-snapshot-label">Users</span>
+      <div class="protocol-snapshot-items">
+        <span><b>Volume</b><strong>Not live</strong></span>
+        <span><b>Holders</b><strong>—</strong></span>
+        <span><b>Traders</b><strong>—</strong></span>
+        <span><b>Market cap</b><strong>—</strong></span>
+        <span><b>Locked supply</b><strong>Not issued</strong></span>
+        <span><b>Total supply</b><strong>100B planned</strong></span>
+        <span><b>Open supply</b><strong>Not issued</strong></span>
+      </div>
+    </div>
+  </div>
 </section>`;
 }
 
@@ -467,6 +494,7 @@ ${canonical}
   </nav>
 </header>
 ${banner}
+${protocolSnapshotHtml()}
 ${isHome ? heroHtml() : ""}
 <div class="docs-backdrop" data-docs-backdrop></div>
 <button type="button" class="docs-rail" data-docs-toggle aria-expanded="true" aria-controls="docs-nav" title="Collapse documentation menu">

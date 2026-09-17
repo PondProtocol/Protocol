@@ -342,6 +342,129 @@ html.docs-collapsed .docs-rail-icon {
   white-space: nowrap;
 }
 
+/* ---------------------------------------------------------- protocol strip */
+
+.protocol-snapshot {
+  position: relative;
+  z-index: 3;
+  overflow: hidden;
+  border-bottom: 1px solid #252c34;
+  background: #12171c;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+}
+
+.protocol-snapshot-inner {
+  display: flex;
+  align-items: stretch;
+  width: min(100%, 96rem);
+  min-height: 3.4rem;
+  margin: 0 auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a4652 transparent;
+}
+
+.protocol-snapshot-title,
+.protocol-snapshot-group {
+  display: flex;
+  align-items: center;
+  flex: none;
+  min-width: max-content;
+  padding: 0.55rem 0.7rem;
+  border-right: 1px solid #28313a;
+}
+
+.protocol-snapshot-title {
+  gap: 0.35rem;
+  padding-left: clamp(0.8rem, 3vw, 2rem);
+  color: #f1f4f7;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.protocol-snapshot-title > span:last-child {
+  margin-left: 0.15rem;
+  color: #df9b83;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.protocol-snapshot-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px rgb(143 199 255 / 0.7);
+}
+
+.protocol-snapshot-group {
+  gap: 0.55rem;
+}
+
+.protocol-snapshot-label {
+  color: #7f8b96;
+  font-size: 0.53rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.protocol-snapshot-items {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.protocol-snapshot-items > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  color: #adb7c0;
+  font-size: 0.58rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.protocol-snapshot-items strong {
+  color: #edf1f4;
+  font-weight: 650;
+}
+
+.protocol-snapshot-items em {
+  color: #71808b;
+  font-size: 0.5rem;
+  font-style: normal;
+}
+
+.protocol-snapshot-items b {
+  color: #7f8b96;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.snapshot-status {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: #84909b;
+}
+
+.snapshot-status.is-live {
+  background: #67d49c;
+  box-shadow: 0 0 8px rgb(103 212 156 / 0.6);
+}
+
+.snapshot-status.is-testnet {
+  background: #e1b365;
+  box-shadow: 0 0 8px rgb(225 179 101 / 0.45);
+}
+
+.snapshot-status.is-planned {
+  background: #8795a5;
+}
+
 /* ------------------------------------------------------------------- shell */
 
 .shell {
@@ -363,6 +486,14 @@ html.has-nav-js:not(.docs-collapsed) .shell {
 
 html.has-nav-js:not(.docs-collapsed) .topbar {
   padding-right: calc(var(--sidebar-w) + 2.25rem);
+}
+
+html.has-nav-js:not(.docs-collapsed) .protocol-snapshot-inner {
+  padding-right: calc(var(--sidebar-w) + 1.75rem);
+}
+
+html.has-nav-js:not(.docs-collapsed) .protocol-snapshot {
+  margin-right: var(--sidebar-w);
 }
 
 html.has-nav-js:not(.docs-collapsed) .hero-inner {
@@ -2367,7 +2498,7 @@ code.addr {
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: calc(100svh - 6.8rem);
+  min-height: calc(100svh - 10.2rem);
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -2890,6 +3021,10 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 780px) {
+  .protocol-snapshot {
+    margin-right: 0;
+  }
+
   .footer {
     padding: 3.2rem 1rem 2rem;
   }
@@ -2921,6 +3056,7 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   html.has-nav-js .shell,
   html.has-nav-js:not(.docs-collapsed) .shell,
   html.has-nav-js:not(.docs-collapsed) .topbar,
+  html.has-nav-js:not(.docs-collapsed) .protocol-snapshot-inner,
   html.has-nav-js:not(.docs-collapsed) .hero-inner,
   html.has-nav-js:not(.docs-collapsed) .banner,
   html.has-nav-js:not(.docs-collapsed) .footer-inner {
@@ -2957,7 +3093,7 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   }
 
   .hero {
-    min-height: calc(100svh - 9.5rem);
+    min-height: calc(100svh - 12.9rem);
     align-items: flex-end;
   }
 
@@ -3140,7 +3276,7 @@ html.has-nav-js body.page-trade .shell {
   display: block;
   width: 100%;
   max-width: none;
-  height: calc(100svh - 4.2rem);
+  height: calc(100svh - 7.6rem);
   margin: 0;
   padding: 0.35rem clamp(0.8rem, 2.4vw, 2rem) 0;
   overflow: hidden;
