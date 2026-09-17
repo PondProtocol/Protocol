@@ -51,12 +51,13 @@
       <div><span>Issuer</span><strong data-issuer-short>Verified pending</strong><em>PND identity</em></div>
     </div>
 
-     <nav class="trade-mode-tabs" aria-label="Trading mode" data-tab-group="mode">
-      <button type="button" class="is-active" data-tab="amm" aria-selected="true">AMM</button>
-      <button type="button" data-tab="dex" aria-selected="false">DEX</button>
-      <button type="button" data-tab="overview" aria-selected="false">Overview</button>
-      <button type="button" data-tab="agent" aria-selected="false">Agent</button>
-       <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>AMM route gated</span></span>
+      <nav class="trade-mode-tabs" aria-label="Trading mode" data-tab-group="mode">
+       <button type="button" class="is-active" data-tab="chart" aria-selected="true">Chart</button>
+       <button type="button" data-tab="dex" aria-selected="false">DEX</button>
+       <button type="button" data-tab="amm" aria-selected="false">AMM</button>
+       <button type="button" data-tab="data" aria-selected="false">Data</button>
+       <button type="button" data-tab="agent" aria-selected="false">Agent</button>
+        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>Chart route gated</span></span>
     </nav>
 
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
@@ -180,7 +181,7 @@
       </aside>
     </section>
 
-    <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="overview" aria-label="Market overview" hidden>
+    <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="chart" aria-label="Market chart" hidden>
       <section class="trade-overview-chart">
         <div class="trade-overview-toolbar">
           <div><p class="trade-kicker">Market overview</p><strong>$PND / XRP · Validated ledger</strong></div>
@@ -203,6 +204,66 @@
         <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong>—</strong></div><span class="trade-overview-note">Choose indicators above to prepare the view. No values are shown until market data is verified.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
       </aside>
+    </section>
+
+    <section class="trade-mode-view trade-data-view" data-mode-view="data" aria-label="Market data" hidden>
+      <header class="trade-data-header">
+        <div>
+          <p class="trade-kicker">Data explorer</p>
+          <h2>Everything about the selected asset.</h2>
+          <p>Market, supply, holder, and ledger statistics will be read from verified XRPL data. No pre-launch values are estimated.</p>
+        </div>
+        <div class="trade-data-assets" data-control-group="data-asset" aria-label="Asset">
+          <button type="button" class="is-active">PND</button>
+          <button type="button">rPND</button>
+        </div>
+      </header>
+      <div class="trade-data-periods" data-control-group="data-period" aria-label="Time period">
+        <span>Range</span>
+        <button type="button" class="is-active">1 minute</button>
+        <button type="button">1 hour</button>
+        <button type="button">4 hour</button>
+        <button type="button">Daily</button>
+        <button type="button">Weekly</button>
+        <button type="button">Monthly</button>
+        <button type="button">Yearly</button>
+        <button type="button">All time</button>
+      </div>
+      <div class="trade-data-stats">
+        <div class="trade-data-stat"><span>Market cap</span><strong>—</strong><em>Awaiting verified price</em></div>
+        <div class="trade-data-stat"><span>Price</span><strong>—</strong><em>Pool not verified</em></div>
+        <div class="trade-data-stat"><span>Volume</span><strong>—</strong><em>No market history</em></div>
+        <div class="trade-data-stat"><span>Liquidity</span><strong>—</strong><em>AMM not configured</em></div>
+        <div class="trade-data-stat"><span>Holders</span><strong>—</strong><em>Ledger read gated</em></div>
+        <div class="trade-data-stat"><span>Transactions</span><strong>—</strong><em>Validated history required</em></div>
+        <div class="trade-data-stat"><span>Trust lines</span><strong>—</strong><em>Ledger read gated</em></div>
+        <div class="trade-data-stat"><span>Supply</span><strong>—</strong><em>Issued supply not live</em></div>
+      </div>
+      <div class="trade-data-columns">
+        <section class="trade-data-card">
+          <div class="trade-data-card-head"><div><p class="trade-kicker">Asset facts</p><h3>Identity and supply</h3></div><span>Verified ledger only</span></div>
+          <dl class="trade-data-list">
+            <div><dt>Currency</dt><dd>PND / rPND</dd></div>
+            <div><dt>Issuer / asset id</dt><dd>Verification required</dd></div>
+            <div><dt>Network</dt><dd data-network-label>XRPL Testnet</dd></div>
+            <div><dt>Total supply</dt><dd>Not issued</dd></div>
+            <div><dt>Circulating supply</dt><dd>Not issued</dd></div>
+            <div><dt>Owner reserve impact</dt><dd>Calculated after launch</dd></div>
+          </dl>
+        </section>
+        <section class="trade-data-card">
+          <div class="trade-data-card-head"><div><p class="trade-kicker">Activity</p><h3>Participation and flow</h3></div><span>Awaiting data</span></div>
+          <dl class="trade-data-list">
+            <div><dt>Holder count</dt><dd>—</dd></div>
+            <div><dt>Trust line count</dt><dd>—</dd></div>
+            <div><dt>Transaction count</dt><dd>—</dd></div>
+            <div><dt>AMM pools</dt><dd>Not configured</dd></div>
+            <div><dt>DEX offers</dt><dd>Not verified</dd></div>
+            <div><dt>Last validated ledger</dt><dd>—</dd></div>
+          </dl>
+        </section>
+      </div>
+      <div class="trade-data-integrity"><span class="trade-check-icon" data-state="error">!</span><div><strong>Data is gated until the asset and market are verified.</strong><span>When live, this view will combine XRPL ledger state, verified AMM data, DEX offers, holder counts, and time-based market statistics.</span></div></div>
     </section>
 
     <section class="trade-mode-view trade-mode-workspace trade-agent-view" data-mode-view="agent" aria-label="Agent trading workspace" hidden>
@@ -356,7 +417,8 @@
       const labels = {
         amm: "AMM route gated",
         dex: "Offers route gated",
-        overview: "Verification-first overview",
+        chart: "Chart route gated",
+        data: "Data route gated",
         agent: "Agent route gated",
       };
       $$("[data-tab-group='mode'] [data-tab]").forEach((button) => {
@@ -506,7 +568,12 @@
     setupTabs();
     setupControlGroups();
     setupDisclaimer();
-    setMode(window.location.hash === "#agent" ? "agent" : "amm");
+    const initialMode = window.location.hash === "#agent"
+      ? "agent"
+      : window.location.hash === "#data"
+        ? "data"
+        : "chart";
+    setMode(initialMode);
     setNetworkButtons();
     refresh();
   }
