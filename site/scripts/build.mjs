@@ -468,6 +468,7 @@ ${canonical}
     <a href="/rpnd/">$rPND</a>
     <a href="/pnd/">$PND</a>
     <a href="/protocol/">Protocol</a>
+    <a href="/trade/">Trade</a>
     <a href="/hold/">Hold</a>
     <a href="/wallets/">Wallets</a>
     <a href="/links/">Links</a>
