@@ -47,17 +47,16 @@
 
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
       <section class="trade-market-pane" aria-label="Market view">
-        <nav class="trade-subtabs" aria-label="Market detail" data-tab-group="market">
+        <nav class="trade-subtabs" aria-label="AMM market detail" data-tab-group="amm-market">
           <button type="button" class="is-active" data-tab="chart" aria-selected="true">Chart</button>
-          <button type="button" data-tab="orderbook" aria-selected="false">Order book</button>
-          <button type="button" data-tab="liquidity" aria-selected="false">Liquidity</button>
-          <button type="button" data-tab="activity" aria-selected="false">Pool activity</button>
+          <button type="button" data-tab="pools" aria-selected="false">Pools</button>
+          <button type="button" data-tab="activity" aria-selected="false">Activity</button>
         </nav>
         <div class="trade-chart-toolbar">
           <div class="trade-chart-tools"><span>Price</span><span>Volume</span><span>Indicators</span></div>
           <div class="trade-range-tools"><button type="button" class="is-active">1W</button><button type="button">1M</button><button type="button">3M</button><button type="button">All</button></div>
         </div>
-        <div class="trade-market-panels" data-tab-panels="market">
+        <div class="trade-market-panels" data-tab-panels="amm-market">
           <div class="trade-panel is-active" data-panel="chart">
             <div class="trade-chart-empty">
               <div class="trade-chart-grid"></div>
@@ -66,10 +65,7 @@
               <span>Price candles and volume will be read from the selected XRPL market.</span>
             </div>
           </div>
-          <div class="trade-panel" data-panel="orderbook" hidden>
-            <div class="trade-empty-panel"><strong>Order book unavailable</strong><span>No verified $PND / XRP offers are configured for this network.</span></div>
-          </div>
-          <div class="trade-panel" data-panel="liquidity" hidden>
+          <div class="trade-panel" data-panel="pools" hidden>
             <div class="trade-liquidity-preview"><div><strong>$PND / XRP AMM</strong><span>Pool reserves</span><b>Not configured</b></div><div><strong>$rPND / XRP AMM</strong><span>MPT market</span><b>Not issued</b></div></div>
           </div>
           <div class="trade-panel" data-panel="activity" hidden>
@@ -90,9 +86,7 @@
         <div class="trade-action-card">
           <nav class="trade-action-tabs" aria-label="AMM action" data-tab-group="amm-action">
             <button type="button" class="is-active" data-tab="swap" aria-selected="true">Swap</button>
-            <button type="button" data-tab="deposit" aria-selected="false">Deposit</button>
-            <button type="button" data-tab="withdraw" aria-selected="false">Withdraw</button>
-            <button type="button" data-tab="manage" aria-selected="false">Manage</button>
+            <button type="button" data-tab="liquidity" aria-selected="false">Liquidity</button>
           </nav>
           <div class="trade-action-panels" data-tab-panels="amm-action">
             <div class="trade-panel is-active" data-panel="swap">
@@ -102,15 +96,15 @@
               <div class="trade-summary-row"><span>Rate</span><strong>—</strong></div>
               <button type="button" class="trade-connect-button" disabled>Connect wallet to review</button>
             </div>
-            <div class="trade-panel" data-panel="deposit" hidden><div class="trade-empty-panel"><strong>Deposit liquidity</strong><span>Pool creation and deposits unlock after a verified AMM exists.</span></div></div>
-            <div class="trade-panel" data-panel="withdraw" hidden><div class="trade-empty-panel"><strong>Withdraw liquidity</strong><span>Connect a wallet after an LP position can be verified.</span></div></div>
-            <div class="trade-panel" data-panel="manage" hidden>
-              <div class="trade-manage-list">
-                <div><span>Pool controls</span><strong>AMM not configured</strong></div>
-                <div><span>Fee tier</span><strong>Not published</strong></div>
-                <div><span>Rewards</span><strong>None configured</strong></div>
+            <div class="trade-panel" data-panel="liquidity" hidden>
+              <div class="trade-inline-tabs" aria-label="Liquidity action" data-tab-group="amm-liquidity">
+                <button type="button" class="is-active" data-tab="add" aria-selected="true">Add</button>
+                <button type="button" data-tab="remove" aria-selected="false">Remove</button>
               </div>
-              <button type="button" class="trade-connect-button" disabled>Pool controls unavailable</button>
+              <div data-tab-panels="amm-liquidity">
+                <div class="trade-panel is-active" data-panel="add"><div class="trade-empty-panel"><strong>Add liquidity</strong><span>Pool creation and deposits unlock after a verified AMM exists.</span></div></div>
+                <div class="trade-panel" data-panel="remove" hidden><div class="trade-empty-panel"><strong>Remove liquidity</strong><span>Connect a wallet after an LP position can be verified.</span></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -157,8 +151,6 @@
           <nav class="trade-action-tabs" aria-label="DEX order type" data-tab-group="dex-order">
             <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
             <button type="button" data-tab="sell" aria-selected="false">Sell</button>
-            <button type="button" data-tab="open-orders" aria-selected="false">Open orders</button>
-            <button type="button" data-tab="order-history" aria-selected="false">History</button>
           </nav>
           <div class="trade-action-panels" data-tab-panels="dex-order">
             <div class="trade-panel is-active" data-panel="buy">
@@ -168,8 +160,6 @@
               <button type="button" class="trade-connect-button" disabled>Connect wallet to review order</button>
             </div>
             <div class="trade-panel" data-panel="sell" hidden><div class="trade-empty-panel"><strong>Sell order ticket</strong><span>Signing stays disabled until a verified $PND or $rPND market exists.</span></div></div>
-            <div class="trade-panel" data-panel="open-orders" hidden><div class="trade-empty-panel"><strong>No open orders</strong><span>Open offers will appear here after a self-custody wallet signs a verified route.</span></div></div>
-            <div class="trade-panel" data-panel="order-history" hidden><div class="trade-empty-panel"><strong>No order history</strong><span>Validated XRPL offer events will appear here when the DEX market is live.</span></div></div>
           </div>
         </div>
         <div class="trade-gate-card"><span class="trade-check-icon">!</span><div><strong>DEX trading is gated</strong><span>Issuer, offer book, market pair, and wallet signing must pass verification.</span></div></div>

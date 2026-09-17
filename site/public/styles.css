@@ -3613,3 +3613,240 @@ body.page-trade .trade-app {
     color: var(--accent-bright);
   }
 }
+
+/* --------------------------------------------------------- terminal polish */
+
+body.page-trade .trade-app {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+  background:
+    radial-gradient(circle at 76% 0%, rgb(74 144 217 / 0.07), transparent 24%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg-soft) 92%, var(--accent)), var(--bg-soft));
+}
+
+body.page-trade .trade-terminal-head {
+  gap: 0.75rem;
+}
+
+body.page-trade .trade-pair-lockup {
+  gap: 0.55rem;
+}
+
+body.page-trade .trade-token-mark {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.88rem;
+}
+
+body.page-trade .trade-pair-title {
+  font-size: 0.95rem;
+}
+
+body.page-trade .trade-pair-sub {
+  font-size: 0.62rem;
+}
+
+body.page-trade .trade-stat-strip {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--border));
+}
+
+body.page-trade .trade-stat-strip > div {
+  background: color-mix(in srgb, var(--bg-code) 82%, var(--accent));
+}
+
+body.page-trade .trade-mode-tabs {
+  margin-inline: -0.15rem;
+  padding-inline: 0.15rem;
+  background: rgb(0 0 0 / 0.12);
+}
+
+body.page-trade .trade-mode-tabs button {
+  color: color-mix(in srgb, var(--text-muted) 82%, var(--text));
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+}
+
+body.page-trade .trade-mode-tabs button.is-active {
+  color: var(--accent-bright);
+}
+
+body.page-trade .trade-mode-note {
+  padding-right: 0.35rem;
+  font-size: 0.58rem;
+}
+
+body.page-trade .trade-workspace,
+body.page-trade .trade-mode-workspace {
+  gap: 0.55rem;
+}
+
+body.page-trade .trade-market-pane,
+body.page-trade .trade-position,
+body.page-trade .trade-action-card,
+body.page-trade .trade-detail-window,
+body.page-trade .trade-overview-chart,
+body.page-trade .trade-overview-card {
+  border-color: color-mix(in srgb, var(--accent) 16%, var(--border));
+  background: color-mix(in srgb, var(--bg-soft) 83%, #000);
+}
+
+body.page-trade .trade-market-pane,
+body.page-trade .trade-detail-window {
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.12);
+}
+
+body.page-trade .trade-subtabs {
+  min-height: 2.2rem;
+  background: rgb(0 0 0 / 0.1);
+}
+
+body.page-trade .trade-subtabs button,
+body.page-trade .trade-action-tabs button,
+body.page-trade .trade-detail-tabs button {
+  font-size: 0.64rem;
+  letter-spacing: 0.01em;
+}
+
+body.page-trade .trade-subtabs button.is-active,
+body.page-trade .trade-action-tabs button.is-active,
+body.page-trade .trade-detail-tabs button.is-active {
+  color: var(--accent-bright);
+}
+
+body.page-trade .trade-chart-toolbar {
+  padding-top: 0.38rem;
+  padding-bottom: 0.38rem;
+  background: color-mix(in srgb, var(--bg-code) 72%, transparent);
+}
+
+body.page-trade .trade-market-panels {
+  background: rgb(0 0 0 / 0.08);
+}
+
+body.page-trade .trade-action-pane {
+  gap: 0.45rem;
+}
+
+body.page-trade .trade-position {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg-soft) 86%, #000);
+}
+
+body.page-trade .trade-action-card {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
+  background: color-mix(in srgb, var(--bg-soft) 92%, var(--accent));
+}
+
+body.page-trade .trade-action-panels {
+  background: rgb(0 0 0 / 0.08);
+}
+
+body.page-trade .trade-action-field {
+  border-color: color-mix(in srgb, var(--border) 90%, var(--accent));
+  background: color-mix(in srgb, var(--bg-code) 90%, #000);
+}
+
+body.page-trade .trade-action-field strong {
+  letter-spacing: -0.02em;
+}
+
+body.page-trade .trade-gate-card {
+  border-color: color-mix(in srgb, var(--critical) 24%, var(--border));
+  background: color-mix(in srgb, var(--critical) 10%, var(--bg-soft));
+}
+
+.trade-inline-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.trade-inline-tabs button {
+  padding: 0.2rem 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.trade-inline-tabs button:hover,
+.trade-inline-tabs button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+body.page-trade .trade-empty-panel {
+  min-height: 8rem;
+  padding: 1rem;
+}
+
+body.page-trade .trade-empty-panel strong {
+  font-size: 0.75rem;
+}
+
+body.page-trade .trade-empty-panel span {
+  font-size: 0.64rem;
+}
+
+body.page-trade .trade-liquidity-preview {
+  min-height: 8rem;
+  gap: 0.45rem;
+  padding: 0.65rem;
+}
+
+body.page-trade .trade-liquidity-preview > div {
+  padding: 0.65rem;
+}
+
+body.page-trade .trade-detail-tabs {
+  background: rgb(0 0 0 / 0.12);
+}
+
+body.page-trade .trade-detail-panels {
+  background: rgb(0 0 0 / 0.06);
+}
+
+body.page-trade .trade-overview-toolbar,
+body.page-trade .trade-overview-tools {
+  background: color-mix(in srgb, var(--bg-code) 72%, transparent);
+}
+
+body.page-trade .trade-overview-plot {
+  min-height: 13rem;
+}
+
+body.page-trade .trade-overview-card {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 5%, transparent), transparent 64%),
+    color-mix(in srgb, var(--bg-soft) 86%, #000);
+}
+
+@media (max-width: 780px) {
+  body.page-trade .trade-terminal-head {
+    align-items: flex-start;
+  }
+
+  body.page-trade .trade-mode-note {
+    margin-left: 0.4rem;
+  }
+
+  body.page-trade .trade-stat-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.page-trade .trade-stat-strip > div {
+    height: auto;
+    min-height: 2.45rem;
+  }
+
+  body.page-trade .trade-stat-strip > div:last-child {
+    grid-column: 1 / -1;
+  }
+}
