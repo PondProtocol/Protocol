@@ -73,7 +73,8 @@ packages and no framework is the version of "low maintenance" that survives bein
 year.
 
 The honest cost: no search, no versioned docs, no live reload, and syntax highlighting is plain
-monospace. If any of those become necessary, port `content/` and `imported/` to Astro Starlight or
+monospace. A small `public/nav.js` remembers whether the right-hand docs menu is open. If search
+or versioned docs become necessary, port `content/` and `imported/` to Astro Starlight or
 MkDocs Material — the markdown is standard and the `public/` directory carries over unchanged.
 
 ## Keeping the vendored copies honest
