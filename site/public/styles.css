@@ -182,6 +182,10 @@ a:hover {
   margin-left: auto;
 }
 
+.topnav .status-chip + .status-chip {
+  margin-left: 0;
+}
+
 .topnav .cta {
   order: 2;
 }
@@ -3765,6 +3769,116 @@ body.trade-disclaimer-open {
   overflow: hidden;
   padding: 1.5rem;
   text-align: center;
+}
+
+.trade-chart-live,
+.trade-chart-empty-state {
+  position: relative;
+  width: 100%;
+  min-height: 18rem;
+}
+
+.trade-chart-live {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.trade-chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 18rem;
+}
+
+.trade-chart-source {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.56rem;
+}
+
+.trade-chart-grid-line,
+.trade-chart-subgrid {
+  stroke: color-mix(in srgb, var(--border) 75%, transparent);
+  stroke-width: 1;
+}
+
+.trade-chart-subgrid {
+  stroke: color-mix(in srgb, var(--accent) 40%, var(--border));
+  stroke-dasharray: 4 4;
+}
+
+.trade-chart-axis-label {
+  fill: var(--text-muted);
+  font-family: var(--font);
+  font-size: 11px;
+}
+
+.trade-chart-area {
+  fill: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.trade-chart-price {
+  fill: none;
+  stroke: var(--accent-bright);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.trade-chart-indicator {
+  fill: none;
+  stroke: #f7c66a;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.trade-chart-indicator.is-secondary {
+  stroke: #d78cff;
+}
+
+.trade-chart-overlay-line {
+  fill: none;
+  stroke: #74d3a0;
+  stroke-dasharray: 6 5;
+  stroke-width: 1.5;
+}
+
+.trade-chart-volume {
+  fill: color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.trade-chart-empty-state {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.trade-chart-empty-state .trade-chart-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.trade-chart-empty-state .trade-chart-mark,
+.trade-chart-empty-state strong,
+.trade-chart-empty-state > span:last-child {
+  position: relative;
+}
+
+.trade-chart-empty-state strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.trade-chart-empty-state > span:last-child {
+  max-width: 28rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
 }
 
 .trade-overview-plot .trade-chart-grid {

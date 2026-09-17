@@ -403,6 +403,7 @@
       ? root.dataset.issuer
       : "";
     const state = { network: "testnet" };
+    let chartController = null;
     const $ = (selector) => root.querySelector(selector);
     const $$ = (selector) => root.querySelectorAll(selector);
 
@@ -448,6 +449,7 @@
       });
       setText("[data-mode-note]", labels[mode] || labels.amm);
       root.dataset.mode = mode;
+      if (mode === "chart") chartController?.load();
     }
 
     function setupControlGroups() {
@@ -855,7 +857,7 @@
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
-    setupChartControls();
+    chartController = setupChartControls();
     setupDisclaimer();
     const initialMode = window.location.hash === "#agent"
       ? "agent"

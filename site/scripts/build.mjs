@@ -463,10 +463,10 @@ ${canonical}
     <a href="/team/">Meet Team</a>
     ${
       isPreLaunch
-        ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>`
+        ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>
+           <span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>`
         : ""
     }
-    <a href="/verify/" class="cta">Verify the real $PND</a>
     <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
       <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
