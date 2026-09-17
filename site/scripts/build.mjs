@@ -374,11 +374,9 @@ function tocHtml(html) {
   );
 }
 
-const banner = isPreLaunch
-  ? `<div class="banner" role="status"><strong>$PND has not launched.</strong> Target
-     1 October 2026. No $PND has been issued. Any token trading under the code
-     <code>PND</code> today is <strong>not</strong> $PND. <a href="/verify/">How to verify &rarr;</a></div>`
-  : "";
+// The compact pre-launch status remains in the menu bar. Keep the larger
+// sitewide banner out of the page shell so focused pages have room to work.
+const banner = "";
 
 function layout(page, html) {
   const isHome = page.url === "/";

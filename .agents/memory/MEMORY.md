@@ -1,0 +1,1 @@
+- [Single-window terminal layout](trade-terminal-layout.md) — keep focused trading views free of nested scroll containers; compact desktop panels and let mobile flow naturally.

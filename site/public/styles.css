@@ -2883,3 +2883,287 @@ html.has-nav-js .docs-open {
     display: block;
   }
 }
+
+/* -------------------------------------------------------- focused trade view */
+
+html.has-nav-js body.page-trade {
+  overflow: hidden;
+}
+
+html.has-nav-js body.page-trade .shell {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: calc(100svh - 4.2rem);
+  margin: 0;
+  padding: 0.35rem clamp(0.8rem, 2.4vw, 2rem) 0;
+  overflow: hidden;
+}
+
+html.has-nav-js body.page-trade main {
+  height: 100%;
+}
+
+html.has-nav-js body.page-trade .prose {
+  height: 100%;
+}
+
+body.page-trade .sidebar,
+body.page-trade .docs-rail,
+body.page-trade .docs-backdrop,
+body.page-trade .trade-footnote,
+body.page-trade .footer {
+  display: none;
+}
+
+body.page-trade .trade-app {
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0.55rem 0.7rem 0.45rem;
+  overflow: hidden;
+}
+
+@media (min-width: 781px) {
+  body.page-trade .topbar {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+  }
+
+  body.page-trade .brand-mark {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  body.page-trade .trade-terminal-head {
+    padding-bottom: 0.35rem;
+  }
+
+  body.page-trade .trade-token-mark {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  body.page-trade .trade-stat-strip {
+    margin-bottom: 0.3rem;
+  }
+
+  body.page-trade .trade-stat-strip > div {
+    padding-top: 0.32rem;
+    padding-bottom: 0.32rem;
+  }
+
+  body.page-trade .trade-mode-tabs {
+    min-height: 1.95rem;
+  }
+
+  body.page-trade .trade-workspace {
+    margin-top: 0.3rem;
+  }
+
+  body.page-trade .trade-market-panels,
+  body.page-trade .trade-chart-empty,
+  body.page-trade .trade-empty-panel,
+  body.page-trade .trade-liquidity-preview {
+    min-height: 14rem;
+  }
+
+  body.page-trade .trade-chart-empty {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  body.page-trade .trade-position {
+    padding: 0.5rem 0.6rem;
+  }
+
+  body.page-trade .trade-balance-row {
+    padding: 0.32rem 0;
+  }
+
+  body.page-trade .trade-position-total {
+    margin-top: 0.4rem;
+  }
+
+  body.page-trade .trade-action-pane {
+    gap: 0.45rem;
+  }
+
+  body.page-trade .trade-action-tabs button {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  body.page-trade .trade-action-panels {
+    padding: 0.65rem;
+  }
+
+  body.page-trade .trade-action-field {
+    padding: 0.42rem 0.55rem;
+  }
+
+  body.page-trade .trade-action-field strong {
+    font-size: 0.92rem;
+  }
+
+  body.page-trade .trade-summary-row {
+    padding-top: 0.45rem;
+  }
+
+  body.page-trade .trade-connect-button {
+    margin-top: 0.45rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  body.page-trade .trade-gate-card {
+    padding: 0.4rem 0.5rem;
+  }
+
+  body.page-trade .trade-detail-window {
+    margin-top: 0.3rem;
+  }
+
+  body.page-trade .trade-detail-panels {
+    min-height: 6.9rem;
+  }
+
+  body.page-trade .trade-detail-tabs button {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  body.page-trade .trade-table-head {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  body.page-trade .trade-empty-row {
+    margin-bottom: 0.45rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 780px) {
+  html.has-nav-js body.page-trade {
+    overflow: auto;
+  }
+
+  html.has-nav-js body.page-trade .shell,
+  html.has-nav-js body.page-trade main,
+  html.has-nav-js body.page-trade .prose {
+    height: auto;
+    overflow: visible;
+  }
+
+  html.has-nav-js body.page-trade .shell {
+    padding: 0.5rem 0.65rem 1rem;
+  }
+
+  body.page-trade .trade-app {
+    overflow: visible;
+  }
+
+  body.page-trade .topnav .status-chip {
+    display: inline-flex;
+  }
+}
+
+@media (min-width: 781px) {
+  body.page-trade .trade-action-pane {
+    grid-template-columns: minmax(10rem, 0.82fr) minmax(13rem, 1.18fr);
+    gap: 0.45rem;
+  }
+
+  body.page-trade .trade-position,
+  body.page-trade .trade-action-card {
+    align-self: start;
+  }
+
+  body.page-trade .trade-action-tabs button {
+    padding-top: 0.32rem;
+    padding-bottom: 0.32rem;
+  }
+
+  body.page-trade .trade-action-panels {
+    padding: 0.42rem;
+  }
+
+  body.page-trade .trade-action-field {
+    padding: 0.28rem 0.42rem;
+  }
+
+  body.page-trade .trade-action-field > span,
+  body.page-trade .trade-action-field small {
+    font-size: 0.55rem;
+  }
+
+  body.page-trade .trade-action-field > div {
+    margin-top: 0.08rem;
+    margin-bottom: 0.08rem;
+  }
+
+  body.page-trade .trade-action-field strong {
+    font-size: 0.82rem;
+  }
+
+  body.page-trade .trade-action-field b {
+    font-size: 0.58rem;
+  }
+
+  body.page-trade .trade-flip {
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 0.7rem;
+  }
+
+  body.page-trade .trade-summary-row {
+    padding-top: 0.28rem;
+    font-size: 0.58rem;
+  }
+
+  body.page-trade .trade-connect-button {
+    margin-top: 0.3rem;
+    padding: 0.38rem 0.4rem;
+    font-size: 0.6rem;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  body.page-trade .trade-gate-card {
+    grid-column: 1 / -1;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
+  body.page-trade .trade-market-panels,
+  body.page-trade .trade-chart-empty,
+  body.page-trade .trade-empty-panel,
+  body.page-trade .trade-liquidity-preview {
+    min-height: 10rem;
+  }
+
+  body.page-trade .trade-chart-empty {
+    gap: 0.3rem;
+  }
+
+  body.page-trade .trade-chart-mark {
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  body.page-trade .trade-market-footer {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  body.page-trade .trade-detail-panels {
+    min-height: 5.3rem;
+  }
+
+  body.page-trade .trade-empty-row {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+  }
+}
