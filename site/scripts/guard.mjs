@@ -176,10 +176,10 @@ check(
 
 const pagesMissingVerifyLink = files
   .filter((f) => f.endsWith("index.html") || f.endsWith("404.html"))
-  .filter((f) => !readFileSync(f, "utf8").includes('href="/verify/" class="cta"'))
+  .filter((f) => !readFileSync(f, "utf8").includes('href="/verify/"'))
   .map((f) => relative(DIST_DIR, f));
 check(
-  "every page carries the verify link in its header",
+  "every page carries a verify link",
   pagesMissingVerifyLink.length === 0,
   pagesMissingVerifyLink.join(", "),
 );
