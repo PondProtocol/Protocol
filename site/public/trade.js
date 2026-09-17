@@ -192,8 +192,15 @@
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark">P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source">Verification gated</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>Verification gated</span></div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
+        </div>
+        <div class="trade-chart-ohlc" aria-label="Chart price details">
+          <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
+          <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
+          <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
+          <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
+          <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
         </div>
         <div class="trade-overview-toolbar">
           <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Verification required</strong></div>
@@ -218,7 +225,7 @@
         <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>Bollinger Bands</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>Verification gated</span></div>
       </section>
       <aside class="trade-overview-sidebar">
-          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Not verified</strong></div></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market cap</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Not verified</strong></div></div>
           <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators will appear after verified $PND market data is available.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
       </aside>
