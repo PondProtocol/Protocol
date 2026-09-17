@@ -454,6 +454,7 @@ ${canonical}
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
 <body class="${isHome ? "page-home" : "page-docs"}">
+<div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
@@ -503,6 +504,7 @@ ${isHome ? heroHtml() : ""}
     <a href="/verify/">Check the issuer address</a> before you trust anything calling itself $PND.</p>
   </div>
 </footer>
+</div>
 <script src="/nav.js" defer></script>
 </body>
 </html>
