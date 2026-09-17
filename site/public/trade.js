@@ -155,12 +155,6 @@
       </section>
 
       <aside class="trade-action-pane" aria-label="DEX order actions">
-        <div class="trade-position">
-          <div class="trade-card-head"><div><p class="trade-kicker">My position</p><h3>Wallet balances</h3></div><span class="trade-badge trade-badge-muted">Not connected</span></div>
-          <div class="trade-balance-row"><span>◈ <strong>XRP</strong></span><b>—</b></div>
-          <div class="trade-balance-row"><span>✦ <strong>$PND</strong></span><b>—</b></div>
-          <div class="trade-balance-row"><span>◇ <strong>$rPND</strong></span><b>—</b></div>
-        </div>
         <div class="trade-action-card">
           <nav class="trade-action-tabs" aria-label="DEX order type" data-tab-group="dex-order">
             <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
@@ -176,7 +170,6 @@
             <div class="trade-panel" data-panel="sell" hidden><div class="trade-empty-panel"><strong>Sell order ticket</strong><span>Signing stays disabled until a verified $PND or $rPND market exists.</span></div></div>
           </div>
         </div>
-        <div class="trade-gate-card"><span class="trade-check-icon">!</span><div><strong>DEX trading is gated</strong><span>Issuer, offer book, market pair, and wallet signing must pass verification.</span></div></div>
       </aside>
     </section>
 
