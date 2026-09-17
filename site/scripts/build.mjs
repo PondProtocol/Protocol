@@ -346,10 +346,18 @@ function heroHtml() {
       <code class="addr">${esc(site.issuerAddress)}</code>
     </div>
     <p class="hero-actions">
-      <a class="button" href="/verify/">Verify the real $PND</a>
-      <a class="button button-quiet" href="/hold/">How to hold it safely</a>
+      <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
+      <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
     </p>
   </div>
+  <aside class="hero-readout" aria-label="Protocol snapshot">
+    <div class="hero-readout-head"><span class="hero-readout-dot" aria-hidden="true"></span>Protocol snapshot</div>
+    <div class="hero-readout-grid">
+      <div><span>Network</span><strong>XRP Ledger</strong></div>
+      <div><span>Asset</span><strong>$PND · IOU</strong></div>
+      <div><span>Launch</span><strong>01 Oct 2026</strong></div>
+    </div>
+  </aside>
 </section>`;
 }
 
