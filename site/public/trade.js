@@ -45,7 +45,7 @@
        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>AMM route gated</span></span>
     </nav>
 
-    <div class="trade-workspace">
+    <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
       <section class="trade-market-pane" aria-label="Market view">
         <nav class="trade-subtabs" aria-label="Market detail" data-tab-group="market">
           <button type="button" class="is-active" data-tab="chart" aria-selected="true">Chart</button>
@@ -88,12 +88,13 @@
           <div class="trade-position-total"><span>Share</span><strong>—</strong><span>Estimated value</span><strong>— XRP</strong></div>
         </div>
         <div class="trade-action-card">
-          <nav class="trade-action-tabs" aria-label="AMM action" data-tab-group="action">
+          <nav class="trade-action-tabs" aria-label="AMM action" data-tab-group="amm-action">
             <button type="button" class="is-active" data-tab="swap" aria-selected="true">Swap</button>
             <button type="button" data-tab="deposit" aria-selected="false">Deposit</button>
             <button type="button" data-tab="withdraw" aria-selected="false">Withdraw</button>
+            <button type="button" data-tab="manage" aria-selected="false">Manage</button>
           </nav>
-          <div class="trade-action-panels" data-tab-panels="action">
+          <div class="trade-action-panels" data-tab-panels="amm-action">
             <div class="trade-panel is-active" data-panel="swap">
               <div class="trade-action-field"><span>Sell</span><div><strong>0.00</strong><b>XRP⌄</b></div><small>—</small></div>
               <button type="button" class="trade-flip" aria-label="Flip assets">↕</button>
@@ -103,11 +104,102 @@
             </div>
             <div class="trade-panel" data-panel="deposit" hidden><div class="trade-empty-panel"><strong>Deposit liquidity</strong><span>Pool creation and deposits unlock after a verified AMM exists.</span></div></div>
             <div class="trade-panel" data-panel="withdraw" hidden><div class="trade-empty-panel"><strong>Withdraw liquidity</strong><span>Connect a wallet after an LP position can be verified.</span></div></div>
+            <div class="trade-panel" data-panel="manage" hidden>
+              <div class="trade-manage-list">
+                <div><span>Pool controls</span><strong>AMM not configured</strong></div>
+                <div><span>Fee tier</span><strong>Not published</strong></div>
+                <div><span>Rewards</span><strong>None configured</strong></div>
+              </div>
+              <button type="button" class="trade-connect-button" disabled>Pool controls unavailable</button>
+            </div>
           </div>
         </div>
         <div class="trade-gate-card"><span class="trade-check-icon" data-issuer-icon>!</span><div><strong>Trading is gated</strong><span>Issuer, market, reserves, and transaction route must pass verification.</span></div></div>
       </aside>
     </div>
+
+    <section class="trade-mode-view trade-mode-workspace trade-dex-view" data-mode-view="dex" aria-label="DEX workspace" hidden>
+      <section class="trade-market-pane">
+        <nav class="trade-subtabs" aria-label="DEX market detail" data-tab-group="dex-market">
+          <button type="button" class="is-active" data-tab="dex-book" aria-selected="true">Order book</button>
+          <button type="button" data-tab="dex-depth" aria-selected="false">Depth</button>
+          <button type="button" data-tab="dex-trades" aria-selected="false">Recent trades</button>
+          <button type="button" data-tab="dex-offers" aria-selected="false">My offers</button>
+        </nav>
+        <div class="trade-chart-toolbar">
+          <div class="trade-chart-tools trade-market-pairs" data-control-group="dex-pair"><button type="button" class="is-active">PND / XRP</button><button type="button">PND / rPND</button><button type="button">rPND / XRP</button></div>
+          <div class="trade-range-tools"><button type="button" class="is-active">Live</button><button type="button">1D</button><button type="button">1W</button></div>
+        </div>
+        <div class="trade-market-panels" data-tab-panels="dex-market">
+          <div class="trade-panel is-active" data-panel="dex-book">
+            <div class="trade-order-book">
+              <div class="trade-order-book-head"><span>Price (XRP)</span><span>Amount</span><span>Total</span></div>
+              <div class="trade-order-book-side"><span>Asks</span><b>Offers unavailable until a verified market exists.</b></div>
+              <div class="trade-order-book-spread"><span>Spread</span><strong>—</strong></div>
+              <div class="trade-order-book-side is-bids"><span>Bids</span><b>Offers unavailable until a verified market exists.</b></div>
+            </div>
+          </div>
+          <div class="trade-panel" data-panel="dex-depth" hidden><div class="trade-empty-panel"><strong>Depth chart unavailable</strong><span>Verified XRPL offers are required before bid and ask depth can be plotted.</span></div></div>
+          <div class="trade-panel" data-panel="dex-trades" hidden><div class="trade-empty-panel"><strong>Recent trades unavailable</strong><span>Validated ledger executions will appear after a market is verified.</span></div></div>
+          <div class="trade-panel" data-panel="dex-offers" hidden><div class="trade-empty-panel"><strong>No offers to show</strong><span>Connect a self-custody wallet only after the issuer, market, and signing route pass verification.</span></div></div>
+        </div>
+        <div class="trade-market-footer"><span>Data source: XRPL offers and validated ledger</span><span>DEX route gated</span></div>
+      </section>
+
+      <aside class="trade-action-pane" aria-label="DEX order actions">
+        <div class="trade-position">
+          <div class="trade-card-head"><div><p class="trade-kicker">My position</p><h3>Wallet balances</h3></div><span class="trade-badge trade-badge-muted">Not connected</span></div>
+          <div class="trade-balance-row"><span>◈ <strong>XRP</strong></span><b>—</b></div>
+          <div class="trade-balance-row"><span>✦ <strong>$PND</strong></span><b>—</b></div>
+          <div class="trade-balance-row"><span>◇ <strong>$rPND</strong></span><b>—</b></div>
+        </div>
+        <div class="trade-action-card">
+          <nav class="trade-action-tabs" aria-label="DEX order type" data-tab-group="dex-order">
+            <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
+            <button type="button" data-tab="sell" aria-selected="false">Sell</button>
+            <button type="button" data-tab="open-orders" aria-selected="false">Open orders</button>
+            <button type="button" data-tab="order-history" aria-selected="false">History</button>
+          </nav>
+          <div class="trade-action-panels" data-tab-panels="dex-order">
+            <div class="trade-panel is-active" data-panel="buy">
+              <div class="trade-order-choice"><button type="button" class="is-active">Limit</button><button type="button">Market</button></div>
+              <div class="trade-order-grid"><div class="trade-action-field"><span>Price</span><div><strong>—</strong><b>XRP</b></div></div><div class="trade-action-field"><span>Amount</span><div><strong>0.00</strong><b>PND</b></div></div></div>
+              <div class="trade-action-field"><span>Total</span><div><strong>—</strong><b>XRP</b></div><small>Time in force · GTC</small></div>
+              <button type="button" class="trade-connect-button" disabled>Connect wallet to review order</button>
+            </div>
+            <div class="trade-panel" data-panel="sell" hidden><div class="trade-empty-panel"><strong>Sell order ticket</strong><span>Signing stays disabled until a verified $PND or $rPND market exists.</span></div></div>
+            <div class="trade-panel" data-panel="open-orders" hidden><div class="trade-empty-panel"><strong>No open orders</strong><span>Open offers will appear here after a self-custody wallet signs a verified route.</span></div></div>
+            <div class="trade-panel" data-panel="order-history" hidden><div class="trade-empty-panel"><strong>No order history</strong><span>Validated XRPL offer events will appear here when the DEX market is live.</span></div></div>
+          </div>
+        </div>
+        <div class="trade-gate-card"><span class="trade-check-icon">!</span><div><strong>DEX trading is gated</strong><span>Issuer, offer book, market pair, and wallet signing must pass verification.</span></div></div>
+      </aside>
+    </section>
+
+    <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="overview" aria-label="Market overview" hidden>
+      <section class="trade-overview-chart">
+        <div class="trade-overview-toolbar">
+          <div><p class="trade-kicker">Market overview</p><strong>$PND / XRP · Validated ledger</strong></div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active">1H</button><button type="button">4H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
+        </div>
+        <div class="trade-overview-tools">
+          <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
+          <div class="trade-indicator-tools" data-control-group="overview-indicators"><button type="button" class="is-active">SMA</button><button type="button">EMA</button><button type="button">RSI</button><button type="button">MACD</button><button type="button">Bollinger</button></div>
+        </div>
+        <div class="trade-overview-plot">
+          <div class="trade-chart-grid"></div>
+          <span class="trade-chart-mark">P</span>
+          <strong>TradingView-style analytics activate after verification</strong>
+          <span>Candles, volume, indicators, and crosshair data will come from the selected XRPL market.</span>
+        </div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i>Price</span><span><i class="trade-legend-bar"></i>Volume</span><span>Indicators unavailable</span></div>
+      </section>
+      <aside class="trade-overview-sidebar">
+        <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated">Not verified</strong></div></div>
+        <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong>—</strong></div><span class="trade-overview-note">Choose indicators above to prepare the view. No values are shown until market data is verified.</span></div>
+        <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
+      </aside>
+    </section>
 
     <section class="trade-detail-window">
       <nav class="trade-detail-tabs" aria-label="Token details" data-tab-group="detail">
@@ -220,8 +312,26 @@
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-selected", String(active));
       });
+      $$("[data-mode-view]").forEach((view) => {
+        const active = view.dataset.modeView === mode;
+        view.classList.toggle("is-active", active);
+        view.hidden = !active;
+        view.setAttribute("aria-hidden", String(!active));
+      });
       setText("[data-mode-note]", labels[mode] || labels.amm);
       root.dataset.mode = mode;
+    }
+
+    function setupControlGroups() {
+      $$("[data-control-group]").forEach((group) => {
+        group.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", () => {
+            group.querySelectorAll("button").forEach((item) => {
+              item.classList.toggle("is-active", item === button);
+            });
+          });
+        });
+      });
     }
 
     function setupTabs() {
@@ -304,6 +414,7 @@
     });
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
+    setupControlGroups();
     setMode("amm");
     setNetworkButtons();
     refresh();

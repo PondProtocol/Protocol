@@ -3167,3 +3167,408 @@ body.page-trade .trade-app {
     padding-bottom: 0.65rem;
   }
 }
+
+/* ---------------------------------------------------------- mode workspaces */
+
+.trade-mode-view[hidden] {
+  display: none;
+}
+
+.trade-mode-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  gap: 0.75rem;
+}
+
+.trade-dex-view .trade-market-pane,
+.trade-dex-view .trade-action-pane,
+.trade-overview-view > * {
+  min-width: 0;
+}
+
+.trade-order-book {
+  min-height: 100%;
+  padding: 0.7rem;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.trade-order-book-head {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.trade-order-book-side {
+  display: grid;
+  gap: 0.45rem;
+  min-height: 5.2rem;
+  align-content: center;
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--critical) 30%, var(--border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--critical) 4%, transparent);
+}
+
+.trade-order-book-side span {
+  color: var(--critical);
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trade-order-book-side b {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.trade-order-book-side.is-bids {
+  border-color: color-mix(in srgb, #74d3a0 28%, var(--border));
+  background: color-mix(in srgb, #74d3a0 4%, transparent);
+}
+
+.trade-order-book-side.is-bids span {
+  color: #74d3a0;
+}
+
+.trade-order-book-spread {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0.2rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.trade-order-book-spread strong {
+  color: var(--text);
+}
+
+.trade-order-choice {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.45rem;
+}
+
+.trade-order-choice button,
+.trade-overview-controls button,
+.trade-indicator-tools button {
+  padding: 0.22rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.6rem;
+}
+
+.trade-order-choice button:hover,
+.trade-order-choice button.is-active,
+.trade-overview-controls button:hover,
+.trade-overview-controls button.is-active,
+.trade-indicator-tools button:hover,
+.trade-indicator-tools button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-order-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.trade-manage-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.trade-manage-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.trade-manage-list strong {
+  color: var(--text);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.trade-overview-view {
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+}
+
+.trade-overview-chart,
+.trade-overview-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgb(0 0 0 / 0.2);
+}
+
+.trade-overview-chart {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.trade-overview-toolbar,
+.trade-overview-tools,
+.trade-overview-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.trade-overview-toolbar {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.trade-overview-toolbar strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.trade-overview-toolbar .trade-kicker {
+  margin-bottom: 0.12rem;
+}
+
+.trade-overview-controls,
+.trade-indicator-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.trade-overview-tools {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.trade-overview-tools .trade-chart-tools {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.trade-overview-tools .trade-chart-tools span {
+  padding: 0.18rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+}
+
+.trade-overview-tools .trade-chart-tools span.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  color: var(--accent-bright);
+}
+
+.trade-overview-plot {
+  position: relative;
+  display: grid;
+  min-height: 18rem;
+  flex: 1 1 auto;
+  place-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  overflow: hidden;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.trade-overview-plot .trade-chart-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.trade-overview-plot .trade-chart-mark,
+.trade-overview-plot strong,
+.trade-overview-plot > span:last-child {
+  position: relative;
+}
+
+.trade-overview-plot strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.trade-overview-plot > span:last-child {
+  max-width: 28rem;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+.trade-overview-legend {
+  justify-content: flex-start;
+  padding: 0.45rem 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
+
+.trade-overview-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.trade-legend-dot,
+.trade-legend-bar {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent-bright);
+}
+
+.trade-legend-bar {
+  border-radius: 1px;
+  background: var(--accent);
+}
+
+.trade-overview-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+}
+
+.trade-overview-card {
+  padding: 0.75rem;
+}
+
+.trade-overview-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.42rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.trade-overview-stat:last-of-type {
+  border-bottom: 0;
+}
+
+.trade-overview-stat strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+.trade-overview-stat strong.is-gated {
+  color: var(--critical);
+}
+
+.trade-overview-note,
+.trade-overview-risk span {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+.trade-overview-risk {
+  border-color: color-mix(in srgb, var(--critical) 30%, var(--border));
+  background: var(--critical-soft);
+}
+
+.trade-overview-risk > strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+@media (min-width: 781px) {
+  body.page-trade .trade-mode-workspace {
+    min-height: 0;
+  }
+
+  body.page-trade .trade-order-book-side {
+    min-height: 3.6rem;
+  }
+
+  body.page-trade .trade-overview-plot {
+    min-height: 12rem;
+  }
+
+  body.page-trade .trade-overview-card {
+    padding: 0.55rem 0.65rem;
+  }
+}
+
+@media (max-width: 780px) {
+  .trade-mode-workspace,
+  .trade-overview-view {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-overview-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trade-overview-risk {
+    grid-column: 1 / -1;
+  }
+
+  .trade-overview-tools,
+  .trade-overview-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trade-overview-controls,
+  .trade-indicator-tools {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 781px) {
+  body.page-trade .trade-action-tabs {
+    gap: 0;
+  }
+
+  body.page-trade .trade-action-tabs button {
+    padding-left: 0.18rem;
+    padding-right: 0.18rem;
+    font-size: 0.58rem;
+    letter-spacing: -0.01em;
+  }
+
+  .trade-market-pairs button {
+    padding: 0.18rem 0.35rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.58rem;
+  }
+
+  .trade-market-pairs button:hover,
+  .trade-market-pairs button.is-active {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    color: var(--accent-bright);
+  }
+}
