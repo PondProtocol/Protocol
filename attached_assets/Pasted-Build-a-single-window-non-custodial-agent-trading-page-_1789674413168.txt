@@ -1,0 +1,112 @@
+Build a single-window non-custodial agent trading page for Greenhead Pond Protocol at https://pond.greenhead.io/trade on XRPL mainnet.
+
+CONTEXT / BRAND
+- Host: pond.greenhead.io (existing Pond / $PND site). Align with current brand, typography, and docs tone. Do NOT add public marketing hype about $PND / Pond Protocol launch (quiet until Oct 1 2026).
+- Token: $PND (IOU). Issuer COLD wallet (never hot-sign from this app): rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc
+- Domain field / site domain: pond.greenhead.io
+- First agent target (MM): classic address rPNDJ9SdvYoKcSrUebi1xAmgv5e6wgmpYv — seed stays ONLY in that agent’s secret store; this app never sees it.
+
+STACK (suggested; keep thin)
+- Same stack as current pond.greenhead.io Replit app if one exists (prefer extend existing repo over greenfield).
+- Otherwise: Node + Express (or Fastify) + lightweight React/Vite SPA, single deploy.
+- XRPL: xrpl.js (or xrpl-py only if backend is already Python). Mainnet websocket default: wss://xrplcluster.com (fallback wss://s1.ripple.com).
+- Persist sessions/challenges in Postgres/SQLite already on Replit if available; otherwise Redis/memory with TTL OK for MVP.
+- No new custody vaults, no seed inputs, no browser localStorage of secrets.
+
+PRODUCT INTENT
+- One window at GET /trade: trading desk UI + agent API docs/surface together.
+- Agents (and humans later) connect by XRPL classic address only — NEVER upload seeds/private keys.
+- Flow: challenge → wallet/agent signs → session → site prepares UNSIGNED XRPL txs → client signs locally → submit signed blob (site broadcasts OR client submits direct to XRPL).
+- Site is a prepare/broadcast helper + UI, not a custodian.
+
+SECURITY HARD RULES (fail closed)
+1) Never request, accept, store, log, or echo seeds, private keys, family seeds, or mnemonic.
+2) Reject any request body field named seed|secret|privateKey|mnemonic|familySeed (400).
+3) Challenges are single-use, short TTL (≤5m), bound to address + nonce.
+4) Prepared txs must be returned unsigned; server may attach LastLedgerSequence + Fee suggestions only.
+5) On submit, verify: SigningPubKey/Account matches session address; TransactionType allowlisted; no AccountDelete; Destination/issuer constraints for $PND paths; amount sanity caps for MVP.
+6) Rate-limit challenge + submit per IP + per address.
+7) No CORS * with credentials; agent API uses Bearer session token from challenge-sign.
+8) Structured logs: address, tx hash, type — never raw signing material.
+9) Issuer cold wallet rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc is READ-ONLY reference; never attempt to sign as issuer.
+
+AUTH API (MVP)
+POST /api/trade/auth/challenge
+  body: { "address": "r..." }
+  resp: { "address", "nonce", "expires_at", "message": "Pond Trade login\nAddress: r...\nNonce: ...\nDomain: pond.greenhead.io\nExpires: ISO8601" }
+  (Message must be deterministic for sign-verify.)
+
+POST /api/trade/auth/verify
+  body: { "address", "nonce", "signature": "hex-or-base64 of signed message OR signed Payment-less Signers proof" }
+  Prefer XRPL account signature over arbitrary message if you already have a pattern; otherwise signed UTF-8 message verify with classic address pubkey derivation.
+  resp: { "token", "expires_at", "address" }
+  On fail: 401.
+
+GET /api/trade/session  (Authorization: Bearer <token>)
+  resp: { "address", "balances": {"XRP", "PND"?}, "trustlines": [...], "network": "mainnet" }
+
+PREPARE / SUBMIT API (MVP)
+All require Bearer session.
+
+POST /api/trade/prepare/trustset
+  body: { "limit": "string amount", "currency": "PND"|hex, "issuer": "rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc" }
+  resp: { "tx_json": {unsigned TrustSet}, "hash_to_sign_hint"?: string }
+
+POST /api/trade/prepare/offer
+  body: { "side": "buy"|"sell", "taker_gets": Amount, "taker_pays": Amount, "flags"?: number }
+  Amounts: XRP as drops string OR {currency,issuer,value} for $PND.
+  resp: { "tx_json": unsigned OfferCreate }
+
+POST /api/trade/prepare/cancel
+  body: { "offer_sequence": number }
+  resp: { "tx_json": unsigned OfferCancel }
+
+POST /api/trade/submit
+  body: { "signed_tx_blob": "..." } OR { "tx_json": fully-signed }
+  Server: decode → verify Account==session address → allowlist type ∈ {TrustSet,OfferCreate,OfferCancel} → submit to mainnet → resp { "engine_result", "hash", "accepted": bool }
+  Also document client-direct submit path: agent may skip /submit and broadcast itself after prepare.
+
+GET /api/trade/book?pair=PND_XRP&limit=20
+  Public or auth’d order book snapshot (best bids/asks) for UI.
+
+GET /api/trade/open-offers (auth)
+  Offers for session address.
+
+SINGLE-WINDOW UI (/trade)
+- Header: Pond mark, “Trade”, network Mainnet badge, connected address (truncated) + Disconnect.
+- Left/main: order book + simple form (Buy/Sell $PND vs XRP), size, price/market toggle (MVP: limit OfferCreate only).
+- Side panel: Trustline status for $PND issuer; Connect Wallet / Connect Agent instructions; last tx hash links to a public XRPL explorer.
+- Bottom or tab: “Agent API” mini-docs with curl examples for challenge→verify→prepare→sign→submit.
+- Human path MVP: paste address → show challenge message → paste signature hex (or WalletConnect-like later). Do NOT ship seed entry.
+- Agent path: same APIs; UI shows “for agents” copy pointing at endpoints.
+- Empty states when disconnected; disable prepare buttons until session valid.
+
+XRPL DEFAULTS
+- Network: mainnet only for MVP (no testnet toggle in prod UI).
+- $PND issuer: rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc
+- Fee: autopilot from server fee estimate; LastLedgerSequence = validated_ledger + 20..40.
+- Currency code: use actual $PND currency code already used on-ledger (detect from issuer trustlines / existing site config; do not invent).
+
+MVP vs LATER
+MVP ship:
+- /trade page + auth challenge/verify + prepare TrustSet/OfferCreate/OfferCancel + submit + book + open-offers
+- Non-custodial hard rules
+- Agent curl docs in-page
+- Mainnet $PND/XRP only
+Later (stub OK, don’t block MVP):
+- Browser extension / Crossmark / Gem wallet deep link
+- AMMDeposit/Withdraw, paths, partial payments UI
+- Human polished wallet UX
+- Multi-pair beyond PND/XRP
+- Websocket fill feed
+- Tadpole MM strategy UI (keep out of MVP)
+
+ACCEPTANCE
+1) Visiting /trade loads one window with book + connect + agent API docs.
+2) Challenge→verify issues Bearer; /session returns address.
+3) Prepare returns unsigned tx_json; submitting a signed blob from that address succeeds or returns clear engine_result.
+4) Any seed/privateKey field → 400; no seed UI exists.
+5) Issuer cold address never used as Account in prepared txs unless user session IS that address (it won’t be for agents).
+6) No new public launch marketing copy.
+
+Implement end-to-end in this Replit. Prefer extending existing pond.greenhead.io codebase. Commit working /trade MVP.
