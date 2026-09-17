@@ -464,7 +464,7 @@ ${canonical}
     ${
       isPreLaunch
         ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>
-           <span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>`
+           <a href="/verify/" class="status-chip nav-verify-chip">Verify</a>`
         : ""
     }
     <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs

@@ -186,6 +186,12 @@ a:hover {
   margin-left: 0;
 }
 
+.topnav a.nav-verify-chip {
+  color: var(--critical);
+  text-decoration: none;
+  text-transform: none;
+}
+
 .topnav .cta {
   order: 2;
 }
