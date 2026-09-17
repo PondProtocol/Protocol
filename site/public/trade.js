@@ -185,18 +185,18 @@
       <section class="trade-overview-chart">
         <div class="trade-chart-market-controls">
           <div class="trade-chart-pair-tabs" data-control-group="chart-pair" aria-label="Chart pair">
-            <button type="button" class="is-active" data-chart-pair="xrp-usd">XRP / USD</button>
-            <button type="button" data-chart-pair="pnd-xrp">PND / XRP</button>
+            <button type="button" data-chart-pair="xrp-usd">XRP / USD</button>
+            <button type="button" class="is-active" data-chart-pair="pnd-xrp">PND / XRP</button>
             <button type="button" data-chart-pair="pnd-usd">PND / USD</button>
           </div>
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark">X</span><strong data-chart-symbol>XRP / USD</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source">CoinGecko</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark">P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source">Verification gated</span></div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
         </div>
         <div class="trade-overview-toolbar">
-          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>XRP / USD · Validated ledger</strong></div>
+          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Verification required</strong></div>
           <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
@@ -211,15 +211,15 @@
           <div class="trade-chart-empty-state" data-chart-empty-state>
             <div class="trade-chart-grid"></div>
             <span class="trade-chart-mark">P</span>
-            <strong data-chart-empty-title>XRP / USD chart is loading</strong>
-            <span data-chart-empty-copy>Fetching live XRP market data…</span>
+            <strong data-chart-empty-title>PND / XRP chart activates after verification</strong>
+            <span data-chart-empty-copy>Verified $PND market data will appear after the issuer and market are confirmed.</span>
           </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>XRP / USD</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>CoinGecko data</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>Bollinger Bands</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>Verification gated</span></div>
       </section>
       <aside class="trade-overview-sidebar">
-        <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Loading</strong></div></div>
-        <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Select an indicator to plot it over the live XRP series.</span></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Not verified</strong></div></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators will appear after verified $PND market data is available.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
       </aside>
     </section>
@@ -477,7 +477,7 @@
       const rangeDays = { "1h": 1, "4h": 2, "1d": 7, "1w": 7, all: 365 };
       const rangePoints = { "1h": 48, "4h": 96, "1d": 168, "1w": 336, all: 365 };
       const rangeLabels = { "1h": "1H", "4h": "4H", "1d": "1D", "1w": "1W", all: "All" };
-      const chartState = { pair: "xrp-usd", range: "1h", indicator: "bollinger", data: null };
+       const chartState = { pair: "pnd-xrp", range: "1h", indicator: "bollinger", data: null };
       const pairButtons = $$("[data-chart-pair]");
       const rangeButtons = $$("[data-chart-range]");
       const indicatorButtons = $$("[data-chart-indicator]");
