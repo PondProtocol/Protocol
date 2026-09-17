@@ -45,10 +45,50 @@
     setRail(root, open);
   }
 
+  function setupSearch() {
+    const form = document.querySelector("[data-site-search]");
+    const input = form?.querySelector("input");
+    if (!form || !input) return;
+
+    const pages = [...document.querySelectorAll("#site-search-pages option")].map((option) => ({
+      title: option.value,
+      url: option.dataset.url,
+    }));
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const query = input.value.trim().toLowerCase();
+      if (!query) {
+        input.focus();
+        return;
+      }
+
+      const match =
+        pages.find((page) => page.title.toLowerCase() === query || page.url === query) ||
+        pages.find((page) => page.title.toLowerCase().includes(query));
+
+      if (!match) {
+        input.setAttribute("aria-invalid", "true");
+        input.title = "No matching page found";
+        return;
+      }
+
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("title");
+      navigate(match.url);
+    });
+
+    input.addEventListener("input", () => {
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("title");
+    });
+  }
+
   function setupNavigation() {
     const root = document.getElementById("docs-nav");
     if (!root) return;
     html.classList.add("has-nav-js");
+    setupSearch();
     openAllGroups(root);
     if (isMobile()) {
       root.classList.remove("is-collapsed");
@@ -142,6 +182,15 @@
   });
 
   window.addEventListener("popstate", () => navigate(`${window.location.pathname}${window.location.search}`, false));
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      const input = document.querySelector("#site-search-input");
+      if (!input) return;
+      event.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
   mq.addEventListener("change", setupNavigation);
   setupNavigation();
 })();

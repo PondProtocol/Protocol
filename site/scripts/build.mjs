@@ -323,6 +323,21 @@ function navHtml(currentUrl) {
   return out;
 }
 
+function searchHtml() {
+  const options = config.pages
+    .filter((page) => page.publish !== false && page.url)
+    .map((page) => `<option value="${esc(page.title)}" data-url="${esc(page.url)}"></option>`)
+    .join("");
+
+  return `<form class="site-search" data-site-search role="search">
+  <label class="visually-hidden" for="site-search-input">Search Pond Protocol</label>
+  <svg class="site-search-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg>
+  <input id="site-search-input" name="q" type="search" placeholder="Search docs" autocomplete="off" list="site-search-pages" spellcheck="false">
+  <kbd aria-hidden="true">⌘ K</kbd>
+</form>
+<datalist id="site-search-pages">${options}</datalist>`;
+}
+
 function heroHtml() {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -486,6 +501,7 @@ ${canonical}
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
+  ${searchHtml()}
   <nav class="topnav" aria-label="Primary">
     <a href="/protocol/">Protocol</a>
     <a href="/trade/">Trade</a>

@@ -436,7 +436,17 @@ check(
 const joinInputs = [];
 for (const file of textFiles.filter((f) => f.endsWith(".html"))) {
   const html = readFileSync(file, "utf8");
-  if (/<input\b/i.test(html) || /<textarea\b/i.test(html) || /<form\b/i.test(html)) {
+  // The sitewide documentation search is the one intentional form field. Strip that known-safe
+  // shell control before checking that authored pages do not introduce wallet or signing inputs.
+  const htmlWithoutSiteSearch = html.replace(
+    /<form\b[^>]*class="site-search"[^>]*>[\s\S]*?<\/form>/i,
+    "",
+  );
+  if (
+    /<input\b/i.test(htmlWithoutSiteSearch) ||
+    /<textarea\b/i.test(htmlWithoutSiteSearch) ||
+    /<form\b/i.test(htmlWithoutSiteSearch)
+  ) {
     joinInputs.push(relative(DIST_DIR, file));
   }
 }
