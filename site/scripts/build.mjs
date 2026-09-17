@@ -297,20 +297,60 @@ function renderMarkdown(page) {
 
 const isPreLaunch = site.launchStatus !== "live";
 
+function navGroupId(section) {
+  return String(section)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function navHtml(currentUrl) {
   let out = "";
   for (const group of config.nav) {
     const visible = group.pages.filter((p) => p.publish !== false);
     if (!visible.length) continue;
-    out += `<div class="nav-group"><p class="nav-group-title">${esc(group.section)}</p><ul>`;
+    const id = navGroupId(group.section);
+    const hasActive = visible.some((p) => p.url === currentUrl);
+    const open = hasActive || id === "start-here" ? " open" : "";
+    out += `<details class="nav-group" data-nav-group="${esc(id)}"${open}>`;
+    out += `<summary class="nav-group-title">${esc(group.section)}</summary><ul>`;
     for (const p of visible) {
       const active = p.url === currentUrl ? ' class="active" aria-current="page"' : "";
       const flag = p.url === "/verify/" ? ' <span class="nav-badge">important</span>' : "";
       out += `<li><a href="${p.url}"${active}>${esc(p.title)}${flag}</a></li>`;
     }
-    out += "</ul></div>";
+    out += "</ul></details>";
   }
   return out;
+}
+
+function heroHtml() {
+  const chip = isPreLaunch
+    ? `<div class="hero-status" role="status">
+      <span class="status-chip">Pre-launch · nothing issued yet</span>
+      <span>Nothing issued. Nothing to buy.</span>
+    </div>`
+    : "";
+  return `<section class="hero" aria-labelledby="hero-tagline">
+  <img class="hero-art" src="/hero.png" width="1920" height="1080" alt="">
+  <div class="hero-veil" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <p class="hero-kicker">Pond Protocol</p>
+    <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>
+    <p class="hero-lede"><strong>$PND has not launched.</strong> Target 1 October 2026.
+    Identity is the pair <strong>(PND, issuer address)</strong>, never the ticker.
+    $rPND is not launching that day.</p>
+    ${chip}
+    <div class="hero-id">
+      <span class="hero-id-label">Canonical issuer</span>
+      <code class="addr">${esc(site.issuerAddress)}</code>
+    </div>
+    <p class="hero-actions">
+      <a class="button" href="/verify/">Verify the real $PND</a>
+      <a class="button button-quiet" href="/hold/">How to hold it safely</a>
+    </p>
+  </div>
+</section>`;
 }
 
 function tocHtml(html) {
@@ -333,11 +373,13 @@ const banner = isPreLaunch
   : "";
 
 function layout(page, html) {
-  const title = page.url === "/" ? site.title : `${page.title} — ${site.title}`;
+  const isHome = page.url === "/";
+  const title = isHome ? site.title : `${page.title} — ${site.title}`;
   // Emitted only once a real domain exists. See content.config.json "$comment_domain".
   const canonical = domainConfigured
     ? `<link rel="canonical" href="${esc(`https://${site.domain}${page.url}`)}">
-<meta property="og:url" content="${esc(`https://${site.domain}${page.url}`)}">`
+<meta property="og:url" content="${esc(`https://${site.domain}${page.url}`)}">
+<meta property="og:image" content="${esc(`https://${site.domain}/hero.png`)}">`
     : `<!-- canonical omitted: site.domain is not set in content.config.json -->`;
   // Naming the ref matters when it is not `main`: the page is then rendered from an unmerged
   // branch, and a reader deserves to know that rather than take it as settled.
@@ -382,11 +424,13 @@ ${canonical}
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="/styles.css">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body>
+<body class="${isHome ? "page-home" : "page-docs"}">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
-  <a class="brand" href="/"><span class="brand-mark" aria-hidden="true"></span>${esc(site.title)}</a>
+  <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
   <nav class="topnav" aria-label="Primary">
     ${
       isPreLaunch
@@ -397,16 +441,29 @@ ${canonical}
     <a href="/hold/">Hold</a>
     <a href="/wallets/">Wallets</a>
     <a href="/links/">Links</a>
+    <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs</button>
   </nav>
 </header>
 ${banner}
+${isHome ? heroHtml() : ""}
+<div class="docs-backdrop" data-docs-backdrop></div>
 <div class="shell">
-  <aside class="sidebar" aria-label="Documentation">${navHtml(page.url)}</aside>
   <main id="main">
-    ${tocHtml(html)}
+    ${isHome ? "" : tocHtml(html)}
     <article class="prose">${supplyRevision}${html}</article>
     ${provenance}
   </main>
+  <aside class="sidebar" id="docs-nav" aria-label="Documentation">
+    <div class="sidebar-head">
+      <p class="sidebar-label">Docs</p>
+      <button type="button" class="sidebar-toggle" data-docs-toggle aria-expanded="true" aria-controls="docs-nav-body" title="Collapse documentation menu">
+        <span class="sidebar-toggle-label">Collapse</span>
+      </button>
+    </div>
+    <div class="sidebar-body" id="docs-nav-body">
+      ${navHtml(page.url)}
+    </div>
+  </aside>
 </div>
 <footer class="footer">
   <div class="footer-inner">
@@ -416,6 +473,7 @@ ${banner}
     <a href="/verify/">Check the issuer address</a> before you trust anything calling itself $PND.</p>
   </div>
 </footer>
+<script src="/nav.js" defer></script>
 </body>
 </html>
 `;

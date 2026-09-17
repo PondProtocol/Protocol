@@ -162,24 +162,22 @@
         { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
         { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
         { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
-        { "authored": "links.md", "url": "/links/", "title": "Official links" },
-        { "authored": "vesting.md", "url": "/vesting/", "title": "Supply split" },
-        { "authored": "pnd-and-rpnd.md", "url": "/pnd-and-rpnd/", "title": "$PND and $rPND" },
-        { "authored": "discovery.md", "url": "/discovery/", "title": "How wallets learn the name" },
-        { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" }
+        { "authored": "links.md", "url": "/links/", "title": "Official links" }
       ]
     },
     {
-      "section": "$PND — issued currency",
+      "section": "$PND",
       "pages": [
         { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/", "title": "Token specification", "publish": true },
         { "repo": "pnd", "path": "docs/trust-lines.md", "url": "/pnd/holding/", "title": "Holding $PND", "publish": true },
         { "repo": "pnd", "path": "docs/integration.md", "url": "/pnd/integration/", "title": "Integration guide", "publish": true },
-        { "repo": "pnd", "path": "README.md", "url": "/pnd/overview/", "title": "Overview", "publish": true }
+        { "repo": "pnd", "path": "README.md", "url": "/pnd/overview/", "title": "Overview", "publish": true },
+        { "authored": "vesting.md", "url": "/vesting/", "title": "Supply split" },
+        { "authored": "pnd-and-rpnd.md", "url": "/pnd-and-rpnd/", "title": "$PND and $rPND" }
       ]
     },
     {
-      "section": "$rPND — Multi-Purpose Token",
+      "section": "$rPND",
       "pages": [
         { "repo": "rpnd", "path": "docs/rpnd-spec.md", "url": "/rpnd/", "title": "Token specification", "publish": true },
         { "repo": "rpnd", "path": "docs/mpt-vs-iou.md", "url": "/rpnd/why-mpt/", "title": "Why $rPND is an MPT", "publish": true },
@@ -192,12 +190,9 @@
         { "repo": "protocol", "path": "README.md", "url": "/protocol/", "title": "Overview", "publish": true },
         { "repo": "protocol", "path": "docs/architecture.md", "url": "/protocol/architecture/", "title": "Architecture", "publish": true },
         { "repo": "pnd", "path": "docs/pnd-vs-rpnd.md", "url": "/protocol/two-tokens/", "title": "$PND and $rPND compared", "publish": true },
-        { "repo": "protocol", "path": "docs/glossary.md", "url": "/protocol/glossary/", "title": "Glossary", "publish": true }
-      ]
-    },
-    {
-      "section": "Specification",
-      "pages": [
+        { "repo": "protocol", "path": "docs/glossary.md", "url": "/protocol/glossary/", "title": "Glossary", "publish": true },
+        { "authored": "discovery.md", "url": "/discovery/", "title": "How wallets learn the name" },
+        { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" },
         { "repo": "protocol", "path": "docs/spec/README.md", "url": "/spec/", "title": "Status and conventions", "publish": true },
         { "repo": "protocol", "path": "docs/spec/01-tokens.md", "url": "/spec/tokens/", "title": "01 — Tokens", "publish": true },
         { "repo": "protocol", "path": "docs/spec/02-accounts-and-roles.md", "url": "/spec/accounts-and-roles/", "title": "02 — Accounts and roles", "publish": true },
@@ -209,7 +204,7 @@
       ]
     },
     {
-      "section": "Project status",
+      "section": "Status",
       "pages": [
         { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
         { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }
