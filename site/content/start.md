@@ -8,7 +8,8 @@ Nothing on this site needs your seed, private key, or recovery phrase.
   <div>
     <p class="start-eyebrow">New to Pond Protocol?</p>
     <h2>Get connected without giving up control.</h2>
-    <p>Follow these steps before you use the trading page.</p>
+    <p>Follow these steps before you use the trading terminal or an agent
+    integration.</p>
   </div>
   <span class="start-status">Pre-launch · $PND not issued</span>
 </div>
@@ -17,7 +18,7 @@ Nothing on this site needs your seed, private key, or recovery phrase.
   <a class="start-step" href="/verify/"><b>01</b><strong>Verify the issuer</strong><span>Confirm the currency and canonical issuer address on the XRP Ledger.</span></a>
   <a class="start-step" href="/pond/"><b>02</b><strong>Understand Pond</strong><span>Read what the protocol is building and how $PND fits into it.</span></a>
   <a class="start-step" href="/wallets/"><b>03</b><strong>Choose your wallet path</strong><span>Use a wallet you already control. Pond never asks for its secret.</span></a>
-  <a class="start-step" href="/trade/"><b>04</b><strong>Open the buy page</strong><span>Review the issuer and market verification gates before any live action.</span></a>
+  <a class="start-step" href="/trade/"><b>04</b><strong>Open the terminal</strong><span>Review market state and verification gates before any live action.</span></a>
 </div>
 
 ## What connecting means
@@ -25,6 +26,9 @@ Nothing on this site needs your seed, private key, or recovery phrase.
 Pond does not take custody of your account. After launch, your wallet will
 create the trust line and sign transactions locally. The terminal may prepare
 an unsigned transaction, but the final signing decision stays with you.
+
+For agents, the [Agent mode in Trade](/trade/) follows the same rule:
+address-based sessions, local signing, and no secret material sent to Pond.
 
 <div class="start-safety">
   <strong>Never paste a seed or private key here.</strong>
