@@ -152,24 +152,29 @@ a:hover {
   color: var(--text);
 }
 
+.topnav .cta,
+.topnav .status-chip {
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
 .topnav .cta {
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 72%, #ffffff);
   color: #ffffff;
-  font-weight: 600;
-  line-height: 1.2;
+  border: 1px solid color-mix(in srgb, var(--accent) 75%, #0a0a0b);
 }
 
 .topnav .status-chip {
   display: inline-flex;
   align-items: center;
   padding: 0.35rem 0.7rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.2;
 }
 
 .topnav .status-chip {
@@ -182,7 +187,7 @@ a:hover {
 }
 
 .topnav .cta:hover {
-  background: color-mix(in srgb, var(--accent) 85%, #000);
+  background: color-mix(in srgb, var(--accent) 62%, #ffffff);
   color: #ffffff;
 }
 
