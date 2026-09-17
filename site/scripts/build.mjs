@@ -463,7 +463,7 @@ ${canonical}
     <a href="/team/">Meet Team</a>
     ${
       isPreLaunch
-        ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>
+        ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · Testnet Mode</span>
            <a href="/verify/" class="cta">Verify</a>`
         : ""
     }
