@@ -159,11 +159,13 @@
       "section": "Start here",
       "pages": [
         { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
+        { "authored": "start.md", "url": "/start/", "title": "Start here" },
         { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
         { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
         { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
         { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
-        { "authored": "agentic-network.md", "url": "/agentic-network/", "title": "Agent Network" },
+        { "authored": "pond.md", "url": "/pond/", "title": "Pond" },
+        { "authored": "team.md", "url": "/team/", "title": "Meet Team" },
         { "authored": "links.md", "url": "/links/", "title": "Official links" }
       ]
     },

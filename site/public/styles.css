@@ -165,6 +165,11 @@ a:hover {
   font-size: 0.64rem;
 }
 
+.topnav .status-chip {
+  order: 10;
+  margin-left: auto;
+}
+
 .topnav .cta:hover {
   background: color-mix(in srgb, var(--accent) 85%, #000);
   color: #ffffff;
@@ -2922,6 +2927,312 @@ body.page-trade .trade-app {
   margin: 0;
   padding: 0.55rem 0.7rem 0.45rem;
   overflow: hidden;
+}
+
+body.trade-disclaimer-open {
+  overflow: hidden;
+}
+
+.trade-disclaimer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(4 7 11 / 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.trade-disclaimer-backdrop[hidden] {
+  display: none;
+}
+
+.trade-disclaimer-dialog {
+  width: min(100%, 31rem);
+  padding: clamp(1.2rem, 4vw, 1.8rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(74 144 217 / 0.13), transparent 42%),
+    var(--bg-soft);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.45);
+}
+
+.trade-disclaimer-dialog h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
+  line-height: 1.15;
+}
+
+.trade-disclaimer-copy {
+  margin: 0.65rem 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.trade-disclaimer-confirm {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.55rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.18);
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  text-align: left;
+}
+
+.trade-disclaimer-confirm span:first-child {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid var(--text-muted);
+  border-radius: 3px;
+  color: transparent;
+  font-size: 0.7rem;
+}
+
+.trade-disclaimer-confirm.is-confirmed {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-disclaimer-confirm.is-confirmed span:first-child {
+  border-color: var(--accent-bright);
+  background: var(--accent);
+  color: #07111b;
+}
+
+.trade-disclaimer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.trade-disclaimer-actions a,
+.trade-disclaimer-actions button {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.trade-disclaimer-actions a:hover,
+.trade-disclaimer-actions a[aria-disabled="false"],
+.trade-disclaimer-actions button:not(:disabled):hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-disclaimer-actions button:disabled,
+.trade-disclaimer-actions a[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------- start / pond */
+
+.start-hero,
+.pond-overview,
+.team-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.4rem 0 1rem;
+  padding: clamp(1.1rem, 3vw, 1.8rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(74 144 217 / 0.11), transparent 45%),
+    var(--bg-soft);
+}
+
+.start-hero h2,
+.pond-overview h2,
+.team-intro h2 {
+  max-width: 24ch;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.start-hero p:not(.start-eyebrow),
+.pond-overview p:not(.start-eyebrow),
+.team-intro p:not(.start-eyebrow) {
+  max-width: 42rem;
+  margin: 0.65rem 0 0;
+  color: var(--text-muted);
+}
+
+.start-eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--accent-bright);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.start-status {
+  flex: none;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--critical) 34%, var(--border));
+  border-radius: 999px;
+  color: var(--critical);
+  font-size: 0.62rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.start-steps,
+.pond-pillars,
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0 0 1.5rem;
+}
+
+.start-step,
+.pond-pillars > div,
+.team-card {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  text-decoration: none;
+}
+
+.start-step:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.start-step b,
+.team-card-mark {
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+}
+
+.start-step strong,
+.pond-pillars strong,
+.team-card strong {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.start-step span,
+.pond-pillars span,
+.team-card p,
+.pond-overview-note span {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.start-safety,
+.pond-overview-note {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-left: 2px solid var(--critical);
+  background: var(--critical-soft);
+}
+
+.start-safety {
+  margin: 1rem 0 1.4rem;
+}
+
+.start-safety strong,
+.pond-overview-note strong {
+  color: var(--critical);
+  font-size: 0.75rem;
+}
+
+.pond-overview-main {
+  min-width: 0;
+}
+
+.pond-overview-note {
+  flex: 0 0 min(100%, 16rem);
+}
+
+.pond-pillars > div {
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 60%),
+    var(--bg-soft);
+}
+
+.team-intro {
+  display: block;
+}
+
+.team-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.team-card {
+  min-height: 10rem;
+}
+
+.team-card p {
+  margin: 0.35rem 0 0;
+}
+
+@media (max-width: 780px) {
+  .trade-disclaimer-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .trade-disclaimer-actions a,
+  .trade-disclaimer-actions button {
+    text-align: center;
+  }
+
+  .start-hero,
+  .pond-overview {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .start-steps,
+  .pond-pillars,
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pond-overview-note {
+    width: 100%;
+    flex-basis: auto;
+  }
 }
 
 @media (min-width: 781px) {

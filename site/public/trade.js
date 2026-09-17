@@ -30,6 +30,19 @@
       </div>
     </header>
 
+    <div class="trade-disclaimer-backdrop" data-disclaimer hidden>
+      <section class="trade-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-disclaimer-title">
+        <p class="trade-kicker">Before you continue</p>
+        <h2 id="trade-disclaimer-title">Pond is verification-first.</h2>
+        <p class="trade-disclaimer-copy">This terminal never needs your seed, private key, or recovery phrase. $PND has not been issued and no verified market is live yet.</p>
+        <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
+        <div class="trade-disclaimer-actions">
+          <a href="/start/" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
+          <button type="button" data-disclaimer-known disabled>I know Pond Protocol</button>
+        </div>
+      </section>
+    </div>
+
     <div class="trade-stat-strip">
       <div><span>Price</span><strong data-price>—</strong><em>Awaiting pool</em></div>
       <div><span>24h volume</span><strong>—</strong><em>Not configured</em></div>
@@ -42,6 +55,7 @@
       <button type="button" class="is-active" data-tab="amm" aria-selected="true">AMM</button>
       <button type="button" data-tab="dex" aria-selected="false">DEX</button>
       <button type="button" data-tab="overview" aria-selected="false">Overview</button>
+      <button type="button" data-tab="agent" aria-selected="false">Agent</button>
        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>AMM route gated</span></span>
     </nav>
 
@@ -191,6 +205,53 @@
       </aside>
     </section>
 
+    <section class="trade-mode-view trade-mode-workspace trade-agent-view" data-mode-view="agent" aria-label="Agent trading workspace" hidden>
+      <section class="trade-agent-main">
+        <div class="trade-agent-heading">
+          <div>
+            <p class="trade-kicker">Agent trading</p>
+            <h2>Non-custodial execution for software agents.</h2>
+            <p>Connect with a classic address, read verified market state, and prepare unsigned XRPL transactions for signing inside your own agent.</p>
+          </div>
+          <span class="trade-agent-status"><i></i> Staged until market verification</span>
+        </div>
+        <div class="trade-agent-flow">
+          <div><b>01</b><strong>Challenge</strong><span>Request a short-lived address-bound session.</span></div>
+          <div><b>02</b><strong>Sign locally</strong><span>Keep the seed or private key in the agent's secret store.</span></div>
+          <div><b>03</b><strong>Prepare</strong><span>Receive an unsigned TrustSet or limit offer.</span></div>
+          <div><b>04</b><strong>Submit</strong><span>Verify and broadcast the signed transaction.</span></div>
+        </div>
+        <div class="trade-agent-api">
+          <div class="trade-agent-api-head"><div><p class="trade-kicker">Agent API</p><h3>Small surface, predictable flow.</h3></div><span>Bearer session</span></div>
+          <div class="trade-agent-endpoints">
+            <div><code>POST /api/trade/auth/challenge</code><span>Address-bound challenge</span></div>
+            <div><code>POST /api/trade/auth/verify</code><span>Short-lived session</span></div>
+            <div><code>GET /api/trade/book?pair=PND_XRP</code><span>Public order book</span></div>
+            <div><code>POST /api/trade/prepare/offer</code><span>Unsigned limit offer</span></div>
+            <div><code>POST /api/trade/prepare/cancel</code><span>Unsigned cancellation</span></div>
+            <div><code>POST /api/trade/submit</code><span>Signed blob submission</span></div>
+          </div>
+          <div class="trade-agent-command"><code>curl -X POST https://pond.greenhead.io/api/trade/auth/challenge -H 'content-type: application/json' -d '{"address":"r..."}'</code><button type="button" data-copy-value="curl -X POST https://pond.greenhead.io/api/trade/auth/challenge -H 'content-type: application/json' -d '{&quot;address&quot;:&quot;r...&quot;}'">Copy</button></div>
+        </div>
+      </section>
+      <aside class="trade-agent-sidebar">
+        <div class="trade-agent-card">
+          <p class="trade-kicker">Agent session</p>
+          <h3>Connect by address</h3>
+          <div class="trade-agent-session"><span>Status</span><strong>Not connected</strong></div>
+          <button type="button" class="trade-connect-button" disabled>Connect agent</button>
+          <small>No seed, private key, or mnemonic is accepted here.</small>
+        </div>
+        <div class="trade-agent-card">
+          <p class="trade-kicker">Transaction boundary</p>
+          <div class="trade-agent-check"><span>✓</span><strong>Unsigned preparation only</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Allowlisted transaction types</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Issuer and amount checks</strong></div>
+          <div class="trade-agent-check"><span>✓</span><strong>Self-custody signing</strong></div>
+        </div>
+      </aside>
+    </section>
+
     <section class="trade-detail-window">
       <nav class="trade-detail-tabs" aria-label="Token details" data-tab-group="detail">
         <button type="button" class="is-active" data-tab="transactions" aria-selected="true">Pool transactions</button>
@@ -296,6 +357,7 @@
         amm: "AMM route gated",
         dex: "Offers route gated",
         overview: "Verification-first overview",
+        agent: "Agent route gated",
       };
       $$("[data-tab-group='mode'] [data-tab]").forEach((button) => {
         const active = button.dataset.tab === mode;
@@ -353,6 +415,44 @@
       });
     }
 
+    function setupDisclaimer() {
+      const modal = $("[data-disclaimer]");
+      const confirm = $("[data-disclaimer-confirm]");
+      const known = $("[data-disclaimer-known]");
+      const newcomer = $("[data-disclaimer-new]");
+      if (!modal || !confirm || !known || !newcomer) return;
+
+      const open = () => {
+        modal.hidden = false;
+        document.body.classList.add("trade-disclaimer-open");
+        confirm.focus();
+      };
+      const close = () => {
+        modal.hidden = true;
+        document.body.classList.remove("trade-disclaimer-open");
+      };
+      const setConfirmed = (confirmed) => {
+        confirm.setAttribute("aria-pressed", String(confirmed));
+        confirm.classList.toggle("is-confirmed", confirmed);
+        known.disabled = !confirmed;
+        newcomer.setAttribute("aria-disabled", String(!confirmed));
+      };
+
+      confirm.addEventListener("click", () => {
+        setConfirmed(confirm.getAttribute("aria-pressed") !== "true");
+      });
+      known.addEventListener("click", close);
+      newcomer.addEventListener("click", (event) => {
+        if (newcomer.getAttribute("aria-disabled") === "true") event.preventDefault();
+      });
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) open();
+      });
+      window.addEventListener("pond:wallet-disconnected", open);
+      window.PondTrade = { ...(window.PondTrade || {}), showDisclaimer: open };
+      open();
+    }
+
     async function refresh() {
       setStatus("loading", "Reading ledger…");
       setText("[data-issuer-status]", "Checking issuer account");
@@ -405,6 +505,7 @@
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
+    setupDisclaimer();
     setMode("amm");
     setNetworkButtons();
     refresh();

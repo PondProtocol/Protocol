@@ -457,20 +457,16 @@ ${canonical}
 <header class="topbar">
   <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
   <nav class="topnav" aria-label="Primary">
+    <a href="/verify/" class="cta">Verify the real $PND</a>
+    <a href="/protocol/">Protocol</a>
+    <a href="/trade/">Trade</a>
+    <a href="/pond/">Pond</a>
+    <a href="/team/">Meet Team</a>
     ${
       isPreLaunch
         ? `<span class="status-chip" title="No $PND on ledger yet">Pre-launch · nothing issued yet</span>`
         : ""
     }
-    <a href="/verify/" class="cta">Verify the real $PND</a>
-    <a href="/rpnd/">$rPND</a>
-    <a href="/pnd/">$PND</a>
-    <a href="/protocol/">Protocol</a>
-    <a href="/trade/">Trade</a>
-    <a href="/agentic-network/">Agents</a>
-    <a href="/hold/">Hold</a>
-    <a href="/wallets/">Wallets</a>
-    <a href="/links/">Links</a>
     <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
       <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -507,7 +503,7 @@ ${isHome ? heroHtml() : ""}
 </div>
 <script src="/nav.js" defer></script>
 <script src="/trade.js" defer></script>
-${page.url === "/agentic-network/" ? '<script src="/agentic.js" defer></script>' : ""}
+${page.url === "/trade/" ? '<script src="/agentic.js" defer></script>' : ""}
 </body>
 </html>
 `;
