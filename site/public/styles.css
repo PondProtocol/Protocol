@@ -166,8 +166,12 @@ a:hover {
 }
 
 .topnav .status-chip {
-  order: 10;
+  order: 1;
   margin-left: auto;
+}
+
+.topnav .cta {
+  order: 2;
 }
 
 .topnav .cta:hover {
