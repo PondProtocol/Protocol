@@ -349,13 +349,15 @@ html.docs-collapsed .docs-rail-icon {
   z-index: 3;
   overflow: hidden;
   border-bottom: 1px solid #252c34;
-  background: #12171c;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.018), transparent),
+    #0e1419;
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 }
 
 .protocol-snapshot-inner {
   width: min(100%, 96rem);
-  min-height: 3.4rem;
+  min-height: 3.75rem;
   margin: 0 auto;
   overflow: hidden;
   outline: none;
@@ -371,7 +373,7 @@ html.docs-collapsed .docs-rail-icon {
   align-items: stretch;
   width: max-content;
   min-width: 100%;
-  animation: protocol-snapshot-scroll 42s linear infinite;
+  animation: protocol-snapshot-scroll 23s linear infinite;
   will-change: transform;
 }
 
@@ -408,7 +410,7 @@ html.docs-collapsed .docs-rail-icon {
   align-items: center;
   flex: none;
   min-width: max-content;
-  padding: 0.55rem 0.7rem;
+  padding: 0.62rem 0.85rem;
   border-right: 1px solid #28313a;
 }
 
@@ -416,7 +418,8 @@ html.docs-collapsed .docs-rail-icon {
   gap: 0.35rem;
   padding-left: clamp(0.8rem, 3vw, 2rem);
   color: #f1f4f7;
-  font-size: 0.6rem;
+  font-size: 0.69rem;
+  font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -424,7 +427,7 @@ html.docs-collapsed .docs-rail-icon {
 .protocol-snapshot-title > span:last-child {
   margin-left: 0.15rem;
   color: #df9b83;
-  font-size: 0.52rem;
+  font-size: 0.61rem;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -442,9 +445,9 @@ html.docs-collapsed .docs-rail-icon {
 }
 
 .protocol-snapshot-label {
-  color: #7f8b96;
-  font-size: 0.53rem;
-  font-weight: 700;
+  color: #8fc7ff;
+  font-size: 0.62rem;
+  font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -452,34 +455,72 @@ html.docs-collapsed .docs-rail-icon {
 .protocol-snapshot-items {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0;
 }
 
 .protocol-snapshot-items > span {
   display: inline-flex;
   align-items: center;
-  gap: 0.28rem;
-  color: #adb7c0;
-  font-size: 0.58rem;
+  gap: 0.35rem;
+  padding: 0 0.72rem;
+  border-left: 1px solid #313b45;
+  color: #c3cbd2;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.015em;
   line-height: 1.2;
   white-space: nowrap;
 }
 
 .protocol-snapshot-items strong {
   color: #edf1f4;
-  font-weight: 650;
+  font-size: 0.71rem;
+  font-weight: 800;
 }
 
 .protocol-snapshot-items em {
-  color: #71808b;
-  font-size: 0.5rem;
+  color: #85919c;
+  font-size: 0.58rem;
+  font-weight: 650;
   font-style: normal;
 }
 
 .protocol-snapshot-items b {
-  color: #7f8b96;
-  font-size: 0.5rem;
-  font-weight: 600;
+  color: #919ca6;
+  font-size: 0.6rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.protocol-snapshot-set > .protocol-snapshot-group:nth-child(2) .protocol-snapshot-items > span:nth-child(1) strong {
+  color: #5ddd9e;
+}
+
+.protocol-snapshot-set > .protocol-snapshot-group:nth-child(2) .protocol-snapshot-items > span:nth-child(2) strong {
+  color: #f2bd62;
+}
+
+.protocol-snapshot-set > .protocol-snapshot-group:nth-child(2) .protocol-snapshot-items > span:nth-child(3) strong {
+  color: #89a9c8;
+}
+
+.protocol-snapshot-set > .protocol-snapshot-group:nth-child(3) .protocol-snapshot-items > span:nth-child(1) strong {
+  color: #77bfff;
+}
+
+.protocol-snapshot-set > .protocol-snapshot-group:nth-child(3) .protocol-snapshot-items > span:nth-child(2) strong {
+  color: #c49aff;
+}
+
+.protocol-snapshot-users .protocol-snapshot-items > span:nth-child(1) strong,
+.protocol-snapshot-users .protocol-snapshot-items > span:nth-child(5) strong,
+.protocol-snapshot-users .protocol-snapshot-items > span:nth-child(7) strong {
+  color: #ef907f;
+}
+
+.protocol-snapshot-users .protocol-snapshot-items > span:nth-child(6) strong {
+  color: #66d5d0;
 }
 
 .snapshot-status {
