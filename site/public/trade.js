@@ -506,7 +506,7 @@
     setupTabs();
     setupControlGroups();
     setupDisclaimer();
-    setMode("amm");
+    setMode(window.location.hash === "#agent" ? "agent" : "amm");
     setNetworkButtons();
     refresh();
   }

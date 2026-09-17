@@ -27,8 +27,8 @@ liquidity is live.
 Greenhead Labs is building Pond in public, with verification as part of the
 product rather than a separate promise. The [Protocol](/protocol/) pages show
 the architecture and open decisions. The [issuer verification](/verify/) page
-shows the identity checks. The [Trade](/trade/) and [Agent Network](/agentic-network/)
-surfaces remain disabled until their underlying market and signing checks pass.
+shows the identity checks. The [Trade](/trade/) and Agent mode inside it remain
+disabled until their underlying market and signing checks pass.
 
 This page describes the work and responsibilities of the team. It does not
 claim that $PND is live, that a market exists, or that a person should send

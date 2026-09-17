@@ -4493,3 +4493,284 @@ body.page-trade .trade-overview-card {
     margin-left: 0;
   }
 }
+
+/* ------------------------------------------------------------ trade / agent */
+
+.trade-agent-view {
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 20rem);
+}
+
+.trade-agent-main,
+.trade-agent-card {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 10px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg-soft) 88%, #000);
+}
+
+.trade-agent-main {
+  overflow: hidden;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+.trade-agent-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.trade-agent-heading h2 {
+  max-width: 24ch;
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.trade-agent-heading p:not(.trade-kicker) {
+  max-width: 43rem;
+  margin: 0.5rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.trade-agent-status {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 0.35rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--critical) 30%, var(--border));
+  border-radius: 999px;
+  color: var(--critical);
+  font-size: 0.58rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.trade-agent-status i {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 50%;
+  background: var(--critical);
+}
+
+.trade-agent-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 1rem 0;
+}
+
+.trade-agent-flow > div {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: rgb(0 0 0 / 0.15);
+}
+
+.trade-agent-flow b {
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+}
+
+.trade-agent-flow strong {
+  color: var(--text);
+  font-size: 0.68rem;
+}
+
+.trade-agent-flow span {
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  line-height: 1.35;
+}
+
+.trade-agent-api {
+  padding: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.16);
+}
+
+.trade-agent-api-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.trade-agent-api-head h3,
+.trade-agent-card h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.trade-agent-api-head > span {
+  padding: 0.22rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 999px;
+  color: var(--accent-bright);
+  font-size: 0.56rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.trade-agent-endpoints {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0.7rem 0;
+}
+
+.trade-agent-endpoints div {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.42rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.trade-agent-endpoints code,
+.trade-agent-command code {
+  overflow-wrap: anywhere;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent-bright);
+  font-size: 0.59rem;
+}
+
+.trade-agent-endpoints span {
+  color: var(--text-muted);
+  font-size: 0.57rem;
+}
+
+.trade-agent-command {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--bg-code);
+}
+
+.trade-agent-command code {
+  min-width: 0;
+  flex: 1;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.trade-agent-command button {
+  flex: none;
+  padding: 0.22rem 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-bright);
+  cursor: pointer;
+  font-size: 0.58rem;
+  font-weight: 750;
+}
+
+.trade-agent-command button:hover,
+.trade-agent-command button.is-copied {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-agent-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+}
+
+.trade-agent-card {
+  padding: 0.85rem;
+}
+
+.trade-agent-session {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.trade-agent-session span,
+.trade-agent-session strong,
+.trade-agent-card small {
+  font-size: 0.63rem;
+}
+
+.trade-agent-session span,
+.trade-agent-card small {
+  color: var(--text-muted);
+}
+
+.trade-agent-session strong {
+  color: var(--critical);
+}
+
+.trade-agent-card small {
+  display: block;
+  margin-top: 0.55rem;
+  line-height: 1.4;
+}
+
+.trade-agent-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.trade-agent-check span {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  font-size: 0.62rem;
+}
+
+.trade-agent-check strong {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+@media (max-width: 780px) {
+  .trade-agent-view {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-agent-heading {
+    flex-direction: column;
+  }
+
+  .trade-agent-status {
+    align-self: flex-start;
+  }
+
+  .trade-agent-flow,
+  .trade-agent-endpoints {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
