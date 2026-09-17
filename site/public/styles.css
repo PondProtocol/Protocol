@@ -3561,28 +3561,33 @@ body.page-trade .trade-app {
     align-items: center;
     column-gap: 0.35rem;
     row-gap: 0.02rem;
-    min-height: 2.15rem;
-    padding: 0.25rem 0.45rem;
+    height: 2.35rem;
+    min-height: 0;
+    padding: 0.2rem 0.45rem;
   }
 
   body.page-trade .trade-stat-strip span {
-    grid-row: 1 / -1;
+    grid-column: 1 / -1;
+    grid-row: 1;
     margin: 0;
     font-size: 0.5rem;
     line-height: 1.1;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
   }
 
   body.page-trade .trade-stat-strip strong {
+    grid-column: 1;
+    grid-row: 2;
     font-size: 0.7rem;
     line-height: 1.05;
   }
 
   body.page-trade .trade-stat-strip em {
+    grid-column: 2;
+    grid-row: 2;
     margin: 0;
     font-size: 0.5rem;
     line-height: 1.05;
+    text-align: right;
   }
 
   body.page-trade .trade-action-tabs button {
