@@ -467,6 +467,7 @@ ${canonical}
     <a href="/pnd/">$PND</a>
     <a href="/protocol/">Protocol</a>
     <a href="/trade/">Trade</a>
+    <a href="/agentic-network/">Agents</a>
     <a href="/hold/">Hold</a>
     <a href="/wallets/">Wallets</a>
     <a href="/links/">Links</a>
@@ -506,6 +507,7 @@ ${isHome ? heroHtml() : ""}
 </div>
 <script src="/nav.js" defer></script>
 <script src="/trade.js" defer></script>
+${page.url === "/agentic-network/" ? '<script src="/agentic.js" defer></script>' : ""}
 </body>
 </html>
 `;
