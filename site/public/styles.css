@@ -4260,6 +4260,47 @@ body.trade-disclaimer-open {
   border-left: 1px solid #2a2e33;
 }
 
+.trade-chart-ohlc {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  min-height: 2rem;
+  padding: 0.34rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: #0d1013;
+  font-family: var(--mono);
+}
+
+.trade-chart-ohlc > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  color: #89939d;
+  font-size: 0.61rem;
+}
+
+.trade-chart-ohlc b {
+  color: #6f7d88;
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+.trade-chart-ohlc strong {
+  color: #d9e0e6;
+  font-size: 0.66rem;
+  font-weight: 750;
+}
+
+.trade-chart-ohlc-change {
+  padding-left: 0.8rem;
+  border-left: 1px solid #2a2e33;
+}
+
+.trade-chart-ohlc-change strong {
+  color: #74d3a0;
+}
+
 .trade-chart-readout span {
   color: #74d3a0;
   font-weight: 700;

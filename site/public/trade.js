@@ -489,6 +489,8 @@
       const rangeButtons = $$("[data-chart-range]");
       const indicatorButtons = $$("[data-chart-indicator]");
       const overlay = $("[data-chart-overlay]");
+       const symbolMark = $("[data-chart-symbol-mark]");
+       const symbolSource = $("[data-chart-symbol-source]");
       const liveChart = $("[data-chart-live]");
       const emptyChart = $("[data-chart-empty-state]");
       const svg = $("[data-chart-svg]");
@@ -525,11 +527,17 @@
         setText("[data-chart-stat-price]", "—");
         setText("[data-chart-stat-change]", "—");
         setText("[data-chart-stat-volume]", "—");
+       setText("[data-chart-stat-market-cap]", "—");
         setText("[data-chart-stat-sma]", "—");
         setText("[data-chart-stat-rsi]", "—");
         setText("[data-chart-stat-macd]", "—");
         setText("[data-chart-symbol-price]", "—");
         setText("[data-chart-symbol-change]", "—");
+       setText("[data-chart-ohlc-open]", "—");
+       setText("[data-chart-ohlc-high]", "—");
+       setText("[data-chart-ohlc-low]", "—");
+       setText("[data-chart-ohlc-close]", "—");
+       setText("[data-chart-ohlc-change]", "—");
         setLiveStatus(false);
       };
       const movingAverage = (values, period) =>
@@ -579,6 +587,8 @@
         button.addEventListener("click", () => {
           const label = pairLabels[button.dataset.chartPair] || "XRP / USD";
           chartState.pair = button.dataset.chartPair;
+          if (symbolMark) symbolMark.textContent = chartState.pair === "xrp-usd" ? "X" : "P";
+          setText("[data-chart-symbol-source]", chartState.pair === "xrp-usd" ? "CoinGecko" : "Verification gated");
           setText("[data-chart-symbol]", label);
           setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
           setText("[data-chart-pair-label]", chartState.pair === "xrp-usd" ? `${label} · Live market` : `${label} · Validated ledger`);
@@ -758,7 +768,7 @@
         try {
           const [historyResponse, summaryResponse] = await Promise.all([
             fetch(`https://api.coingecko.com/api/v3/coins/ripple/market_chart?vs_currency=usd&days=${days}`),
-            fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true"),
+            fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true&include_24hr_market_cap=true"),
           ]);
           if (!historyResponse.ok || !summaryResponse.ok) throw new Error("The public XRP market feed is unavailable.");
           const history = await historyResponse.json();
@@ -772,13 +782,24 @@
           const livePrice = Number(summary.ripple?.usd) || points[points.length - 1].value;
           const change = Number(summary.ripple?.usd_24h_change);
           const volume = Number(summary.ripple?.usd_24h_vol);
-          chartState.data = { points, livePrice, change, volume };
+           const marketCap = Number(summary.ripple?.usd_market_cap);
+           const open = points[0].value;
+           const high = Math.max(...points.map((point) => point.value));
+           const low = Math.min(...points.map((point) => point.value));
+           chartState.data = { points, livePrice, change, volume, marketCap, open, high, low };
           setText("[data-price]", formatUsd(livePrice));
           setText("[data-chart-stat-price]", formatUsd(livePrice));
           setText("[data-chart-stat-change]", formatPercent(change));
           setText("[data-chart-stat-volume]", formatVolume(volume));
+           setText("[data-chart-stat-market-cap]", formatVolume(marketCap));
           setText("[data-chart-symbol-price]", formatUsd(livePrice));
           setText("[data-chart-symbol-change]", formatPercent(change));
+           setText("[data-chart-ohlc-open]", formatUsd(open));
+           setText("[data-chart-ohlc-high]", formatUsd(high));
+           setText("[data-chart-ohlc-low]", formatUsd(low));
+           setText("[data-chart-ohlc-close]", formatUsd(livePrice));
+           setText("[data-chart-ohlc-change]", formatPercent(change));
+           setText("[data-chart-symbol-source]", "CoinGecko");
           setText("[data-chart-source-label]", "CoinGecko live");
           setLiveStatus(true);
           renderChart();
