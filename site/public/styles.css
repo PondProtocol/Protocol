@@ -273,6 +273,10 @@ html.has-nav-js:not(.docs-collapsed) .hero-inner {
   padding-right: calc(var(--sidebar-w) + 2.25rem);
 }
 
+html.has-nav-js:not(.docs-collapsed) .banner {
+  padding-right: calc(var(--sidebar-w) + 1.75rem);
+}
+
 html.has-nav-js:not(.docs-collapsed) .footer-inner {
   padding-right: calc(var(--sidebar-w) + 1.75rem);
 }
@@ -1054,6 +1058,7 @@ code.addr {
   html.has-nav-js .shell,
   html.has-nav-js:not(.docs-collapsed) .shell,
   html.has-nav-js:not(.docs-collapsed) .hero-inner,
+  html.has-nav-js:not(.docs-collapsed) .banner,
   html.has-nav-js:not(.docs-collapsed) .footer-inner {
     padding-right: clamp(1rem, 4vw, 2.5rem);
   }
