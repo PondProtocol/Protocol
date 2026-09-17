@@ -147,32 +147,90 @@ a:hover {
   color: #ffffff;
 }
 
-.docs-open,
-.sidebar-toggle {
+.docs-open {
+  display: none;
   appearance: none;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
   font: inherit;
+  font-size: 0.85rem;
+  font-weight: 650;
   cursor: pointer;
   color: var(--text);
   background: var(--bg-soft);
   border: 1px solid var(--border);
 }
 
-.docs-open {
-  display: none;
-  padding: 0.35rem 0.8rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 650;
-}
-
 .docs-open:hover,
-.sidebar-toggle:hover {
+.docs-rail:hover {
   border-color: var(--accent);
   color: var(--text);
 }
 
+.docs-open-icon {
+  display: block;
+  flex: none;
+}
+
 .docs-backdrop {
   display: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Fixed right-edge chevron. Always on screen, including over the hero. */
+.docs-rail {
+  display: none;
+  position: fixed;
+  top: 50%;
+  right: var(--sidebar-w);
+  z-index: 32;
+  width: 1.7rem;
+  height: 3.6rem;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+  background: #161616;
+  color: var(--accent-text);
+  box-shadow: -6px 0 20px rgb(0 0 0 / 0.4);
+  cursor: pointer;
+  appearance: none;
+  transition: right 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+html.has-nav-js .docs-rail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html.docs-collapsed .docs-rail {
+  right: 0;
+  width: 1.85rem;
+  height: 4.2rem;
+  border-right: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+
+.docs-rail-icon {
+  display: block;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+html.docs-collapsed .docs-rail-icon {
+  transform: rotate(180deg);
 }
 
 /* ------------------------------------------------------------------ banner */
@@ -203,8 +261,20 @@ a:hover {
   padding: 2.5rem clamp(1rem, 4vw, 2.5rem) 4rem;
 }
 
-html.docs-collapsed .shell {
-  grid-template-columns: minmax(0, 1fr) 3rem;
+html.has-nav-js .shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html.has-nav-js:not(.docs-collapsed) .shell {
+  padding-right: calc(var(--sidebar-w) + 1.75rem);
+}
+
+html.has-nav-js:not(.docs-collapsed) .hero-inner {
+  padding-right: calc(var(--sidebar-w) + 2.25rem);
+}
+
+html.has-nav-js:not(.docs-collapsed) .footer-inner {
+  padding-right: calc(var(--sidebar-w) + 1.75rem);
 }
 
 .page-home .heading-anchor {
@@ -232,16 +302,32 @@ html.docs-collapsed .shell {
   border-radius: 14px;
 }
 
-.sidebar-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+html.has-nav-js .sidebar {
+  position: fixed;
+  top: 4.65rem;
+  right: 0;
+  bottom: 0;
+  z-index: 24;
+  align-self: auto;
+  width: var(--sidebar-w);
+  max-height: none;
+  margin: 0;
+  padding: 1rem 1rem 1.25rem;
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(16px);
+  transition: transform 0.2s ease;
+}
+
+html.has-nav-js .sidebar.is-collapsed {
+  transform: translateX(100%);
+  pointer-events: none;
 }
 
 .sidebar-label {
-  margin: 0;
+  margin: 0 0 0.75rem;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -249,53 +335,10 @@ html.docs-collapsed .shell {
   color: var(--text-muted);
 }
 
-.sidebar-toggle {
-  padding: 0.22rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 650;
-  color: var(--text-muted);
-}
-
 .sidebar-body {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 0.15rem;
-}
-
-.sidebar.is-collapsed {
-  width: 3rem;
-  padding: 0.55rem 0.35rem;
-  align-items: center;
-}
-
-.sidebar.is-collapsed .sidebar-label,
-.sidebar.is-collapsed .sidebar-body,
-.sidebar.is-collapsed .sidebar-toggle-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-}
-
-.sidebar.is-collapsed .sidebar-head {
-  margin: 0;
-  justify-content: center;
-}
-
-.sidebar.is-collapsed .sidebar-toggle {
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
-  border-radius: 8px;
-}
-
-.sidebar.is-collapsed .sidebar-toggle::after {
-  content: "«";
-  font-size: 1rem;
-  line-height: 1;
-  color: var(--accent-text);
 }
 
 .nav-group {
@@ -1008,8 +1051,11 @@ code.addr {
     padding-top: 1.5rem;
   }
 
-  html.docs-collapsed .shell {
-    grid-template-columns: 1fr;
+  html.has-nav-js .shell,
+  html.has-nav-js:not(.docs-collapsed) .shell,
+  html.has-nav-js:not(.docs-collapsed) .hero-inner,
+  html.has-nav-js:not(.docs-collapsed) .footer-inner {
+    padding-right: clamp(1rem, 4vw, 2.5rem);
   }
 
   .sidebar {
@@ -1065,6 +1111,27 @@ code.addr {
   .supply {
     grid-template-columns: 1fr;
   }
+
+  html.has-nav-js .docs-rail {
+    right: 0;
+    width: 1.85rem;
+    height: 4.2rem;
+    border-right: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
+  }
+
+  html.has-nav-js .docs-rail-icon {
+    transform: rotate(180deg);
+  }
+
+  html.has-nav-js body.docs-open .docs-rail {
+    right: min(20.5rem, 88vw);
+    z-index: 45;
+    border-right: 0;
+  }
+
+  html.has-nav-js body.docs-open .docs-rail-icon {
+    transform: none;
+  }
 }
 
 html.has-nav-js .docs-open {
@@ -1072,7 +1139,7 @@ html.has-nav-js .docs-open {
 }
 
 .docs-open:focus-visible,
-.sidebar-toggle:focus-visible,
+.docs-rail:focus-visible,
 .nav-group-title:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -1130,6 +1197,7 @@ html.has-nav-js .docs-open {
   .toc,
   .banner,
   .docs-open,
+  .docs-rail,
   .docs-backdrop,
   .hero-art,
   .hero-veil {

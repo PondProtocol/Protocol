@@ -441,12 +441,18 @@ ${canonical}
     <a href="/hold/">Hold</a>
     <a href="/wallets/">Wallets</a>
     <a href="/links/">Links</a>
-    <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs</button>
+    <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
+      <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
   </nav>
 </header>
 ${banner}
 ${isHome ? heroHtml() : ""}
 <div class="docs-backdrop" data-docs-backdrop></div>
+<button type="button" class="docs-rail" data-docs-toggle aria-expanded="true" aria-controls="docs-nav" title="Collapse documentation menu">
+  <svg class="docs-rail-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <span class="visually-hidden">Collapse documentation menu</span>
+</button>
 <div class="shell">
   <main id="main">
     ${isHome ? "" : tocHtml(html)}
@@ -454,12 +460,7 @@ ${isHome ? heroHtml() : ""}
     ${provenance}
   </main>
   <aside class="sidebar" id="docs-nav" aria-label="Documentation">
-    <div class="sidebar-head">
-      <p class="sidebar-label">Docs</p>
-      <button type="button" class="sidebar-toggle" data-docs-toggle aria-expanded="true" aria-controls="docs-nav-body" title="Collapse documentation menu">
-        <span class="sidebar-toggle-label">Collapse</span>
-      </button>
-    </div>
+    <p class="sidebar-label">Docs</p>
     <div class="sidebar-body" id="docs-nav-body">
       ${navHtml(page.url)}
     </div>
