@@ -111,6 +111,7 @@
         if (pushState) history.pushState({}, "", url);
         window.scrollTo(0, 0);
         setupNavigation();
+        window.PondTrade?.init?.();
       };
 
       if (document.startViewTransition) {

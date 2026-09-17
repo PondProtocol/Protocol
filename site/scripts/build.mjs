@@ -507,6 +507,7 @@ ${isHome ? heroHtml() : ""}
 </footer>
 </div>
 <script src="/nav.js" defer></script>
+<script src="/trade.js" defer></script>
 </body>
 </html>
 `;
