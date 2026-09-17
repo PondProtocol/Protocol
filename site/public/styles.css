@@ -3733,6 +3733,59 @@ body.trade-disclaimer-open {
   color: var(--accent-bright);
 }
 
+.trade-chart-symbol-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.7rem;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: #111315;
+}
+
+.trade-chart-symbol,
+.trade-chart-readout {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.trade-chart-symbol-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  background: #e7edf3;
+  color: #111315;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.trade-chart-symbol strong,
+.trade-chart-readout strong {
+  color: #e8eaed;
+  font-size: 0.75rem;
+}
+
+.trade-chart-symbol > span:not(.trade-chart-symbol-mark),
+.trade-chart-readout span {
+  color: #8b9198;
+  font-size: 0.62rem;
+}
+
+.trade-chart-symbol-source {
+  padding-left: 0.45rem;
+  border-left: 1px solid #2a2e33;
+}
+
+.trade-chart-readout span {
+  color: #74d3a0;
+  font-weight: 700;
+}
+
 .trade-overview-chart,
 .trade-overview-card {
   min-width: 0;
@@ -3805,13 +3858,14 @@ body.trade-disclaimer-open {
 .trade-overview-plot {
   position: relative;
   display: grid;
-  min-height: 18rem;
+  min-height: 27rem;
   flex: 1 1 auto;
   place-content: center;
   justify-items: center;
   gap: 0.45rem;
   overflow: hidden;
-  padding: 1.5rem;
+  padding: 0.45rem 0.6rem 0.7rem;
+  background: #101214;
   text-align: center;
 }
 
@@ -3819,7 +3873,12 @@ body.trade-disclaimer-open {
 .trade-chart-empty-state {
   position: relative;
   width: 100%;
-  min-height: 18rem;
+  min-height: 27rem;
+}
+
+.trade-chart-live[hidden],
+.trade-chart-empty-state[hidden] {
+  display: none !important;
 }
 
 .trade-chart-live {
@@ -3831,7 +3890,7 @@ body.trade-disclaimer-open {
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 18rem;
+  min-height: 27rem;
 }
 
 .trade-chart-source {
@@ -3843,32 +3902,51 @@ body.trade-disclaimer-open {
 }
 
 .trade-chart-grid-line,
+.trade-chart-vertical-grid,
+.trade-chart-panel-divider,
 .trade-chart-subgrid {
-  stroke: color-mix(in srgb, var(--border) 75%, transparent);
+  stroke: #25292e;
   stroke-width: 1;
 }
 
+.trade-chart-vertical-grid {
+  stroke: #1d2024;
+}
+
+.trade-chart-panel-divider {
+  stroke: #34383e;
+}
+
 .trade-chart-subgrid {
-  stroke: color-mix(in srgb, var(--accent) 40%, var(--border));
+  stroke: #34383e;
   stroke-dasharray: 4 4;
 }
 
 .trade-chart-axis-label {
-  fill: var(--text-muted);
+  fill: #747b84;
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.trade-chart-panel-label {
+  fill: #89919a;
   font-family: var(--font);
-  font-size: 11px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 .trade-chart-area {
-  fill: color-mix(in srgb, var(--accent) 13%, transparent);
+  fill: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
 .trade-chart-price {
   fill: none;
-  stroke: var(--accent-bright);
+  stroke: #4a90d9;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 3;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px rgb(74 144 217 / 0.22));
 }
 
 .trade-chart-indicator {
@@ -3891,7 +3969,38 @@ body.trade-disclaimer-open {
 }
 
 .trade-chart-volume {
-  fill: color-mix(in srgb, var(--accent) 70%, transparent);
+  fill: #347bbf;
+  opacity: 0.8;
+}
+
+.trade-chart-volume.is-down {
+  fill: #bd5260;
+}
+
+.trade-chart-rsi,
+.trade-chart-macd {
+  fill: none;
+  stroke: #b687f0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.65;
+}
+
+.trade-chart-macd {
+  stroke: #4a90d9;
+}
+
+.trade-chart-macd.is-secondary {
+  stroke: #f0a64a;
+}
+
+.trade-chart-macd-bar {
+  fill: #4fa58a;
+  opacity: 0.58;
+}
+
+.trade-chart-macd-bar.is-down {
+  fill: #bf5665;
 }
 
 .trade-chart-empty-state {
