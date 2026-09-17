@@ -207,8 +207,13 @@ html.docs-collapsed .shell {
   grid-template-columns: minmax(0, 1fr) 3rem;
 }
 
-.page-home .shell {
-  padding-top: 1.75rem;
+.page-home .heading-anchor {
+  display: none;
+}
+
+.page-home .prose h2 {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
 .sidebar {
@@ -778,7 +783,7 @@ code.addr {
 .hero {
   position: relative;
   isolation: isolate;
-  min-height: min(78vh, 46rem);
+  min-height: calc(100svh - 6.8rem);
   display: flex;
   align-items: flex-end;
   overflow: hidden;
@@ -1024,12 +1029,20 @@ code.addr {
     font-size: 0.85rem;
   }
 
+  .topnav a:not(.cta) {
+    display: none;
+  }
+
+  .topnav .cta {
+    white-space: nowrap;
+  }
+
   .topnav .status-chip {
     display: none;
   }
 
   .hero {
-    min-height: min(88vh, 40rem);
+    min-height: calc(100svh - 9.5rem);
     align-items: flex-end;
   }
 

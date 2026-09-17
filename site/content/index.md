@@ -11,7 +11,12 @@ Verify the issuer first. Then look at the wallets, then how to hold. The rest of
 
 ## Identity
 
-$PND is the pair **(PND, `{{issuerAddress}}`)**. Anyone can issue the code `PND`. Several accounts already have. A search box will show you *a* PND. It will not show you ours unless you already know the issuer.
+$PND is the pair **(PND, issuer address)**. Copy this address. Anyone can
+issue the code `PND`. Several accounts already have. A search box will show
+you some other PND. It will not show you ours unless you already know the
+issuer.
+
+<p><code class="addr">{{issuerAddress}}</code></p>
 
 ## Supply
 
