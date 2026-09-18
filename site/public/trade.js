@@ -308,15 +308,33 @@
     </section>
   `;
 
-  function wsRpc(endpoint, command, params) {
+  function wsRpc(endpoint, command, params = {}, signal) {
     return new Promise((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(new DOMException("The request was cancelled", "AbortError"));
+        return;
+      }
+      let settled = false;
       const socket = new WebSocket(endpoint);
+      const finish = (callback, value) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        signal?.removeEventListener("abort", abort);
+        try {
+          socket.close();
+        } catch {
+          /* The browser may already have closed the socket. */
+        }
+        callback(value);
+      };
+      const abort = () => finish(reject, new DOMException("The request was cancelled", "AbortError"));
       const timer = window.setTimeout(() => {
-        socket.close();
-        reject(new Error("XRPL endpoint timed out"));
+        finish(reject, new Error("XRPL endpoint timed out"));
       }, 9000);
+      signal?.addEventListener("abort", abort, { once: true });
       socket.addEventListener("open", () => {
-        socket.send(JSON.stringify({ id: 1, command, ...params }));
+        if (!settled) socket.send(JSON.stringify({ id: 1, command, ...params }));
       });
       socket.addEventListener("message", (event) => {
         try {
@@ -324,20 +342,88 @@
           if (body.status === "error" || body.error) {
             throw new Error(body.error_message || body.error || "XRPL request failed");
           }
-          window.clearTimeout(timer);
-          socket.close();
-          resolve(body);
+          finish(resolve, body);
         } catch (error) {
-          window.clearTimeout(timer);
-          socket.close();
-          reject(error);
+          finish(reject, error);
         }
       });
       socket.addEventListener("error", () => {
-        window.clearTimeout(timer);
-        reject(new Error("Could not reach the selected XRPL network"));
+        finish(reject, new Error("Could not reach the selected XRPL network"));
+      });
+      socket.addEventListener("close", () => {
+        if (!settled) finish(reject, new Error("The selected XRPL network closed the connection"));
       });
     });
+  }
+
+  const DECIMAL_PATTERN = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
+  const MAX_XRP_DROPS = 100000000000000000n;
+
+  function parseDecimal(value, label = "Amount") {
+    const text = String(value ?? "").trim();
+    if (!DECIMAL_PATTERN.test(text)) throw new Error(`${label} must be a positive decimal number.`);
+    const [whole, fraction = ""] = text.split(".");
+    const digits = `${whole}${fraction}`.replace(/^0+(?=\d)/, "") || "0";
+    return {
+      digits,
+      scale: fraction.length,
+      value: BigInt(digits),
+      text,
+    };
+  }
+
+  function decimalMultiply(left, right, scale = 6) {
+    const a = parseDecimal(left, "Price");
+    const b = parseDecimal(right, "Amount");
+    const numerator = a.value * b.value;
+    const denominator = 10n ** BigInt(a.scale + b.scale);
+    const factor = 10n ** BigInt(scale);
+    const rounded = (numerator * factor + denominator / 2n) / denominator;
+    return rounded;
+  }
+
+  function decimalCompare(left, right) {
+    const a = parseDecimal(left, "Amount");
+    const b = parseDecimal(right, "Amount");
+    const scale = Math.max(a.scale, b.scale);
+    const aValue = a.value * 10n ** BigInt(scale - a.scale);
+    const bValue = b.value * 10n ** BigInt(scale - b.scale);
+    return aValue === bValue ? 0 : aValue > bValue ? 1 : -1;
+  }
+
+  function decimalSubtract(left, right) {
+    const a = parseDecimal(left, "Amount");
+    const b = parseDecimal(right, "Amount");
+    const scale = Math.max(a.scale, b.scale);
+    const aValue = a.value * 10n ** BigInt(scale - a.scale);
+    const bValue = b.value * 10n ** BigInt(scale - b.scale);
+    if (aValue < bValue) return "0";
+    const digits = (aValue - bValue).toString().padStart(scale + 1, "0");
+    if (!scale) return digits;
+    return `${digits.slice(0, -scale)}.${digits.slice(-scale)}`.replace(/\.?0+$/, "");
+  }
+
+  function decimalToDrops(value) {
+    const parsed = parseDecimal(value, "XRP total");
+    if (parsed.scale > 6) {
+      const rounded = decimalMultiply(value, "1", 6);
+      if (rounded <= 0n || rounded > MAX_XRP_DROPS) throw new Error("The XRP total is outside the safe transaction range.");
+      return rounded.toString();
+    }
+    const drops = parsed.value * 10n ** BigInt(6 - parsed.scale);
+    if (drops <= 0n || drops > MAX_XRP_DROPS) throw new Error("The XRP total is outside the safe transaction range.");
+    return drops.toString();
+  }
+
+  function formatDrops(drops) {
+    const value = BigInt(String(drops));
+    const whole = value / 1000000n;
+    const fraction = (value % 1000000n).toString().padStart(6, "0").replace(/0+$/, "");
+    return fraction ? `${whole}.${fraction}` : whole.toString();
+  }
+
+  function isAbortError(error) {
+    return error?.name === "AbortError";
   }
 
   function init() {
@@ -348,8 +434,27 @@
     const issuer = root.dataset.issuer && !root.dataset.issuer.includes("{{")
       ? root.dataset.issuer
       : "";
-    const marketVerified = root.dataset.marketVerified === "true";
-    const state = { network: "production", wallet: null };
+    const state = {
+      network: "production",
+      wallet: null,
+      walletNetwork: null,
+      requestGeneration: 0,
+      verification: {
+        issuer: false,
+        issued: false,
+        orderBook: false,
+        amm: false,
+        market: false,
+        ledger: null,
+        server: null,
+        account: null,
+        pndLines: [],
+        offers: [],
+        ammInfo: null,
+      },
+    };
+    let refreshController = null;
+    let walletGeneration = 0;
     let chartController = null;
     let walletController = null;
     const $ = (selector) => root.querySelector(selector);
@@ -365,6 +470,98 @@
       const dot = $("[data-network-dot]");
       if (dot) dot.dataset.state = kind;
       setText("[data-ledger-status]", message);
+    }
+
+    function isCurrent(generation) {
+      return generation === state.requestGeneration;
+    }
+
+    function setVerificationMessage(message, kind = "neutral") {
+      setText("[data-issuer-status]", message);
+      const status = $("[data-issuer-status]");
+      if (status) status.dataset.state = kind;
+    }
+
+    function setMarketState(verification) {
+      const verified = Boolean(verification.market);
+      root.dataset.marketVerified = String(verified);
+      root.dataset.issuerVerified = String(Boolean(verification.issuer));
+      root.dataset.marketState = verified ? "verified" : "gated";
+      setText("[data-issuer-short]", verification.issuer ? `${issuer.slice(0, 6)}…${issuer.slice(-4)}` : "Not verified");
+      setText("[data-issuer-status]", verified ? "Market verified" : verification.issued ? "Issuer verified · market pending" : "PND not issued");
+      setText("[data-issuer-detail]", verified
+        ? "Validated XRPL market data passed issuer, order-book, and liquidity checks."
+        : "Signing and analytics remain disabled until a validated $PND market is found.");
+      setText("[data-mode-note]", verified ? "Verified market live" : "Verification gated");
+      setText("[data-chart-source-label]", verified ? "XRPL validated ledger" : "Verification gated");
+      setText("[data-chart-symbol-source]", verified ? "XRPL validated ledger" : "Verification gated");
+      setText("[data-issuer-value]", issuer || "Issuer address not configured");
+      setText("[data-price]", verified ? getMarketPrice(verification) : "—");
+      setText("[data-chart-stat-status]", verified ? "Verified XRPL market" : "Not verified");
+      const status = $("[data-chart-stat-status]");
+      if (status) {
+        status.classList.toggle("is-gated", !verified);
+        status.classList.toggle("is-live", verified);
+      }
+      updateMarketPanels();
+    }
+
+    function getMarketPrice(verification = state.verification) {
+      const offer = verification.offers?.[0];
+      if (!offer) return "—";
+      const gets = typeof offer.TakerGets === "string" ? BigInt(offer.TakerGets) : null;
+      const pays = offer.TakerPays && typeof offer.TakerPays.value === "string"
+        ? Number(offer.TakerPays.value)
+        : null;
+      if (gets == null || !Number.isFinite(pays) || pays <= 0) return "—";
+      return `${(Number(gets) / 1000000 / pays).toFixed(8)} XRP`;
+    }
+
+    function updateMarketPanels() {
+      const { ammInfo, offers, market, pndLines = [] } = state.verification;
+      const pool = root.querySelector(".trade-liquidity-preview");
+      if (pool && ammInfo) {
+        const reserves = ammInfo.amm ?? ammInfo;
+        pool.innerHTML = `<div><strong>$PND / XRP AMM</strong><span>Validated reserves</span><b>${formatAssetAmount(reserves.amount)} XRP · ${formatAssetAmount(reserves.amount2)} PND</b></div><div><strong>Market</strong><span>Validated ledger</span><b>${market ? "Verified" : "Pending"}</b></div>`;
+      }
+      const emptyRows = root.querySelectorAll(".trade-empty-row");
+      emptyRows.forEach((row) => {
+        if (market && offers.length) {
+          row.textContent = `${offers.length} validated XRPL offer${offers.length === 1 ? "" : "s"} found for the selected market.`;
+        }
+      });
+      setText("[data-issuer-detail]", market
+        ? "Validated order-book or AMM liquidity is available for the selected network."
+        : state.verification.issued
+          ? "The issuer is reachable, but no validated PND/XRP market is available."
+          : "The issuer account is reachable, but PND has not been issued on this network.");
+      const stats = root.querySelectorAll(".trade-data-stat");
+      const reserves = ammInfo?.amm ?? ammInfo;
+      const price = getMarketPrice(state.verification);
+      const values = [
+        [market ? "—" : "—", market ? "Validated supply and price required" : "Awaiting verified price"],
+        [price, market ? "Validated XRPL market" : "Pool not verified"],
+        [offers.length ? `${offers.length}` : "—", offers.length ? "Validated book offers" : "No validated market history"],
+        [reserves ? `${formatAssetAmount(reserves.amount)} XRP` : "—", reserves ? "Validated AMM reserves" : "AMM not configured"],
+        [pndLines.filter((line) => Number(line.balance || 0) !== 0).length || "—", pndLines.length ? "Issuer trust lines" : "Ledger read gated"],
+        [offers.length ? `${offers.length}` : "—", offers.length ? "Validated offers read" : "Validated history required"],
+        [pndLines.length || "—", pndLines.length ? "Validated PND trust lines" : "Ledger read gated"],
+        [state.verification.issued ? "Issued" : "Not issued", state.verification.issued ? "Issuer lines found" : "Issued supply not live"],
+      ];
+      stats.forEach((stat, index) => {
+        const [value, note] = values[index] || ["—", "Verification required"];
+        const strong = stat.querySelector("strong");
+        const em = stat.querySelector("em");
+        if (strong) strong.textContent = value;
+        if (em) em.textContent = note;
+      });
+    }
+
+    function formatAssetAmount(value) {
+      if (value == null) return "—";
+      if (typeof value === "string") return formatDrops(value);
+      if (typeof value.value === "string") return value.value;
+      return "—";
     }
 
     function setNetworkButtons() {
@@ -411,6 +608,37 @@
       });
     }
 
+    function setupDataControls() {
+      const assetButtons = $$("[data-control-group='data-asset'] button");
+      const periodButtons = $$("[data-control-group='data-period'] button");
+      const dataView = $("[data-mode-view='data']");
+      const setDataSelection = (asset, period) => {
+        root.dataset.dataAsset = asset;
+        root.dataset.dataPeriod = period;
+        const suffix = state.verification.market
+          ? `Validated ${asset} ledger snapshot · ${period}`
+          : `${asset} data remains gated · ${period}`;
+        const integrity = dataView?.querySelector(".trade-data-integrity strong");
+        const detail = dataView?.querySelector(".trade-data-integrity span:not(.trade-check-icon)");
+        if (integrity) integrity.textContent = state.verification.market
+          ? "Data is sourced from the validated XRPL ledger."
+          : "Data is gated until the asset and market are verified.";
+        if (detail) detail.textContent = suffix;
+      };
+      assetButtons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+          const asset = index === 0 ? "PND" : "rPND";
+          setDataSelection(asset, root.dataset.dataPeriod || "1 minute");
+        });
+      });
+      periodButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setDataSelection(root.dataset.dataAsset || "PND", button.textContent.trim());
+        });
+      });
+      setDataSelection("PND", "1 minute");
+    }
+
     function setOrderStatus(message, kind = "neutral") {
       const status = $("[data-dex-order-status]");
       if (!status) return;
@@ -454,58 +682,101 @@
         return null;
       }
 
-      const adapter = new api.WalletConnectAdapter({
-        projectId: WALLETCONNECT_PROJECT_ID,
-        metadata: {
-          name: "Pond Protocol",
-          description: "Non-custodial XRPL market access for Pond Protocol.",
-          url: window.location.origin,
-          icons: [],
-        },
-        themeMode: "dark",
-      });
-      const manager = new api.WalletManager({
-        adapters: [adapter],
-        network: state.network === "production" ? "mainnet" : "testnet",
-        autoConnect: false,
-      });
-      connector.setWalletManager(manager);
+      let manager = null;
+      let managerNetwork = null;
+      let generation = 0;
+
+      const createManager = () => {
+        const adapter = new api.WalletConnectAdapter({
+          projectId: WALLETCONNECT_PROJECT_ID,
+          metadata: {
+            name: "Pond Protocol",
+            description: "Non-custodial XRPL market access for Pond Protocol.",
+            url: window.location.origin,
+            icons: [],
+          },
+          themeMode: "dark",
+        });
+        const network = state.network === "production" ? "mainnet" : "testnet";
+        const nextManager = new api.WalletManager({
+          adapters: [adapter],
+          network,
+          autoConnect: false,
+        });
+        manager = nextManager;
+        managerNetwork = network;
+        const currentGeneration = ++generation;
+        nextManager.on("connect", (account) => {
+          if (currentGeneration !== generation) return;
+          const connectedNetwork = account?.network || account?.chain || network;
+          if (connectedNetwork !== network) {
+            setWalletUi(null);
+            setOrderStatus(`Wallet is connected to ${connectedNetwork}, not ${network}. Reconnect on the selected network.`, "error");
+            return;
+          }
+          state.walletNetwork = network;
+          setWalletUi(account);
+        });
+        nextManager.on("accountChanged", (account) => {
+          if (currentGeneration === generation) setWalletUi(account);
+        });
+        nextManager.on("disconnect", () => {
+          if (currentGeneration !== generation) return;
+          setWalletUi(null);
+          state.walletNetwork = null;
+          window.dispatchEvent(new CustomEvent("pond:wallet-disconnected"));
+        });
+        nextManager.on("error", (error) => {
+          if (currentGeneration === generation) setOrderStatus(error?.message || "The wallet reported an error.", "error");
+        });
+        connector.setWalletManager(nextManager);
+        return nextManager;
+      };
+
+      const ensureNetwork = async () => {
+        const expected = state.network === "production" ? "mainnet" : "testnet";
+        if (manager && managerNetwork === expected) return manager;
+        const previous = manager;
+        manager = null;
+        managerNetwork = null;
+        generation += 1;
+        setWalletUi(null);
+        if (previous?.disconnect) {
+          try {
+            await previous.disconnect();
+          } catch {
+            /* A disconnected adapter is safe to replace. */
+          }
+        }
+        return createManager();
+      };
 
       const connect = async () => {
-        connectButtons.forEach((button) => {
-          button.disabled = true;
-        });
+        connectButtons.forEach((button) => { button.disabled = true; });
         setText("[data-wallet-status]", "Connecting…");
         setOrderStatus("Approve the XRPL account connection in your wallet.", "loading");
         try {
+          await ensureNetwork();
           await connector.open();
         } catch (error) {
           setWalletUi(null);
           setOrderStatus(error.message || "Wallet connection was cancelled.", "error");
         } finally {
-          connectButtons.forEach((button) => {
-            button.disabled = false;
-          });
+          connectButtons.forEach((button) => { button.disabled = false; });
         }
       };
 
       connectButtons.forEach((button) => button.addEventListener("click", connect));
-      manager.on("connect", (account) => setWalletUi(account));
-      manager.on("accountChanged", (account) => setWalletUi(account));
-      manager.on("disconnect", () => {
-        setWalletUi(null);
-        window.dispatchEvent(new CustomEvent("pond:wallet-disconnected"));
-      });
-      manager.on("error", (error) => {
-        setOrderStatus(error?.message || "The wallet reported an error.", "error");
-      });
-
+      createManager();
       return {
-        manager,
+        get manager() { return manager; },
         connect,
+        switchNetwork: ensureNetwork,
         disconnect: async () => {
-          await manager.disconnect();
+          generation += 1;
+          if (manager?.disconnect) await manager.disconnect();
           setWalletUi(null);
+          state.walletNetwork = null;
         },
       };
     }
@@ -520,16 +791,18 @@
 
       let orderKind = "limit";
       const updateTotal = () => {
-        const priceValue = Number(price.value);
-        const amountValue = Number(amount.value);
-        const totalValue = priceValue * amountValue;
-        setText("[data-dex-total]", Number.isFinite(totalValue) && totalValue > 0 ? `${totalValue.toFixed(6)} XRP` : "—");
         if (orderKind === "market") {
           price.disabled = true;
           price.value = "";
           setText("[data-dex-total]", "Best available");
         } else {
           price.disabled = false;
+          try {
+            const drops = decimalMultiply(price.value, amount.value, 6);
+            setText("[data-dex-total]", drops > 0n ? `${formatDrops(drops)} XRP` : "—");
+          } catch {
+            setText("[data-dex-total]", "—");
+          }
         }
       };
       price.addEventListener("input", updateTotal);
@@ -558,57 +831,105 @@
           setOrderStatus("Market orders stay disabled until a verified XRPL order book is available.", "gated");
           return;
         }
-        const priceValue = Number(price.value);
-        const amountValue = Number(amount.value);
-        if (!Number.isFinite(priceValue) || priceValue <= 0 || !Number.isFinite(amountValue) || amountValue <= 0) {
-          setOrderStatus("Enter a price and amount greater than zero.", "error");
-          return;
-        }
-        if (!issuer || state.network !== "production") {
-          setOrderStatus("Real PND orders require the verified production issuer and market.", "gated");
-          return;
-        }
-        if (!marketVerified) {
-          setOrderStatus("PND/XRP is still pre-launch. No order was signed or submitted.", "gated");
-          return;
-        }
-
-        const totalDrops = Math.round(priceValue * amountValue * 1000000);
-        if (!Number.isSafeInteger(totalDrops) || totalDrops <= 0) {
-          setOrderStatus("The XRP total is outside the safe transaction range.", "error");
-          return;
-        }
-        setOrderStatus("Checking your PND trust line before opening the wallet review.", "loading");
+        let amountValue;
+        let totalDrops;
         try {
-          const lineResponse = await wsRpc(networks[state.network].endpoint, "account_lines", {
-            account: state.wallet.address,
-            peer: issuer,
-            ledger_index: "validated",
-          });
-          const trustLine = lineResponse.result?.lines?.find((line) => line.account === issuer);
-          if (!trustLine || Number(trustLine.limit) <= 0) {
-            setOrderStatus("Add a PND trust line before placing a buy order.", "error");
-            return;
+          const parsedAmount = parseDecimal(amount.value, "PND amount");
+          if (parsedAmount.value <= 0n) throw new Error("PND amount must be greater than zero.");
+          totalDrops = decimalToDrops(formatDrops(decimalMultiply(price.value, amount.value, 6)));
+          amountValue = parsedAmount.text;
+        } catch (error) {
+          setOrderStatus(error.message || "Enter valid price and amount values.", "error");
+          return;
+        }
+        if (!issuer || state.network !== "production" || !state.verification.market) {
+          setOrderStatus("PND/XRP is still pre-launch or unverified. No order was signed or submitted.", "gated");
+          return;
+        }
+        if (!state.walletNetwork || state.walletNetwork !== "mainnet") {
+          setOrderStatus("Reconnect the wallet to XRPL Production before reviewing an order.", "gated");
+          return;
+        }
+        setOrderStatus("Checking your account, reserve, fee, and PND trust line before wallet review.", "loading");
+        try {
+          const controller = new AbortController();
+          const preflight = await readOrderPreflight(totalDrops, amountValue, controller.signal);
+          if (decimalCompare(amountValue, preflight.trustLineCapacity) > 0) {
+            throw new Error("Your PND trust line does not have enough remaining capacity for this order.");
+          }
+          if (BigInt(preflight.balanceDrops) <= BigInt(totalDrops) + BigInt(preflight.feeDrops)) {
+            throw new Error("Your XRP balance does not cover the order total and transaction fee.");
           }
           const transaction = {
             TransactionType: "OfferCreate",
             Account: state.wallet.address,
-            TakerGets: String(totalDrops),
+            TakerGets: totalDrops,
             TakerPays: {
               currency: "PND",
               issuer,
-              value: amount.value.trim(),
+              value: amountValue,
             },
             Flags: 0,
+            Sequence: preflight.sequence,
+            Fee: preflight.feeDrops,
+            LastLedgerSequence: preflight.lastLedgerSequence,
+            Expiration: Math.floor(Date.now() / 1000) + 900,
           };
           setOrderStatus("Review the OfferCreate transaction in your wallet.", "loading");
           const result = await walletController.manager.signAndSubmit(transaction);
           setOrderStatus(`Buy submitted to XRPL · ${result.hash}`, "success");
         } catch (error) {
+          if (isAbortError(error)) return;
           setOrderStatus(error.message || "The wallet rejected or could not submit the order.", "error");
         }
       });
       updateTotal();
+    }
+
+    async function readOrderPreflight(totalDrops, pndAmount, signal) {
+      const endpoint = networks[state.network].endpoint;
+      const [server, account, lines] = await Promise.all([
+        wsRpc(endpoint, "server_info", {}, signal),
+        wsRpc(endpoint, "account_info", {
+          account: state.wallet.address,
+          ledger_index: "validated",
+        }, signal),
+        wsRpc(endpoint, "account_lines", {
+            account: state.wallet.address,
+            peer: issuer,
+            ledger_index: "validated",
+        }, signal),
+      ]);
+      const info = server.result?.info || server.info;
+      const accountInfo = account.result?.account_data;
+      const trustLine = lines.result?.lines?.find((line) => line.account === issuer || line.peer === issuer);
+      if (!accountInfo) throw new Error("Your wallet account is not available on the validated ledger.");
+      if (!trustLine || Number(trustLine.limit || trustLine.limit_peer || 0) <= 0) {
+        throw new Error("Add a PND trust line before placing a buy order.");
+      }
+      const feeDrops = String(info?.validated_ledger?.base_fee_xrp
+        ? decimalToDrops(String(info.validated_ledger.base_fee_xrp))
+        : info?.validated_ledger?.base_fee_drops || info?.fee_base || "12");
+      const reserveBase = Number(info?.validated_ledger?.reserve_base_xrp ?? 1);
+      const reserveIncrement = Number(info?.validated_ledger?.reserve_inc_xrp ?? 0.2);
+      const ownerCount = Number(accountInfo.OwnerCount || 0);
+      const reserveDrops = decimalToDrops(String(reserveBase + reserveIncrement * (ownerCount + 1)));
+      const balanceDrops = String(accountInfo.Balance || "0");
+      const limit = String(trustLine.limit || trustLine.limit_peer || "0");
+      const balance = String(trustLine.balance || "0");
+      const trustLineCapacity = decimalSubtract(limit, balance);
+      if (decimalCompare(pndAmount, "0") <= 0) throw new Error("PND amount must be greater than zero.");
+      if (BigInt(balanceDrops) <= BigInt(reserveDrops) + BigInt(totalDrops) + BigInt(feeDrops)) {
+        throw new Error("This order would leave the account below its XRPL reserve.");
+      }
+      return {
+        sequence: accountInfo.Sequence,
+        feeDrops,
+        balanceDrops,
+        reserveDrops,
+        trustLineCapacity,
+        lastLedgerSequence: Number(info?.validated_ledger?.seq || 0) + 4,
+      };
     }
 
     function setupChartControls() {
@@ -621,6 +942,8 @@
       const rangePoints = { "1h": 48, "4h": 96, "1d": 168, "1w": 336, all: 365 };
       const rangeLabels = { "1h": "1H", "4h": "4H", "1d": "1D", "1w": "1W", all: "All" };
        const chartState = { pair: "pnd-xrp", range: "1h", indicator: "bollinger", data: null };
+      let chartLoadController = null;
+      let chartLoadGeneration = 0;
       const pairButtons = $$("[data-chart-pair]");
       const rangeButtons = $$("[data-chart-range]");
       const indicatorButtons = $$("[data-chart-indicator]");
@@ -891,6 +1214,10 @@
       }
 
       async function loadXrpData() {
+        chartLoadController?.abort();
+        chartLoadController = new AbortController();
+        const loadGeneration = ++chartLoadGeneration;
+        const { signal } = chartLoadController;
         const days = rangeDays[chartState.range] || 1;
         const limit = rangePoints[chartState.range] || 24;
         const label = pairLabels[chartState.pair];
@@ -903,8 +1230,8 @@
         setLiveStatus(false);
         try {
           const [historyResponse, summaryResponse] = await Promise.all([
-            fetch(`https://api.coingecko.com/api/v3/coins/ripple/market_chart?vs_currency=usd&days=${days}`),
-            fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true&include_24hr_market_cap=true"),
+            fetch(`https://api.coingecko.com/api/v3/coins/ripple/market_chart?vs_currency=usd&days=${days}`, { signal }),
+            fetch("https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd&include_24hr_vol=true&include_24hr_change=true&include_24hr_market_cap=true", { signal }),
           ]);
           if (!historyResponse.ok || !summaryResponse.ok) throw new Error("The public XRP market feed is unavailable.");
           const history = await historyResponse.json();
@@ -915,6 +1242,7 @@
             .filter((point) => Number.isFinite(point.value));
           const points = allPoints.slice(-limit);
           if (points.length < 2) throw new Error("The public XRP market feed returned too little history.");
+          if (loadGeneration !== chartLoadGeneration || signal.aborted) return;
           const livePrice = Number(summary.ripple?.usd) || points[points.length - 1].value;
           const change = Number(summary.ripple?.usd_24h_change);
           const volume = Number(summary.ripple?.usd_24h_vol);
@@ -940,6 +1268,7 @@
           setLiveStatus(true);
           renderChart();
         } catch (error) {
+          if (isAbortError(error) || loadGeneration !== chartLoadGeneration) return;
           chartState.data = null;
           resetChartStats();
           setChartEmpty("XRP / USD chart unavailable", error.message || "The public market feed did not respond.");
@@ -1020,7 +1349,71 @@
       open();
     }
 
+    async function readMarketState(signal) {
+      const endpoint = networks[state.network].endpoint;
+      const [serverResponse, accountResponse, issuerLinesResponse] = await Promise.all([
+        wsRpc(endpoint, "server_info", {}, signal),
+        wsRpc(endpoint, "account_info", {
+          account: issuer,
+          ledger_index: "validated",
+        }, signal),
+        wsRpc(endpoint, "account_lines", {
+          account: issuer,
+          ledger_index: "validated",
+          limit: 400,
+        }, signal),
+      ]);
+      const server = serverResponse.result?.info || serverResponse.info || {};
+      const account = accountResponse.result?.account_data;
+      const issuerLines = issuerLinesResponse.result?.lines || [];
+      const pndLines = issuerLines.filter((line) => line.currency === "PND");
+      const issued = Boolean(account && pndLines.some((line) => Number(line.balance || 0) !== 0 || Number(line.limit || 0) !== 0));
+      const marketParams = {
+        ledger_index: "validated",
+        taker_gets: { currency: "XRP" },
+        taker_pays: { currency: "PND", issuer },
+        limit: 50,
+      };
+      const reverseMarketParams = {
+        ledger_index: "validated",
+        taker_gets: { currency: "PND", issuer },
+        taker_pays: { currency: "XRP" },
+        limit: 50,
+      };
+      const [asks, bids, ammInfo] = await Promise.all([
+        wsRpc(endpoint, "book_offers", marketParams, signal).catch(() => null),
+        wsRpc(endpoint, "book_offers", reverseMarketParams, signal).catch(() => null),
+        wsRpc(endpoint, "amm_info", {
+          asset: { currency: "XRP" },
+          asset2: { currency: "PND", issuer },
+          ledger_index: "validated",
+        }, signal).catch(() => null),
+      ]);
+      const offers = [
+        ...(asks?.result?.offers || []),
+        ...(bids?.result?.offers || []),
+      ];
+      const amm = ammInfo?.result?.amm || null;
+      return {
+        issuer: Boolean(account),
+        issued,
+        orderBook: offers.length > 0,
+        amm: Boolean(amm),
+        market: state.network === "production" && issued && (offers.length > 0 || Boolean(amm)),
+        ledger: server.validated_ledger || null,
+        server,
+        account,
+        offers,
+        pndLines,
+        ammInfo: ammInfo?.result || null,
+      };
+    }
+
     async function refresh() {
+      const generation = ++state.requestGeneration;
+      refreshController?.abort();
+      refreshController = new AbortController();
+      const { signal } = refreshController;
       setStatus("loading", "Reading ledger…");
       setText("[data-issuer-status]", "Checking issuer account");
       setText("[data-issuer-detail]", "Network state is read directly from XRPL.");
@@ -1036,29 +1429,31 @@
         setText("[data-issuer-status]", "Issuer address unavailable");
         setText("[data-issuer-detail]", "The published issuer address is required before ledger checks can run.");
         if (icon) icon.dataset.state = "error";
+        state.verification = { ...state.verification, issuer: false, issued: false, market: false };
+        setMarketState(state.verification);
         return;
       }
       try {
-        const server = await wsRpc(networks[state.network].endpoint, "server_info", {});
-        const account = await wsRpc(networks[state.network].endpoint, "account_info", {
-          account: issuer,
-          ledger_index: "validated",
-        });
-        const ledgerIndex = server.info?.validated_ledger?.seq || "available";
+        const verification = await readMarketState(signal);
+        if (!isCurrent(generation)) return;
+        state.verification = verification;
+        const ledgerIndex = verification.ledger?.seq || "available";
         setStatus("online", `Validated ledger ${ledgerIndex}`);
-        setText("[data-issuer-status]", "Issuer account reachable");
-        setText(
-          "[data-issuer-detail]",
-          state.network === "production"
-            ? "PND issuance remains gated; no verified market is enabled."
-            : "Testnet account state is readable; no test market is configured.",
-        );
-        if (icon) icon.dataset.state = account.result ? "ready" : "error";
+        setMarketState(verification);
+        if (icon) icon.dataset.state = verification.issuer ? "ready" : "error";
+        setText("[data-issuer-status]", verification.market
+          ? "Market verified"
+          : verification.issued
+            ? "Issuer verified · market pending"
+            : "PND not issued");
       } catch (error) {
+        if (isAbortError(error) || !isCurrent(generation)) return;
         setStatus("offline", "Ledger unavailable");
         setText("[data-issuer-status]", "Issuer check unavailable");
         setText("[data-issuer-detail]", error.message || "The selected XRPL endpoint did not respond.");
         if (icon) icon.dataset.state = "error";
+        state.verification = { ...state.verification, issuer: false, issued: false, orderBook: false, amm: false, market: false };
+        setMarketState(state.verification);
       }
     }
 
@@ -1066,12 +1461,14 @@
       button.addEventListener("click", () => {
         state.network = button.dataset.network;
         setNetworkButtons();
+        walletController?.switchNetwork();
         refresh();
       });
     });
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
+    setupDataControls();
     walletController = setupWallet();
     setupDexOrder();
     chartController = setupChartControls();
