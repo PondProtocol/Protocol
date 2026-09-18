@@ -232,6 +232,7 @@
     if (!(target instanceof Node)) return;
     const menu = target instanceof Element ? target.closest("[data-topnav-menu]") : null;
     if (menu) {
+      closeTopnavMenus(menu);
       setIndexOpen(false);
       return;
     }
