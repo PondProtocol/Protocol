@@ -200,6 +200,24 @@ async function createTrustSet(res, body = {}) {
   json(res, 200, { ...publicCreate(data), kind: "TrustSet", issuer, currency: "PND" });
 }
 
+export async function signedXamanAccount(uuid) {
+  if (!xamanConfigured()) {
+    return { error: "xaman_unconfigured", message: healthBody().xaman.reason };
+  }
+  if (!UUID_RE.test(String(uuid || ""))) {
+    return { error: "invalid_uuid", message: "That is not a Xaman payload id." };
+  }
+  const { ok, data } = await xumm(`/payload/${uuid}`);
+  if (!ok) {
+    return { error: "xaman_lookup_failed", message: "Xaman did not return that payload." };
+  }
+  const payload = publicPayload(data);
+  if (!payload.signed || !payload.account) {
+    return { error: "not_signed", message: "That Xaman request is not a completed SignIn." };
+  }
+  return { account: payload.account };
+}
+
 async function getPayload(res, uuid) {
   if (!xamanConfigured()) return unavailable(res);
   if (!UUID_RE.test(uuid)) {

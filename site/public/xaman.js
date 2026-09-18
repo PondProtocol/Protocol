@@ -230,6 +230,11 @@
         if (status.signed && status.account) {
           stopPoll();
           saveSession({ account: status.account, uuid: payload.uuid });
+          window.PondSession?.login?.({
+            method: "xaman",
+            address: status.account,
+            uuid: payload.uuid,
+          });
           paint(root, health);
           return;
         }
@@ -271,6 +276,7 @@
     root.querySelector("[data-xaman-disconnect]")?.addEventListener("click", () => {
       stopPoll();
       saveSession(null);
+      window.PondSession?.logoutIf?.({ method: "xaman" });
       paint(root, health);
     });
   }
@@ -287,6 +293,7 @@
       const status = await getPayload(uuid);
       if (status.signed && status.account) {
         saveSession({ account: status.account, uuid });
+        window.PondSession?.login?.({ method: "xaman", address: status.account, uuid });
         paint(root, health);
         return;
       }

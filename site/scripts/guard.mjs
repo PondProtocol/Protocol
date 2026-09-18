@@ -840,6 +840,47 @@ check(
   /never ask for seed phrases/i.test(asText(indexHtml)) &&
     !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(indexHtml),
 );
+check(
+  "privacy copy is honest about session and Start Here cookies",
+  /we use cookies for your login session and Start Here progress/i.test(asText(indexHtml)) &&
+    /remember the XRPL address you signed in with/i.test(asText(indexHtml)) &&
+    /Session and progress cookies on/i.test(indexHtml) &&
+    !/Tracking cookies not used/i.test(indexHtml) &&
+    !/There is no public account system/i.test(asText(indexHtml)) &&
+    !/No Tracking Or Data Collection/i.test(indexHtml),
+);
+check(
+  "legal page states session and progress cookies and never asks for seeds",
+  /login session/i.test(asText(legalHtml)) &&
+    /Start Here progress/i.test(asText(legalHtml)) &&
+    /XRPL address you signed in with/i.test(asText(legalHtml)) &&
+    /do not sell personal/i.test(asText(legalHtml)) &&
+    /never ask for a seed/i.test(asText(legalHtml)) &&
+    !/These public docs do not set advertising or tracking cookies/i.test(asText(legalHtml)),
+);
+
+const sessionJs = join(DIST_DIR, "session.js");
+const sessionJsText = existsSync(sessionJs) ? readFileSync(sessionJs, "utf8") : "";
+check("session.js is copied into the build", existsSync(sessionJs));
+check(
+  "top bar has a Sign in chip that reuses WalletConnect and Xaman",
+  indexHtml.includes("data-session-chip") &&
+    indexHtml.includes("/session.js") &&
+    indexHtml.includes("data-session-wc") &&
+    indexHtml.includes("data-xaman-compact") &&
+    indexHtml.includes("XUMM_API_KEY") &&
+    indexHtml.includes("XUMM_API_SECRET") &&
+    sessionJsText.includes("/api/session") &&
+    sessionJsText.includes("walletconnect") &&
+    sessionJsText.includes("PondTrade?.connectWallet"),
+);
+check(
+  "serve.mjs can set a signed session cookie",
+  existsSync(join(SITE_ROOT, "scripts", "session.mjs")) &&
+    readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("pond_session") &&
+    readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("HttpOnly") &&
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleSession"),
+);
 
 const startJs = join(DIST_DIR, "start.js");
 const startJsText = existsSync(startJs) ? readFileSync(startJs, "utf8") : "";
@@ -879,11 +920,13 @@ const startStepsGuard =
   startJsText.includes("set-trust-lines") &&
   startJsText.includes("ready-dex");
 check(
-  "/start/ tracks the seven steps in localStorage",
+  "/start/ tracks the seven steps in a cookie with localStorage backup",
   startHtml.includes("data-start-progress") &&
     startHtml.includes("/start.js") &&
     startJsText.includes("pond.start.progress") &&
+    startJsText.includes("pond_progress") &&
     startJsText.includes("localStorage") &&
+    startJsText.includes("accounts") &&
     startStepsGuard,
 );
 check(
@@ -896,12 +939,13 @@ check(
     !/buy now/i.test(asText(startDexHtml)) &&
     !/set it now/i.test(asText(startWalletHtml)),
 );
+const startWalletArticle = startWalletHtml.match(/<article class="prose">[\s\S]*?<\/article>/)?.[0] ?? "";
 check(
   "Connect Wallet onboarding links to official WalletConnect or Xaman only",
   /WalletConnect or Xaman/i.test(asText(startWalletHtml)) &&
     startWalletHtml.includes("/trade/") &&
     /never asks for a seed/i.test(asText(startWalletHtml)) &&
-    !startWalletHtml.includes("data-xaman-app"),
+    !startWalletArticle.includes("data-xaman-app"),
 );
 
 /* ------------------------------------------------------------------ report */

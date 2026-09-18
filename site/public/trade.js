@@ -43,7 +43,7 @@
         <p class="trade-disclaimer-kicker">Before you continue</p>
         <h2 id="trade-disclaimer-title">Pond is verification-first.</h2>
         <p class="trade-disclaimer-copy">This terminal never needs your seed, private key, or recovery phrase. $PND has not been issued and no verified market is live yet.</p>
-        <p class="trade-disclaimer-copy">This terminal uses official WalletConnect or Xaman connect only. Pond never stores keys, wallet info, seeds, or passwords, and never asks for a seed.</p>
+        <p class="trade-disclaimer-copy">This terminal uses official WalletConnect or Xaman connect only. Pond never stores keys, seeds, or passwords, and never asks for a seed. After you connect, a session cookie remembers the XRPL address you signed in with.</p>
         <a class="trade-disclaimer-legal" href="/legal/">Read the disclaimer</a>
         <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
         <div class="trade-disclaimer-actions">
@@ -709,6 +709,9 @@
     function setWalletUi(account) {
       state.wallet = account || null;
       const connected = Boolean(account?.address);
+      if (connected) {
+        window.PondSession?.login?.({ method: "walletconnect", address: account.address });
+      }
       syncConnectLabel();
       $$("[data-wallet-connect][data-dex-submit]").forEach((button) => {
         button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
@@ -777,6 +780,7 @@
           if (currentGeneration !== generation) return;
           setWalletUi(null);
           state.walletNetwork = null;
+          window.PondSession?.logoutIf?.({ method: "walletconnect" });
           window.dispatchEvent(new CustomEvent("pond:wallet-disconnected"));
         });
         nextManager.on("error", (error) => {
@@ -831,6 +835,7 @@
           if (manager?.disconnect) await manager.disconnect();
           setWalletUi(null);
           state.walletNetwork = null;
+          window.PondSession?.logoutIf?.({ method: "walletconnect" });
         },
       };
     }
@@ -1528,6 +1533,11 @@
       if (document.body.contains(root)) syncConnectLabel();
     });
     walletController = setupWallet();
+    window.PondTrade = {
+      ...(window.PondTrade || {}),
+      init,
+      connectWallet: () => walletController?.connect?.(),
+    };
     setupDexOrder();
     chartController = setupChartControls();
     setupDisclaimer();
@@ -1540,6 +1550,6 @@
     window.PondXaman?.init?.();
   }
 
-  window.PondTrade = { init };
+  window.PondTrade = { ...(window.PondTrade || {}), init, connectWallet: () => {} };
   init();
 })();

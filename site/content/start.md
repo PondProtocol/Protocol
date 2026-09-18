@@ -22,8 +22,9 @@ recovery phrase.
 
 ## What this path is
 
-The checklist above stays in this browser (`localStorage`). A step marks done
-when you open it. Complete all seven before you treat any market as Pond.
+The checklist above is stored in a cookie (with a `localStorage` backup). A
+step marks done when you open it. After you Sign in, progress is keyed to
+that XRPL address. Complete all seven before you treat any market as Pond.
 
 There is **no buy button** on this site today. The last step is
 [Ready to Use DEX](/start/dex/), which links to the [Trade](/trade/) terminal
