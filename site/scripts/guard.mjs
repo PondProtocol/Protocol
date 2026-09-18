@@ -463,13 +463,14 @@ check(
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
     headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/protocol/"'),
 );
+const topnavHtml = headerHtml.match(/<nav class="topnav"[\s\S]*?<\/nav>/)?.[0] ?? "";
 check(
   "top bar does not feature Verify, Hold, Wallets, or Xaman",
-  !headerHtml.includes('href="/verify/"') &&
-    !headerHtml.includes('href="/hold/"') &&
-    !headerHtml.includes('href="/wallets/"') &&
-    !headerHtml.includes('href="/connect/"') &&
-    !/>Xaman</i.test(headerHtml),
+  !topnavHtml.includes('href="/verify/"') &&
+    !topnavHtml.includes('href="/hold/"') &&
+    !topnavHtml.includes('href="/wallets/"') &&
+    !topnavHtml.includes('href="/connect/"') &&
+    !/>Xaman</i.test(topnavHtml),
 );
 check(
   "Protocol, Trade, Pond, and Meet Team sit immediately before search on the right",
@@ -479,6 +480,31 @@ check(
     headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/protocol/"') &&
     headerHtml.indexOf('href="/protocol/"') < headerHtml.indexOf("Meet Team") &&
     headerHtml.indexOf("Meet Team") < headerHtml.indexOf("data-site-search"),
+);
+check(
+  "docs index is the search panel, not a right-edge drawer",
+  headerHtml.includes('id="docs-nav"') &&
+    headerHtml.includes("data-site-search") &&
+    headerHtml.indexOf("data-site-search") < headerHtml.indexOf('id="docs-nav"') &&
+    headerHtml.indexOf('id="docs-nav"') < headerHtml.indexOf("</form>") &&
+    headerHtml.includes("sidebar-label") &&
+    /Docs\s+Index/.test(asText(headerHtml)) &&
+    headerHtml.includes('class="nav-badge"') &&
+    /important/i.test(headerHtml) &&
+    !indexHtml.includes("docs-rail") &&
+    !indexHtml.includes("data-docs-toggle") &&
+    !indexHtml.includes("data-docs-open") &&
+    !indexHtml.includes("site-search-pages") &&
+    !headerHtml.includes('list="site-search-pages"'),
+);
+const navJsText = existsSync(join(DIST_DIR, "nav.js")) ? readFileSync(join(DIST_DIR, "nav.js"), "utf8") : "";
+check(
+  "search filters the grouped docs index in place",
+  navJsText.includes("data-nav-group") &&
+    navJsText.includes("filterIndex") &&
+    navJsText.includes("Escape") &&
+    !navJsText.includes("site-search-pages") &&
+    !navJsText.includes("pond-docs-nav-collapsed"),
 );
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
@@ -529,6 +555,15 @@ check(
     !stylesText.includes("mask-image: linear-gradient(90deg, transparent") &&
     !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .protocol-snapshot-inner") &&
     !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .protocol-snapshot {"),
+);
+check(
+  "opening docs nav does not shift page chrome or slide a right drawer",
+  !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .shell") &&
+    !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .topbar") &&
+    !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .hero-inner") &&
+    !stylesText.includes(".docs-rail") &&
+    !stylesText.includes("translateX(100%)") &&
+    stylesText.includes(".site-search.is-open .sidebar"),
 );
 check(
   "brand lockup stays a single nowrap cluster on desktop",

@@ -323,19 +323,20 @@ function navHtml(currentUrl) {
   return out;
 }
 
-function searchHtml() {
-  const options = config.pages
-    .filter((page) => page.publish !== false && page.url)
-    .map((page) => `<option value="${esc(page.title)}" data-url="${esc(page.url)}"></option>`)
-    .join("");
-
+function searchHtml(currentUrl) {
   return `<form class="site-search" data-site-search role="search">
   <label class="visually-hidden" for="site-search-input">Search Pond Protocol</label>
   <svg class="site-search-icon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"></circle><path d="m13 13 4 4"></path></svg>
-  <input id="site-search-input" name="q" type="search" placeholder="Search docs" autocomplete="off" list="site-search-pages" spellcheck="false">
+  <input id="site-search-input" name="q" type="search" placeholder="Search docs" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-expanded="false" aria-controls="docs-nav" aria-haspopup="true">
   <kbd aria-hidden="true">⌘ K</kbd>
-</form>
-<datalist id="site-search-pages">${options}</datalist>`;
+  <aside class="sidebar" id="docs-nav" hidden aria-label="Documentation">
+    <p class="sidebar-label"><span class="sidebar-label-mark" aria-hidden="true"></span><span>Docs</span><span class="sidebar-label-meta">Index</span></p>
+    <div class="sidebar-body" id="docs-nav-body">
+      ${navHtml(currentUrl)}
+      <p class="sidebar-empty" data-docs-empty hidden>No matching pages</p>
+    </div>
+  </aside>
+</form>`;
 }
 
 function heroHtml() {
@@ -482,13 +483,6 @@ ${canonical}
       }
     });
     root.classList.add("has-nav-js");
-    try {
-      if (localStorage.getItem("pond-docs-nav-collapsed") === "1") {
-        root.classList.add("docs-collapsed");
-      }
-    } catch {
-      /* private mode */
-    }
   })();
 </script>
 <link rel="stylesheet" href="/styles.css">
@@ -515,35 +509,19 @@ ${canonical}
       <a href="/trade/">Trade</a>
       <a href="/pond/">Pond</a>
       <a href="/team/">Meet Team</a>
-      <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
-        <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
     </nav>
-    ${searchHtml()}
+    ${searchHtml(page.url)}
   </div>
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
 ${isHome ? heroHtml() : ""}
-<div class="docs-backdrop" data-docs-backdrop></div>
-<button type="button" class="docs-rail" data-docs-toggle aria-expanded="true" aria-controls="docs-nav" title="Collapse documentation menu">
-  <svg class="docs-rail-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-    <path class="docs-rail-chevron" d="M6.2 3.2 L11 8 L6.2 12.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span class="visually-hidden">Collapse documentation menu</span>
-</button>
 <div class="shell">
   <main id="main">
     ${isHome ? "" : tocHtml(html)}
     <article class="prose">${supplyRevision}${html}</article>
     ${provenance}
   </main>
-  <aside class="sidebar" id="docs-nav" aria-label="Documentation">
-    <p class="sidebar-label"><span class="sidebar-label-mark" aria-hidden="true"></span><span>Docs</span><span class="sidebar-label-meta">Index</span></p>
-    <div class="sidebar-body" id="docs-nav-body">
-      ${navHtml(page.url)}
-    </div>
-  </aside>
 </div>
 <footer class="footer">
   <div class="footer-inner">
