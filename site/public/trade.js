@@ -1,4 +1,5 @@
 (() => {
+  const WALLETCONNECT_PROJECT_ID = "89408e9bcaa385da1a1867c446cfb7b2";
   const networks = {
     testnet: {
       label: "XRPL Testnet",
@@ -21,12 +22,13 @@
       </div>
       <div class="trade-network" role="group" aria-label="Trading network">
         <span class="trade-network-label">Network</span>
-        <button type="button" class="trade-network-button is-active" data-network="testnet" aria-pressed="true">Testnet</button>
-        <button type="button" class="trade-network-button" data-network="production" aria-pressed="false">Production</button>
+        <button type="button" class="trade-network-button" data-network="testnet" aria-pressed="false">Testnet</button>
+        <button type="button" class="trade-network-button is-active" data-network="production" aria-pressed="true">Production</button>
       </div>
       <div class="trade-terminal-actions">
         <button type="button" class="trade-icon-button" aria-label="Refresh ledger" data-refresh>↻</button>
-        <button type="button" class="trade-connect-top" disabled>Connect wallet</button>
+        <span class="trade-wallet-status" data-wallet-status>Wallet not connected</span>
+        <button type="button" class="trade-connect-top" data-wallet-connect>Connect wallet</button>
       </div>
     </header>
 
@@ -42,12 +44,13 @@
         </div>
       </section>
     </div>
+    <xrpl-wallet-connector id="pond-wallet-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
 
     <div class="trade-stat-strip">
       <div><span>Price</span><strong data-price>—</strong><em>Awaiting pool</em></div>
       <div><span>24h volume</span><strong>—</strong><em>Not configured</em></div>
       <div><span>Liquidity</span><strong>—</strong><em>AMM gated</em></div>
-      <div><span>Network</span><strong data-network-label>XRPL Testnet</strong><em data-ledger-status>Checking ledger…</em></div>
+      <div><span>Network</span><strong data-network-label>XRPL Production</strong><em data-ledger-status>Checking ledger…</em></div>
       <div><span>Issuer</span><strong data-issuer-short>Verified pending</strong><em>PND identity</em></div>
     </div>
 
@@ -161,11 +164,15 @@
             <button type="button" data-tab="sell" aria-selected="false">Sell</button>
           </nav>
           <div class="trade-action-panels" data-tab-panels="dex-order">
-            <div class="trade-panel is-active" data-panel="buy">
-              <div class="trade-order-choice"><button type="button" class="is-active">Limit</button><button type="button">Market</button></div>
-              <div class="trade-order-grid"><div class="trade-action-field"><span>Price</span><div><strong>—</strong><b>XRP</b></div></div><div class="trade-action-field"><span>Amount</span><div><strong>0.00</strong><b>PND</b></div></div></div>
-              <div class="trade-action-field"><span>Total</span><div><strong>—</strong><b>XRP</b></div><small>Time in force · GTC</small></div>
-              <button type="button" class="trade-connect-button" disabled>Connect wallet to review order</button>
+             <div class="trade-panel is-active" data-panel="buy">
+               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
+               <div class="trade-order-grid">
+                 <label class="trade-action-field trade-input-field"><span>Price</span><div><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="0.000000" aria-label="Price in XRP per PND"><b>XRP</b></div></label>
+                 <label class="trade-action-field trade-input-field"><span>Amount</span><div><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><b>PND</b></div></label>
+               </div>
+               <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Price × amount · Time in force · GTC</small></div>
+               <p class="trade-order-status" data-dex-order-status role="status">Connect a WalletConnect wallet to review this order.</p>
+               <button type="button" class="trade-connect-button" data-wallet-connect data-dex-submit>Connect wallet to review order</button>
             </div>
             <div class="trade-panel" data-panel="sell" hidden><div class="trade-empty-panel"><strong>Sell order ticket</strong><span>Signing stays disabled until a verified $PND or $rPND market exists.</span></div></div>
           </div>
@@ -358,8 +365,10 @@
     const issuer = root.dataset.issuer && !root.dataset.issuer.includes("{{")
       ? root.dataset.issuer
       : "";
-    const state = { network: "testnet" };
+    const marketVerified = root.dataset.marketVerified === "true";
+    const state = { network: "production", wallet: null };
     let chartController = null;
+    let walletController = null;
     const $ = (selector) => root.querySelector(selector);
     const $$ = (selector) => root.querySelectorAll(selector);
 
@@ -417,6 +426,206 @@
           });
         });
       });
+    }
+
+    function setOrderStatus(message, kind = "neutral") {
+      const status = $("[data-dex-order-status]");
+      if (!status) return;
+      status.dataset.state = kind;
+      status.textContent = message;
+    }
+
+    function setWalletUi(account) {
+      state.wallet = account || null;
+      const connected = Boolean(account?.address);
+      const shortAddress = connected
+        ? `${account.address.slice(0, 6)}…${account.address.slice(-4)}`
+        : "Wallet not connected";
+      setText("[data-wallet-status]", shortAddress);
+      $$("[data-wallet-connect]").forEach((button) => {
+        if (button.hasAttribute("data-dex-submit")) {
+          button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
+        } else {
+          button.textContent = connected ? "Wallet connected" : "Connect wallet";
+        }
+        button.classList.toggle("is-connected", connected);
+      });
+      if (connected) {
+        setOrderStatus("Wallet connected. Enter a price and amount to review the order.", "ready");
+      } else {
+        setOrderStatus("Connect a WalletConnect wallet to review this order.");
+      }
+    }
+
+    function setupWallet() {
+      const connectButtons = $$("[data-wallet-connect]");
+      const connector = $("#pond-wallet-connector");
+      const api = window.XRPLConnect;
+      if (!connectButtons.length) return null;
+      if (!connector || !api?.WalletManager || !api?.WalletConnectAdapter) {
+        setText("[data-wallet-status]", "WalletConnect unavailable");
+        setOrderStatus("WalletConnect could not load. Refresh and try again.", "error");
+        connectButtons.forEach((button) => {
+          button.disabled = true;
+        });
+        return null;
+      }
+
+      const adapter = new api.WalletConnectAdapter({
+        projectId: WALLETCONNECT_PROJECT_ID,
+        metadata: {
+          name: "Pond Protocol",
+          description: "Non-custodial XRPL market access for Pond Protocol.",
+          url: window.location.origin,
+          icons: [],
+        },
+        themeMode: "dark",
+      });
+      const manager = new api.WalletManager({
+        adapters: [adapter],
+        network: state.network === "production" ? "mainnet" : "testnet",
+        autoConnect: false,
+      });
+      connector.setWalletManager(manager);
+
+      const connect = async () => {
+        connectButtons.forEach((button) => {
+          button.disabled = true;
+        });
+        setText("[data-wallet-status]", "Connecting…");
+        setOrderStatus("Approve the XRPL account connection in your wallet.", "loading");
+        try {
+          await connector.open();
+        } catch (error) {
+          setWalletUi(null);
+          setOrderStatus(error.message || "Wallet connection was cancelled.", "error");
+        } finally {
+          connectButtons.forEach((button) => {
+            button.disabled = false;
+          });
+        }
+      };
+
+      connectButtons.forEach((button) => button.addEventListener("click", connect));
+      manager.on("connect", (account) => setWalletUi(account));
+      manager.on("accountChanged", (account) => setWalletUi(account));
+      manager.on("disconnect", () => {
+        setWalletUi(null);
+        window.dispatchEvent(new CustomEvent("pond:wallet-disconnected"));
+      });
+      manager.on("error", (error) => {
+        setOrderStatus(error?.message || "The wallet reported an error.", "error");
+      });
+
+      return {
+        manager,
+        connect,
+        disconnect: async () => {
+          await manager.disconnect();
+          setWalletUi(null);
+        },
+      };
+    }
+
+    function setupDexOrder() {
+      const price = $("[data-dex-price]");
+      const amount = $("[data-dex-amount]");
+      const total = $("[data-dex-total]");
+      const submit = $("[data-dex-submit]");
+      const orderKindButtons = $$("[data-order-kind]");
+      if (!price || !amount || !total || !submit) return;
+
+      let orderKind = "limit";
+      const updateTotal = () => {
+        const priceValue = Number(price.value);
+        const amountValue = Number(amount.value);
+        const totalValue = priceValue * amountValue;
+        setText("[data-dex-total]", Number.isFinite(totalValue) && totalValue > 0 ? `${totalValue.toFixed(6)} XRP` : "—");
+        if (orderKind === "market") {
+          price.disabled = true;
+          price.value = "";
+          setText("[data-dex-total]", "Best available");
+        } else {
+          price.disabled = false;
+        }
+      };
+      price.addEventListener("input", updateTotal);
+      amount.addEventListener("input", updateTotal);
+      orderKindButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          orderKind = button.dataset.orderKind || "limit";
+          orderKindButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+          updateTotal();
+          setOrderStatus(
+            orderKind === "market"
+              ? "Market orders use the verified best ask and remain unavailable until the order book is live."
+              : state.wallet
+                ? "Wallet connected. Enter a price and amount to review the order."
+                : "Connect a WalletConnect wallet to review this order.",
+          );
+        });
+      });
+
+      submit.addEventListener("click", async () => {
+        if (!state.wallet) {
+          walletController?.connect();
+          return;
+        }
+        if (orderKind === "market") {
+          setOrderStatus("Market orders stay disabled until a verified XRPL order book is available.", "gated");
+          return;
+        }
+        const priceValue = Number(price.value);
+        const amountValue = Number(amount.value);
+        if (!Number.isFinite(priceValue) || priceValue <= 0 || !Number.isFinite(amountValue) || amountValue <= 0) {
+          setOrderStatus("Enter a price and amount greater than zero.", "error");
+          return;
+        }
+        if (!issuer || state.network !== "production") {
+          setOrderStatus("Real PND orders require the verified production issuer and market.", "gated");
+          return;
+        }
+        if (!marketVerified) {
+          setOrderStatus("PND/XRP is still pre-launch. No order was signed or submitted.", "gated");
+          return;
+        }
+
+        const totalDrops = Math.round(priceValue * amountValue * 1000000);
+        if (!Number.isSafeInteger(totalDrops) || totalDrops <= 0) {
+          setOrderStatus("The XRP total is outside the safe transaction range.", "error");
+          return;
+        }
+        setOrderStatus("Checking your PND trust line before opening the wallet review.", "loading");
+        try {
+          const lineResponse = await wsRpc(networks[state.network].endpoint, "account_lines", {
+            account: state.wallet.address,
+            peer: issuer,
+            ledger_index: "validated",
+          });
+          const trustLine = lineResponse.result?.lines?.find((line) => line.account === issuer);
+          if (!trustLine || Number(trustLine.limit) <= 0) {
+            setOrderStatus("Add a PND trust line before placing a buy order.", "error");
+            return;
+          }
+          const transaction = {
+            TransactionType: "OfferCreate",
+            Account: state.wallet.address,
+            TakerGets: String(totalDrops),
+            TakerPays: {
+              currency: "PND",
+              issuer,
+              value: amount.value.trim(),
+            },
+            Flags: 0,
+          };
+          setOrderStatus("Review the OfferCreate transaction in your wallet.", "loading");
+          const result = await walletController.manager.signAndSubmit(transaction);
+          setOrderStatus(`Buy submitted to XRPL · ${result.hash}`, "success");
+        } catch (error) {
+          setOrderStatus(error.message || "The wallet rejected or could not submit the order.", "error");
+        }
+      });
+      updateTotal();
     }
 
     function setupChartControls() {
@@ -880,6 +1089,8 @@
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
+    walletController = setupWallet();
+    setupDexOrder();
     chartController = setupChartControls();
     setupDisclaimer();
     const initialMode = window.location.hash === "#data"

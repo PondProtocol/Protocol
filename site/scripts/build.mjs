@@ -607,6 +607,7 @@ ${isHome ? heroHtml() : ""}
 </footer>
 </div>
 <script src="/nav.js" defer></script>
+${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" defer></script>' : ""}
 <script src="/trade.js" defer></script>
 </body>
 </html>

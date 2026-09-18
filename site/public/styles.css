@@ -1811,6 +1811,16 @@ code.addr {
   font-weight: 700;
 }
 
+.trade-wallet-status {
+  max-width: 8rem;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .trade-connect-top:disabled,
 .trade-connect-button:disabled {
   cursor: not-allowed;
@@ -2299,6 +2309,32 @@ code.addr {
   margin: 0.2rem 0;
 }
 
+.trade-input-field:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.trade-input-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.trade-input-field input::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 72%, transparent);
+}
+
+.trade-input-field input:disabled {
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
 .trade-action-field strong {
   color: var(--text);
   font-size: 1.05rem;
@@ -2308,6 +2344,31 @@ code.addr {
 .trade-action-field b {
   color: var(--accent-bright);
   font-size: 0.68rem;
+}
+
+.trade-order-status {
+  min-height: 2.2em;
+  margin: 0.55rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  line-height: 1.4;
+}
+
+.trade-order-status[data-state="ready"] {
+  color: var(--accent-bright);
+}
+
+.trade-order-status[data-state="loading"] {
+  color: var(--text);
+}
+
+.trade-order-status[data-state="error"],
+.trade-order-status[data-state="gated"] {
+  color: var(--critical);
+}
+
+.trade-order-status[data-state="success"] {
+  color: #74d3a0;
 }
 
 .trade-flip {
@@ -2347,9 +2408,19 @@ code.addr {
   border-radius: 7px;
   background: var(--accent-soft);
   color: var(--text-muted);
-  cursor: not-allowed;
+  cursor: pointer;
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+.trade-connect-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.trade-connect-button.is-connected {
+  border-color: color-mix(in srgb, #74d3a0 45%, var(--border));
+  color: #74d3a0;
 }
 
 .trade-gate-card {

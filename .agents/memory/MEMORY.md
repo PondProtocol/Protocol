@@ -1,1 +1,2 @@
 - [Single-window terminal layout](trade-terminal-layout.md) — keep focused trading views free of nested scroll containers; compact desktop panels and let mobile flow naturally.
+- [XRPL wallet execution gate](xrpl-wallet-execution-gate.md) — wallet connection and OfferCreate preparation may ship before launch, but submission stays behind explicit market verification.
