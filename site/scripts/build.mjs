@@ -535,6 +535,7 @@ ${canonical}
   <div class="topbar-end">
     ${topnavHtml(page.url)}
     ${searchHtml(page.url)}
+    <a class="topbar-trade" href="/trade/">Trade</a>
   </div>
 </header>
 ${banner}

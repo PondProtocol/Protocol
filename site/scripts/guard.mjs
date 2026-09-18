@@ -491,6 +491,15 @@ check(
     headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search"),
 );
 check(
+  "green Trade button sits immediately after search as the far-right control",
+  headerHtml.includes('class="topbar-trade"') &&
+    headerHtml.includes('href="/trade/"') &&
+    /<a class="topbar-trade" href="\/trade\/">Trade<\/a>/.test(headerHtml) &&
+    headerHtml.indexOf("data-site-search") < headerHtml.indexOf("topbar-trade") &&
+    headerHtml.indexOf("</form>") < headerHtml.indexOf("topbar-trade") &&
+    !topnavSummaries.includes("Trade"),
+);
+check(
   "Start here dropdown keeps Meet Team, Trade $PND, and the IMPORTANT verify badge",
   startHereMenu.includes("Meet Team") &&
     startHereMenu.includes('href="/team/"') &&
@@ -590,6 +599,11 @@ check(
   "mobile CSS does not hide the top-bar dropdowns",
   !/\.topnav a:not\(\.cta\)/.test(stylesText) &&
     !/\.topnav-menu\s*\{[^}]*display:\s*none/.test(stylesText),
+);
+check(
+  "Trade button reuses the Verify CTA accent gradient",
+  stylesText.includes(".topbar-trade") &&
+    stylesText.includes("linear-gradient(135deg, var(--accent-bright), var(--accent))"),
 );
 check(
   "top-bar dropdown panels are absolutely positioned so they do not shift layout",
