@@ -317,6 +317,46 @@ a:hover {
   box-shadow: 0 8px 24px var(--accent-glow);
 }
 
+.topnav-start {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+}
+
+.topnav-start:hover,
+.topnav-start:focus-within,
+.topnav-start:has(.topnav-menu[open]) {
+  border-color: #334452;
+  background: rgb(143 199 255 / 0.08);
+}
+
+.topnav-start-link {
+  padding-right: 0.28rem;
+}
+
+.topnav-start .topnav-menu > summary {
+  min-width: 1.55rem;
+  padding-left: 0.2rem;
+  padding-right: 0.5rem;
+  border-color: transparent;
+  background: transparent;
+}
+
+.topnav-start .topnav-menu[open] > summary,
+.topnav-start .topnav-menu > summary:hover,
+.topnav-start .topnav-menu > summary:focus-visible {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+}
+
+.topnav-start .topnav-panel {
+  left: 0;
+}
+
 .topnav-menu {
   position: relative;
   display: inline-flex;
@@ -3898,6 +3938,191 @@ body.trade-disclaimer-open {
   font-size: 0.75rem;
 }
 
+.start-progress {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding: clamp(1rem, 2.4vw, 1.45rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 0 0%, rgb(74 144 217 / 0.12), transparent 42%),
+    var(--bg-soft);
+}
+
+.start-progress-head {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.start-progress-title {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.start-progress-count {
+  margin: 0;
+  color: var(--accent-bright);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.start-progress-note {
+  max-width: 46rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.start-progress-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.start-progress-step a {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "num title" "num blurb";
+  column-gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: inherit;
+  text-decoration: none;
+}
+
+.start-progress-step a:hover,
+.start-progress-step a:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.start-progress-step b {
+  grid-area: num;
+  color: var(--accent-bright);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+.start-progress-step strong {
+  grid-area: title;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.start-progress-step span {
+  grid-area: blurb;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.start-progress-step.is-complete a {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+}
+
+.start-progress-step.is-complete b::after {
+  content: " done";
+  margin-left: 0.25rem;
+  color: var(--accent-bright);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.start-progress-step.is-current a {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.start-progress.is-finished .start-progress-count {
+  color: var(--text);
+}
+
+.start-progress.is-compact {
+  gap: 0.7rem;
+  padding: 0.85rem 0.9rem;
+}
+
+.start-progress.is-compact .start-progress-title,
+.start-progress.is-compact .start-progress-note {
+  display: none;
+}
+
+.start-progress.is-compact .start-progress-list {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.start-progress.is-compact .start-progress-step a {
+  grid-template-columns: 1fr;
+  grid-template-areas: "num" "title";
+  min-height: 100%;
+  padding: 0.55rem 0.45rem;
+}
+
+.start-progress.is-compact .start-progress-step span {
+  display: none;
+}
+
+.start-progress.is-compact .start-progress-step strong {
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.start-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 1.4rem 0 0.4rem;
+}
+
+.start-next a,
+.start-next-prev {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.start-next-go {
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent));
+  border-color: transparent;
+  color: #071018;
+}
+
+.start-next-prev.is-disabled {
+  opacity: 0.45;
+}
+
+.start-next a:hover,
+.start-next a:focus-visible {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.start-next-go:hover,
+.start-next-go:focus-visible {
+  color: #071018;
+}
+
 .pond-overview-main {
   min-width: 0;
 }
@@ -3947,8 +4172,14 @@ body.trade-disclaimer-open {
 
   .start-steps,
   .pond-pillars,
-  .team-grid {
+  .team-grid,
+  .start-progress.is-compact .start-progress-list {
     grid-template-columns: 1fr;
+  }
+
+  .start-next {
+    align-items: stretch;
+    flex-direction: column-reverse;
   }
 
   .pond-overview-note {

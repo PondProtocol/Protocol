@@ -193,6 +193,7 @@
         if (pushState) history.pushState({}, "", url);
         window.scrollTo(0, 0);
         setupNavigation();
+        window.PondStart?.init?.();
         window.PondTrade?.init?.();
         window.PondXaman?.init?.();
       };

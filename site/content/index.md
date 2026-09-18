@@ -1,13 +1,18 @@
 ## Start here
 
-Verify the issuer first. Then look at the wallets, then how to hold. The rest of the documentation is in the menu on the right.
+Seven steps. Finish them before you buy. $PND has not been issued. There is
+no buy button on this site.
 
 <div class="join">
-<a class="join-card" href="/verify/"><strong>1. Verify</strong><span>Issuer address, impostor board, ledger checks. Do not search the ticker.</span></a>
-<a class="join-card" href="/wallets/"><strong>2. Wallets</strong><span>Issuer, Treasury, Operations, and the live flags snapshot.</span></a>
-<a class="join-card" href="/hold/"><strong>3. Hold safely</strong><span>Trust this issuer after launch. No seeds. No claim button.</span></a>
-<a class="join-card" href="/links/"><strong>4. Official links</strong><span>This site, the TOML file, Bithomp. Nothing else.</span></a>
+<a class="join-card" href="/start/"><strong>1. Begin</strong><span>The path, the checklist, and why every step comes before a market.</span></a>
+<a class="join-card" href="/start/pnd/"><strong>2. What is $PND</strong><span>Issued currency. Identity is the issuer, not the ticker.</span></a>
+<a class="join-card" href="/start/rpnd/"><strong>3. What is $rPND</strong><span>Planned MPT. Not created. Not the 1 October 2026 launch.</span></a>
+<a class="join-card" href="/verify/"><strong>4. Verify Issuer</strong><span>Issuer address, impostor board, ledger checks. Do not search the ticker.</span></a>
 </div>
+
+Then [Connect Wallet](/start/wallet/), [Set Trust Lines](/start/trust-lines/),
+and [Ready to Use DEX](/start/dex/) → [Trade](/trade/). The Trade button in
+the top bar is the same terminal. It is not a live $PND DEX.
 
 ## Identity
 

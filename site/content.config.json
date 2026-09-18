@@ -158,21 +158,22 @@
     {
       "section": "Start here",
       "pages": [
-        { "authored": "index.md", "url": "/", "title": "Pond Protocol" },
-        { "authored": "start.md", "url": "/start/", "title": "Start here" },
-        { "authored": "verify.md", "url": "/verify/", "title": "Verify the issuer" },
-        { "authored": "connect.md", "url": "/connect/", "title": "Connect Xaman" },
-        { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
-        { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
-        { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
-        { "authored": "team.md", "url": "/team/", "title": "Meet Team" },
-        { "authored": "links.md", "url": "/links/", "title": "Official links" }
+        { "authored": "start.md", "url": "/start/", "title": "Begin" },
+        { "authored": "start-pnd.md", "url": "/start/pnd/", "title": "What is $PND" },
+        { "authored": "start-rpnd.md", "url": "/start/rpnd/", "title": "What is $rPND" },
+        { "authored": "verify.md", "url": "/verify/", "title": "Verify Issuer" },
+        { "authored": "start-wallet.md", "url": "/start/wallet/", "title": "Connect Wallet" },
+        { "authored": "start-trust-lines.md", "url": "/start/trust-lines/", "title": "Set Trust Lines" },
+        { "authored": "start-dex.md", "url": "/start/dex/", "title": "Ready to Use DEX" }
       ]
     },
     {
       "section": "$PND",
       "pages": [
         { "authored": "pnd.md", "url": "/pnd/", "title": "$PND" },
+        { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
+        { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
+        { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
         { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/specification/", "title": "Token specification", "publish": true },
         { "repo": "pnd", "path": "docs/trust-lines.md", "url": "/pnd/holding/", "title": "Holding $PND", "publish": true },
         { "repo": "pnd", "path": "docs/integration.md", "url": "/pnd/integration/", "title": "Integration guide", "publish": true },
@@ -213,6 +214,10 @@
     {
       "section": "Status",
       "pages": [
+        { "authored": "index.md", "url": "/", "title": "Home" },
+        { "authored": "connect.md", "url": "/connect/", "title": "Connect Xaman" },
+        { "authored": "team.md", "url": "/team/", "title": "Meet Team" },
+        { "authored": "links.md", "url": "/links/", "title": "Official links" },
         { "authored": "legal.md", "url": "/legal/", "title": "Legal & privacy" },
         { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
         { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }

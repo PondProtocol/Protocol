@@ -335,6 +335,53 @@ function navHtml(currentUrl) {
 
 const TOP_BAR_SECTIONS = ["Start here", "$PND", "$rPND", "Protocol"];
 
+const START_STEPS = [
+  { id: "begin", url: "/start/", title: "Begin", blurb: "The path. No buy button." },
+  { id: "what-is-pnd", url: "/start/pnd/", title: "What is $PND", blurb: "IOU. Not issued. Issuer, not ticker." },
+  { id: "what-is-rpnd", url: "/start/rpnd/", title: "What is $rPND", blurb: "Planned MPT. Not this launch." },
+  { id: "verify-issuer", url: "/verify/", title: "Verify Issuer", blurb: "Check the address on ledger." },
+  { id: "connect-wallet", url: "/start/wallet/", title: "Connect Wallet", blurb: "WalletConnect or Xaman only." },
+  { id: "set-trust-lines", url: "/start/trust-lines/", title: "Set Trust Lines", blurb: "In your wallet. Nothing issued." },
+  { id: "ready-dex", url: "/start/dex/", title: "Ready to Use DEX", blurb: "Then Trade — not a live DEX." },
+];
+
+function isStartFlow(url) {
+  return START_STEPS.some((step) => step.url === url);
+}
+
+function startProgressHtml(currentUrl) {
+  const compact = currentUrl !== "/start/";
+  const items = START_STEPS.map((step, i) => {
+    const n = String(i + 1).padStart(2, "0");
+    const current = step.url === currentUrl ? " is-current" : "";
+    return `<li class="start-progress-step${current}" data-start-step="${esc(step.id)}">
+      <a href="${step.url}"><b>${n}</b><strong>${esc(step.title)}</strong><span>${esc(step.blurb)}</span></a>
+    </li>`;
+  }).join("");
+  return `<nav class="start-progress${compact ? " is-compact" : ""}" data-start-progress aria-label="Start here progress">
+    <div class="start-progress-head">
+      <p class="start-eyebrow">Start here · 7 steps</p>
+      <p class="start-progress-title">Complete every step before you buy.</p>
+      <p class="start-progress-count"><strong data-start-progress-count>0 / 7</strong> done in this browser</p>
+      <p class="start-progress-note">No live buy button. $PND is not issued. Last step opens Trade — a preview, not a live DEX.</p>
+    </div>
+    <ol class="start-progress-list">${items}</ol>
+  </nav>`;
+}
+
+function startNextHtml(currentUrl) {
+  const index = START_STEPS.findIndex((step) => step.url === currentUrl);
+  if (index < 0) return "";
+  const prev = START_STEPS[index - 1];
+  const next = START_STEPS[index + 1];
+  const nextHref = next?.url ?? "/trade/";
+  const nextLabel = next ? `Next · ${next.title}` : "Open Trade";
+  return `<nav class="start-next" aria-label="Start here next step">
+    ${prev ? `<a class="start-next-prev" href="${prev.url}">Back · ${esc(prev.title)}</a>` : `<span class="start-next-prev is-disabled">Begin</span>`}
+    <a class="start-next-go" href="${nextHref}">${esc(nextLabel)} <span aria-hidden="true">↗</span></a>
+  </nav>`;
+}
+
 function topnavHtml(currentUrl) {
   let out = `<nav class="topnav" aria-label="Primary">`;
   for (const section of TOP_BAR_SECTIONS) {
@@ -343,6 +390,15 @@ function topnavHtml(currentUrl) {
     const visible = publishedPages(group);
     if (!visible.length) continue;
     const id = navGroupId(section);
+    if (section === "Start here") {
+      out += `<div class="topnav-start">`;
+      out += `<a class="topnav-start-link" href="/start/">Start here</a>`;
+      out += `<details class="topnav-menu" data-topnav-menu="${esc(id)}">`;
+      out += `<summary aria-label="Open Start here menu"><span class="visually-hidden">Start here menu</span></summary>`;
+      out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
+      out += `</details></div>`;
+      continue;
+    }
     out += `<details class="topnav-menu" data-topnav-menu="${esc(id)}">`;
     out += `<summary>${esc(section)}</summary>`;
     out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
@@ -596,7 +652,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
@@ -621,7 +677,9 @@ ${isHome ? heroHtml() : ""}
 <div class="shell">
   <main id="main">
     ${isHome ? "" : tocHtml(html)}
+    ${isStartFlow(page.url) ? startProgressHtml(page.url) : ""}
     <article class="prose">${supplyRevision}${html}</article>
+    ${isStartFlow(page.url) ? startNextHtml(page.url) : ""}
     ${provenance}
   </main>
 </div>
@@ -699,6 +757,7 @@ ${isHome ? heroHtml() : ""}
 ${privacyDockHtml()}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 <script src="/nav.js" defer></script>
+<script src="/start.js" defer></script>
 <script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>
 ${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}
