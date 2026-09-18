@@ -3685,31 +3685,69 @@ body.trade-disclaimer-open {
 
 .trade-disclaimer-actions a,
 .trade-disclaimer-actions button {
-  padding: 0.5rem 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: transparent;
-  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
   text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, opacity 160ms ease;
 }
 
-.trade-disclaimer-actions a:hover,
-.trade-disclaimer-actions a[aria-disabled="false"],
-.trade-disclaimer-actions button:not(:disabled):hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--text);
+.trade-disclaimer-new {
+  background: color-mix(in srgb, var(--critical) 16%, var(--bg-code));
+  border-color: color-mix(in srgb, var(--critical) 28%, var(--border));
+  color: color-mix(in srgb, var(--critical) 72%, var(--text-muted));
 }
 
-.trade-disclaimer-actions button:disabled,
-.trade-disclaimer-actions a[aria-disabled="true"] {
+.trade-disclaimer-new[aria-disabled="true"] {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.48;
   pointer-events: none;
+}
+
+.trade-disclaimer-new[aria-disabled="false"] {
+  background: linear-gradient(135deg, #fb7185, #d31212);
+  border-color: #d31212;
+  color: #ffffff;
+  box-shadow: 0 8px 22px rgb(211 18 18 / 0.28);
+}
+
+.trade-disclaimer-new[aria-disabled="false"]:hover,
+.trade-disclaimer-new[aria-disabled="false"]:focus-visible {
+  background: linear-gradient(135deg, #fda4af, #e11d48);
+  color: #ffffff;
+}
+
+.trade-disclaimer-known {
+  background: linear-gradient(135deg, #6aa8e6, var(--accent));
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.trade-disclaimer-known:disabled {
+  cursor: not-allowed;
+  opacity: 0.78;
+  pointer-events: none;
+}
+
+.trade-disclaimer-known:not(:disabled) {
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  border-color: #16a34a;
+  color: #06210f;
+  box-shadow: 0 8px 22px rgb(22 163 74 / 0.28);
+}
+
+.trade-disclaimer-known:not(:disabled):hover,
+.trade-disclaimer-known:not(:disabled):focus-visible {
+  background: linear-gradient(135deg, #86efac, #15803d);
 }
 
 /* -------------------------------------------------------------- start / pond */
