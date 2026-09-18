@@ -45,8 +45,8 @@
         <p class="trade-disclaimer-copy">This terminal never needs your seed, private key, or recovery phrase. $PND has not been issued and no verified market is live yet.</p>
         <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
         <div class="trade-disclaimer-actions">
-          <a href="/start/" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
-          <button type="button" data-disclaimer-known disabled>I know Pond Protocol</button>
+          <a href="/start/" class="trade-disclaimer-new" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
+          <button type="button" class="trade-disclaimer-known" data-disclaimer-known disabled>I Understand Pond Protocol</button>
         </div>
       </section>
     </div>
