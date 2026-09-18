@@ -437,7 +437,6 @@ const xamanJs = join(DIST_DIR, "xaman.js");
 check("xaman.js is copied into the build", existsSync(xamanJs));
 
 const headerHtml = indexHtml.match(/<header class="topbar">[\s\S]*?<\/header>/)?.[0] ?? "";
-const headerText = asText(headerHtml);
 const brandHtml = headerHtml.match(/<a class="brand"[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "";
 const brandText = asText(brandHtml);
 const duckMark = join(DIST_DIR, "greenhead-duck.png");
@@ -453,33 +452,74 @@ check(
     headerHtml.includes('href="https://greenhead.io"') &&
     headerHtml.includes("Return to Main Site"),
 );
-check(
-  "top bar right cluster is Protocol, Trade, Pond, Meet Team",
-  /Protocol\s+Trade\s+Pond\s+Meet Team/.test(headerText) &&
-    headerHtml.includes('href="/protocol/"') &&
-    headerHtml.includes('href="/trade/"') &&
-    headerHtml.includes('href="/pond/"') &&
-    headerHtml.includes('href="/team/"') &&
-    headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
-    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/protocol/"'),
-);
 const topnavHtml = headerHtml.match(/<nav class="topnav"[\s\S]*?<\/nav>/)?.[0] ?? "";
+const topnavSummaries = [...topnavHtml.matchAll(/<summary>([\s\S]*?)<\/summary>/g)].map((match) =>
+  asText(match[1]).trim(),
+);
+const startHereMenu =
+  topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="start-here">[\s\S]*?<\/details>/)?.[0] ?? "";
+const protocolMenu =
+  topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="protocol">[\s\S]*?<\/details>/)?.[0] ?? "";
 check(
-  "top bar does not feature Verify, Hold, Wallets, or Xaman",
-  !topnavHtml.includes('href="/verify/"') &&
-    !topnavHtml.includes('href="/hold/"') &&
-    !topnavHtml.includes('href="/wallets/"') &&
-    !topnavHtml.includes('href="/connect/"') &&
+  "top bar right cluster is Start here, $PND, $rPND, Protocol",
+  topnavSummaries.join(" | ") === "Start here | $PND | $rPND | Protocol" &&
+    headerHtml.includes("topbar-end") &&
+    headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
+    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('data-topnav-menu="start-here"'),
+);
+check(
+  "top bar does not use Trade, Pond, Meet Team, Verify, Hold, Wallets, or Xaman as top-level items",
+  !topnavSummaries.includes("Trade") &&
+    !topnavSummaries.includes("Pond") &&
+    !topnavSummaries.includes("Meet Team") &&
+    !topnavSummaries.includes("Verify the issuer") &&
+    !topnavSummaries.includes("Hold safely") &&
+    !topnavSummaries.includes("Wallets") &&
+    !topnavSummaries.includes("Xaman") &&
+    !topnavHtml.includes('href="/pond/"') &&
     !/>Xaman</i.test(topnavHtml),
 );
 check(
-  "Protocol, Trade, Pond, and Meet Team sit immediately before search on the right",
-  headerHtml.includes("Meet Team") &&
-    headerHtml.includes("data-site-search") &&
+  "Start here, $PND, $rPND, and Protocol sit immediately before search on the right",
+  headerHtml.includes("data-site-search") &&
     headerHtml.includes("topbar-end") &&
-    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/protocol/"') &&
-    headerHtml.indexOf('href="/protocol/"') < headerHtml.indexOf("Meet Team") &&
-    headerHtml.indexOf("Meet Team") < headerHtml.indexOf("data-site-search"),
+    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('data-topnav-menu="start-here"') &&
+    headerHtml.indexOf('data-topnav-menu="start-here"') < headerHtml.indexOf('data-topnav-menu="pnd"') &&
+    headerHtml.indexOf('data-topnav-menu="pnd"') < headerHtml.indexOf('data-topnav-menu="rpnd"') &&
+    headerHtml.indexOf('data-topnav-menu="rpnd"') < headerHtml.indexOf('data-topnav-menu="protocol"') &&
+    headerHtml.indexOf('data-topnav-menu="protocol"') < headerHtml.indexOf("data-site-search") &&
+    headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search"),
+);
+check(
+  "Start here dropdown keeps Meet Team, Trade $PND, and the IMPORTANT verify badge",
+  startHereMenu.includes("Meet Team") &&
+    startHereMenu.includes('href="/team/"') &&
+    startHereMenu.includes("Trade $PND") &&
+    startHereMenu.includes('href="/trade/"') &&
+    startHereMenu.includes('href="/verify/"') &&
+    startHereMenu.includes('class="nav-badge"') &&
+    /important/i.test(startHereMenu) &&
+    !startHereMenu.includes('href="/pond/"'),
+);
+check(
+  "Protocol dropdown matches the Docs Index Protocol group",
+  protocolMenu.includes("Overview") &&
+    protocolMenu.includes("Architecture") &&
+    protocolMenu.includes("$PND and $rPND compared") &&
+    protocolMenu.includes("Glossary") &&
+    protocolMenu.includes("How wallets learn the name") &&
+    protocolMenu.includes("xrp-ledger.toml") &&
+    protocolMenu.includes("Status and conventions") &&
+    protocolMenu.includes("01 — Tokens") &&
+    protocolMenu.includes("07 — Security considerations"),
+);
+check(
+  "Pond page is unpublished and leftover Pond links go to Start here",
+  !existsSync(join(DIST_DIR, "pond", "index.html")) &&
+    !headerHtml.includes('href="/pond/"') &&
+    !indexHtml.includes('href="/pond/"') &&
+    existsSync(join(DIST_DIR, "team", "index.html")) &&
+    indexHtml.includes('href="/start/"'),
 );
 check(
   "docs index is the search panel, not a right-edge drawer",
@@ -504,7 +544,8 @@ check(
     navJsText.includes("filterIndex") &&
     navJsText.includes("Escape") &&
     !navJsText.includes("site-search-pages") &&
-    !navJsText.includes("pond-docs-nav-collapsed"),
+    !navJsText.includes("pond-docs-nav-collapsed") &&
+    navJsText.includes("closeTopnavMenus"),
 );
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
@@ -546,8 +587,14 @@ check(
 const stylesCss = join(DIST_DIR, "styles.css");
 const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
 check(
-  "mobile CSS does not hide Protocol / Trade / Pond / Meet Team",
-  !/\.topnav a:not\(\.cta\)/.test(stylesText),
+  "mobile CSS does not hide the top-bar dropdowns",
+  !/\.topnav a:not\(\.cta\)/.test(stylesText) &&
+    !/\.topnav-menu\s*\{[^}]*display:\s*none/.test(stylesText),
+);
+check(
+  "top-bar dropdown panels are absolutely positioned so they do not shift layout",
+  stylesText.includes(".topnav-panel") &&
+    /position:\s*absolute/.test(stylesText.slice(stylesText.indexOf(".topnav-panel"))),
 );
 check(
   "protocol snapshot ticker is full-bleed with no side gutters",
