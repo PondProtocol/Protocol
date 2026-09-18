@@ -59,7 +59,7 @@
       const target = event.target;
       if (closestAction(target, "[data-privacy-fab]")) {
         event.preventDefault();
-        setMode("notice");
+        setMode("vault");
         return;
       }
       if (closestAction(target, "[data-privacy-open-vault]")) {
