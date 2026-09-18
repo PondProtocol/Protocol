@@ -500,17 +500,28 @@ ${canonical}
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
-  <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
+  <div class="brand-cluster">
+    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">Pond</a>
+    <p class="powered-by">
+      <span class="powered-by-label">Powered By Greenhead Labs</span>
+      <img class="powered-by-mark" src="/greenhead-duck.png" width="28" height="28" alt="">
+      <a class="powered-by-return" href="https://greenhead.io">Return to Main Site</a>
+    </p>
+  </div>
   <nav class="topnav" aria-label="Primary">
     <a href="/protocol/">Protocol</a>
     <a href="/trade/">Trade</a>
     <a href="/pond/">Pond</a>
-    <a href="/team/">Meet Team</a>
     <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
       <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </nav>
-  ${searchHtml()}
+  <div class="topbar-end">
+    <nav class="topnav topnav-end" aria-label="Team">
+      <a href="/team/">Meet Team</a>
+    </nav>
+    ${searchHtml()}
+  </div>
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
