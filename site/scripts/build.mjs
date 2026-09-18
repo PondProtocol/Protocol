@@ -502,16 +502,18 @@ ${canonical}
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
-  ${searchHtml()}
-  <nav class="topnav" aria-label="Primary">
-    <a class="cta nav-verify-chip" href="/verify/">Verify</a>
-    <a href="/hold/">Hold</a>
-    <a href="/wallets/">Wallets</a>
-    <a class="xaman-nav" href="/connect/" data-xaman-nav>Xaman</a>
-    <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
-      <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </nav>
+  <div class="topbar-end">
+    <nav class="topnav" aria-label="Primary">
+      <a class="cta nav-verify-chip" href="/verify/">Verify</a>
+      <a href="/hold/">Hold</a>
+      <a href="/wallets/">Wallets</a>
+      <a class="xaman-nav" href="/connect/" data-xaman-nav>Xaman</a>
+      <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
+        <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </nav>
+    ${searchHtml()}
+  </div>
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
