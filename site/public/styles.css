@@ -99,13 +99,14 @@ a:hover {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 1rem;
   flex-wrap: nowrap;
   padding: 0.5rem 1.25rem;
+  overflow: visible;
   background: var(--bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
@@ -223,6 +224,7 @@ a:hover {
   flex: 0 1 auto;
   min-width: 0;
   margin-left: auto;
+  overflow: visible;
 }
 
 .site-search {
@@ -233,6 +235,8 @@ a:hover {
   min-width: 11rem;
   max-width: 16rem;
   margin-left: 0;
+  overflow: visible;
+  z-index: 2;
 }
 
 .site-search-icon {
@@ -353,38 +357,6 @@ a:hover {
   color: #ffffff;
 }
 
-.docs-open {
-  display: none;
-  appearance: none;
-  align-items: center;
-  gap: 0.3rem;
-  min-height: 2.2rem;
-  padding: 0.42rem 0.68rem;
-  border-radius: 0.62rem;
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 650;
-  cursor: pointer;
-  color: var(--text);
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-}
-
-.docs-open:hover,
-.docs-rail:hover {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.docs-open-icon {
-  display: block;
-  flex: none;
-}
-
-.docs-backdrop {
-  display: none;
-}
-
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -392,56 +364,6 @@ a:hover {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
-}
-
-/* Fixed right-edge chevron. Always on screen, including over the hero. */
-.docs-rail {
-  display: none;
-  position: fixed;
-  top: 50%;
-  right: var(--sidebar-w);
-  z-index: 32;
-  width: 1.7rem;
-  height: 3.6rem;
-  margin: 0;
-  padding: 0;
-  transform: translateY(-50%);
-  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
-  border-right: 0;
-  border-radius: 10px 0 0 10px;
-  background: #161616;
-  color: var(--accent-text);
-  box-shadow: -6px 0 20px rgb(0 0 0 / 0.4);
-  cursor: pointer;
-  appearance: none;
-  transition: right 0.2s ease, width 0.2s ease, height 0.2s ease;
-}
-
-html.has-nav-js .docs-rail {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-html.docs-collapsed .docs-rail {
-  right: 0;
-  width: 1.85rem;
-  height: 4.2rem;
-  border-right: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
-}
-
-.docs-rail-icon {
-  display: block;
-  width: 1.05rem;
-  height: 1.05rem;
-}
-
-.docs-rail-chevron {
-  stroke: var(--accent-bright);
-}
-
-html.docs-collapsed .docs-rail-icon {
-  transform: rotate(180deg);
 }
 
 /* ------------------------------------------------------------------ banner */
@@ -660,35 +582,11 @@ html.docs-collapsed .docs-rail-icon {
 
 .shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--sidebar-w);
+  grid-template-columns: minmax(0, 1fr);
   gap: clamp(1.5rem, 4vw, 3.5rem);
   max-width: 82rem;
   margin: 0 auto;
   padding: 2.5rem clamp(1rem, 4vw, 2.5rem) 4rem;
-}
-
-html.has-nav-js .shell {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-html.has-nav-js:not(.docs-collapsed) .shell {
-  padding-right: calc(var(--sidebar-w) + 1.75rem);
-}
-
-html.has-nav-js:not(.docs-collapsed) .topbar {
-  padding-right: calc(var(--sidebar-w) + 1.5rem);
-}
-
-html.has-nav-js:not(.docs-collapsed) .hero-inner {
-  padding-right: calc(var(--sidebar-w) + 2.25rem);
-}
-
-html.has-nav-js:not(.docs-collapsed) .banner {
-  padding-right: calc(var(--sidebar-w) + 1.75rem);
-}
-
-html.has-nav-js:not(.docs-collapsed) .footer-inner {
-  padding-right: calc(var(--sidebar-w) + 1.75rem);
 }
 
 .page-home .heading-anchor {
@@ -701,56 +599,47 @@ html.has-nav-js:not(.docs-collapsed) .footer-inner {
 }
 
 .sidebar {
-  position: sticky;
-  top: 5rem;
-  align-self: start;
-  width: var(--sidebar-w);
-  max-height: calc(100vh - 7rem);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  padding: 0.85rem 0.85rem 1rem;
-  background: color-mix(in srgb, var(--bg-soft) 72%, transparent);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-html.has-nav-js .sidebar {
-  position: fixed;
-  top: 0;
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.4rem);
   right: 0;
-  bottom: 0;
-  height: 100dvh;
-  z-index: 24;
+  left: auto;
+  z-index: 30;
   align-self: auto;
   width: var(--sidebar-w);
-  max-height: none;
+  min-width: 100%;
+  max-width: min(22rem, calc(100vw - 1.5rem));
+  max-height: min(70vh, 36rem);
+  overflow: hidden;
+  flex-direction: column;
+  font-size: 0.9rem;
   margin: 0;
-  padding: 1.15rem 1rem 1.25rem;
-  border-radius: 0;
-  border: 0;
-  border-left: 1px solid var(--border);
+  padding: 0.85rem 0.85rem 1rem;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--bg)) 0%, var(--bg) 16rem),
     var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
   backdrop-filter: blur(16px);
-  box-shadow: -18px 0 40px rgb(0 0 0 / 0.2);
-  transition: transform 0.2s ease;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.35);
 }
 
-html.has-nav-js .sidebar::before {
+.site-search.is-open .sidebar,
+.sidebar.is-open {
+  display: flex;
+}
+
+.sidebar[hidden] {
+  display: none !important;
+}
+
+.sidebar::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), var(--accent-bright), transparent);
   opacity: 0.9;
-}
-
-html.has-nav-js .sidebar.is-collapsed {
-  transform: translateX(100%);
-  pointer-events: none;
 }
 
 .sidebar-label {
@@ -790,6 +679,12 @@ html.has-nav-js .sidebar.is-collapsed {
   padding-right: 0.15rem;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--accent) 55%, var(--border)) transparent;
+}
+
+.sidebar-empty {
+  margin: 0.85rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .nav-group {
@@ -2967,10 +2862,6 @@ code.addr {
   z-index: 1;
 }
 
-html.has-nav-js:not(.docs-collapsed) .hero-readout {
-  right: calc(var(--sidebar-w) + 2rem);
-}
-
 .hero-readout-head {
   display: flex;
   align-items: center;
@@ -3355,6 +3246,12 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
     margin-left: 0;
   }
 
+  .site-search .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-width: calc(100vw - 1.7rem);
+  }
+
   .topnav {
     flex: 0 1 auto;
     min-width: 0;
@@ -3390,23 +3287,6 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   .shell {
     grid-template-columns: 1fr;
     padding-top: 1.5rem;
-  }
-
-  html.has-nav-js .shell,
-  html.has-nav-js:not(.docs-collapsed) .shell,
-  html.has-nav-js:not(.docs-collapsed) .topbar,
-  html.has-nav-js:not(.docs-collapsed) .hero-inner,
-  html.has-nav-js:not(.docs-collapsed) .banner,
-  html.has-nav-js:not(.docs-collapsed) .footer-inner {
-    padding-right: clamp(1rem, 4vw, 2.5rem);
-  }
-
-  .sidebar {
-    position: static;
-    width: auto;
-    max-height: none;
-    order: 2;
-    margin-top: 2.5rem;
   }
 
   main {
@@ -3463,73 +3343,18 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   .supply {
     grid-template-columns: 1fr;
   }
-
-  html.has-nav-js .docs-rail {
-    right: 0;
-    width: 1.85rem;
-    height: 4.2rem;
-    border-right: 1px solid color-mix(in srgb, var(--accent) 60%, var(--border));
-  }
-
-  html.has-nav-js .docs-rail-icon {
-    transform: rotate(180deg);
-  }
-
-  html.has-nav-js body.docs-open .docs-rail {
-    right: min(20.5rem, 88vw);
-    z-index: 45;
-    border-right: 0;
-  }
-
-  html.has-nav-js body.docs-open .docs-rail-icon {
-    transform: none;
-  }
 }
 
-html.has-nav-js .docs-open {
-  display: none;
-}
-
-.docs-open:focus-visible,
-.docs-rail:focus-visible,
 .nav-group-title:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 @media (max-width: 780px) {
-  html.has-nav-js .docs-open {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  html.has-nav-js .sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 40;
-    order: unset;
-    width: min(20.5rem, 88vw);
-    max-height: none;
-    margin: 0;
-    border-radius: 0;
-    border: 0;
-    border-left: 1px solid var(--border);
-    background: var(--bg);
-    transform: translateX(100%);
-    transition: transform 0.2s ease;
-    padding: 1rem 1rem 2rem;
-  }
-
   .hero-signal {
     top: 16%;
     right: -38%;
     width: 115vw;
-  }
-
-  html.has-nav-js .sidebar.is-open {
-    transform: none;
   }
 
   .trade-terminal-head,
@@ -3552,22 +3377,6 @@ html.has-nav-js .docs-open {
   .trade-wallet-list {
     justify-content: flex-start;
   }
-
-  html.has-nav-js .docs-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 35;
-    background: rgb(10 10 11 / 0.62);
-  }
-
-  body.docs-open .docs-backdrop {
-    display: block;
-  }
-
-  body.docs-open {
-    overflow: hidden;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3587,9 +3396,6 @@ html.has-nav-js .docs-open {
   .sidebar,
   .toc,
   .banner,
-  .docs-open,
-  .docs-rail,
-  .docs-backdrop,
   .hero-art,
   .hero-veil {
     display: none;
@@ -3628,9 +3434,6 @@ html.has-nav-js body.page-trade .prose {
   height: 100%;
 }
 
-body.page-trade .sidebar,
-body.page-trade .docs-rail,
-body.page-trade .docs-backdrop,
 body.page-trade .trade-footnote,
 body.page-trade .footer {
   display: none;

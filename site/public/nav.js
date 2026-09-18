@@ -1,18 +1,16 @@
 (() => {
   const html = document.documentElement;
-  const KEY_COLLAPSED = "pond-docs-nav-collapsed";
-  const mq = window.matchMedia("(max-width: 780px)");
-  const isMobile = () => mq.matches;
 
-  function setRail(root, open) {
-    const rail = document.querySelector("[data-docs-toggle]");
-    if (!rail) return;
-    rail.setAttribute("aria-expanded", String(open));
-    rail.title = open ? "Collapse documentation menu" : "Open documentation menu";
-    const railText = rail.querySelector(".visually-hidden");
-    if (railText) {
-      railText.textContent = open ? "Collapse documentation menu" : "Open documentation menu";
-    }
+  function docsNav() {
+    return document.getElementById("docs-nav");
+  }
+
+  function searchForm() {
+    return document.querySelector("[data-site-search]");
+  }
+
+  function searchInput() {
+    return document.querySelector("#site-search-input");
   }
 
   function openAllGroups(root) {
@@ -21,98 +19,115 @@
     });
   }
 
-  function setDesktopCollapsed(root, collapsed, persist) {
-    root.classList.toggle("is-collapsed", collapsed);
-    html.classList.toggle("docs-collapsed", collapsed);
-    if (!collapsed) openAllGroups(root);
-    setRail(root, !collapsed);
-    if (persist) {
-      try {
-        localStorage.setItem(KEY_COLLAPSED, collapsed ? "1" : "0");
-      } catch {
-        /* private mode */
-      }
-    }
+  function setIndexOpen(open) {
+    const root = docsNav();
+    const form = searchForm();
+    const input = searchInput();
+    if (!root || !form) return;
+    root.hidden = !open;
+    root.classList.toggle("is-open", open);
+    form.classList.toggle("is-open", open);
+    input?.setAttribute("aria-expanded", String(open));
+    if (open) openAllGroups(root);
   }
 
-  function setMobileOpen(root, open) {
-    root.classList.toggle("is-open", open);
-    document.body.classList.toggle("docs-open", open);
-    if (open) openAllGroups(root);
-    document.querySelectorAll("[data-docs-open]").forEach((button) => {
-      button.setAttribute("aria-expanded", String(open));
+  function filterIndex(query) {
+    const root = docsNav();
+    if (!root) return;
+    const q = query.trim().toLowerCase();
+    let any = false;
+    root.querySelectorAll("details[data-nav-group]").forEach((group) => {
+      const groupTitle = (group.querySelector(".nav-group-title")?.textContent || "").toLowerCase();
+      const groupHit = Boolean(q) && groupTitle.includes(q);
+      let itemHit = false;
+      group.querySelectorAll(":scope > ul > li").forEach((li) => {
+        const text = (li.textContent || "").toLowerCase();
+        const href = (li.querySelector("a")?.getAttribute("href") || "").toLowerCase();
+        const match = !q || groupHit || text.includes(q) || href.includes(q);
+        li.hidden = !match;
+        if (match) itemHit = true;
+      });
+      const show = !q || groupHit || itemHit;
+      group.hidden = !show;
+      if (show) {
+        group.open = true;
+        any = true;
+      }
     });
-    setRail(root, open);
+    const empty = root.querySelector("[data-docs-empty]");
+    if (empty) empty.hidden = any || !q;
+  }
+
+  function visiblePages(root) {
+    return [...root.querySelectorAll("details[data-nav-group]:not([hidden]) li:not([hidden]) a[href]")].map((anchor) => ({
+      title: (anchor.textContent || "").replace(/\bimportant\b/i, "").trim(),
+      url: anchor.getAttribute("href"),
+    }));
   }
 
   function setupSearch() {
-    const form = document.querySelector("[data-site-search]");
+    const form = searchForm();
     const input = form?.querySelector("input");
-    if (!form || !input) return;
+    const root = docsNav();
+    if (!form || !input || !root || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
 
-    const pages = [...document.querySelectorAll("#site-search-pages option")].map((option) => ({
-      title: option.value,
-      url: option.dataset.url,
-    }));
+    const open = () => {
+      setIndexOpen(true);
+      filterIndex(input.value);
+    };
+
+    input.addEventListener("focus", open);
+    input.addEventListener("click", open);
+    input.addEventListener("input", () => {
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("title");
+      open();
+    });
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       const query = input.value.trim().toLowerCase();
       if (!query) {
+        open();
         input.focus();
         return;
       }
 
+      const pages = visiblePages(root);
       const match =
         pages.find((page) => page.title.toLowerCase() === query || page.url === query) ||
         pages.find((page) => page.title.toLowerCase().includes(query));
 
-      if (!match) {
+      if (!match?.url) {
         input.setAttribute("aria-invalid", "true");
         input.title = "No matching page found";
+        open();
         return;
       }
 
       input.removeAttribute("aria-invalid");
       input.removeAttribute("title");
+      setIndexOpen(false);
       navigate(match.url);
     });
 
-    input.addEventListener("input", () => {
-      input.removeAttribute("aria-invalid");
-      input.removeAttribute("title");
+    form.addEventListener("focusout", (event) => {
+      const next = event.relatedTarget;
+      if (next instanceof Node && form.contains(next)) return;
+      if (next == null) return;
+      setIndexOpen(false);
     });
   }
 
   function setupNavigation() {
-    const root = document.getElementById("docs-nav");
+    const root = docsNav();
     if (!root) return;
     html.classList.add("has-nav-js");
     setupSearch();
     openAllGroups(root);
-    if (isMobile()) {
-      root.classList.remove("is-collapsed");
-      html.classList.remove("docs-collapsed");
-      setMobileOpen(root, false);
-    } else {
-      setMobileOpen(root, false);
-      let collapsed = false;
-      try {
-        collapsed = localStorage.getItem(KEY_COLLAPSED) === "1";
-      } catch {
-        /* private mode */
-      }
-      setDesktopCollapsed(root, collapsed, false);
-    }
-    const rail = document.querySelector("[data-docs-toggle]");
-    rail?.addEventListener("click", () => {
-      if (isMobile()) setMobileOpen(root, !root.classList.contains("is-open"));
-      else setDesktopCollapsed(root, !root.classList.contains("is-collapsed"), true);
-    });
-    document.querySelectorAll("[data-docs-open]").forEach((button) => {
-      button.addEventListener("click", () => setMobileOpen(root, !root.classList.contains("is-open")));
-    });
-    document.querySelector("[data-docs-backdrop]")?.addEventListener("click", () => setMobileOpen(root, false));
+    setIndexOpen(false);
+    filterIndex("");
   }
 
   function updateHead(nextDocument) {
@@ -178,20 +193,35 @@
     if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
     const url = new URL(link.href, window.location.href);
     if (url.origin !== window.location.origin || url.hash) return;
+    if (link.closest("#docs-nav")) setIndexOpen(false);
     event.preventDefault();
     navigate(`${url.pathname}${url.search}`);
   });
 
+  document.addEventListener("pointerdown", (event) => {
+    const form = searchForm();
+    const target = event.target;
+    if (!form || !(target instanceof Node) || form.contains(target)) return;
+    setIndexOpen(false);
+  });
+
   window.addEventListener("popstate", () => navigate(`${window.location.pathname}${window.location.search}`, false));
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      const root = docsNav();
+      if (!root || root.hidden) return;
+      event.preventDefault();
+      setIndexOpen(false);
+      searchInput()?.blur();
+      return;
+    }
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-      const input = document.querySelector("#site-search-input");
+      const input = searchInput();
       if (!input) return;
       event.preventDefault();
       input.focus();
       input.select();
     }
   });
-  mq.addEventListener("change", setupNavigation);
   setupNavigation();
 })();
