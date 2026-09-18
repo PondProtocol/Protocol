@@ -2197,6 +2197,14 @@ code.addr {
   gap: 0.75rem;
 }
 
+.trade-dex-chart-empty {
+  min-height: 25rem;
+}
+
+.trade-app[data-mode="dex"] .trade-detail-window {
+  display: none;
+}
+
 .trade-position,
 .trade-action-card {
   overflow: hidden;

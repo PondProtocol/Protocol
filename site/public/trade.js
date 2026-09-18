@@ -130,31 +130,22 @@
     </div>
 
     <section class="trade-mode-view trade-mode-workspace trade-dex-view" data-mode-view="dex" aria-label="DEX workspace" hidden>
-      <section class="trade-market-pane">
-        <nav class="trade-subtabs" aria-label="DEX market detail" data-tab-group="dex-market">
-          <button type="button" class="is-active" data-tab="dex-book" aria-selected="true">Order book</button>
-          <button type="button" data-tab="dex-depth" aria-selected="false">Depth</button>
-          <button type="button" data-tab="dex-trades" aria-selected="false">Recent trades</button>
-          <button type="button" data-tab="dex-offers" aria-selected="false">My offers</button>
-        </nav>
+      <section class="trade-market-pane trade-dex-chart-pane" aria-label="PND market chart">
         <div class="trade-chart-toolbar">
-          <div class="trade-chart-tools trade-market-pairs" data-control-group="dex-pair"><button type="button" class="is-active">PND / XRP</button><button type="button">PND / rPND</button><button type="button">rPND / XRP</button></div>
-          <div class="trade-range-tools"><button type="button" class="is-active">Live</button><button type="button">1D</button><button type="button">1W</button></div>
+          <div class="trade-chart-tools"><span class="is-active">$PND / XRP</span><span>XRPL DEX</span></div>
+          <div class="trade-range-tools"><button type="button" class="is-active">1H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
         </div>
-        <div class="trade-market-panels" data-tab-panels="dex-market">
-          <div class="trade-panel is-active" data-panel="dex-book">
-            <div class="trade-order-book">
-              <div class="trade-order-book-head"><span>Price (XRP)</span><span>Amount</span><span>Total</span></div>
-              <div class="trade-order-book-side"><span>Asks</span><b>Offers unavailable until a verified market exists.</b></div>
-              <div class="trade-order-book-spread"><span>Spread</span><strong>—</strong></div>
-              <div class="trade-order-book-side is-bids"><span>Bids</span><b>Offers unavailable until a verified market exists.</b></div>
+        <div class="trade-market-panels">
+          <div class="trade-panel is-active">
+            <div class="trade-chart-empty trade-dex-chart-empty">
+              <div class="trade-chart-grid"></div>
+              <span class="trade-chart-mark">P</span>
+              <strong>$PND / XRP chart activates after market verification</strong>
+              <span>Validated XRPL DEX prices and volume will appear here after $PND is issued and the market is verified.</span>
             </div>
           </div>
-          <div class="trade-panel" data-panel="dex-depth" hidden><div class="trade-empty-panel"><strong>Depth chart unavailable</strong><span>Verified XRPL offers are required before bid and ask depth can be plotted.</span></div></div>
-          <div class="trade-panel" data-panel="dex-trades" hidden><div class="trade-empty-panel"><strong>Recent trades unavailable</strong><span>Validated ledger executions will appear after a market is verified.</span></div></div>
-          <div class="trade-panel" data-panel="dex-offers" hidden><div class="trade-empty-panel"><strong>No offers to show</strong><span>Connect a self-custody wallet only after the issuer, market, and signing route pass verification.</span></div></div>
         </div>
-        <div class="trade-market-footer"><span>Data source: XRPL offers and validated ledger</span><span>DEX route gated</span></div>
+        <div class="trade-market-footer"><span>Data source: XRPL validated ledger</span><span>PND market verification required</span></div>
       </section>
 
       <aside class="trade-action-pane" aria-label="DEX order actions">
