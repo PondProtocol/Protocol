@@ -408,8 +408,8 @@ check(
     /claim button/i.test(asText(holdHtml)),
 );
 check(
-  "hold page points at official Xaman SignIn only",
-  holdHtml.includes("/connect/") && /Xaman SignIn/i.test(asText(holdHtml)),
+  "hold page points at official Xaman SignIn on Trade",
+  holdHtml.includes("/trade/") && /Xaman SignIn/i.test(asText(holdHtml)),
 );
 
 const connectPage = join(DIST_DIR, "connect", "index.html");
@@ -427,7 +427,7 @@ check(
   /app keys/i.test(asText(connectHtml)),
 );
 check(
-  "every page links to official Xaman connect",
+  "every page still links to /connect/ (kept, not featured in the top bar)",
   files
     .filter((f) => f.endsWith("index.html") || f.endsWith("404.html"))
     .every((f) => readFileSync(f, "utf8").includes('href="/connect/"')),
@@ -435,6 +435,65 @@ check(
 
 const xamanJs = join(DIST_DIR, "xaman.js");
 check("xaman.js is copied into the build", existsSync(xamanJs));
+
+const headerHtml = indexHtml.match(/<header class="topbar">[\s\S]*?<\/header>/)?.[0] ?? "";
+const headerText = asText(headerHtml);
+check(
+  "top bar is Protocol, Trade, Pond, Meet Team",
+  /Protocol\s+Trade\s+Pond\s+Meet Team/.test(headerText) &&
+    headerHtml.includes('href="/protocol/"') &&
+    headerHtml.includes('href="/trade/"') &&
+    headerHtml.includes('href="/pond/"') &&
+    headerHtml.includes('href="/team/"'),
+);
+check(
+  "top bar does not feature Verify, Hold, Wallets, or Xaman",
+  !headerHtml.includes('href="/verify/"') &&
+    !headerHtml.includes('href="/hold/"') &&
+    !headerHtml.includes('href="/wallets/"') &&
+    !headerHtml.includes('href="/connect/"') &&
+    !/>Xaman</i.test(headerHtml),
+);
+check(
+  "docs search sits after Meet Team as the last top-bar item",
+  headerHtml.includes("Meet Team") &&
+    headerHtml.includes("data-site-search") &&
+    headerHtml.indexOf("Meet Team") < headerHtml.indexOf("data-site-search"),
+);
+const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
+check(
+  "landing hero does not use a Connect Xaman CTA",
+  heroActions.includes("/verify/") &&
+    heroActions.includes("/hold/") &&
+    !/Connect Xaman/i.test(heroActions),
+);
+
+const tradePage = join(DIST_DIR, "trade", "index.html");
+const tradeHtml = existsSync(tradePage) ? readFileSync(tradePage, "utf8") : "";
+const tradeJs = join(DIST_DIR, "trade.js");
+const tradeJsText = existsSync(tradeJs) ? readFileSync(tradeJs, "utf8") : "";
+check("trade page was built", tradeHtml.length > 0);
+check(
+  "trade terminal mounts official Xaman SignIn beside WalletConnect",
+  tradeJsText.includes("data-xaman-app") &&
+    tradeJsText.includes("data-xaman-compact") &&
+    tradeJsText.includes("data-wallet-connect") &&
+    tradeJsText.includes("WalletConnect"),
+);
+check(
+  "xaman.js paints an honest unavailable state instead of a fake connect",
+  existsSync(xamanJs) &&
+    readFileSync(xamanJs, "utf8").includes("Connect unavailable until Xaman app keys are set") &&
+    readFileSync(xamanJs, "utf8").includes("This is not a fake connect"),
+);
+
+const stylesCss = join(DIST_DIR, "styles.css");
+const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
+check(
+  "mobile CSS does not hide Protocol / Trade / Pond / Meet Team",
+  !/\.topnav a:not\(\.cta\)/.test(stylesText),
+);
+
 const secretLeak = textFiles.filter((f) => {
   const text = readFileSync(f, "utf8");
   return /X-API-Secret\s*[:=]\s*['"]/i.test(text) || /XUMM_API_SECRET\s*=\s*['"][^'"]+/.test(text);

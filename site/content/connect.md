@@ -1,7 +1,8 @@
 # Connect Xaman
 
 Official Xaman SignIn only. This page never asks for a seed, never imports a
-wallet, and is not a claim. $PND has not been issued.
+wallet, and is not a claim. $PND has not been issued. The same SignIn also
+lives on [Trade](/trade/); this URL is kept working and is not in the top bar.
 
 <div class="xaman-app" data-xaman-app data-issuer="{{issuerAddress}}"></div>
 

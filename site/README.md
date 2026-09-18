@@ -39,9 +39,10 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 
 ## Xaman (owner keys)
 
-Official Xaman / Xumm **payload SignIn** lives in `serve.mjs`. The frontend never
-receives the API secret. There is no airdrop claim, no DEX trade, and no seed
-field.
+Official Xaman / Xumm **payload SignIn** lives in `serve.mjs` and is shown on
+`/trade/` (beside WalletConnect). The frontend never receives the API secret.
+There is no airdrop claim, no DEX trade, and no seed field. The top bar is
+Protocol · Trade · Pond · Meet Team, with docs search last on the right.
 
 Set these on the **Replit Autoscale** app (Secrets / env), then Publish. Do not
 put them in the repo, in `site/dist`, or in browser JavaScript.
@@ -53,8 +54,9 @@ put them in the repo, in `site/dist`, or in browser JavaScript.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
 **not** already have keys. Until both variables are set, `GET /health` reports
-`xaman.connect: "unavailable"` and `/connect/` shows *Connect unavailable until
-Xaman app keys are set* instead of a dead button.
+`xaman.connect: "unavailable"` and **Trade** (`/trade/`) shows *Connect
+unavailable until Xaman app keys are set* instead of a fake connect. `/connect/`
+still works if you have the URL; it is not in the top bar.
 
 Useful routes after Publish:
 
