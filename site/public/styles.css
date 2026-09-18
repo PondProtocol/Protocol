@@ -4931,6 +4931,51 @@ body.page-trade .trade-mode-workspace {
   gap: 0.55rem;
 }
 
+@media (min-width: 781px) {
+  body.page-trade .trade-app[data-mode="dex"] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-view {
+    flex: 1;
+    align-items: stretch;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-chart-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-market-panels,
+  body.page-trade .trade-app[data-mode="dex"] .trade-market-panels > .trade-panel,
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-chart-empty {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-action-pane {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    align-content: stretch;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-action-card {
+    display: flex;
+    align-self: stretch;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  body.page-trade .trade-app[data-mode="dex"] .trade-action-panels {
+    flex: 1;
+  }
+}
+
 body.page-trade .trade-market-pane,
 body.page-trade .trade-position,
 body.page-trade .trade-action-card,
