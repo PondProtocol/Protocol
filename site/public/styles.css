@@ -3237,28 +3237,33 @@ code.addr {
     flex: 1 0 100%;
     order: 3;
     margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+
+  .topnav {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 
   .site-search {
-    flex: 1 1 auto;
+    flex: 1 0 100%;
     max-width: none;
     min-width: 0;
     margin-left: 0;
   }
 
   .site-search .sidebar {
-    width: 100%;
-    min-width: 100%;
-    max-width: calc(100vw - 1.7rem);
-  }
-
-  .topnav {
-    flex: 0 1 auto;
+    left: 0;
+    right: 0;
+    width: auto;
     min-width: 0;
-    margin-left: 0;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    white-space: normal;
+    max-width: none;
   }
 
   .footer {
