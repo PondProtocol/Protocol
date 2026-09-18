@@ -453,6 +453,83 @@ function tocHtml(html) {
 // sitewide banner out of the page shell so focused pages have room to work.
 const banner = "";
 
+const iconShield = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`;
+const iconLock = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>`;
+const iconVault = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/><path d="m7.9 7.9 2.7 2.7"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/><path d="m13.4 10.6 2.7-2.7"/><circle cx="7.5" cy="16.5" r=".5" fill="currentColor"/><path d="m7.9 16.1 2.7-2.7"/><circle cx="16.5" cy="16.5" r=".5" fill="currentColor"/><path d="m13.4 13.4 2.7 2.7"/><circle cx="12" cy="12" r="2"/></svg>`;
+const iconX = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`;
+const iconCheck = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`;
+const iconBan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>`;
+const iconCookie = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>`;
+const iconScan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg>`;
+
+function privacyDockHtml() {
+  return `<div class="privacy-dock" data-privacy-dock data-privacy-mode="fab" data-testid="privacy-bottom-dock">
+  <div class="privacy-dock-stack" data-privacy-stack>
+    <button type="button" class="privacy-fab" data-privacy-fab aria-label="Open privacy vault" data-testid="button-cookie-settings">
+      <span class="privacy-fab-mark" aria-hidden="true">
+        <span class="privacy-fab-shield">${iconShield}</span>
+        <span class="privacy-fab-lock">${iconLock}</span>
+      </span>
+      <span class="privacy-fab-tip">Privacy vault</span>
+    </button>
+    <div class="privacy-notice" data-privacy-notice hidden role="status" data-testid="privacy-first-visit-notice">
+      <div class="privacy-notice-head">
+        <p class="privacy-kicker privacy-kicker-notice">Private Browsing</p>
+        <button type="button" class="privacy-icon-btn" data-privacy-close-notice aria-label="Close private browsing notice" data-testid="button-close-privacy-notice">${iconX}</button>
+      </div>
+      <p class="privacy-notice-copy">Tracking is off. We do not sell your data, run ads, or ask for seeds, keys, or passwords. This is the $PND / Pond Protocol site, not the Greenhead Labs agent product.</p>
+      <div class="privacy-notice-actions">
+        <a class="privacy-btn privacy-btn-mint" href="/legal/" data-privacy-legal data-testid="button-privacy-notice-legal">Legal</a>
+        <button type="button" class="privacy-btn privacy-btn-ghost" data-privacy-open-vault data-testid="button-open-privacy-vault-from-notice">Privacy vault</button>
+      </div>
+    </div>
+    <div class="privacy-vault" data-privacy-vault hidden role="dialog" aria-modal="true" aria-labelledby="privacy-vault-title" data-testid="cookie-settings-panel">
+      <div class="privacy-vault-body">
+        <div class="privacy-vault-head">
+          <div>
+            <div class="privacy-kicker privacy-kicker-vault">${iconVault}<span>Privacy controls</span></div>
+            <h2 id="privacy-vault-title">Privacy vault</h2>
+          </div>
+          <button type="button" class="privacy-icon-btn" data-privacy-close-vault aria-label="Close cookie settings" data-testid="button-close-cookie-settings">${iconX}</button>
+        </div>
+        <p class="privacy-vault-lede">This is pond.greenhead.io, the Pond Protocol / $PND documentation site — not the Greenhead Labs agent product at greenhead.io. Analytics and advertising scripts are not installed. We do not sell or share personal information. We will never ask for seed phrases, private keys, or passwords in a message or pop-up. Connect wallet on Trade is the official XRPL connect; it is not a seed prompt.</p>
+        <p class="privacy-gpc" data-privacy-gpc hidden data-testid="privacy-gpc-note">Your browser sent a Global Privacy Control or Do Not Track signal. Tracking stays off.</p>
+        <div class="privacy-rows">
+          <div class="privacy-row">
+            <span>
+              <span class="privacy-row-title">No Tracking Or Data Collection</span>
+              <span class="privacy-row-copy">We do not profile you, fingerprint your browser, or build a record of who you are. Public pages do not collect your name, email, wallet, location, or visit history. We will never ask for seed phrases, private keys, or passwords in a pop-up, email, or chat.</span>
+            </span>
+            <span class="privacy-blocked" aria-label="Tracking blocked">
+              <span class="privacy-blocked-scan">${iconScan}</span>
+              <span class="privacy-blocked-x">${iconX}</span>
+            </span>
+          </div>
+          <div class="privacy-row">
+            <span>
+              <span class="privacy-row-title">Analytics</span>
+              <span class="privacy-row-copy">No analytics scripts are installed. We do not use your data, visit history, or cookies to measure you, and we will not sell or share a browsing profile. There is no Pond visitor counter on this site.</span>
+            </span>
+            <span class="privacy-off" aria-label="Analytics not installed">${iconBan}Off</span>
+          </div>
+          <div class="privacy-row">
+            <span>
+              <span class="privacy-row-title">Cookies</span>
+              <span class="privacy-row-copy">This docs site does not set advertising or tracking cookies. There is no public account system on these pages. WalletConnect or Xaman on Trade may run in your wallet app; that is wallet software, not Pond analytics.</span>
+            </span>
+            <span class="privacy-off" aria-label="Tracking cookies not used">${iconCookie}Off</span>
+          </div>
+        </div>
+      </div>
+      <div class="privacy-vault-actions">
+        <a class="privacy-btn privacy-btn-ghost" href="/legal/" data-privacy-legal data-testid="button-vault-legal">Legal</a>
+        <button type="button" class="privacy-btn privacy-btn-mint privacy-btn-got-it" data-privacy-got-it data-testid="button-save-cookie-settings">${iconCheck}Got it</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
 function layout(page, html) {
   const isHome = page.url === "/";
   const title = isHome ? site.title : `${page.title} — ${site.title}`;
@@ -584,6 +661,7 @@ ${isHome ? heroHtml() : ""}
         <div>
           <h2>Company</h2>
           <a href="/team/">Meet the team</a>
+          <a href="/legal/">Legal &amp; privacy</a>
           <a href="/links/">Contact &amp; official links</a>
         </div>
       </nav>
@@ -608,6 +686,8 @@ ${isHome ? heroHtml() : ""}
           <a href="/verify/">Issuer verification</a>
           <span aria-hidden="true">|</span>
           <a href="/protocol/security/">Security</a>
+          <span aria-hidden="true">|</span>
+          <a href="/legal/">Legal</a>
         </div>
         <p>© 2026 ${esc(site.title)}. Documentation licensed Apache-2.0.</p>
         <p class="footer-integrity">The issuer address is the source of truth for $PND identity. <a href="/verify/">Check it before you trust a balance or link.</a></p>
@@ -616,8 +696,10 @@ ${isHome ? heroHtml() : ""}
   </div>
 </footer>
 </div>
+${privacyDockHtml()}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 <script src="/nav.js" defer></script>
+<script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>
 ${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}
 <script src="/trade.js" defer></script>

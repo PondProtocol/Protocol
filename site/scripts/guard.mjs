@@ -732,6 +732,48 @@ check(
   authoredStale.join("; "),
 );
 
+const privacyJs = join(DIST_DIR, "privacy.js");
+const privacyJsText = existsSync(privacyJs) ? readFileSync(privacyJs, "utf8") : "";
+const legalPage = join(DIST_DIR, "legal", "index.html");
+const legalHtml = existsSync(legalPage) ? readFileSync(legalPage, "utf8") : "";
+const tradeHasDock = tradeHtml.includes('data-privacy-dock');
+check("privacy.js is copied into the build", existsSync(privacyJs));
+check(
+  "privacy dock is sitewide, including Trade",
+  indexHtml.includes('data-privacy-dock') &&
+    indexHtml.includes("/privacy.js") &&
+    tradeHasDock &&
+    legalHtml.includes('data-privacy-dock'),
+);
+check(
+  "privacy UI has the icon, Private Browsing card, and Privacy vault",
+  indexHtml.includes("data-privacy-fab") &&
+    indexHtml.includes("Private Browsing") &&
+    indexHtml.includes("Privacy vault") &&
+    indexHtml.includes("Privacy controls") &&
+    indexHtml.includes("Got it"),
+);
+check(
+  "privacy Legal buttons go to Pond /legal/, not greenhead.io/legal",
+  /href="\/legal\/"/g.test(indexHtml) &&
+    !indexHtml.includes('href="https://greenhead.io/legal"') &&
+    legalHtml.includes("pond.greenhead.io") &&
+    /not the Greenhead Labs agent product/i.test(asText(legalHtml)),
+);
+check(
+  "privacy UI does not invent a visitor counter or install analytics",
+  !/Total Private Visitors/i.test(indexHtml) &&
+    !indexHtml.includes("/api/privacy/private-visitors") &&
+    !privacyJsText.includes("gtag") &&
+    !privacyJsText.includes("plausible") &&
+    /No analytics scripts are installed/i.test(indexHtml),
+);
+check(
+  "privacy UI never asks for a seed",
+  /never ask for seed phrases/i.test(asText(indexHtml)) &&
+    !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(indexHtml),
+);
+
 /* ------------------------------------------------------------------ report */
 
 process.stdout.write(`\n  Publication guard\n  ${"-".repeat(58)}\n`);

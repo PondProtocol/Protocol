@@ -213,6 +213,7 @@
     {
       "section": "Status",
       "pages": [
+        { "authored": "legal.md", "url": "/legal/", "title": "Legal & privacy" },
         { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
         { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }
       ]
