@@ -50,8 +50,8 @@ places to trade.
 - Telegram, Discord, or any chat invite this page does not print
 - “Create token” / memepad / Token Hub flows
 - Anything that asks you to paste a seed, or to connect a wallet to *claim*
-  $PND. Official [Xaman SignIn](/connect/) on this host is the exception; it
-  is not a claim.
+  $PND. Official Xaman SignIn on [Trade](/trade/) is the exception; it is not
+  a claim.
 
 After issuance, marketplace links go on [Verify](/verify/) only once a human
 has loaded the real page for issuer `{{issuerAddress}}`. Until then, absence

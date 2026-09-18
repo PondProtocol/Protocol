@@ -18,7 +18,12 @@ const MAX_BODY = 16 * 1024;
 const config = loadConfig();
 const issuer = config.site.issuerAddress;
 const domain = config.site.domain;
-const returnUrl = `https://${domain}/connect/?payload={id}`;
+const ALLOWED_RETURN = new Set(["/connect/", "/trade/"]);
+
+function payloadReturnUrl(returnTo) {
+  const path = ALLOWED_RETURN.has(returnTo) ? returnTo : "/connect/";
+  return `https://${domain}${path}?payload={id}`;
+}
 
 export function xamanConfigured() {
   return Boolean(process.env.XUMM_API_KEY?.trim() && process.env.XUMM_API_SECRET?.trim());
@@ -130,8 +135,9 @@ function publicPayload(data) {
   };
 }
 
-async function createSignIn(res) {
+async function createSignIn(res, body = {}) {
   if (!xamanConfigured()) return unavailable(res);
+  const back = payloadReturnUrl(body.returnTo);
   const { ok, status, data } = await xumm("/payload", {
     method: "POST",
     body: {
@@ -140,7 +146,7 @@ async function createSignIn(res) {
         submit: false,
         expire: 10,
         force_network: "MAINNET",
-        return_url: { app: returnUrl, web: returnUrl },
+        return_url: { app: back, web: back },
       },
       custom_meta: {
         instruction:
@@ -158,8 +164,9 @@ async function createSignIn(res) {
   json(res, 200, publicCreate(data));
 }
 
-async function createTrustSet(res) {
+async function createTrustSet(res, body = {}) {
   if (!xamanConfigured()) return unavailable(res);
+  const back = payloadReturnUrl(body.returnTo);
   const { ok, status, data } = await xumm("/payload", {
     method: "POST",
     body: {
@@ -175,7 +182,7 @@ async function createTrustSet(res) {
         submit: true,
         expire: 15,
         force_network: "MAINNET",
-        return_url: { app: returnUrl, web: returnUrl },
+        return_url: { app: back, web: back },
       },
       custom_meta: {
         instruction:
@@ -225,24 +232,26 @@ export async function handleApi(req, res, url) {
   }
 
   if (url === "/api/xaman/signin" && req.method === "POST") {
+    let body;
     try {
-      await readBody(req);
+      body = await readBody(req);
     } catch (error) {
       json(res, 400, { error: "bad_request", message: error.message });
       return true;
     }
-    await createSignIn(res);
+    await createSignIn(res, body);
     return true;
   }
 
   if (url === "/api/xaman/trustset" && req.method === "POST") {
+    let body;
     try {
-      await readBody(req);
+      body = await readBody(req);
     } catch (error) {
       json(res, 400, { error: "bad_request", message: error.message });
       return true;
     }
-    await createTrustSet(res);
+    await createTrustSet(res, body);
     return true;
   }
 

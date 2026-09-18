@@ -2,6 +2,13 @@
   const SESSION_KEY = "pond-xaman-session";
   const issuer = () => window.POND?.issuer || "";
   const mounts = () => [...document.querySelectorAll("[data-xaman-app]")];
+  const isCompact = (root) => root?.hasAttribute("data-xaman-compact");
+  const returnTo = (root) => {
+    const requested = root?.dataset.return;
+    if (requested === "/trade/" || requested === "/connect/") return requested;
+    if (window.location.pathname.startsWith("/trade")) return "/trade/";
+    return "/connect/";
+  };
 
   function session() {
     try {
@@ -58,7 +65,16 @@
       </div>`;
   }
 
-  function unavailableHtml(reason) {
+  function unavailableHtml(reason, compact) {
+    if (compact) {
+      return `
+      <div class="xaman-compact xaman-unavailable" role="status">
+        <p class="xaman-kicker">Xaman</p>
+        <strong>Connect unavailable until Xaman app keys are set</strong>
+        <span>${esc(reason)}</span>
+        <span>This is not a fake connect. Pond never asks for a seed.</span>
+      </div>`;
+    }
     return `
       <div class="xaman-card xaman-unavailable" role="status">
         <p class="xaman-kicker">Xaman</p>
@@ -69,7 +85,15 @@
       </div>`;
   }
 
-  function idleHtml() {
+  function idleHtml(compact) {
+    if (compact) {
+      return `
+      <div class="xaman-compact">
+        <p class="xaman-kicker">Xaman · official SignIn</p>
+        <button type="button" class="xaman-compact-button" data-xaman-signin>Connect Xaman</button>
+        <span class="xaman-note">Never a seed. Not a claim.</span>
+      </div>`;
+    }
     return `
       <div class="xaman-card">
         <p class="xaman-kicker">Xaman · official SignIn</p>
@@ -80,7 +104,16 @@
       </div>`;
   }
 
-  function connectedHtml(state) {
+  function connectedHtml(state, compact) {
+    if (compact) {
+      return `
+      <div class="xaman-compact">
+        <p class="xaman-kicker">Xaman connected</p>
+        <code class="addr" title="${esc(state.account)}">${esc(shortAddr(state.account))}</code>
+        <button type="button" class="xaman-compact-button" data-xaman-trustset>Trust line</button>
+        <button type="button" class="xaman-text-button" data-xaman-disconnect>Disconnect</button>
+      </div>`;
+    }
     return `
       <div class="xaman-card">
         <p class="xaman-kicker">Connected · SignIn only</p>
@@ -95,6 +128,14 @@
         </div>
         <p class="xaman-actions"><button type="button" class="xaman-text-button" data-xaman-disconnect>Disconnect this browser</button></p>
       </div>`;
+  }
+
+  function waitingHtml(payload, heading, compact) {
+    const card = payloadCard(payload, heading);
+    if (compact) {
+      return `<div class="xaman-compact xaman-compact-open">${card}</div>`;
+    }
+    return `<div class="xaman-card">${card}</div>`;
   }
 
   function setNav(state, health) {
@@ -121,11 +162,11 @@
     return response.json();
   }
 
-  async function post(path) {
+  async function post(path, body = {}) {
     const response = await fetch(path, {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
-      body: "{}",
+      body: JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -155,9 +196,12 @@
   }
 
   function showError(root, health, message) {
+    const compact = isCompact(root);
     render(
       root,
-      `<div class="xaman-card"><p class="xaman-kicker">Xaman</p><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml()}</div>`,
+      compact
+        ? `<div class="xaman-compact"><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}</div>`
+        : `<div class="xaman-card"><p class="xaman-kicker">Xaman</p><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(false)}</div>`,
     );
     bind(root, health);
   }
@@ -170,7 +214,7 @@
   }
 
   function pollUntilResolved(root, health, payload, heading) {
-    render(root, `<div class="xaman-card">${payloadCard(payload, heading)}</div>`);
+    render(root, waitingHtml(payload, heading, isCompact(root)));
     bind(root, health);
     stopPoll();
     pollTimer = window.setInterval(async () => {
@@ -197,11 +241,11 @@
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        const payload = await post("/api/xaman/signin");
+        const payload = await post("/api/xaman/signin", { returnTo: returnTo(root) });
         pollUntilResolved(root, health, payload, "Sign in with Xaman");
       } catch (error) {
         if (error.status === 503) {
-          render(root, unavailableHtml(error.payload?.message || health.xaman?.reason || "Connect unavailable."));
+          render(root, unavailableHtml(error.payload?.message || health.xaman?.reason || "Connect unavailable.", isCompact(root)));
           return;
         }
         showError(root, health, error.message);
@@ -211,7 +255,7 @@
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        const payload = await post("/api/xaman/trustset");
+        const payload = await post("/api/xaman/trustset", { returnTo: returnTo(root) });
         pollUntilResolved(root, health, payload, "Confirm the $PND trust line in Xaman — nothing is issued yet");
       } catch (error) {
         showError(root, health, error.message);
@@ -225,7 +269,12 @@
   }
 
   async function resumePayload(root, health, uuid) {
-    render(root, `<div class="xaman-card"><p>Checking the Xaman sign request…</p></div>`);
+    render(
+      root,
+      isCompact(root)
+        ? `<div class="xaman-compact"><p>Checking the Xaman sign request…</p></div>`
+        : `<div class="xaman-card"><p>Checking the Xaman sign request…</p></div>`,
+    );
     try {
       const status = await getPayload(uuid);
       if (status.signed && status.account) {
@@ -245,13 +294,14 @@
 
   function paint(root, health) {
     const current = session();
+    const compact = isCompact(root);
     setNav(current, health);
     if (!health.xaman?.configured) {
-      render(root, unavailableHtml(health.xaman?.reason || "Connect unavailable until Xaman app keys are set."));
+      render(root, unavailableHtml(health.xaman?.reason || "Connect unavailable until Xaman app keys are set.", compact));
       return;
     }
     if (current?.account) {
-      render(root, connectedHtml(current));
+      render(root, connectedHtml(current, compact));
       bind(root, health);
       return;
     }
@@ -260,11 +310,12 @@
       resumePayload(root, health, returning);
       return;
     }
-    render(root, idleHtml());
+    render(root, idleHtml(compact));
     bind(root, health);
   }
 
   async function init() {
+    stopPoll();
     const roots = mounts();
     let health;
     try {

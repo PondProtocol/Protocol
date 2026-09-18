@@ -28,9 +28,10 @@
       <div class="trade-terminal-actions">
         <button type="button" class="trade-icon-button" aria-label="Refresh ledger" data-refresh>↻</button>
         <span class="trade-wallet-status" data-wallet-status>Wallet not connected</span>
-        <button type="button" class="trade-connect-top" data-wallet-connect>Connect wallet</button>
+        <button type="button" class="trade-connect-top" data-wallet-connect>WalletConnect</button>
       </div>
     </header>
+    <div class="trade-xaman-dock" data-xaman-app data-xaman-compact data-return="/trade/"></div>
 
     <div class="trade-disclaimer-backdrop" data-disclaimer hidden>
       <section class="trade-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-disclaimer-title">
@@ -657,7 +658,7 @@
         if (button.hasAttribute("data-dex-submit")) {
           button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
         } else {
-          button.textContent = connected ? "Wallet connected" : "Connect wallet";
+          button.textContent = connected ? "Wallet connected" : "WalletConnect";
         }
         button.classList.toggle("is-connected", connected);
       });
@@ -1479,6 +1480,7 @@
     setMode(initialMode);
     setNetworkButtons();
     refresh();
+    window.PondXaman?.init?.();
   }
 
   window.PondTrade = { init };

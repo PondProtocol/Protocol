@@ -24,7 +24,7 @@ Holders do not claim on this site.
 <div class="callout callout-critical">
 
 $PND has not been issued. Nothing here is claimable. This site has **no
-claim button.** Official [Xaman SignIn](/connect/) is not a claim. Do not
+claim button.** Official Xaman SignIn on [Trade](/trade/) is not a claim. Do not
 treat this table as on-ledger escrow. Treasury payments after a published
 snapshot are the path — not a form on pond.greenhead.io.
 

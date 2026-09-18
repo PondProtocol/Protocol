@@ -106,20 +106,10 @@ a:hover {
   gap: clamp(0.8rem, 2vw, 1.5rem);
   flex-wrap: nowrap;
   padding: 0.85rem clamp(1rem, 4vw, 2.5rem);
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  background: var(--bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
-}
-
-.topbar-end {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.65rem;
-  flex: 0 1 auto;
-  min-width: 0;
-  margin-left: auto;
 }
 
 .brand {
@@ -146,11 +136,12 @@ a:hover {
 .topnav {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-width: 0;
-  justify-content: flex-end;
-  gap: 0.3rem;
-  font-size: 0.8rem;
+  justify-content: flex-start;
+  gap: 0.15rem;
+  font-size: 0.86rem;
+  font-weight: 550;
   white-space: nowrap;
 }
 
@@ -158,10 +149,10 @@ a:hover {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 1 16rem;
-  min-width: 9rem;
-  max-width: 18rem;
-  margin-left: 0;
+  flex: 0 1 14rem;
+  min-width: 11rem;
+  max-width: 16rem;
+  margin-left: auto;
 }
 
 .site-search-icon {
@@ -222,7 +213,7 @@ a:hover {
   display: inline-flex;
   align-items: center;
   min-height: 2.2rem;
-  padding: 0.42rem 0.68rem;
+  padding: 0.42rem 0.72rem;
   border: 1px solid transparent;
   border-radius: 0.62rem;
   color: var(--text-muted);
@@ -280,17 +271,6 @@ a:hover {
 .topnav .cta:hover {
   background: color-mix(in srgb, var(--accent) 62%, #ffffff);
   color: #ffffff;
-}
-
-.topnav .xaman-nav {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  color: var(--text);
-  font-weight: 650;
-}
-
-.topnav .xaman-nav[data-connected="1"] {
-  border-color: color-mix(in srgb, #67d49c 45%, var(--border));
-  color: #d8ffe9;
 }
 
 .docs-open {
@@ -3236,6 +3216,22 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   color: #a5cfff;
 }
 
+@media (max-width: 1100px) and (min-width: 781px) {
+  .site-search {
+    flex-basis: 12.5rem;
+    max-width: 13.5rem;
+  }
+
+  .topnav {
+    font-size: 0.8rem;
+  }
+
+  .topnav a {
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+  }
+}
+
 /* ------------------------------------------------------------------ mobile */
 
 @media (max-width: 780px) {
@@ -3244,18 +3240,20 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
     gap: 0.65rem;
   }
 
-  .topbar-end {
-    display: contents;
-  }
-
   .site-search {
     flex: 1 0 100%;
     max-width: none;
     margin-left: 0;
+    order: 3;
   }
 
   .topnav {
-    margin-left: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    white-space: normal;
   }
 
   .protocol-snapshot {
@@ -3313,12 +3311,12 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
   }
 
   .topnav {
-    gap: 0.75rem;
+    gap: 0.15rem;
     font-size: 0.85rem;
   }
 
-  .topnav a:not(.cta):not(.xaman-nav) {
-    display: none;
+  .topnav a {
+    white-space: nowrap;
   }
 
   .topnav .cta {
@@ -6360,4 +6358,70 @@ body.page-trade .trade-detail-window {
 
 .xaman-unavailable {
   border-color: color-mix(in srgb, var(--critical) 28%, var(--border));
+}
+
+.trade-xaman-dock {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0 0 0.85rem;
+}
+
+.xaman-compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.85rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 12px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 58%),
+    var(--bg-soft);
+}
+
+.xaman-compact .xaman-kicker {
+  margin-right: 0.15rem;
+}
+
+.xaman-compact > strong {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.xaman-compact > span {
+  color: #c5c5c8;
+  font-size: 0.8rem;
+}
+
+.xaman-compact-button {
+  appearance: none;
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--text);
+  font: 700 0.72rem var(--font);
+  cursor: pointer;
+}
+
+.xaman-compact-button:hover:not(:disabled),
+.xaman-compact-button:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.xaman-compact-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.xaman-compact.xaman-unavailable {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.xaman-compact-open {
+  align-items: flex-start;
 }
