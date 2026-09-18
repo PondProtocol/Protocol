@@ -16,7 +16,7 @@ Nothing on this site needs your seed, private key, or recovery phrase.
 
 <div class="start-steps">
   <a class="start-step" href="/verify/"><b>01</b><strong>Verify the issuer</strong><span>Confirm the currency and canonical issuer address on the XRP Ledger.</span></a>
-  <a class="start-step" href="/trade/"><b>02</b><strong>Open the terminal</strong><span>Official Xaman SignIn lives on Trade, beside WalletConnect. Never a seed, never a claim.</span></a>
+  <a class="start-step" href="/trade/"><b>02</b><strong>Open the terminal</strong><span>Connect wallet on Trade offers WalletConnect or Xaman. Never a seed, never a claim.</span></a>
   <a class="start-step" href="/hold/"><b>03</b><strong>Hold safely</strong><span>Trust this issuer after launch. Use a wallet you already control.</span></a>
   <a class="start-step" href="/wallets/"><b>04</b><strong>Read the wallets</strong><span>Issuer, Treasury, Operations, and the live flags snapshot.</span></a>
 </div>

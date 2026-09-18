@@ -1742,6 +1742,7 @@ code.addr {
   display: flex;
   align-items: center;
   gap: 0.45rem;
+  overflow: visible;
 }
 
 .trade-icon-button,
@@ -6360,68 +6361,86 @@ body.page-trade .trade-detail-window {
   border-color: color-mix(in srgb, var(--critical) 28%, var(--border));
 }
 
-.trade-xaman-dock {
-  grid-column: 1 / -1;
-  min-width: 0;
-  margin: 0 0 0.85rem;
+.trade-connect {
+  position: relative;
+  overflow: visible;
 }
 
-.xaman-compact {
+.trade-connect-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 40;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.55rem 0.85rem;
-  padding: 0.7rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
-  border-radius: 12px;
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 58%),
-    var(--bg-soft);
+  min-width: 12.75rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bg-soft) 94%, #000);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.38);
 }
 
-.xaman-compact .xaman-kicker {
-  margin-right: 0.15rem;
+.trade-connect-menu[hidden] {
+  display: none;
 }
 
-.xaman-compact > strong {
-  color: var(--text);
-  font-size: 0.92rem;
-}
-
-.xaman-compact > span {
-  color: #c5c5c8;
-  font-size: 0.8rem;
-}
-
-.xaman-compact-button {
+.trade-connect-option {
   appearance: none;
+  width: 100%;
   min-height: 2rem;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  padding: 0.4rem 0.65rem;
+  border: 0;
   border-radius: 7px;
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  background: transparent;
   color: var(--text);
-  font: 700 0.72rem var(--font);
+  font: 650 0.75rem var(--font);
+  text-align: left;
   cursor: pointer;
 }
 
-.xaman-compact-button:hover:not(:disabled),
-.xaman-compact-button:focus-visible {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+.trade-connect-option:hover:not(:disabled),
+.trade-connect-option:focus-visible {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.xaman-compact-button:disabled {
+.trade-connect-option:disabled {
   cursor: not-allowed;
+  color: var(--text-muted);
   opacity: 0.7;
 }
 
-.xaman-compact.xaman-unavailable {
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 0.35rem;
+.trade-connect-xaman-status,
+.trade-connect-xaman-error {
+  margin: 0;
+  padding: 0.3rem 0.55rem 0.15rem;
+  font-size: 0.7rem;
 }
 
-.xaman-compact-open {
-  align-items: flex-start;
+.trade-connect-xaman-status {
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.trade-connect-xaman-error {
+  color: var(--critical);
+  font-weight: 650;
+}
+
+.trade-connect-xaman-wait {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.4rem 0.45rem 0.5rem;
+}
+
+.trade-connect-xaman-wait .xaman-qr {
+  width: 140px;
+  height: 140px;
+}
+
+.trade-connect-xaman-wait .xaman-actions,
+.trade-connect-xaman-wait .xaman-note {
+  margin: 0;
+  font-size: 0.72rem;
 }

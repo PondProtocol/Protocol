@@ -65,34 +65,27 @@
       </div>`;
   }
 
+  function notifyChange() {
+    window.dispatchEvent(new CustomEvent("pond:xaman-change", { detail: session() }));
+  }
+
   function unavailableHtml(reason, compact) {
     if (compact) {
-      return `
-      <div class="xaman-compact xaman-unavailable" role="status">
-        <p class="xaman-kicker">Xaman</p>
-        <strong>Connect unavailable until Xaman app keys are set</strong>
-        <span>${esc(reason)}</span>
-        <span>This is not a fake connect. Pond never asks for a seed.</span>
-      </div>`;
+      return `<button type="button" class="trade-connect-option" disabled title="${esc(reason)}">Xaman · keys unset</button>`;
     }
     return `
       <div class="xaman-card xaman-unavailable" role="status">
         <p class="xaman-kicker">Xaman</p>
         <h2>Connect unavailable until Xaman app keys are set</h2>
         <p>${esc(reason)}</p>
-        <p>The owner adds <code>XUMM_API_KEY</code> and <code>XUMM_API_SECRET</code> on Replit Autoscale, then Publishes. This page will not pretend a connect works without them.</p>
+        <p>This is not a fake connect. The owner adds <code>XUMM_API_KEY</code> and <code>XUMM_API_SECRET</code> on Replit Autoscale, then Publishes. Pond never asks for a seed.</p>
         ${issuerLinks()}
       </div>`;
   }
 
   function idleHtml(compact) {
     if (compact) {
-      return `
-      <div class="xaman-compact">
-        <p class="xaman-kicker">Xaman · official SignIn</p>
-        <button type="button" class="xaman-compact-button" data-xaman-signin>Connect Xaman</button>
-        <span class="xaman-note">Never a seed. Not a claim.</span>
-      </div>`;
+      return `<button type="button" class="trade-connect-option" data-xaman-signin role="menuitem">Xaman</button>`;
     }
     return `
       <div class="xaman-card">
@@ -107,12 +100,9 @@
   function connectedHtml(state, compact) {
     if (compact) {
       return `
-      <div class="xaman-compact">
-        <p class="xaman-kicker">Xaman connected</p>
-        <code class="addr" title="${esc(state.account)}">${esc(shortAddr(state.account))}</code>
-        <button type="button" class="xaman-compact-button" data-xaman-trustset>Trust line</button>
-        <button type="button" class="xaman-text-button" data-xaman-disconnect>Disconnect</button>
-      </div>`;
+      <p class="trade-connect-xaman-status" title="${esc(state.account)}">${esc(shortAddr(state.account))}</p>
+      <button type="button" class="trade-connect-option" data-xaman-trustset role="menuitem">Trust line</button>
+      <button type="button" class="trade-connect-option" data-xaman-disconnect role="menuitem">Disconnect Xaman</button>`;
     }
     return `
       <div class="xaman-card">
@@ -131,11 +121,18 @@
   }
 
   function waitingHtml(payload, heading, compact) {
-    const card = payloadCard(payload, heading);
     if (compact) {
-      return `<div class="xaman-compact xaman-compact-open">${card}</div>`;
+      return `
+      <div class="trade-connect-xaman-wait">
+        <p class="xaman-kicker">${esc(heading)}</p>
+        ${payload.qr ? `<img class="xaman-qr" src="${esc(payload.qr)}" width="140" height="140" alt="Xaman sign request QR">` : ""}
+        <p class="xaman-actions">
+          ${payload.next ? `<a href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
+        </p>
+        <p class="xaman-note">Never a seed.</p>
+      </div>`;
     }
-    return `<div class="xaman-card">${card}</div>`;
+    return `<div class="xaman-card">${payloadCard(payload, heading)}</div>`;
   }
 
   function setNav(state, health) {
@@ -200,7 +197,7 @@
     render(
       root,
       compact
-        ? `<div class="xaman-compact"><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}</div>`
+        ? `<p class="trade-connect-xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}`
         : `<div class="xaman-card"><p class="xaman-kicker">Xaman</p><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(false)}</div>`,
     );
     bind(root, health);
@@ -213,8 +210,18 @@
     pollTimer = 0;
   }
 
+  function revealCompactMenu(root) {
+    const wrap = root.closest("[data-trade-connect]");
+    const menu = wrap?.querySelector("[data-connect-menu]");
+    const toggle = wrap?.querySelector("[data-connect-toggle]");
+    if (!menu || !toggle) return;
+    menu.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+  }
+
   function pollUntilResolved(root, health, payload, heading) {
     render(root, waitingHtml(payload, heading, isCompact(root)));
+    if (isCompact(root)) revealCompactMenu(root);
     bind(root, health);
     stopPoll();
     pollTimer = window.setInterval(async () => {
@@ -272,9 +279,10 @@
     render(
       root,
       isCompact(root)
-        ? `<div class="xaman-compact"><p>Checking the Xaman sign request…</p></div>`
+        ? `<p class="trade-connect-xaman-status">Checking Xaman…</p>`
         : `<div class="xaman-card"><p>Checking the Xaman sign request…</p></div>`,
     );
+    if (isCompact(root)) revealCompactMenu(root);
     try {
       const status = await getPayload(uuid);
       if (status.signed && status.account) {
@@ -296,6 +304,7 @@
     const current = session();
     const compact = isCompact(root);
     setNav(current, health);
+    notifyChange();
     if (!health.xaman?.configured) {
       render(root, unavailableHtml(health.xaman?.reason || "Connect unavailable until Xaman app keys are set.", compact));
       return;
@@ -329,10 +338,11 @@
       };
     }
     setNav(session(), health);
+    notifyChange();
     roots.forEach((root) => paint(root, health));
   }
 
-  window.PondXaman = { init };
+  window.PondXaman = { init, session };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();

@@ -28,10 +28,15 @@
       <div class="trade-terminal-actions">
         <button type="button" class="trade-icon-button" aria-label="Refresh ledger" data-refresh>↻</button>
         <span class="trade-wallet-status" data-wallet-status>Wallet not connected</span>
-        <button type="button" class="trade-connect-top" data-wallet-connect>WalletConnect</button>
+        <div class="trade-connect" data-trade-connect>
+          <button type="button" class="trade-connect-top" data-connect-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="trade-connect-menu">Connect wallet</button>
+          <div class="trade-connect-menu" id="trade-connect-menu" data-connect-menu hidden role="menu">
+            <button type="button" class="trade-connect-option" data-wallet-connect role="menuitem">WalletConnect</button>
+            <div data-xaman-app data-xaman-compact data-return="/trade/"></div>
+          </div>
+        </div>
       </div>
     </header>
-    <div class="trade-xaman-dock" data-xaman-app data-xaman-compact data-return="/trade/"></div>
 
     <div class="trade-disclaimer-backdrop" data-disclaimer hidden>
       <section class="trade-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-disclaimer-title">
@@ -647,19 +652,64 @@
       status.textContent = message;
     }
 
+    function shortAccount(addr) {
+      return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr || "";
+    }
+
+    function xamanAccount() {
+      try {
+        return JSON.parse(sessionStorage.getItem("pond-xaman-session") || "null")?.account || "";
+      } catch {
+        return "";
+      }
+    }
+
+    function setConnectMenuOpen(open) {
+      const toggle = $("[data-connect-toggle]");
+      const menu = $("[data-connect-menu]");
+      if (!toggle || !menu) return;
+      menu.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+    }
+
+    function setupConnectMenu() {
+      const wrap = $("[data-trade-connect]");
+      const toggle = $("[data-connect-toggle]");
+      const menu = $("[data-connect-menu]");
+      if (!wrap || !toggle || !menu) return;
+      toggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        setConnectMenuOpen(menu.hidden);
+      });
+      menu.addEventListener("click", (event) => {
+        if (event.target.closest("[data-wallet-connect]")) setConnectMenuOpen(false);
+      });
+      document.addEventListener("click", (event) => {
+        if (!document.body.contains(wrap)) return;
+        if (!wrap.contains(event.target)) setConnectMenuOpen(false);
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") setConnectMenuOpen(false);
+      });
+    }
+
+    function syncConnectLabel() {
+      const account = state.wallet?.address || xamanAccount();
+      const connected = Boolean(account);
+      const toggle = $("[data-connect-toggle]");
+      if (toggle) {
+        toggle.textContent = connected ? shortAccount(account) : "Connect wallet";
+        toggle.classList.toggle("is-connected", connected);
+      }
+      setText("[data-wallet-status]", connected ? shortAccount(account) : "Wallet not connected");
+    }
+
     function setWalletUi(account) {
       state.wallet = account || null;
       const connected = Boolean(account?.address);
-      const shortAddress = connected
-        ? `${account.address.slice(0, 6)}…${account.address.slice(-4)}`
-        : "Wallet not connected";
-      setText("[data-wallet-status]", shortAddress);
-      $$("[data-wallet-connect]").forEach((button) => {
-        if (button.hasAttribute("data-dex-submit")) {
-          button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
-        } else {
-          button.textContent = connected ? "Wallet connected" : "WalletConnect";
-        }
+      syncConnectLabel();
+      $$("[data-wallet-connect][data-dex-submit]").forEach((button) => {
+        button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
         button.classList.toggle("is-connected", connected);
       });
       if (connected) {
@@ -753,6 +803,7 @@
       };
 
       const connect = async () => {
+        setConnectMenuOpen(false);
         connectButtons.forEach((button) => { button.disabled = true; });
         setText("[data-wallet-status]", "Connecting…");
         setOrderStatus("Approve the XRPL account connection in your wallet.", "loading");
@@ -1470,6 +1521,10 @@
     setupTabs();
     setupControlGroups();
     setupDataControls();
+    setupConnectMenu();
+    window.addEventListener("pond:xaman-change", () => {
+      if (document.body.contains(root)) syncConnectLabel();
+    });
     walletController = setupWallet();
     setupDexOrder();
     chartController = setupChartControls();
