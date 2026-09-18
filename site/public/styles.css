@@ -106,7 +106,7 @@ a:hover {
   gap: clamp(0.8rem, 2vw, 1.5rem);
   flex-wrap: nowrap;
   padding: 0.85rem clamp(1rem, 4vw, 2.5rem);
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  background: var(--bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
@@ -149,9 +149,9 @@ a:hover {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 0 0 16rem;
-  min-width: 10rem;
-  max-width: 18rem;
+  flex: 0 1 14rem;
+  min-width: 11rem;
+  max-width: 16rem;
   margin-left: auto;
 }
 
