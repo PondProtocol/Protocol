@@ -6007,3 +6007,276 @@ body.page-trade .trade-overview-card {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* -------------------------------------------------------- responsive trade fit
+ *
+ * The focused trade route used to size the whole terminal to the viewport and
+ * then clip its own panels. Keep the terminal as one document flow so the
+ * chart, sidebar, and detail tabs can breathe on short screens instead of
+ * becoming a second scroll container.
+ */
+html.has-nav-js body.page-trade {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html.has-nav-js body.page-trade .shell,
+html.has-nav-js body.page-trade main,
+html.has-nav-js body.page-trade .prose {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+html.has-nav-js body.page-trade .shell {
+  padding-block: clamp(0.8rem, 2.2vw, 1.8rem) clamp(1.5rem, 3vw, 3rem);
+}
+
+body.page-trade .trade-app {
+  height: auto;
+  min-height: 0;
+  margin-bottom: clamp(1.5rem, 3vw, 3rem);
+  padding: clamp(0.9rem, 1.8vw, 1.5rem);
+  overflow: visible;
+}
+
+body.page-trade .trade-terminal-head {
+  gap: clamp(0.8rem, 2vw, 1.5rem);
+  padding-bottom: clamp(0.7rem, 1.6vw, 1.1rem);
+}
+
+body.page-trade .trade-stat-strip {
+  margin-inline: 0;
+  margin-bottom: clamp(0.6rem, 1.4vw, 1rem);
+}
+
+body.page-trade .trade-mode-tabs {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+body.page-trade .trade-overview-view {
+  gap: clamp(0.8rem, 1.8vw, 1.35rem);
+}
+
+body.page-trade .trade-overview-plot,
+body.page-trade .trade-chart-live,
+body.page-trade .trade-chart-empty-state,
+body.page-trade .trade-chart-svg {
+  min-height: clamp(20rem, 38vw, 34rem);
+}
+
+body.page-trade .trade-overview-plot {
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+body.page-trade .trade-overview-sidebar {
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+body.page-trade .trade-overview-card {
+  padding: clamp(0.85rem, 1.4vw, 1.2rem);
+}
+
+body.page-trade .trade-detail-window {
+  margin-top: clamp(0.8rem, 1.8vw, 1.25rem);
+}
+
+@media (min-width: 781px) and (max-width: 1120px) {
+  body.page-trade .trade-stat-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.page-trade .trade-stat-strip > div {
+    min-height: 3.25rem;
+    height: auto;
+    padding: 0.55rem 0.7rem;
+  }
+
+  body.page-trade .trade-stat-strip > div:nth-child(n + 4) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 900px) {
+  body.page-trade .trade-overview-view {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-trade .trade-overview-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.page-trade .trade-overview-risk {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 780px) {
+  html.has-nav-js body.page-trade .shell {
+    padding: 0.75rem clamp(0.75rem, 4vw, 1.25rem) 2rem;
+  }
+
+  body.page-trade .trade-app {
+    margin-top: 0.75rem;
+    padding: clamp(0.8rem, 4vw, 1.15rem);
+    border-radius: 14px;
+  }
+
+  body.page-trade .trade-terminal-head {
+    gap: 0.9rem;
+  }
+
+  body.page-trade .trade-pair-title {
+    font-size: clamp(0.95rem, 4vw, 1.1rem);
+  }
+
+  body.page-trade .trade-pair-sub {
+    font-size: 0.68rem;
+    line-height: 1.4;
+  }
+
+  body.page-trade .trade-network {
+    justify-content: flex-start;
+  }
+
+  body.page-trade .trade-network-label {
+    width: auto;
+    margin: 0 0.2rem 0 0;
+    text-align: left;
+  }
+
+  body.page-trade .trade-stat-strip {
+    gap: 1px;
+  }
+
+  body.page-trade .trade-stat-strip > div {
+    min-height: 3.25rem;
+    padding: 0.55rem 0.65rem;
+  }
+
+  body.page-trade .trade-stat-strip strong {
+    font-size: clamp(0.78rem, 3.4vw, 0.95rem);
+  }
+
+  body.page-trade .trade-mode-tabs {
+    min-height: 2.45rem;
+  }
+
+  body.page-trade .trade-mode-tabs button {
+    padding-inline: 0.6rem;
+  }
+
+  body.page-trade .trade-mode-note {
+    margin-left: auto;
+    padding-right: 0;
+    font-size: 0.6rem;
+  }
+
+  body.page-trade .trade-overview-view {
+    gap: 0.9rem;
+  }
+
+  body.page-trade .trade-overview-plot,
+  body.page-trade .trade-chart-live,
+  body.page-trade .trade-chart-empty-state,
+  body.page-trade .trade-chart-svg {
+    min-height: clamp(18rem, 72vw, 27rem);
+  }
+
+  body.page-trade .trade-overview-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-trade .trade-overview-risk {
+    grid-column: auto;
+  }
+
+  body.page-trade .trade-chart-symbol-bar,
+  body.page-trade .trade-chart-ohlc,
+  body.page-trade .trade-overview-toolbar,
+  body.page-trade .trade-overview-tools {
+    padding-inline: clamp(0.65rem, 3vw, 1rem);
+  }
+
+  body.page-trade .trade-chart-symbol-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  body.page-trade .trade-chart-readout {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body.page-trade .trade-chart-ohlc {
+    gap: 0.55rem 0.8rem;
+  }
+
+  body.page-trade .trade-overview-legend {
+    flex-wrap: wrap;
+    gap: 0.4rem 0.7rem;
+    padding-inline: clamp(0.65rem, 3vw, 1rem);
+  }
+
+  body.page-trade .trade-detail-tabs {
+    padding-inline: 0.45rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body.page-trade .trade-terminal-head {
+    grid-template-columns: 1fr;
+  }
+
+  body.page-trade .trade-terminal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body.page-trade .trade-network {
+    order: 3;
+  }
+
+  body.page-trade .trade-stat-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.page-trade .trade-stat-strip > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  body.page-trade .trade-stat-strip > div:nth-child(n + 2) {
+    border-top: 1px solid var(--border);
+  }
+
+  body.page-trade .trade-chart-market-controls {
+    gap: 0.65rem;
+  }
+
+  body.page-trade .trade-chart-pair-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.1rem;
+  }
+
+  body.page-trade .trade-chart-pair-tabs button {
+    flex: 0 0 auto;
+  }
+
+  body.page-trade .trade-overview-controls,
+  body.page-trade .trade-indicator-tools {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    padding-bottom: 0.1rem;
+  }
+
+  body.page-trade .trade-overview-controls button,
+  body.page-trade .trade-indicator-tools button {
+    flex: 0 0 auto;
+  }
+}
