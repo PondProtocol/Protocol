@@ -754,6 +754,11 @@ check(
     indexHtml.includes("Got it"),
 );
 check(
+  "privacy icon click opens the vault, not Private Browsing",
+  /data-privacy-fab[\s\S]{0,180}setMode\("vault"\)/.test(privacyJsText) &&
+    !/data-privacy-fab[\s\S]{0,180}setMode\("notice"\)/.test(privacyJsText),
+);
+check(
   "privacy Legal buttons go to Pond /legal/, not greenhead.io/legal",
   /href="\/legal\/"/g.test(indexHtml) &&
     !indexHtml.includes('href="https://greenhead.io/legal"') &&
