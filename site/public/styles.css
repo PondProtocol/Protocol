@@ -6532,3 +6532,423 @@ body.page-trade .trade-detail-window {
   margin: 0;
   font-size: 0.72rem;
 }
+
+/* ------------------------------------------------------------------ privacy vault
+ *
+ * Copied from greenhead.io's bottom-right dock (FAB, Private Browsing card,
+ * Privacy Controls panel). Panel colors and hierarchy match the source;
+ * the surrounding docs chrome stays on Pond tokens.
+ */
+
+.privacy-dock {
+  pointer-events: none;
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.privacy-dock-stack {
+  pointer-events: auto;
+  display: flex;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.privacy-fab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 0.75rem;
+  background: transparent;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.45);
+  color: #c4f8ff;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+
+.privacy-fab:hover,
+.privacy-fab:focus-visible {
+  transform: scale(1.05);
+  border-color: rgb(255 255 255 / 0.35);
+}
+
+.privacy-fab:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 2px;
+}
+
+.privacy-fab-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #c4f8ff;
+  filter: drop-shadow(0 0 8px rgb(103 232 249 / 0.35));
+}
+
+.privacy-fab-shield,
+.privacy-fab-lock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.privacy-fab-shield {
+  position: absolute;
+  inset: 0;
+}
+
+.privacy-fab-shield svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 1.8;
+}
+
+.privacy-fab-lock {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+}
+
+.privacy-fab-lock svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2.2;
+}
+
+.privacy-fab-tip {
+  pointer-events: none;
+  position: absolute;
+  right: 4rem;
+  white-space: nowrap;
+  padding: 0.38rem 0.62rem;
+  border: 1px solid rgb(165 243 252 / 0.15);
+  border-radius: 0.375rem;
+  background: #101827;
+  color: rgb(196 248 255 / 0.85);
+  font-size: 0.625rem;
+  font-weight: 500;
+  opacity: 0;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.35);
+  transition: opacity 0.16s ease;
+}
+
+.privacy-fab:hover .privacy-fab-tip,
+.privacy-fab:focus-visible .privacy-fab-tip {
+  opacity: 1;
+}
+
+.privacy-notice,
+.privacy-vault {
+  color: #fff;
+  background: #171a20;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 18px 60px rgb(0 0 0 / 0.55);
+}
+
+.privacy-notice {
+  width: min(calc(100vw - 2rem), 24rem);
+  padding: 1rem;
+  background: rgb(23 26 32 / 0.95);
+  border-color: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.privacy-notice-head,
+.privacy-vault-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.privacy-kicker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.privacy-kicker-notice {
+  color: #7dd3fc;
+}
+
+.privacy-kicker-vault {
+  margin-bottom: 0.5rem;
+  color: #7dd3fc;
+}
+
+.privacy-kicker-vault svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.privacy-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0.15rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: rgb(255 255 255 / 0.45);
+  cursor: pointer;
+}
+
+.privacy-icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.privacy-icon-btn:hover,
+.privacy-icon-btn:focus-visible {
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+}
+
+.privacy-notice-copy {
+  margin: 0.5rem 0 0;
+  color: rgb(255 255 255 / 0.65);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.privacy-notice-actions,
+.privacy-vault-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.privacy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.privacy-btn-mint {
+  border: 0;
+  background: #00d4aa;
+  color: #081512;
+}
+
+.privacy-btn-mint:hover,
+.privacy-btn-mint:focus-visible {
+  background: #36e7c1;
+  color: #081512;
+}
+
+.privacy-btn-ghost {
+  border: 1px solid rgb(255 255 255 / 0.15);
+  background: transparent;
+  color: rgb(255 255 255 / 0.7);
+}
+
+.privacy-btn-ghost:hover,
+.privacy-btn-ghost:focus-visible {
+  background: rgb(255 255 255 / 0.05);
+  color: #fff;
+}
+
+.privacy-vault {
+  display: flex;
+  width: min(calc(100vw - 2rem), 390px);
+  max-height: min(85dvh, 42rem);
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.privacy-vault-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.privacy-vault-head h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.privacy-vault-lede {
+  margin: 0.75rem 0 0;
+  color: rgb(255 255 255 / 0.55);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.privacy-gpc {
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgb(0 212 170 / 0.2);
+  border-radius: 0.5rem;
+  background: rgb(0 212 170 / 0.1);
+  color: #6ee7c7;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+
+.privacy-rows {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0.75rem;
+  background: rgb(0 0 0 / 0.1);
+}
+
+.privacy-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem;
+}
+
+.privacy-row + .privacy-row {
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.privacy-row-title {
+  display: block;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.privacy-row-copy {
+  display: block;
+  margin-top: 0.25rem;
+  color: rgb(255 255 255 / 0.4);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+
+.privacy-blocked {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.privacy-blocked-scan,
+.privacy-blocked-x {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.privacy-blocked-scan {
+  color: rgb(255 255 255 / 0.3);
+}
+
+.privacy-blocked-scan svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.privacy-blocked-x {
+  position: absolute;
+  color: #f87171;
+}
+
+.privacy-blocked-x svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  stroke-width: 2.4;
+}
+
+.privacy-off {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.35rem;
+  padding-top: 0.1rem;
+  color: rgb(255 255 255 / 0.35);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.privacy-off svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.privacy-vault-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.privacy-vault-actions .privacy-btn {
+  width: 100%;
+  padding: 0.62rem 0.75rem;
+}
+
+.privacy-btn-got-it svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.privacy-fab[hidden],
+.privacy-notice[hidden],
+.privacy-vault[hidden],
+.privacy-gpc[hidden] {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .privacy-dock {
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.75rem;
+  }
+
+  .privacy-fab-tip {
+    display: none;
+  }
+}
