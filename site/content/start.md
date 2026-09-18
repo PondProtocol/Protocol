@@ -16,19 +16,19 @@ Nothing on this site needs your seed, private key, or recovery phrase.
 
 <div class="start-steps">
   <a class="start-step" href="/verify/"><b>01</b><strong>Verify the issuer</strong><span>Confirm the currency and canonical issuer address on the XRP Ledger.</span></a>
-  <a class="start-step" href="/pond/"><b>02</b><strong>Understand Pond</strong><span>Read what the protocol is building and how $PND fits into it.</span></a>
-  <a class="start-step" href="/wallets/"><b>03</b><strong>Choose your wallet path</strong><span>Use a wallet you already control. Pond never asks for its secret.</span></a>
-  <a class="start-step" href="/trade/"><b>04</b><strong>Open the terminal</strong><span>Review market state and verification gates before any live action.</span></a>
+  <a class="start-step" href="/connect/"><b>02</b><strong>Connect Xaman</strong><span>Optional official SignIn. Shows your r-address. Never a seed, never a claim.</span></a>
+  <a class="start-step" href="/hold/"><b>03</b><strong>Hold safely</strong><span>Trust this issuer after launch. Use a wallet you already control.</span></a>
+  <a class="start-step" href="/wallets/"><b>04</b><strong>Read the wallets</strong><span>Issuer, Treasury, Operations, and the live flags snapshot.</span></a>
 </div>
 
 ## What connecting means
 
-Pond does not take custody of your account. After launch, your wallet will
-create the trust line and sign transactions locally. The terminal may prepare
-an unsigned transaction, but the final signing decision stays with you.
+Pond does not take custody of your account. [Connect Xaman](/connect/) is
+optional SignIn — it shows your r-address and can open a TrustSet you choose.
+After launch, your wallet still creates the trust line and signs locally.
 
-For agents, the [Agent mode in Trade](/trade/) follows the same rule:
-address-based sessions, local signing, and no secret material sent to Pond.
+The [Trade](/trade/) terminal may preview market state. It is not a live $PND
+DEX. No secret material is sent to Pond.
 
 <div class="start-safety">
   <strong>Never paste a seed or private key here.</strong>

@@ -6,11 +6,15 @@
  * Deliberately serves .well-known/ (Replit Static omits that directory) and applies the
  * same Content-Type and CORS headers that public/_headers asks a static host for, so a
  * local check and a production check look the same. Node standard library only.
+ *
+ * Also answers /health and /api/xaman/* . Those routes need this process (Autoscale).
+ * The Xaman API secret stays here — it is never written into site/dist.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { DIST_DIR } from "./lib.mjs";
+import { handleApi } from "./xaman.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
 const host = process.env.HOST ?? "0.0.0.0";
@@ -33,8 +37,20 @@ if (!existsSync(DIST_DIR)) {
   process.exit(1);
 }
 
-createServer((req, res) => {
-  const url = decodeURIComponent(req.url.split("?")[0]);
+createServer(async (req, res) => {
+  const url = decodeURIComponent((req.url ?? "/").split("?")[0]);
+
+  try {
+    if (await handleApi(req, res, url)) return;
+  } catch (error) {
+    res.statusCode = 500;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.end(JSON.stringify({ error: "server_error", message: "Request failed." }));
+    process.stderr.write(`serve.mjs: ${error instanceof Error ? error.stack : error}\n`);
+    return;
+  }
+
   let path = join(DIST_DIR, normalize(url).replace(/^(\.\.[/\\])+/, ""));
 
   if (existsSync(path) && statSync(path).isDirectory()) path = join(path, "index.html");
@@ -49,6 +65,7 @@ createServer((req, res) => {
 }).listen(port, host, () => {
   process.stdout.write(
     `\n  serving site/dist on http://${host}:${port}\n` +
-      `  identity anchor: http://${host}:${port}/.well-known/xrp-ledger.toml\n\n`,
+      `  identity anchor: http://${host}:${port}/.well-known/xrp-ledger.toml\n` +
+      `  health:          http://${host}:${port}/health\n\n`,
   );
 });

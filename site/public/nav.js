@@ -152,6 +152,7 @@
         window.scrollTo(0, 0);
         setupNavigation();
         window.PondTrade?.init?.();
+        window.PondXaman?.init?.();
       };
 
       if (document.startViewTransition) {

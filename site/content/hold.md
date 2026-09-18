@@ -4,9 +4,10 @@ After launch, holding $PND means opening a trust line to **this issuer**, not
 typing `PND` into a search box. Until **1 October 2026**, and until this site’s
 “not issued” notices are gone, **do not buy anything labelled PND.**
 
-This page will never ask for a seed, never connect a wallet, and never show a
-claim button. If a page that says Pond Protocol does any of those things, it
-is not this site.
+This page will never ask for a seed and never show a claim button. The only
+connect path on this host is official [Xaman SignIn](/connect/). If a page
+that says Pond Protocol asks for a seed, a generic “connect wallet” to claim,
+or a DEX trade before issuance, it is not this site.
 
 <div class="callout callout-critical">
 
@@ -26,8 +27,10 @@ $PND is an issued currency. You opt in with a `TrustSet` in *your* wallet, to:
 Currency code `PND`. Check both. Codes are case-sensitive: `Pnd` is a different
 asset. Other mainnet accounts already issue `PND`.
 
-That is the whole hold. You do it in a wallet you already control. You do not
-do it on pond.greenhead.io. This site has no forms.
+That is the whole hold. You do it in a wallet you already control. After
+launch you can also choose an optional TrustSet from [Connect Xaman](/connect/)
+— honest status: **nothing is issued yet**, so that line does not give you
+tokens. This site has no seed fields.
 
 A trust line costs an owner reserve (0.2 XRP on mainnet when this was written).
 Read [Holding $PND](/pnd/holding/) for the ledger mechanics. Come back here for
@@ -38,16 +41,17 @@ the safety rule: **the issuer address above, or nothing.**
 - **No seed fields.** Nobody from Pond Protocol will ask for a secret, a
   mnemonic, or a private key. There is no situation in which that request is
   legitimate.
-- **No connect-wallet.** This is a static docs host. It cannot see your
-  account, and it does not need to.
+- **No generic connect-wallet and no seed import.** Official [Xaman SignIn](/connect/)
+  is the only connect on this host. It never sees your seed. A random page that
+  asks you to connect a wallet to claim $PND is not us.
 - **No claim buttons.** There is no claim, no connect-to-airdrop, no “import
   wallet to receive $PND.”
 - **No DEX trade URL** until $PND exists *and* a human has loaded the page.
   Guessed marketplace links are how you get the wrong token.
 
-If you are asked to paste a seed, connect a wallet to a Pond site, or claim
-$PND, close that tab. Then check the issuer on [Verify](/verify/) against the
-ledger, not against the page that asked.
+If you are asked to paste a seed, import a wallet, or claim $PND, close that
+tab. Then check the issuer on [Verify](/verify/) against the ledger, not
+against the page that asked.
 
 ## Official places only
 

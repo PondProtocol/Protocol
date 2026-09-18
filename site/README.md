@@ -37,6 +37,36 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 | `npm run serve` | Preview `dist/` locally, and the same process Replit Autoscale runs in production. |
 | `npm run verify:live -- <domain>` | Fetch a **deployed** site and check the identity anchor's status, CORS header, content type and body. |
 
+## Xaman (owner keys)
+
+Official Xaman / Xumm **payload SignIn** lives in `serve.mjs`. The frontend never
+receives the API secret. There is no airdrop claim, no DEX trade, and no seed
+field.
+
+Set these on the **Replit Autoscale** app (Secrets / env), then Publish. Do not
+put them in the repo, in `site/dist`, or in browser JavaScript.
+
+| Variable | Where | What |
+| --- | --- | --- |
+| `XUMM_API_KEY` | Autoscale env only | Xaman app API key |
+| `XUMM_API_SECRET` | Autoscale env only | Xaman app API secret |
+
+Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
+**not** already have keys. Until both variables are set, `GET /health` reports
+`xaman.connect: "unavailable"` and `/connect/` shows *Connect unavailable until
+Xaman app keys are set* instead of a dead button.
+
+Useful routes after Publish:
+
+```bash
+curl -sS https://pond.greenhead.io/health
+# POST /api/xaman/signin     → SignIn payload (QR + xumm.app/sign deep link)
+# GET  /api/xaman/payload/:uuid
+# POST /api/xaman/trustset   → optional TrustSet; $PND is not issued
+```
+
+Stay on Autoscale. Replit Static cannot run these routes or `.well-known`.
+
 ## Why this is not a framework
 
 The site is about 700 lines of Node in `scripts/` plus one hand-written stylesheet, and it has
