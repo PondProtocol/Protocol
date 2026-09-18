@@ -454,12 +454,14 @@ check(
     headerHtml.includes("Return to Main Site"),
 );
 check(
-  "top bar left cluster is Protocol, Trade, Pond",
-  /Protocol\s+Trade\s+Pond/.test(headerText) &&
+  "top bar right cluster is Protocol, Trade, Pond, Meet Team",
+  /Protocol\s+Trade\s+Pond\s+Meet Team/.test(headerText) &&
     headerHtml.includes('href="/protocol/"') &&
     headerHtml.includes('href="/trade/"') &&
     headerHtml.includes('href="/pond/"') &&
-    headerHtml.includes('href="/team/"'),
+    headerHtml.includes('href="/team/"') &&
+    headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
+    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/protocol/"'),
 );
 check(
   "top bar does not feature Verify, Hold, Wallets, or Xaman",
@@ -470,11 +472,12 @@ check(
     !/>Xaman</i.test(headerHtml),
 );
 check(
-  "Meet Team sits immediately before search on the right",
+  "Protocol, Trade, Pond, and Meet Team sit immediately before search on the right",
   headerHtml.includes("Meet Team") &&
     headerHtml.includes("data-site-search") &&
     headerHtml.includes("topbar-end") &&
-    headerHtml.indexOf('href="/pond/"') < headerHtml.indexOf("Meet Team") &&
+    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/protocol/"') &&
+    headerHtml.indexOf('href="/protocol/"') < headerHtml.indexOf("Meet Team") &&
     headerHtml.indexOf("Meet Team") < headerHtml.indexOf("data-site-search"),
 );
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
