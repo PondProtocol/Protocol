@@ -457,15 +457,36 @@ const topnavSummaries = [...topnavHtml.matchAll(/<summary>([\s\S]*?)<\/summary>/
   asText(match[1]).trim(),
 );
 const startHereMenu =
-  topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="start-here">[\s\S]*?<\/details>/)?.[0] ?? "";
+  topnavHtml.match(/<div class="topnav-start">[\s\S]*?<\/div>/)?.[0] ??
+  topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="start-here">[\s\S]*?<\/details>/)?.[0] ??
+  "";
+const startHereIndex =
+  headerHtml.match(/<details class="nav-group" data-nav-group="start-here"[\s\S]*?<\/details>/)?.[0] ?? "";
 const protocolMenu =
   topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="protocol">[\s\S]*?<\/details>/)?.[0] ?? "";
+const startHerePanel = startHereMenu.match(/<div class="topnav-panel">[\s\S]*?<\/div>/)?.[0] ?? "";
+const startHereLabels = [...startHerePanel.matchAll(/<a href="[^"]+"[^>]*>([\s\S]*?)<\/a>/g)].map((match) =>
+  asText(match[1]).replace(/\bimportant\b/i, "").trim(),
+);
+const startHereIndexLabels = [...startHereIndex.matchAll(/<a href="[^"]+"[^>]*>([\s\S]*?)<\/a>/g)].map((match) =>
+  asText(match[1]).replace(/\bimportant\b/i, "").trim(),
+);
+const startHereOrder = [
+  "Begin",
+  "What is $PND",
+  "What is $rPND",
+  "Verify Issuer",
+  "Connect Wallet",
+  "Set Trust Lines",
+  "Ready to Use DEX",
+];
 check(
   "top bar right cluster is Start here, $PND, $rPND, Protocol",
-  topnavSummaries.join(" | ") === "Start here | $PND | $rPND | Protocol" &&
+  /<a class="topnav-start-link" href="\/start\/">Start here<\/a>/.test(topnavHtml) &&
+    topnavSummaries.filter((label) => label !== "Start here menu").join(" | ") === "$PND | $rPND | Protocol" &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
-    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('data-topnav-menu="start-here"'),
+    headerHtml.indexOf("topbar-end") < headerHtml.indexOf("topnav-start"),
 );
 check(
   "top bar does not use Trade, Pond, Meet Team, Verify, Hold, Wallets, or Xaman as top-level items",
@@ -500,15 +521,37 @@ check(
     !topnavSummaries.includes("Trade"),
 );
 check(
-  "Start here dropdown keeps Meet Team, Trade $PND, and the IMPORTANT verify badge",
-  startHereMenu.includes("Meet Team") &&
-    startHereMenu.includes('href="/team/"') &&
-    startHereMenu.includes("Trade $PND") &&
-    startHereMenu.includes('href="/trade/"') &&
+  "Start here dropdown is the seven-step onboarding path",
+  startHereLabels.join(" | ") === startHereOrder.join(" | ") &&
+    startHereMenu.includes('href="/start/"') &&
+    startHereMenu.includes('href="/start/pnd/"') &&
+    startHereMenu.includes('href="/start/rpnd/"') &&
     startHereMenu.includes('href="/verify/"') &&
+    startHereMenu.includes('href="/start/wallet/"') &&
+    startHereMenu.includes('href="/start/trust-lines/"') &&
+    startHereMenu.includes('href="/start/dex/"') &&
     startHereMenu.includes('class="nav-badge"') &&
     /important/i.test(startHereMenu) &&
+    !startHereMenu.includes("Pond Protocol") &&
+    !startHereMenu.includes("Meet Team") &&
+    !startHereMenu.includes("Hold safely") &&
+    !startHereMenu.includes("Official links") &&
+    !startHereMenu.includes("Trade $PND") &&
+    !startHereMenu.includes("Connect Xaman") &&
+    !startHereMenu.includes('href="/wallets/"') &&
     !startHereMenu.includes('href="/pond/"'),
+);
+check(
+  "Start here control itself goes to /start/",
+  topnavHtml.includes('class="topnav-start-link"') &&
+    topnavHtml.includes('href="/start/"') &&
+    /<a class="topnav-start-link" href="\/start\/">Start here<\/a>/.test(topnavHtml),
+);
+check(
+  "Docs Index START HERE group matches the Start here dropdown",
+  startHereIndexLabels.join(" | ") === startHereOrder.join(" | ") &&
+    startHereIndex.includes('href="/start/trust-lines/"') &&
+    startHereIndex.includes('class="nav-badge"'),
 );
 check(
   "Protocol dropdown matches the Docs Index Protocol group",
@@ -796,6 +839,69 @@ check(
   "privacy UI never asks for a seed",
   /never ask for seed phrases/i.test(asText(indexHtml)) &&
     !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(indexHtml),
+);
+
+const startJs = join(DIST_DIR, "start.js");
+const startJsText = existsSync(startJs) ? readFileSync(startJs, "utf8") : "";
+const startPage = join(DIST_DIR, "start", "index.html");
+const startHtml = existsSync(startPage) ? readFileSync(startPage, "utf8") : "";
+const startPndHtml = existsSync(join(DIST_DIR, "start", "pnd", "index.html"))
+  ? readFileSync(join(DIST_DIR, "start", "pnd", "index.html"), "utf8")
+  : "";
+const startRpndHtml = existsSync(join(DIST_DIR, "start", "rpnd", "index.html"))
+  ? readFileSync(join(DIST_DIR, "start", "rpnd", "index.html"), "utf8")
+  : "";
+const startWalletHtml = existsSync(join(DIST_DIR, "start", "wallet", "index.html"))
+  ? readFileSync(join(DIST_DIR, "start", "wallet", "index.html"), "utf8")
+  : "";
+const startTrustHtml = existsSync(join(DIST_DIR, "start", "trust-lines", "index.html"))
+  ? readFileSync(join(DIST_DIR, "start", "trust-lines", "index.html"), "utf8")
+  : "";
+const startDexHtml = existsSync(join(DIST_DIR, "start", "dex", "index.html"))
+  ? readFileSync(join(DIST_DIR, "start", "dex", "index.html"), "utf8")
+  : "";
+check("Start here onboarding pages were built", startHtml.length > 0 && startPndHtml && startRpndHtml && startWalletHtml && startTrustHtml && startDexHtml);
+check(
+  "legacy Start here pages stay published",
+  existsSync(join(DIST_DIR, "wallets", "index.html")) &&
+    existsSync(join(DIST_DIR, "hold", "index.html")) &&
+    existsSync(join(DIST_DIR, "team", "index.html")) &&
+    existsSync(join(DIST_DIR, "links", "index.html")) &&
+    existsSync(join(DIST_DIR, "connect", "index.html")) &&
+    existsSync(join(DIST_DIR, "trade", "index.html")),
+);
+const startStepsGuard =
+  startJsText.includes("begin") &&
+  startJsText.includes("what-is-pnd") &&
+  startJsText.includes("what-is-rpnd") &&
+  startJsText.includes("verify-issuer") &&
+  startJsText.includes("connect-wallet") &&
+  startJsText.includes("set-trust-lines") &&
+  startJsText.includes("ready-dex");
+check(
+  "/start/ tracks the seven steps in localStorage",
+  startHtml.includes("data-start-progress") &&
+    startHtml.includes("/start.js") &&
+    startJsText.includes("pond.start.progress") &&
+    startJsText.includes("localStorage") &&
+    startStepsGuard,
+);
+check(
+  "trust-line and DEX steps say $PND is not issued and do not fake a live set/buy",
+  /has not been issued/i.test(asText(startTrustHtml)) &&
+    /no “set it now”/i.test(asText(startTrustHtml)) &&
+    /has not been issued/i.test(asText(startDexHtml)) &&
+    /not a live \$PND DEX/i.test(asText(startDexHtml)) &&
+    startDexHtml.includes('href="/trade/"') &&
+    !/buy now/i.test(asText(startDexHtml)) &&
+    !/set it now/i.test(asText(startWalletHtml)),
+);
+check(
+  "Connect Wallet onboarding links to official WalletConnect or Xaman only",
+  /WalletConnect or Xaman/i.test(asText(startWalletHtml)) &&
+    startWalletHtml.includes("/trade/") &&
+    /never asks for a seed/i.test(asText(startWalletHtml)) &&
+    !startWalletHtml.includes("data-xaman-app"),
 );
 
 /* ------------------------------------------------------------------ report */
