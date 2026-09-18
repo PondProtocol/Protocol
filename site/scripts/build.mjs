@@ -501,10 +501,11 @@ ${canonical}
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <div class="brand-cluster">
-    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">Pond</a>
+    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="28" height="28" alt=""><span class="brand-word">Pond</span></a>
+    <span class="brand-rule" aria-hidden="true"></span>
     <p class="powered-by">
       <span class="powered-by-label">Powered By Greenhead Labs</span>
-      <img class="powered-by-mark" src="/greenhead-duck.png" width="28" height="28" alt="">
+      <img class="powered-by-mark" src="/greenhead-duck.png" width="18" height="18" alt="">
       <a class="powered-by-return" href="https://greenhead.io">Return to Main Site</a>
     </p>
   </div>

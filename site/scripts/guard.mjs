@@ -523,6 +523,20 @@ check(
   "mobile CSS does not hide Protocol / Trade / Pond / Meet Team",
   !/\.topnav a:not\(\.cta\)/.test(stylesText),
 );
+check(
+  "protocol snapshot ticker is full-bleed with no side gutters",
+  !stylesText.includes("width: min(100%, 96rem)") &&
+    !stylesText.includes("mask-image: linear-gradient(90deg, transparent") &&
+    !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .protocol-snapshot-inner") &&
+    !stylesText.includes("html.has-nav-js:not(.docs-collapsed) .protocol-snapshot {"),
+);
+check(
+  "brand lockup stays a single nowrap cluster on desktop",
+  stylesText.includes(".brand-cluster") &&
+    /flex-wrap:\s*nowrap/.test(stylesText) &&
+    stylesText.includes("brand-rule") &&
+    stylesText.includes("brand-word"),
+);
 
 const secretLeak = textFiles.filter((f) => {
   const text = readFileSync(f, "utf8");
