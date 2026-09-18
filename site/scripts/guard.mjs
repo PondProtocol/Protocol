@@ -438,9 +438,24 @@ check("xaman.js is copied into the build", existsSync(xamanJs));
 
 const headerHtml = indexHtml.match(/<header class="topbar">[\s\S]*?<\/header>/)?.[0] ?? "";
 const headerText = asText(headerHtml);
+const brandHtml = headerHtml.match(/<a class="brand"[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "";
+const brandText = asText(brandHtml);
+const duckMark = join(DIST_DIR, "greenhead-duck.png");
 check(
-  "top bar is Protocol, Trade, Pond, Meet Team",
-  /Protocol\s+Trade\s+Pond\s+Meet Team/.test(headerText) &&
+  "top bar brand word is Pond",
+  /^\s*Pond\s*$/.test(brandText),
+);
+check(
+  "top bar credits Greenhead Labs with the duck mark and a return link",
+  headerHtml.includes("Powered By Greenhead Labs") &&
+    headerHtml.includes("/greenhead-duck.png") &&
+    existsSync(duckMark) &&
+    headerHtml.includes('href="https://greenhead.io"') &&
+    headerHtml.includes("Return to Main Site"),
+);
+check(
+  "top bar left cluster is Protocol, Trade, Pond",
+  /Protocol\s+Trade\s+Pond/.test(headerText) &&
     headerHtml.includes('href="/protocol/"') &&
     headerHtml.includes('href="/trade/"') &&
     headerHtml.includes('href="/pond/"') &&
@@ -455,9 +470,11 @@ check(
     !/>Xaman</i.test(headerHtml),
 );
 check(
-  "docs search sits after Meet Team as the last top-bar item",
+  "Meet Team sits immediately before search on the right",
   headerHtml.includes("Meet Team") &&
     headerHtml.includes("data-site-search") &&
+    headerHtml.includes("topbar-end") &&
+    headerHtml.indexOf('href="/pond/"') < headerHtml.indexOf("Meet Team") &&
     headerHtml.indexOf("Meet Team") < headerHtml.indexOf("data-site-search"),
 );
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";

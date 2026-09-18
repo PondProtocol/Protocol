@@ -112,6 +112,14 @@ a:hover {
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
 }
 
+.brand-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: none;
+  min-width: 0;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -122,6 +130,39 @@ a:hover {
   color: var(--text);
   text-decoration: none;
   flex: none;
+}
+
+.powered-by {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.powered-by-mark {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.35rem;
+  flex: none;
+  display: block;
+  object-fit: cover;
+}
+
+.powered-by-return {
+  color: var(--accent-text);
+  text-decoration: none;
+}
+
+.powered-by-return:hover,
+.powered-by-return:focus-visible {
+  color: var(--text);
+  text-decoration: underline;
 }
 
 .brand-mark {
@@ -136,13 +177,23 @@ a:hover {
 .topnav {
   display: flex;
   align-items: center;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   justify-content: flex-start;
   gap: 0.15rem;
   font-size: 0.86rem;
   font-weight: 550;
   white-space: nowrap;
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
 }
 
 .site-search {
@@ -152,7 +203,7 @@ a:hover {
   flex: 0 1 14rem;
   min-width: 11rem;
   max-width: 16rem;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .site-search-icon {
@@ -3241,11 +3292,28 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
     gap: 0.65rem;
   }
 
-  .site-search {
+  .brand-cluster {
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+  }
+
+  .powered-by {
+    white-space: normal;
+    flex-wrap: wrap;
+  }
+
+  .topbar-end {
     flex: 1 0 100%;
-    max-width: none;
-    margin-left: 0;
     order: 3;
+    margin-left: 0;
+  }
+
+  .site-search {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    margin-left: 0;
   }
 
   .topnav {
