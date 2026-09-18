@@ -254,8 +254,7 @@ a:hover {
 }
 
 .topnav .status-chip {
-  order: 1;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .topnav .status-chip + .status-chip {
@@ -266,10 +265,6 @@ a:hover {
   color: #ffffff;
   text-decoration: none;
   text-transform: uppercase;
-}
-
-.topnav .cta {
-  order: 2;
 }
 
 .topnav .cta:hover {
