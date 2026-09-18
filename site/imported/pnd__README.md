@@ -2,11 +2,11 @@
 source_repo: pnd
 source_path: README.md
 source_ref: main
-source_sha256: 1250672fbee8be95fd9386da06e076db9a5debb6d4782af27edcf5110c6a7be1
+source_sha256: 491140a6393bb86fe867b58a3097a50de74c8c364a591687d3a8f1e8d58087b0
 title: Overview
 url: /pnd/overview/
-section: $PND — issued currency
-synced: 2026-09-16
+section: $PND
+synced: 2026-09-18
 ---
 # PND
 
@@ -41,11 +41,12 @@ The issuance model follows standard XRPL gateway practice:
 
 1. The **issuer** sets its account flags once (`AccountSet`). It is the address that appears in every $PND amount: `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc`.
 2. The single "operational (hot) account" this README used to describe as a TODO is now two named accounts, decided by the owner:
-   - **Treasury** — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`. Holds the 90 billion $PND vesting escrow ([`docs/token-spec.md`](docs/token-spec.md)). Not yet funded — `account_info` returns `actNotFound` on mainnet.
-   - **Operations** — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`. Opens the trust line, receives the 10 billion circulating allocation, creates the AMM pool, and runs day-to-day distribution. Not yet funded — `account_info` returns `actNotFound` on mainnet.
+   - **Treasury** — `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b`. Holds remaining $PND for monthly holder airdrops after launch ([`docs/token-spec.md`](docs/token-spec.md)). Not yet funded — `account_info` returns `actNotFound` on mainnet.
+   - **Operations** — `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in`. Opens the trust line, receives the 10 billion public allocation at launch, creates the AMM pool, and runs day-to-day distribution. Not yet funded — `account_info` returns `actNotFound` on mainnet.
    Both addresses are the owner's decision, not yet applied on ledger: neither account exists yet. Do not describe them as funded, configured, or holding a trust line until `account_info` confirms it.
 3. Any other **holder** must submit their own `TrustSet` for `PND` / issuer before they can receive the token. There is no way for the issuer to push $PND to an account that has not opened a trust line.
 4. Issuance is a `Payment` from the issuer. New $PND exists the moment the issuer pays it out, and the outstanding amount is the sum of the issuer's negative trust line balances rather than a stored supply field.
+5. A planned membership NFT sale (1,000 tokens at 5 XRP) is **not** a restriction on who may send `$PND`. Whether those NFTs are required for the monthly holder drops, or only a perk, is still open — [`docs/open-questions.md`](docs/open-questions.md) item 21. No NFT issuer address or marketplace is published here. Membership and later `$rPND` are one overlay on the holder monthly, **not a second vesting schedule**.
 
 [`docs/trust-lines.md`](docs/trust-lines.md) has the holder-side detail, including rippling, trust limits, and reserve implications. [`docs/integration.md`](docs/integration.md) covers the amount encoding and the mistakes that break integrations.
 
