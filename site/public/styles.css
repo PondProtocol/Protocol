@@ -4013,6 +4013,10 @@ body.trade-disclaimer-open {
     gap: 0.45rem;
   }
 
+  body.page-trade .trade-workspace > .trade-action-pane {
+    grid-template-columns: 1fr;
+  }
+
   body.page-trade .trade-position,
   body.page-trade .trade-action-card {
     align-self: start;

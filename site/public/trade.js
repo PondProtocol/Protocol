@@ -93,13 +93,6 @@
       </section>
 
       <aside class="trade-action-pane" aria-label="Trade actions">
-        <div class="trade-position">
-          <div class="trade-card-head"><div><p class="trade-kicker">My position</p><h3>Wallet balances</h3></div><span class="trade-badge trade-badge-muted">Not connected</span></div>
-          <div class="trade-balance-row"><span>◈ <strong>XRP</strong></span><b>—</b></div>
-          <div class="trade-balance-row"><span>✦ <strong>$PND</strong></span><b>—</b></div>
-          <div class="trade-balance-row"><span>◉ <strong>LP_PND_XRP</strong></span><b>—</b></div>
-          <div class="trade-position-total"><span>Share</span><strong>—</strong><span>Estimated value</span><strong>— XRP</strong></div>
-        </div>
         <div class="trade-action-card">
           <nav class="trade-action-tabs" aria-label="AMM action" data-tab-group="amm-action">
             <button type="button" class="is-active" data-tab="swap" aria-selected="true">Swap</button>
@@ -125,7 +118,6 @@
             </div>
           </div>
         </div>
-        <div class="trade-gate-card"><span class="trade-check-icon" data-issuer-icon>!</span><div><strong>Trading is gated</strong><span>Issuer, market, reserves, and transaction route must pass verification.</span></div></div>
       </aside>
     </div>
 
