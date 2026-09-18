@@ -40,9 +40,11 @@
 
     <div class="trade-disclaimer-backdrop" data-disclaimer hidden>
       <section class="trade-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-disclaimer-title">
-        <p class="trade-kicker">Before you continue</p>
+        <p class="trade-disclaimer-kicker">Before you continue</p>
         <h2 id="trade-disclaimer-title">Pond is verification-first.</h2>
         <p class="trade-disclaimer-copy">This terminal never needs your seed, private key, or recovery phrase. $PND has not been issued and no verified market is live yet.</p>
+        <p class="trade-disclaimer-copy">This terminal uses official WalletConnect or Xaman connect only. Pond never stores keys, wallet info, seeds, or passwords, and never asks for a seed.</p>
+        <a class="trade-disclaimer-legal" href="/legal/">Read the disclaimer</a>
         <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
         <div class="trade-disclaimer-actions">
           <a href="/start/" class="trade-disclaimer-new" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>

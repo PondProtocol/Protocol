@@ -586,6 +586,17 @@ check(
     !tradeHtml.includes("Connect unavailable until Xaman app keys are set"),
 );
 check(
+  "trade disclaimer gates actions, links /legal/, and states WalletConnect or Xaman only",
+  tradeJsText.includes("data-disclaimer-confirm") &&
+    tradeJsText.includes('href="/start/"') &&
+    tradeJsText.includes('href="/legal/"') &&
+    /Read the disclaimer/i.test(tradeJsText) &&
+    /WalletConnect or Xaman/i.test(tradeJsText) &&
+    /never stores keys/i.test(tradeJsText) &&
+    /never needs your seed/i.test(tradeJsText) &&
+    /\$PND has not been issued/i.test(tradeJsText),
+);
+check(
   "xaman.js keeps an honest /connect/ unavailable card and a short disabled Trade option",
   xamanJsText.includes("Connect unavailable until Xaman app keys are set") &&
     xamanJsText.includes("This is not a fake connect") &&
@@ -595,6 +606,14 @@ check(
 
 const stylesCss = join(DIST_DIR, "styles.css");
 const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
+check(
+  "trade disclaimer actions are one primary and one secondary, not traffic-light colors",
+  stylesText.includes(".trade-disclaimer-new") &&
+    stylesText.includes(".trade-disclaimer-known") &&
+    !stylesText.includes("linear-gradient(135deg, #fb7185") &&
+    !stylesText.includes("linear-gradient(135deg, #4ade80") &&
+    !stylesText.includes("linear-gradient(135deg, #6aa8e6"),
+);
 check(
   "mobile CSS does not hide the top-bar dropdowns",
   !/\.topnav a:not\(\.cta\)/.test(stylesText) &&
