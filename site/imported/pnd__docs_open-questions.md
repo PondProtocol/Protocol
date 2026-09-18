@@ -2,11 +2,11 @@
 source_repo: pnd
 source_path: docs/open-questions.md
 source_ref: main
-source_sha256: 2027bce551db99d883e1967b63b1b3732f8c572ad0f06052601bf51ccefbda76
+source_sha256: a0128981aa607f2d1558d2274d67af1d643fd1236aaa24c7b8f2b3b55f29b6c7
 title: Open questions — $PND
 url: /open-questions/pnd/
-section: Project status
-synced: 2026-09-16
+section: Status
+synced: 2026-09-18
 ---
 # Open questions
 
@@ -21,7 +21,7 @@ Nothing in this list has been filled in with a guess. If a number, address, or d
 | Issuing account for $PND | `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` (checksum valid; funded on mainnet, no `AccountSet` applied, nothing issued; absent on testnet and devnet) | `README.md`, `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md`, `SECURITY.md` |
 | Target supply | 100,000,000,000 $PND, as issuer policy rather than a ledger cap | `README.md`, `docs/token-spec.md` |
 | Shared issuer for $PND and $rPND (formerly item 11) | **Yes.** `rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc` issues both. Confirmed by the owner; live state verified (funded 2.539034 XRP, `Flags` 0, `OwnerCount` 0, nothing configured or issued) | `README.md`, `docs/token-spec.md`, `docs/pnd-vs-rpnd.md`; `rpnd` spec |
-| Cold/hot split — Treasury and Operations addresses (formerly item 1) | **Treasury** `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` (holds the 90B escrow) and **Operations** `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` (holds the 10B liquidity/distribution allocation, creates the AMM pool). Both addresses are decided; **neither account is funded yet** — `account_info` returns `actNotFound` for both on mainnet | `README.md`, `docs/token-spec.md` |
+| Cold/hot split — Treasury and Operations addresses (formerly item 1) | **Treasury** `rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b` (holds remaining supply for monthly holder airdrops) and **Operations** `rPNDAwFzgXzsjvUbVWz1ErB28v9SkcR2in` (holds the 10B public/liquidity allocation, creates the AMM pool). Both addresses are decided; **neither account is funded yet** — `account_info` returns `actNotFound` for both on mainnet. Team destination for a separate 10B launch allocation is not named in this repo yet | `README.md`, `docs/token-spec.md` |
 | `pnd.operationalTrustLimit` (formerly item 10) | `rpnd`'s `config/tokens.json` on `main` now sets it to `100000000000` — the full 100 billion — fixed in commit `0d99cd4`. The `1,000,000,000` figure this repo previously recorded was stale | `rpnd` config |
 
 None of these answers is simply "done" in every dimension. The supply figure is settled, but *how it is enforced* is not. The issuer address and the shared-issuer question are settled, and the Treasury/Operations addresses are settled, but none of the three accounts is configured or funded on ledger yet — see [`token-spec.md`](token-spec.md#account-state-on-ledger) before assuming otherwise. Follow-on questions are items 5, 6, and 7 below — item 6 now also carries the blackholing/shared-issuer ordering constraint.
@@ -54,6 +54,8 @@ Item 1 (operational address) is answered — see [Recently answered](#recently-a
 | 7 | What supply-verification procedure holders should treat as canonical. `gateway_balances` on the issuer is the mechanical answer, but which server, what cadence, and whether signed attestations accompany it are undecided | `docs/token-spec.md`, `docs/trust-lines.md`, `docs/integration.md` |
 | 8 | What $PND represents: backing, redeemability, and the legal issuing entity | `README.md`, `docs/token-spec.md` |
 | 9 | Whether `TransferRate` stays at 0 long term | `docs/integration.md` (integrators are told to read it from the ledger) |
+| 20 | Monthly holder-airdrop snapshot: whether team, treasury, operations, and the AMM pool count as eligible $PND holders | `docs/token-spec.md` (working 10/10/80 intent; eligibility unset) |
+| 21 | Membership NFTs (planned 1000 at 5 XRP): whether holding one is required to receive a monthly drop or only a perk on top of $PND holdings; which account mints; whether the NFTs are transferable; who receives the 5 XRP. Permanent no-freeze means this cannot be “only members may send $PND.” Not a second vesting schedule. | `docs/token-spec.md` |
 
 ## Cross-repo configuration
 
@@ -82,7 +84,8 @@ Items 10 (`operationalTrustLimit`) and 11 (shared issuer) are answered — see [
 These are not TODOs. They are claims this repository will not make until they are true:
 
 - No audit has been performed, so no audit status or report is referenced.
-- No exchange listing or liquidity venue is named.
+- No exchange listing, liquidity venue, or NFT marketplace is named.
+- No connect-wallet claim site is described. Membership, if minted, is an on-ledger `NFTokenOffer` accept.
 - No price, market cap, valuation, or yield figure appears anywhere.
 - The 100 billion figure is never described as on-chain, hard-capped, or ledger-enforced, because for an XRPL IOU it cannot be.
 - The `initialIssuance` value in `rpnd`'s config is a Devnet rehearsal default of 1,000,000 and is never presented as a supply figure.

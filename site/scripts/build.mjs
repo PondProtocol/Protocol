@@ -362,6 +362,7 @@ function heroHtml() {
     </div>
     <p class="hero-actions">
       <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
+      <a class="button button-quiet" href="/connect/">Connect Xaman <span aria-hidden="true">↗</span></a>
       <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
     </p>
    </div>
@@ -496,21 +497,23 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <a class="brand" href="/"><img class="brand-mark" src="/icon-512.png" width="32" height="32" alt="">${esc(site.title)}</a>
-  ${searchHtml()}
-  <nav class="topnav" aria-label="Primary">
-    <a href="/protocol/">Protocol</a>
-    <a href="/trade/">Trade</a>
-    <a href="/pond/">Pond</a>
-    <a href="/team/">Meet Team</a>
-    <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
-      <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-  </nav>
+  <div class="topbar-end">
+    <nav class="topnav" aria-label="Primary">
+      <a class="cta nav-verify-chip" href="/verify/">Verify</a>
+      <a href="/hold/">Hold</a>
+      <a href="/wallets/">Wallets</a>
+      <a class="xaman-nav" href="/connect/" data-xaman-nav>Xaman</a>
+      <button type="button" class="docs-open" data-docs-open aria-expanded="false" aria-controls="docs-nav">Docs
+        <svg class="docs-open-icon" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M6 3.5 L11 8 L6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </nav>
+    ${searchHtml()}
+  </div>
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
@@ -518,11 +521,7 @@ ${isHome ? heroHtml() : ""}
 <div class="docs-backdrop" data-docs-backdrop></div>
 <button type="button" class="docs-rail" data-docs-toggle aria-expanded="true" aria-controls="docs-nav" title="Collapse documentation menu">
   <svg class="docs-rail-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-    <ellipse class="docs-rail-orbit" cx="8" cy="8" rx="6" ry="2.8" transform="rotate(-24 8 8)"/>
-    <circle class="docs-rail-core" cx="8" cy="8" r="2.7"/>
-    <g class="docs-rail-orbiting-orb">
-      <circle class="docs-rail-orb" cx="14" cy="8" r="1.25"/>
-    </g>
+    <path class="docs-rail-chevron" d="M6.2 3.2 L11 8 L6.2 12.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
   <span class="visually-hidden">Collapse documentation menu</span>
 </button>
@@ -567,6 +566,7 @@ ${isHome ? heroHtml() : ""}
         <div>
           <h2>Resources</h2>
           <a href="/wallets/">Wallets</a>
+          <a href="/connect/">Connect Xaman</a>
           <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
           <a href="/links/">Official links</a>
           <a href="/open-questions/">Open questions</a>
@@ -606,7 +606,9 @@ ${isHome ? heroHtml() : ""}
   </div>
 </footer>
 </div>
+<script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 <script src="/nav.js" defer></script>
+<script src="/xaman.js" defer></script>
 ${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}
 <script src="/trade.js" defer></script>
 </body>

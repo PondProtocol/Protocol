@@ -402,8 +402,47 @@ const holdPage = join(DIST_DIR, "hold", "index.html");
 const holdHtml = existsSync(holdPage) ? readFileSync(holdPage, "utf8") : "";
 check("hold page was built", holdHtml.length > 0);
 check(
-  "hold page forbids seeds, connect-wallet, and claim buttons",
-  /no seed/i.test(asText(holdHtml)) && /connect a wallet/i.test(asText(holdHtml)) && /claim button/i.test(asText(holdHtml)),
+  "hold page forbids seeds, generic connect-wallet, and claim buttons",
+  /no seed/i.test(asText(holdHtml)) &&
+    /connect a wallet/i.test(asText(holdHtml)) &&
+    /claim button/i.test(asText(holdHtml)),
+);
+check(
+  "hold page points at official Xaman SignIn only",
+  holdHtml.includes("/connect/") && /Xaman SignIn/i.test(asText(holdHtml)),
+);
+
+const connectPage = join(DIST_DIR, "connect", "index.html");
+const connectHtml = existsSync(connectPage) ? readFileSync(connectPage, "utf8") : "";
+check("connect page was built", connectHtml.length > 0);
+check(
+  "connect page is Xaman SignIn, not a claim or seed import",
+  /SignIn/i.test(asText(connectHtml)) &&
+    /never asks for a seed/i.test(asText(connectHtml)) &&
+    /not been issued/i.test(asText(connectHtml)) &&
+    /not a claim/i.test(asText(connectHtml)),
+);
+check(
+  "connect page stays honest when Xaman keys are missing",
+  /app keys/i.test(asText(connectHtml)),
+);
+check(
+  "every page links to official Xaman connect",
+  files
+    .filter((f) => f.endsWith("index.html") || f.endsWith("404.html"))
+    .every((f) => readFileSync(f, "utf8").includes('href="/connect/"')),
+);
+
+const xamanJs = join(DIST_DIR, "xaman.js");
+check("xaman.js is copied into the build", existsSync(xamanJs));
+const secretLeak = textFiles.filter((f) => {
+  const text = readFileSync(f, "utf8");
+  return /X-API-Secret\s*[:=]\s*['"]/i.test(text) || /XUMM_API_SECRET\s*=\s*['"][^'"]+/.test(text);
+});
+check(
+  "built output does not embed a Xaman API secret",
+  secretLeak.length === 0,
+  secretLeak.map((f) => relative(DIST_DIR, f)).join(", "),
 );
 
 const linksPage = join(DIST_DIR, "links", "index.html");

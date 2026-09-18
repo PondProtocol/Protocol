@@ -102,14 +102,24 @@ a:hover {
   z-index: 20;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: clamp(0.8rem, 2vw, 1.5rem);
   flex-wrap: nowrap;
   padding: 0.85rem clamp(1rem, 4vw, 2.5rem);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 18%, var(--border));
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: auto;
 }
 
 .brand {
@@ -148,10 +158,10 @@ a:hover {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1 1 22rem;
-  min-width: 10rem;
-  max-width: 25rem;
-  margin-left: clamp(0.25rem, 1vw, 0.8rem);
+  flex: 0 1 16rem;
+  min-width: 9rem;
+  max-width: 18rem;
+  margin-left: 0;
 }
 
 .site-search-icon {
@@ -254,8 +264,7 @@ a:hover {
 }
 
 .topnav .status-chip {
-  order: 1;
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .topnav .status-chip + .status-chip {
@@ -268,13 +277,20 @@ a:hover {
   text-transform: uppercase;
 }
 
-.topnav .cta {
-  order: 2;
-}
-
 .topnav .cta:hover {
   background: color-mix(in srgb, var(--accent) 62%, #ffffff);
   color: #ffffff;
+}
+
+.topnav .xaman-nav {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  color: var(--text);
+  font-weight: 650;
+}
+
+.topnav .xaman-nav[data-connected="1"] {
+  border-color: color-mix(in srgb, #67d49c 45%, var(--border));
+  color: #d8ffe9;
 }
 
 .docs-open {
@@ -356,45 +372,12 @@ html.docs-collapsed .docs-rail {
 
 .docs-rail-icon {
   display: block;
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
-.docs-rail-orbit {
-  fill: none;
-  stroke: color-mix(in srgb, var(--accent-bright) 70%, transparent);
-  stroke-width: 0.7;
-}
-
-.docs-rail-core {
-  fill: var(--accent);
+.docs-rail-chevron {
   stroke: var(--accent-bright);
-  stroke-width: 0.55;
-}
-
-.docs-rail-orbiting-orb {
-  transform-origin: 8px 8px;
-  animation: docs-orbital-spin 2.4s linear infinite;
-}
-
-.docs-rail-orb {
-  fill: var(--accent-bright);
-  filter: drop-shadow(0 0 1.5px var(--accent-bright));
-}
-
-@keyframes docs-orbital-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .docs-rail-orbiting-orb {
-    animation: none;
-  }
 }
 
 html.docs-collapsed .docs-rail-icon {
@@ -2908,6 +2891,9 @@ code.addr {
 }
 
 .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin: 0;
 }
 
@@ -3258,15 +3244,17 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
     gap: 0.65rem;
   }
 
+  .topbar-end {
+    display: contents;
+  }
+
   .site-search {
-    order: 3;
     flex: 1 0 100%;
     max-width: none;
     margin-left: 0;
   }
 
   .topnav {
-    order: 2;
     margin-left: auto;
   }
 
@@ -3329,7 +3317,7 @@ html.has-nav-js:not(.docs-collapsed) .hero-readout {
     font-size: 0.85rem;
   }
 
-  .topnav a:not(.cta) {
+  .topnav a:not(.cta):not(.xaman-nav) {
     display: none;
   }
 
@@ -6279,4 +6267,97 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-indicator-tools button {
     flex: 0 0 auto;
   }
+}
+
+/* ------------------------------------------------------------------- xaman */
+
+.xaman-app,
+.xaman-card,
+.xaman-payload,
+.xaman-issuer,
+.xaman-trust {
+  min-width: 0;
+}
+
+.xaman-card,
+.xaman-issuer,
+.xaman-trust,
+.xaman-payload {
+  padding: 1.15rem 1.25rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 58%),
+    var(--bg-soft);
+}
+
+.xaman-card {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 1.5rem;
+}
+
+.xaman-card h2,
+.xaman-trust h3 {
+  margin: 0;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.xaman-card h2 {
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  line-height: 1.15;
+}
+
+.xaman-card > p,
+.xaman-trust > p,
+.xaman-note {
+  margin: 0;
+  color: #c5c5c8;
+}
+
+.xaman-kicker {
+  margin: 0;
+  color: var(--accent-bright);
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.xaman-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 0.35rem 0 0;
+}
+
+.xaman-qr {
+  display: block;
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.xaman-error {
+  color: var(--critical);
+  font-weight: 650;
+}
+
+.xaman-text-button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-text);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.xaman-unavailable {
+  border-color: color-mix(in srgb, var(--critical) 28%, var(--border));
 }

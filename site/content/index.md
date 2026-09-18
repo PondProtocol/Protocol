@@ -4,8 +4,8 @@ Verify the issuer first. Then look at the wallets, then how to hold. The rest of
 
 <div class="join">
 <a class="join-card" href="/verify/"><strong>1. Verify</strong><span>Issuer address, impostor board, ledger checks. Do not search the ticker.</span></a>
-<a class="join-card" href="/wallets/"><strong>2. Wallets</strong><span>Issuer, Treasury, Operations, and the live flags snapshot.</span></a>
-<a class="join-card" href="/hold/"><strong>3. Hold safely</strong><span>Trust this issuer after launch. No seeds. No connect-wallet. No claim button.</span></a>
+<a class="join-card" href="/connect/"><strong>2. Connect</strong><span>Optional Xaman SignIn. Shows your r-address. Never a seed. Not a claim.</span></a>
+<a class="join-card" href="/hold/"><strong>3. Hold safely</strong><span>Trust this issuer after launch. No seeds. No claim button.</span></a>
 <a class="join-card" href="/links/"><strong>4. Official links</strong><span>This site, the TOML file, Bithomp. Nothing else.</span></a>
 </div>
 
