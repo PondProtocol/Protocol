@@ -473,18 +473,28 @@ const tradeHtml = existsSync(tradePage) ? readFileSync(tradePage, "utf8") : "";
 const tradeJs = join(DIST_DIR, "trade.js");
 const tradeJsText = existsSync(tradeJs) ? readFileSync(tradeJs, "utf8") : "";
 check("trade page was built", tradeHtml.length > 0);
+const xamanJsText = existsSync(xamanJs) ? readFileSync(xamanJs, "utf8") : "";
 check(
-  "trade terminal mounts official Xaman SignIn beside WalletConnect",
-  tradeJsText.includes("data-xaman-app") &&
-    tradeJsText.includes("data-xaman-compact") &&
+  "trade header uses one Connect wallet control for WalletConnect and Xaman",
+  tradeJsText.includes("data-connect-toggle") &&
+    tradeJsText.includes("data-connect-menu") &&
     tradeJsText.includes("data-wallet-connect") &&
-    tradeJsText.includes("WalletConnect"),
+    tradeJsText.includes("data-xaman-compact") &&
+    tradeJsText.includes("WalletConnect") &&
+    !tradeJsText.includes("trade-xaman-dock"),
 );
 check(
-  "xaman.js paints an honest unavailable state instead of a fake connect",
-  existsSync(xamanJs) &&
-    readFileSync(xamanJs, "utf8").includes("Connect unavailable until Xaman app keys are set") &&
-    readFileSync(xamanJs, "utf8").includes("This is not a fake connect"),
+  "trade does not render a page-wide Xaman unavailable banner",
+  !tradeJsText.includes("Connect unavailable until Xaman app keys are set") &&
+    !tradeJsText.includes("This is not a fake connect") &&
+    !tradeHtml.includes("Connect unavailable until Xaman app keys are set"),
+);
+check(
+  "xaman.js keeps an honest /connect/ unavailable card and a short disabled Trade option",
+  xamanJsText.includes("Connect unavailable until Xaman app keys are set") &&
+    xamanJsText.includes("This is not a fake connect") &&
+    xamanJsText.includes("Xaman · keys unset") &&
+    xamanJsText.includes("disabled title="),
 );
 
 const stylesCss = join(DIST_DIR, "styles.css");
