@@ -3612,7 +3612,7 @@ body.trade-disclaimer-open {
 }
 
 .trade-disclaimer-dialog {
-  width: min(100%, 26.5rem);
+  width: min(100%, 30rem);
   padding: 1.45rem 1.5rem 1.35rem;
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -3650,17 +3650,17 @@ body.trade-disclaimer-open {
 .trade-disclaimer-legal {
   display: inline-block;
   margin: 0.75rem 0 0;
-  color: var(--text);
+  color: var(--accent-text);
   font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--text) 28%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--accent-text) 40%, transparent);
   text-underline-offset: 0.18em;
 }
 
 .trade-disclaimer-legal:hover,
 .trade-disclaimer-legal:focus-visible {
-  color: var(--text);
+  color: var(--accent-bright);
   text-decoration-color: currentColor;
 }
 
@@ -3678,6 +3678,14 @@ body.trade-disclaimer-open {
   font: inherit;
   font-size: 0.8125rem;
   text-align: left;
+}
+
+.trade-disclaimer-confirm:focus {
+  outline: none;
+}
+
+.trade-disclaimer-confirm:focus-visible span:first-child {
+  box-shadow: 0 0 0 2px #111112, 0 0 0 3px rgb(242 242 243 / 0.45);
 }
 
 .trade-disclaimer-confirm span:first-child {
@@ -3729,6 +3737,7 @@ body.trade-disclaimer-open {
   line-height: 1.2;
   text-align: center;
   text-decoration: none;
+  white-space: nowrap;
   transition: background 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
 }
 
