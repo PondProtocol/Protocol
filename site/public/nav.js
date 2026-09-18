@@ -13,6 +13,16 @@
     return document.querySelector("#site-search-input");
   }
 
+  function topnavMenus() {
+    return [...document.querySelectorAll("[data-topnav-menu]")];
+  }
+
+  function closeTopnavMenus(except) {
+    topnavMenus().forEach((menu) => {
+      if (menu !== except) menu.open = false;
+    });
+  }
+
   function openAllGroups(root) {
     root.querySelectorAll("details[data-nav-group]").forEach((details) => {
       details.open = true;
@@ -28,7 +38,10 @@
     root.classList.toggle("is-open", open);
     form.classList.toggle("is-open", open);
     input?.setAttribute("aria-expanded", String(open));
-    if (open) openAllGroups(root);
+    if (open) {
+      closeTopnavMenus();
+      openAllGroups(root);
+    }
   }
 
   function filterIndex(query) {
@@ -63,6 +76,18 @@
       title: (anchor.textContent || "").replace(/\bimportant\b/i, "").trim(),
       url: anchor.getAttribute("href"),
     }));
+  }
+
+  function setupTopnav() {
+    topnavMenus().forEach((menu) => {
+      if (menu.dataset.bound === "1") return;
+      menu.dataset.bound = "1";
+      menu.addEventListener("toggle", () => {
+        if (!menu.open) return;
+        closeTopnavMenus(menu);
+        setIndexOpen(false);
+      });
+    });
   }
 
   function setupSearch() {
@@ -124,9 +149,11 @@
     const root = docsNav();
     if (!root) return;
     html.classList.add("has-nav-js");
+    setupTopnav();
     setupSearch();
     openAllGroups(root);
     setIndexOpen(false);
+    closeTopnavMenus();
     filterIndex("");
   }
 
@@ -194,6 +221,7 @@
     const url = new URL(link.href, window.location.href);
     if (url.origin !== window.location.origin || url.hash) return;
     if (link.closest("#docs-nav")) setIndexOpen(false);
+    if (link.closest("[data-topnav-menu]")) closeTopnavMenus();
     event.preventDefault();
     navigate(`${url.pathname}${url.search}`);
   });
@@ -201,14 +229,31 @@
   document.addEventListener("pointerdown", (event) => {
     const form = searchForm();
     const target = event.target;
-    if (!form || !(target instanceof Node) || form.contains(target)) return;
+    if (!(target instanceof Node)) return;
+    const menu = target instanceof Element ? target.closest("[data-topnav-menu]") : null;
+    if (menu) {
+      setIndexOpen(false);
+      return;
+    }
+    if (form && form.contains(target)) {
+      closeTopnavMenus();
+      return;
+    }
     setIndexOpen(false);
+    closeTopnavMenus();
   });
 
   window.addEventListener("popstate", () => navigate(`${window.location.pathname}${window.location.search}`, false));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       const root = docsNav();
+      const openMenu = topnavMenus().find((menu) => menu.open);
+      if (openMenu) {
+        event.preventDefault();
+        closeTopnavMenus();
+        openMenu.querySelector("summary")?.focus();
+        return;
+      }
       if (!root || root.hidden) return;
       event.preventDefault();
       setIndexOpen(false);

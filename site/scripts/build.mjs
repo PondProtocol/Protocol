@@ -304,22 +304,51 @@ function navGroupId(section) {
     .replace(/^-+|-+$/g, "");
 }
 
+function publishedPages(group) {
+  return group.pages.filter((p) => p.publish !== false);
+}
+
+function navItemsHtml(pages, currentUrl) {
+  let out = "";
+  for (const p of pages) {
+    const active = p.url === currentUrl ? ' class="active" aria-current="page"' : "";
+    const flag = p.url === "/verify/" ? ' <span class="nav-badge">important</span>' : "";
+    out += `<li><a href="${p.url}"${active}>${esc(p.title)}${flag}</a></li>`;
+  }
+  return out;
+}
+
 function navHtml(currentUrl) {
   let out = "";
   for (const group of config.nav) {
-    const visible = group.pages.filter((p) => p.publish !== false);
+    const visible = publishedPages(group);
     if (!visible.length) continue;
     const id = navGroupId(group.section);
     const open = " open";
     out += `<details class="nav-group" data-nav-group="${esc(id)}"${open}>`;
     out += `<summary class="nav-group-title">${esc(group.section)}</summary><ul>`;
-    for (const p of visible) {
-      const active = p.url === currentUrl ? ' class="active" aria-current="page"' : "";
-      const flag = p.url === "/verify/" ? ' <span class="nav-badge">important</span>' : "";
-      out += `<li><a href="${p.url}"${active}>${esc(p.title)}${flag}</a></li>`;
-    }
+    out += navItemsHtml(visible, currentUrl);
     out += "</ul></details>";
   }
+  return out;
+}
+
+const TOP_BAR_SECTIONS = ["Start here", "$PND", "$rPND", "Protocol"];
+
+function topnavHtml(currentUrl) {
+  let out = `<nav class="topnav" aria-label="Primary">`;
+  for (const section of TOP_BAR_SECTIONS) {
+    const group = config.nav.find((g) => g.section === section);
+    if (!group) continue;
+    const visible = publishedPages(group);
+    if (!visible.length) continue;
+    const id = navGroupId(section);
+    out += `<details class="topnav-menu" data-topnav-menu="${esc(id)}">`;
+    out += `<summary>${esc(section)}</summary>`;
+    out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
+    out += `</details>`;
+  }
+  out += `</nav>`;
   return out;
 }
 
@@ -504,12 +533,7 @@ ${canonical}
     </p>
   </div>
   <div class="topbar-end">
-    <nav class="topnav" aria-label="Primary">
-      <a href="/protocol/">Protocol</a>
-      <a href="/trade/">Trade</a>
-      <a href="/pond/">Pond</a>
-      <a href="/team/">Meet Team</a>
-    </nav>
+    ${topnavHtml(page.url)}
     ${searchHtml(page.url)}
   </div>
 </header>
@@ -542,7 +566,7 @@ ${isHome ? heroHtml() : ""}
       <nav class="footer-column" aria-label="Markets and assets">
         <h2>Markets &amp; assets</h2>
         <a href="/trade/">Trade terminal</a>
-        <a href="/pond/">Pond</a>
+        <a href="/start/">Start here</a>
         <a href="/pnd/">$PND</a>
         <a href="/rpnd/">$rPND</a>
         <a href="/hold/">Holding safely</a>

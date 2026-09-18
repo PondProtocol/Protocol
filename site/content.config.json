@@ -165,7 +165,6 @@
         { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
         { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
         { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
-        { "authored": "pond.md", "url": "/pond/", "title": "Pond" },
         { "authored": "team.md", "url": "/team/", "title": "Meet Team" },
         { "authored": "links.md", "url": "/links/", "title": "Official links" }
       ]
