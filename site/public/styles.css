@@ -3602,9 +3602,9 @@ body.trade-disclaimer-open {
   z-index: 80;
   display: grid;
   place-items: center;
-  padding: 1rem;
-  background: rgb(4 7 11 / 0.78);
-  backdrop-filter: blur(8px);
+  padding: 1.25rem;
+  background: rgb(5 5 6 / 0.68);
+  backdrop-filter: blur(12px);
 }
 
 .trade-disclaimer-backdrop[hidden] {
@@ -3612,75 +3612,111 @@ body.trade-disclaimer-open {
 }
 
 .trade-disclaimer-dialog {
-  width: min(100%, 31rem);
-  padding: clamp(1.2rem, 4vw, 1.8rem);
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border));
-  border-radius: 14px;
-  background:
-    radial-gradient(circle at 100% 0%, rgb(74 144 217 / 0.13), transparent 42%),
-    var(--bg-soft);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 0.45);
+  width: min(100%, 30rem);
+  padding: 1.45rem 1.5rem 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #111112;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.04) inset,
+    0 18px 48px rgb(0 0 0 / 0.42);
+}
+
+.trade-disclaimer-kicker {
+  margin: 0 0 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .trade-disclaimer-dialog h2 {
   margin: 0;
   color: var(--text);
-  font-size: clamp(1.25rem, 3vw, 1.65rem);
-  line-height: 1.15;
+  font-size: 1.125rem;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
 }
 
 .trade-disclaimer-copy {
-  margin: 0.65rem 0 1rem;
+  margin: 0.65rem 0 0;
   color: var(--text-muted);
-  font-size: 0.8rem;
-  line-height: 1.55;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.trade-disclaimer-legal {
+  display: inline-block;
+  margin: 0.75rem 0 0;
+  color: var(--accent-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-text) 40%, transparent);
+  text-underline-offset: 0.18em;
+}
+
+.trade-disclaimer-legal:hover,
+.trade-disclaimer-legal:focus-visible {
+  color: var(--accent-bright);
+  text-decoration-color: currentColor;
 }
 
 .trade-disclaimer-confirm {
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 0.55rem;
-  padding: 0.7rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgb(0 0 0 / 0.18);
+  gap: 0.6rem;
+  margin: 1.15rem 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--text-muted);
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
+  font-size: 0.8125rem;
   text-align: left;
+}
+
+.trade-disclaimer-confirm:focus {
+  outline: none;
+}
+
+.trade-disclaimer-confirm:focus-visible span:first-child {
+  box-shadow: 0 0 0 2px #111112, 0 0 0 3px rgb(242 242 243 / 0.45);
 }
 
 .trade-disclaimer-confirm span:first-child {
   display: grid;
-  width: 1rem;
-  height: 1rem;
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
   place-items: center;
-  border: 1px solid var(--text-muted);
+  border: 1px solid color-mix(in srgb, var(--text-muted) 70%, var(--border));
   border-radius: 3px;
+  background: transparent;
   color: transparent;
-  font-size: 0.7rem;
+  font-size: 0.62rem;
+  line-height: 1;
 }
 
 .trade-disclaimer-confirm.is-confirmed {
-  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
-  background: var(--accent-soft);
   color: var(--text);
 }
 
 .trade-disclaimer-confirm.is-confirmed span:first-child {
-  border-color: var(--accent-bright);
-  background: var(--accent);
-  color: #07111b;
+  border-color: var(--text);
+  background: var(--text);
+  color: #111112;
 }
 
 .trade-disclaimer-actions {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.55rem;
-  margin-top: 1rem;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
 }
 
 .trade-disclaimer-actions a,
@@ -3688,66 +3724,51 @@ body.trade-disclaimer-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.15rem;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid transparent;
+  flex: 1 1 0;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
   border-radius: 8px;
   cursor: pointer;
   font: inherit;
-  font-size: 0.72rem;
-  font-weight: 750;
-  letter-spacing: 0.01em;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-align: center;
   text-decoration: none;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, opacity 160ms ease;
+  white-space: nowrap;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease, opacity 140ms ease;
 }
 
 .trade-disclaimer-new {
-  background: color-mix(in srgb, var(--critical) 16%, var(--bg-code));
-  border-color: color-mix(in srgb, var(--critical) 28%, var(--border));
-  color: color-mix(in srgb, var(--critical) 72%, var(--text-muted));
+  background: transparent;
+  color: var(--text);
 }
 
-.trade-disclaimer-new[aria-disabled="true"] {
+.trade-disclaimer-known {
+  background: var(--text);
+  border-color: var(--text);
+  color: #0a0a0b;
+}
+
+.trade-disclaimer-new[aria-disabled="true"],
+.trade-disclaimer-known:disabled {
   cursor: not-allowed;
-  opacity: 0.48;
+  opacity: 0.38;
   pointer-events: none;
-}
-
-.trade-disclaimer-new[aria-disabled="false"] {
-  background: linear-gradient(135deg, #fb7185, #d31212);
-  border-color: #d31212;
-  color: #ffffff;
-  box-shadow: 0 8px 22px rgb(211 18 18 / 0.28);
 }
 
 .trade-disclaimer-new[aria-disabled="false"]:hover,
 .trade-disclaimer-new[aria-disabled="false"]:focus-visible {
-  background: linear-gradient(135deg, #fda4af, #e11d48);
-  color: #ffffff;
-}
-
-.trade-disclaimer-known {
-  background: linear-gradient(135deg, #6aa8e6, var(--accent));
-  border-color: var(--accent);
-  color: #ffffff;
-}
-
-.trade-disclaimer-known:disabled {
-  cursor: not-allowed;
-  opacity: 0.78;
-  pointer-events: none;
-}
-
-.trade-disclaimer-known:not(:disabled) {
-  background: linear-gradient(135deg, #4ade80, #16a34a);
-  border-color: #16a34a;
-  color: #06210f;
-  box-shadow: 0 8px 22px rgb(22 163 74 / 0.28);
+  background: rgb(255 255 255 / 0.04);
+  border-color: color-mix(in srgb, var(--text) 22%, var(--border));
 }
 
 .trade-disclaimer-known:not(:disabled):hover,
 .trade-disclaimer-known:not(:disabled):focus-visible {
-  background: linear-gradient(135deg, #86efac, #15803d);
+  background: #ffffff;
+  border-color: #ffffff;
 }
 
 /* -------------------------------------------------------------- start / pond */
