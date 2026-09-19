@@ -816,6 +816,10 @@ check(
     tradeJsText.includes("data-dex-tape") &&
     tradeJsText.includes("24h AMM/DEX tape") &&
     stylesText.includes("trade-dex-live") &&
+    stylesText.includes("is-tape-only") &&
+    tradeJsText.includes("data-dex-book-wrap") &&
+    /\.trade-app\[data-mode="chart"\] \.trade-detail-window/.test(stylesText) &&
+    /\.trade-app\[data-mode="dex"\] \.trade-market-footer/.test(stylesText) &&
     !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
     !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&

@@ -207,7 +207,6 @@
       <section class="trade-market-pane trade-dex-chart-pane" aria-label="PND market chart">
         <div class="trade-chart-toolbar">
           <div class="trade-chart-tools"><span class="is-active">$PND / XRP</span><span>XRPL DEX</span></div>
-          <div class="trade-range-tools"><button type="button" class="is-active">1H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
         </div>
         <div class="trade-market-panels">
           <div class="trade-panel is-active">
@@ -219,12 +218,14 @@
                 <span>No validated Testnet offers. The chart stays blank until the ledger has a book or AMM.</span>
               </div>
               <div class="trade-dex-live" data-dex-live hidden>
-                <section class="trade-dex-book-wrap">
+                <section class="trade-dex-book-wrap" data-dex-book-wrap>
                   <p class="trade-kicker">Validated book</p>
+                  <div class="trade-dex-book-head"><span>Price</span><span>PND</span><span>XRP</span></div>
                   <ol class="trade-dex-book" data-dex-book></ol>
                 </section>
                 <section class="trade-dex-tape-wrap">
                   <p class="trade-kicker">Trade tape</p>
+                  <div class="trade-dex-tape-head"><span>Side</span><span>Price</span><span>Size</span><span>Time</span></div>
                   <ol class="trade-dex-tape" data-dex-tape></ol>
                 </section>
               </div>
@@ -268,22 +269,19 @@
             <button type="button" class="is-active" data-chart-pair="pnd-xrp">PND / XRP</button>
             <button type="button" data-chart-pair="pnd-usd">PND / USD</button>
           </div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span><strong class="trade-chart-pair-label" data-chart-pair-label hidden>PND / XRP · Testnet ledger</strong></div>
+          <div class="trade-chart-ohlc" aria-label="Chart price details">
+            <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
+            <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
+            <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
+            <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
+            <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
+          </div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
-        </div>
-        <div class="trade-chart-ohlc" aria-label="Chart price details">
-          <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
-          <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
-          <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
-          <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
-          <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
-        </div>
-        <div class="trade-overview-toolbar">
-          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Testnet ledger</strong></div>
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
           <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
@@ -888,6 +886,7 @@
     function paintDexMarket() {
       const empty = $("[data-dex-empty]");
       const live = $("[data-dex-live]");
+      const bookWrap = $("[data-dex-book-wrap]");
       const book = $("[data-dex-book]");
       const tape = $("[data-dex-tape]");
       if (!empty || !live) return;
@@ -895,6 +894,8 @@
       const hasMarket = offers.length > 0 || trades.length > 0;
       empty.hidden = hasMarket;
       live.hidden = !hasMarket;
+      live.classList.toggle("is-tape-only", offers.length === 0);
+      if (bookWrap) bookWrap.hidden = offers.length === 0;
       if (book) {
         book.innerHTML = offers.length
           ? offers.map((offer) => {
@@ -905,11 +906,11 @@
               const price = pnd > 0 && Number.isFinite(xrp) ? xrp / pnd : null;
               return `<li><strong>${escText(price != null ? `${price.toFixed(8)} XRP` : "—")}</strong><span>${escText(Number.isFinite(pnd) ? `${formatIou(pnd)} PND` : "—")}</span><em>${escText(Number.isFinite(xrp) ? `${formatIou(xrp)} XRP` : "—")}</em></li>`;
             }).join("")
-          : "<li>No resting PND/XRP offers.</li>";
+          : "";
       }
       if (tape) {
         tape.innerHTML = trades.length
-          ? trades.slice(0, 24).map((trade) => `<li><strong>${escText(trade.side === "buy" ? "Buy" : "Sell")}</strong><span>${escText(`${trade.price.toFixed(8)} XRP`)}</span><em>${escText(`${formatIou(trade.pnd)} PND · ${formatIou(trade.xrp)} XRP`)}</em><time>${escText(rippleDate(trade.date))}</time></li>`).join("")
+          ? trades.slice(0, 24).map((trade) => `<li data-side="${escText(trade.side === "buy" ? "buy" : "sell")}"><strong>${escText(trade.side === "buy" ? "Buy" : "Sell")}</strong><span>${escText(`${trade.price.toFixed(8)} XRP`)}</span><em>${escText(`${formatIou(trade.pnd)} PND · ${formatIou(trade.xrp)} XRP`)}</em><time>${escText(rippleDate(trade.date))}</time></li>`).join("")
           : "<li>No validated AMM/DEX prints yet.</li>";
       }
       const sellNote = $("[data-dex-sell-note]");
