@@ -897,6 +897,19 @@ const profilesSrc = existsSync(join(SITE_ROOT, "scripts", "profiles.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "profiles.mjs"), "utf8")
   : "";
 check("profile.js is copied into the build", existsSync(profileJs));
+const disclaimerJs = join(DIST_DIR, "disclaimer.js");
+const disclaimerJsText = existsSync(disclaimerJs) ? readFileSync(disclaimerJs, "utf8") : "";
+check("disclaimer.js is copied into the build", existsSync(disclaimerJs));
+check(
+  "signed-in profile can review the same trade disclaimer",
+  profileJsText.includes("data-review-disclaimer") &&
+    /Review disclaimer/.test(profileJsText) &&
+    disclaimerJsText.includes("Pond is verification-first") &&
+    disclaimerJsText.includes("disclaimerAccepted") &&
+    !disclaimerJsText.includes("localStorage") &&
+    profilesSrc.includes("disclaimerAccepted") &&
+    sessionJsText.includes("disclaimerAccepted"),
+);
 check(
   "profile page is the complete-your-profile surface and not a Start here step",
   profileHtml.includes("data-pond-profile") &&

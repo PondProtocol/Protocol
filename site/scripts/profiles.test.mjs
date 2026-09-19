@@ -151,3 +151,49 @@ test("profile fields stay small and reject seeds", () =>
     });
     assert.equal(secret.error, "bad_profile");
   }));
+
+test("accepted disclaimer is stored on the profile", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    assert.equal((await updateOwnProfile(ADMIN_ADDRESS, {})).disclaimerAccepted, false);
+    const saved = await updateOwnProfile(ADMIN_ADDRESS, { disclaimerAccepted: true });
+    assert.equal(saved.disclaimerAccepted, true);
+    const stored = JSON.parse(readFileSync(process.env.POND_PROFILE_STORE, "utf8"));
+    const row = stored.profiles.find((item) => item.handle === "tadpole01");
+    assert.equal(row.disclaimerAccepted, true);
+    assert.ok(row.disclaimerAcceptedAt);
+    const renamed = await updateOwnProfile(ADMIN_ADDRESS, { displayName: "Greenhead" });
+    assert.equal(renamed.disclaimerAccepted, true);
+    assert.equal(renamed.displayName, "Greenhead");
+  }));
+
+function mockReq({ method = "GET", body } = {}) {
+  const req = {
+    method,
+    headers: {},
+    socket: {},
+    on(event, fn) {
+      if (event === "data" && body !== undefined) {
+        queueMicrotask(() => fn(Buffer.from(typeof body === "string" ? body : JSON.stringify(body))));
+      }
+      if (event === "end") queueMicrotask(() => fn());
+      return req;
+    },
+  };
+  return req;
+}
+
+test("profile API persists disclaimerAccepted for the signed-in Xaman account", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    const res = mockRes();
+    const handled = await handleProfiles(mockReq({ method: "POST", body: { disclaimerAccepted: true } }), res, "/api/profile", {
+      readSession: () => ({ address: ADMIN_ADDRESS, method: "xaman" }),
+    });
+    assert.equal(handled, true);
+    assert.equal(res.statusCode, 200);
+    const data = JSON.parse(res.body);
+    assert.equal(data.handle, "tadpole01");
+    assert.equal(data.disclaimerAccepted, true);
+    assert.equal(getProfileByHandle("tadpole01").disclaimerAccepted, true);
+  }));
