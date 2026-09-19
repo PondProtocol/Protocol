@@ -281,15 +281,16 @@
           <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1m</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span><span class="trade-chart-print-age" data-chart-print-age>—</span></div>
         </div>
+        <div class="trade-chart-ohlc">
+          <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
+          <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
+          <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
+          <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
+          <span class="trade-chart-ohlc-change"><strong data-chart-ohlc-change>—</strong></span>
+        </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
-            <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 480" preserveAspectRatio="none" role="img" aria-label="PND / XRP Testnet chart"></svg>
-            <div class="trade-chart-chrome" data-chart-chrome>
-              <ol class="trade-chart-y-axis" data-chart-y-axis></ol>
-              <ol class="trade-chart-x-axis" data-chart-x-axis></ol>
-              <strong class="trade-chart-last-pill" data-chart-last-pill hidden>—</strong>
-              <span class="trade-chart-vol-caption" data-chart-vol-caption hidden>Volume</span>
-            </div>
+            <div class="trade-chart-board" data-chart-board role="img" aria-label="PND / XRP Testnet chart"></div>
             <div class="trade-chart-hud" data-chart-hud hidden>
               <strong data-chart-hud-time>—</strong>
               <span data-chart-hud-ohlc>—</span>
@@ -1697,8 +1698,8 @@
       const symbolMark = $("[data-chart-symbol-mark]");
       const liveChart = $("[data-chart-live]");
       const emptyChart = $("[data-chart-empty-state]");
-      const svg = $("[data-chart-svg]");
-      if (!liveChart || !emptyChart || !svg) return null;
+      const board = $("[data-chart-board]");
+      if (!liveChart || !emptyChart || !board) return null;
 
       const numberFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
       const compactFormat = new Intl.NumberFormat("en-US", {
@@ -1803,13 +1804,7 @@
           .filter(Boolean)
           .join(" ");
       };
-      const svgText = (x, y, text, className, anchor = "start") =>
-        `<text x="${x}" y="${y}" class="${className}" text-anchor="${anchor}">${text}</text>`;
       const hud = $("[data-chart-hud]");
-      const yAxis = $("[data-chart-y-axis]");
-      const xAxis = $("[data-chart-x-axis]");
-      const lastPill = $("[data-chart-last-pill]");
-      const volCaption = $("[data-chart-vol-caption]");
       const formatCompact = (value) => {
         if (!Number.isFinite(value)) return "—";
         if (value >= 10) return value.toFixed(2);
@@ -1842,7 +1837,32 @@
         setText("[data-chart-print-age]", `${clock} · ${age}`);
         setText("[data-chart-stat-print]", age);
       };
-      const pct = (value, total) => `${((value / total) * 100).toFixed(3)}%`;
+      const seriesPoints = (times, values) =>
+        values
+          .map((value, index) => (value == null || !Number.isFinite(value) ? null : { time: times[index], value }))
+          .filter(Boolean);
+      const loadVendorScript = (src) => {
+        const existing = [...document.scripts].find((node) => node.getAttribute("src") === src);
+        if (existing) {
+          return window.LightweightCharts?.createChart
+            ? Promise.resolve()
+            : new Promise((resolve, reject) => {
+                existing.addEventListener("load", resolve, { once: true });
+                existing.addEventListener("error", () => reject(new Error("Chart library failed to load.")), { once: true });
+              });
+        }
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = src;
+          script.addEventListener("load", resolve, { once: true });
+          script.addEventListener("error", () => reject(new Error("Chart library failed to load.")), { once: true });
+          document.head.appendChild(script);
+        });
+      };
+      const ensureTvLib = () => {
+        if (window.LightweightCharts?.createChart) return Promise.resolve();
+        return loadVendorScript("/vendor/lightweight-charts.standalone.production.js");
+      };
 
       rangeButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -1893,32 +1913,136 @@
         const allCandles = chartState.data?.candles || [];
         const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
         if (!allPoints.length) return;
-        const focusCount = Math.min(allPoints.length, 20);
-        const points = allPoints.slice(-focusCount);
-        const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
-        const values = points.map((point) => point.close ?? point.value);
-        const volumes = points.map((point) => point.volume || 0);
-        const width = 1000;
-        const height = 480;
-        const left = 72;
-        const right = 76;
-        const top = 14;
-        const plotRight = width - right;
-        const indicator = chartState.indicator || "sma";
-        const showVolume = chartState.volume !== false;
-        const showOsc = indicator === "rsi" || indicator === "macd";
-        const oscBottom = 448;
-        const oscTop = showOsc ? 412 : 448;
-        const volumeBottom = showOsc ? 400 : 448;
-        const volumeTop = showVolume ? (showOsc ? 338 : 362) : volumeBottom;
-        const priceBottom = (showVolume || showOsc) ? volumeTop - 10 : 430;
+        ensureTvBoard().then(applyTvData).catch(() => {
+          setChartEmpty("Chart library unavailable", "TradingView Lightweight Charts did not load. The tape is still read from Testnet.");
+        });
+      }
+
+      function sizeTvPanes(showVolume, showOsc) {
+        const panes = chartState.tv?.chart.panes?.() || [];
+        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(showVolume ? 0.26 : 0);
+        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(showOsc ? 0.22 : 0);
+      }
+
+      function ensureTvBoard() {
+        if (chartState.tv) return Promise.resolve(chartState.tv);
+        if (chartState.tvReady) return chartState.tvReady;
+        chartState.tvReady = ensureTvLib().then(() => {
+          if (chartState.tv) return chartState.tv;
+          const LC = window.LightweightCharts;
+          const chart = LC.createChart(board, {
+            autoSize: true,
+            layout: {
+              background: { type: LC.ColorType.Solid, color: "#101214" },
+              textColor: "#c5ccd4",
+              fontSize: 12,
+              fontFamily: "IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace",
+            },
+            grid: {
+              vertLines: { color: "#1d2024" },
+              horzLines: { color: "#25292e" },
+            },
+            crosshair: {
+              mode: LC.CrosshairMode.Normal,
+              vertLine: { color: "#787b86", labelBackgroundColor: "#2b2f36" },
+              horzLine: { color: "#787b86", labelBackgroundColor: "#2b2f36" },
+            },
+            rightPriceScale: { borderColor: "#2b2f36", scaleMargins: { top: 0.08, bottom: 0.04 } },
+            timeScale: { borderColor: "#2b2f36", timeVisible: true, secondsVisible: false, rightOffset: 6 },
+            localization: { priceFormatter: (price) => formatTick(price) },
+          });
+          const candles = chart.addSeries(LC.CandlestickSeries, {
+            upColor: "#26a69a",
+            downColor: "#ef5350",
+            wickUpColor: "#26a69a",
+            wickDownColor: "#ef5350",
+            borderUpColor: "#26a69a",
+            borderDownColor: "#ef5350",
+            priceLineVisible: true,
+            lastValueVisible: true,
+            priceLineColor: "#26a69a",
+            priceLineWidth: 1,
+            priceFormat: { type: "price", precision: 5, minMove: 0.00001 },
+          });
+          const volume = chart.addSeries(LC.HistogramSeries, {
+            priceFormat: { type: "volume" },
+            priceLineVisible: false,
+            lastValueVisible: false,
+          }, 1);
+          volume.priceScale().applyOptions({ scaleMargins: { top: 0.16, bottom: 0 } });
+          const overlay = chart.addSeries(LC.LineSeries, {
+            color: "#f7c66a",
+            lineWidth: 2,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+          const bandHigh = chart.addSeries(LC.LineSeries, {
+            color: "#d78cff",
+            lineWidth: 1,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+          const bandLow = chart.addSeries(LC.LineSeries, {
+            color: "#d78cff",
+            lineWidth: 1,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+          const osc = chart.addSeries(LC.LineSeries, {
+            color: "#b687f0",
+            lineWidth: 2,
+            priceLineVisible: false,
+            lastValueVisible: false,
+          }, 2);
+          chart.subscribeCrosshairMove((param) => {
+            const candle = param.seriesData?.get(candles);
+            if (!candle || param.time == null) {
+              hideChartHud();
+              return;
+            }
+            const timeMs = typeof param.time === "number" ? param.time * 1000 : Date.parse(param.time);
+            const volumePoint = param.seriesData.get(volume);
+            setText("[data-chart-hud-time]", Number.isFinite(timeMs) ? new Date(timeMs).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }) : "—");
+            setText("[data-chart-hud-ohlc]", `O ${formatTick(candle.open)}  H ${formatTick(candle.high)}  L ${formatTick(candle.low)}  C ${formatTick(candle.close)}`);
+            setText("[data-chart-hud-vol]", `${formatIou(volumePoint?.value || 0)} XRP`);
+            setText("[data-chart-ohlc-open]", formatAxis(candle.open));
+            setText("[data-chart-ohlc-high]", formatAxis(candle.high));
+            setText("[data-chart-ohlc-low]", formatAxis(candle.low));
+            setText("[data-chart-ohlc-close]", formatAxis(candle.close));
+            if (hud) hud.hidden = false;
+          });
+          chartState.tv = { chart, candles, volume, overlay, bandHigh, bandLow, osc };
+          sizeTvPanes(true, false);
+          return chartState.tv;
+        });
+        return chartState.tvReady;
+      }
+
+      function applyTvData() {
+        const tv = chartState.tv;
+        const allCandles = chartState.data?.candles || [];
+        const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
+        if (!tv || !allPoints.length) return;
+        const rows = allPoints.map((point) => {
+          const close = point.close ?? point.value;
+          const open = Number.isFinite(point.open) ? point.open : close;
+          const high = Number.isFinite(point.high) ? point.high : close;
+          const low = Number.isFinite(point.low) ? point.low : close;
+          return {
+            time: Math.floor(point.time / 1000),
+            open,
+            high,
+            low,
+            close,
+            volume: point.volume || 0,
+          };
+        }).filter((row, index, list) => Number.isFinite(row.time) && (index === 0 || row.time > list[index - 1].time));
+        if (!rows.length) return;
+        const values = rows.map((row) => row.close);
+        const times = rows.map((row) => row.time);
         const maPeriod = Math.min(8, Math.max(5, Math.floor(values.length / 5) || 5));
         const sma = movingAverage(values, maPeriod);
         const ema = exponentialAverage(values, maPeriod);
-        const macdFast = exponentialAverage(values, Math.min(12, values.length));
-        const macdSlow = exponentialAverage(values, Math.min(26, Math.max(12, values.length)));
-        const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
-        const rsi = relativeStrength(values, Math.min(14, Math.max(5, values.length - 1)));
         const mean = movingAverage(values, maPeriod);
         const standardDeviation = values.map((_, index) => {
           if (index < maPeriod - 1) return null;
@@ -1928,133 +2052,44 @@
         });
         const upper = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value + standardDeviation[index] * 2));
         const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
-        let { minValue, maxValue, lastPrice } = recentPriceDomain(points, chartState.data?.livePrice);
-        const tapeBands = [...sma, ...ema, ...upper, ...lower].filter((value) => (
-          value != null && Number.isFinite(lastPrice) && value >= minValue && value <= maxValue
-        ));
-        if (tapeBands.length) {
-          minValue = Math.min(minValue, ...tapeBands);
-          maxValue = Math.max(maxValue, ...tapeBands);
-        }
-        minValue = Math.min(minValue, lastPrice);
-        maxValue = Math.max(maxValue, lastPrice);
-        const padding = Math.max((maxValue - minValue) * 0.08, Math.abs(lastPrice || maxValue) * 0.012, 0.000001);
-        const low = Math.min(minValue - padding, lastPrice);
-        const high = Math.max(maxValue + padding, lastPrice);
-        const count = Math.max(points.length, 1);
-        const slot = (plotRight - left) / count;
-        const x = (index) => left + slot * index + slot / 2;
-        const y = (value) => {
-          const clamped = Math.min(high, Math.max(low, value));
-          return priceBottom - ((clamped - low) / Math.max(high - low, 0.000001)) * (priceBottom - top);
-        };
-        const pricePath = values.length > 1 ? pathFor(values, x, y) : "";
-        const areaPath = values.length > 1 ? `${pricePath} L ${x(values.length - 1)} ${priceBottom} L ${x(0)} ${priceBottom} Z` : "";
-        const yTicks = [];
-        const grid = [];
-        for (let index = 0; index < 5; index += 1) {
-          const gridY = top + (index / 4) * (priceBottom - top);
-          const gridValue = high - (index / 4) * (high - low);
-          grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
-          yTicks.push({ y: gridY, text: formatTick(gridValue) });
-        }
-        for (let index = 0; index <= 6; index += 1) {
-          const gridX = left + (index / 6) * (plotRight - left);
-          grid.push(`<line class="trade-chart-vertical-grid" x1="${gridX}" x2="${gridX}" y1="${top}" y2="${oscBottom}"/>`);
-        }
-        const labelStep = Math.max(1, Math.floor((points.length - 1) / 4));
-        const labelIndexes = [...new Set([0, labelStep, labelStep * 2, labelStep * 3, points.length - 1].filter((index) => index >= 0 && index < points.length))];
-        const xTicks = labelIndexes.map((index) => ({
-          x: x(index),
-          text: new Date(points[index].time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
-          edge: index === 0 ? "start" : index === points.length - 1 ? "end" : "middle",
-        }));
-        const maxVolume = Math.max(...volumes, 1);
-        const barWidth = Math.max(8, slot * 0.82);
-        const volumeBars = showVolume
-          ? volumes
-            .map((volume, index) => {
-              const barHeight = Math.max(2, (volume / maxVolume) * (volumeBottom - volumeTop - 4));
-              const direction = index === 0 || values[index] >= values[index - 1] ? "is-up" : "is-down";
-              return `<rect class="trade-chart-volume ${direction}" x="${x(index) - barWidth / 2}" y="${volumeBottom - barHeight}" width="${barWidth}" height="${barHeight}"/>`;
-            })
-            .join("")
-          : "";
-        const candleBodies = candles.map((candle, index) => {
-          const cx = x(index);
-          const hi = Number.isFinite(candle.high) ? candle.high : candle.value;
-          const lo = Number.isFinite(candle.low) ? candle.low : candle.value;
-          const up = candle.close >= candle.open;
-          const current = index === candles.length - 1 ? " is-current" : "";
-          const direction = `${up ? "is-up" : "is-down"}${current}`;
-          if (hi < low || lo > high) {
-            const edge = hi < low ? priceBottom : top;
-            return `<rect class="trade-chart-candle ${direction}" data-chart-candle="${index}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="4"/>`;
-          }
-          const bodyTop = y(Math.max(candle.open, candle.close));
-          const bodyBot = y(Math.min(candle.open, candle.close));
-          const bodyHeight = Math.max(14, bodyBot - bodyTop);
-          const bodyY = bodyTop - (bodyHeight - Math.max(1, bodyBot - bodyTop)) / 2;
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" data-chart-candle="${index}" x="${cx - barWidth / 2}" y="${bodyY}" width="${barWidth}" height="${bodyHeight}"/>`;
-        }).join("");
-        let indicatorPaths = "";
-        if (values.length > 1 && (indicator === "sma" || indicator === "bollinger")) {
-          indicatorPaths += `<path class="trade-chart-indicator" d="${pathFor(sma, x, y)}"/>`;
-        }
-        if (values.length > 1 && indicator === "ema") {
-          indicatorPaths += `<path class="trade-chart-indicator is-secondary" d="${pathFor(ema, x, y)}"/>`;
-        }
-        if (values.length > 1 && indicator === "bollinger") {
-          indicatorPaths += `<path class="trade-chart-indicator is-secondary" d="${pathFor(upper, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lower, x, y)}"/>`;
-        }
-        let oscLayer = "";
-        if (showOsc) {
-          if (indicator === "rsi") {
-            const rsiY = (value) => oscBottom - (Math.min(100, Math.max(0, value)) / 100) * (oscBottom - oscTop);
-            oscLayer = `<line class="trade-chart-subgrid" x1="${left}" x2="${plotRight}" y1="${rsiY(70)}" y2="${rsiY(70)}"/><line class="trade-chart-subgrid" x1="${left}" x2="${plotRight}" y1="${rsiY(30)}" y2="${rsiY(30)}"/><path class="trade-chart-rsi" d="${pathFor(rsi, x, rsiY)}"/>`;
-          } else {
-            const macdVals = macd.filter((value) => value != null);
-            const macdMax = Math.max(...macdVals.map((value) => Math.abs(value)), 0.000001);
-            const macdY = (value) => oscTop + (oscBottom - oscTop) / 2 - (value / macdMax) * ((oscBottom - oscTop) / 2);
-            oscLayer = `<path class="trade-chart-macd" d="${pathFor(macd, x, macdY)}"/>`;
-          }
-        }
-        const lineLayer = candles.length
-          ? candleBodies
-          : `${areaPath ? `<path class="trade-chart-area" d="${areaPath}"/>` : ""}${pricePath ? `<path class="trade-chart-price" d="${pricePath}"/>` : ""}`;
-        const lastLine = Number.isFinite(lastPrice)
-          ? `<line class="trade-chart-last-line" x1="${left}" x2="${plotRight}" y1="${y(lastPrice)}" y2="${y(lastPrice)}"/>`
-          : "";
-        const divider = showVolume || showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>` : "";
-        const oscDivider = showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${oscTop - 6}" y2="${oscTop - 6}"/>` : "";
-        const clip = `<clipPath id="trade-chart-price-clip"><rect x="${left}" y="${top}" width="${plotRight - left}" height="${priceBottom - top}"/></clipPath>`;
-        const plotLayer = `<g clip-path="url(#trade-chart-price-clip)">${lineLayer}${indicatorPaths}</g>`;
-        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${lastLine}${divider}${plotLayer}${volumeBars}${oscDivider}${oscLayer}`;
+        const rsi = relativeStrength(values, Math.min(14, Math.max(5, values.length - 1)));
+        const macdFast = exponentialAverage(values, Math.min(12, values.length));
+        const macdSlow = exponentialAverage(values, Math.min(26, Math.max(12, values.length)));
+        const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
+        const indicator = chartState.indicator || "sma";
+        const showVolume = chartState.volume !== false;
+        const showOsc = indicator === "rsi" || indicator === "macd";
+        tv.candles.setData(rows.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
+        tv.volume.setData(rows.map((row) => ({
+          time: row.time,
+          value: row.volume,
+          color: row.close >= row.open ? "rgba(38, 166, 154, 0.62)" : "rgba(239, 83, 80, 0.62)",
+        })));
+        tv.volume.applyOptions({ visible: showVolume });
+        if (indicator === "ema") tv.overlay.setData(seriesPoints(times, ema));
+        else if (indicator === "sma" || indicator === "bollinger") tv.overlay.setData(seriesPoints(times, sma));
+        else tv.overlay.setData([]);
+        tv.bandHigh.setData(indicator === "bollinger" ? seriesPoints(times, upper) : []);
+        tv.bandLow.setData(indicator === "bollinger" ? seriesPoints(times, lower) : []);
+        tv.osc.setData(showOsc ? seriesPoints(times, indicator === "rsi" ? rsi : macd) : []);
+        tv.osc.applyOptions({ visible: showOsc });
+        const last = rows[rows.length - 1];
+        const lastUp = last.close >= last.open;
+        tv.candles.applyOptions({
+          priceLineColor: lastUp ? "#26a69a" : "#ef5350",
+          lastValueVisible: true,
+          priceLineVisible: true,
+        });
+        sizeTvPanes(showVolume, showOsc);
+        tv.chart.timeScale().fitContent();
         liveChart.hidden = false;
         emptyChart.hidden = true;
         emptyChart.classList.remove("is-loading");
-        if (yAxis) {
-          yAxis.innerHTML = yTicks.map((tick) => `<li style="top:${pct(tick.y, height)}">${escText(tick.text)}</li>`).join("");
-        }
-        if (xAxis) {
-          xAxis.innerHTML = xTicks.map((tick) => `<li class="is-${tick.edge}" style="left:${pct(tick.x, width)}">${escText(tick.text)}</li>`).join("");
-        }
-        if (lastPill) {
-          lastPill.hidden = !Number.isFinite(lastPrice);
-          lastPill.textContent = formatTick(lastPrice);
-          lastPill.style.top = pct(y(lastPrice), height);
-        }
-        if (volCaption) {
-          volCaption.hidden = !showVolume;
-          volCaption.style.top = pct(volumeTop + 8, height);
-        }
-        chartState.layout = { left, plotRight, top, priceBottom, slot, count, low, high, points, candles, width, height };
         setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
-        setText("[data-chart-stat-high]", formatAxis(candles.length ? Math.max(...candles.map((candle) => candle.high)) : Math.max(...values)));
-        setText("[data-chart-stat-low]", formatAxis(candles.length ? Math.min(...candles.map((candle) => candle.low)) : Math.min(...values)));
-        setText("[data-chart-symbol-price]", formatAxis(chartState.data.livePrice));
+        setText("[data-chart-stat-high]", formatAxis(Math.max(...rows.map((row) => row.high))));
+        setText("[data-chart-stat-low]", formatAxis(Math.min(...rows.map((row) => row.low))));
+        setText("[data-chart-symbol-price]", formatAxis(chartState.data.livePrice ?? last.close));
         setText("[data-chart-symbol-change]", formatPercent(chartState.data.change));
-        if (chartState.hoverIndex != null) showChartHover(chartState.hoverIndex);
       }
 
       const formatTick = (value) => {
@@ -2224,33 +2259,6 @@
       const load = () => {
         paintLedgerChart();
       };
-      const showChartHover = (index) => {
-        const layout = chartState.layout;
-        if (!layout || !hud) return;
-        const point = layout.points[index];
-        if (!point) {
-          hideChartHud();
-          return;
-        }
-        chartState.hoverIndex = index;
-        const candle = layout.candles[index] || point;
-        const time = new Date(point.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
-        setText("[data-chart-hud-time]", time);
-        setText("[data-chart-hud-ohlc]", `O ${formatTick(candle.open ?? point.value)}  H ${formatTick(candle.high ?? point.value)}  L ${formatTick(candle.low ?? point.value)}  C ${formatTick(candle.close ?? point.value)}`);
-        setText("[data-chart-hud-vol]", `${formatIou(point.volume || 0)} XRP${candle.prints ? ` · ${candle.prints} print${candle.prints === 1 ? "" : "s"}` : ""}`);
-        hud.hidden = false;
-      };
-      svg.addEventListener("pointermove", (event) => {
-        const layout = chartState.layout;
-        if (!layout) return;
-        const rect = svg.getBoundingClientRect();
-        if (!rect.width) return;
-        const vx = ((event.clientX - rect.left) / rect.width) * 1000;
-        const index = Math.floor((vx - layout.left) / layout.slot);
-        if (index < 0 || index >= layout.count) hideChartHud();
-        else showChartHover(index);
-      });
-      svg.addEventListener("pointerleave", hideChartHud);
       window.setInterval(load, 60000);
       window.setInterval(updatePrintAge, 4000);
       return { load, paintLedger: paintLedgerChart };
