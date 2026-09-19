@@ -7131,6 +7131,127 @@ body:has([data-pond-profile]) .profile-card {
   font-family: var(--mono);
 }
 
+.trade-snapshot-head-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.trade-ticket-wallet,
+.trade-ticket-check,
+.trade-ticket-slider span {
+  color: var(--text-muted);
+  font-size: 0.56rem;
+}
+
+.trade-ticket-wallet {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.trade-ticket-wallet strong {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  text-align: right;
+}
+
+.trade-ticket-slider {
+  display: grid;
+  gap: 0.12rem;
+  margin-bottom: 0.35rem;
+}
+
+.trade-ticket-slider span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.trade-ticket-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.trade-ticket-tif {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.2rem;
+  margin-bottom: 0.3rem;
+}
+
+.trade-ticket-tif button,
+.trade-ticket-actions button {
+  padding: 0.18rem 0.28rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.56rem;
+  font-weight: 700;
+}
+
+.trade-ticket-tif button.is-active,
+.trade-ticket-actions button.is-active,
+.trade-ticket-tif button:hover,
+.trade-ticket-actions button:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-ticket-check {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.trade-ticket-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.2rem;
+  margin: 0.3rem 0 0.4rem;
+}
+
+.trade-snapshot-prints {
+  margin: 0.3rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-snapshot-prints li {
+  margin: 0;
+}
+
+.trade-snapshot-prints button,
+.trade-snapshot-prints li:not(:has(button)) {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.18rem 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.54rem;
+  text-align: left;
+}
+
+.trade-snapshot-prints strong {
+  color: var(--text);
+  font-family: var(--mono);
+}
+
+.trade-snapshot-prints time {
+  font-family: var(--mono);
+}
+
 .trade-overview-note,
 .trade-overview-risk span {
   display: block;

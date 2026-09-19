@@ -59,13 +59,19 @@
     const isBuy = side === "buy";
     return `
              <div class="trade-panel${isBuy ? " is-active" : ""}" data-panel="${side}"${isBuy ? "" : " hidden"}>
+               <div class="trade-ticket-wallet"><span>Signed-in wallet</span><strong data-ticket-wallet>—</strong></div>
                <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
                <div class="trade-ticket-sizes" role="group" aria-label="Size presets"><button type="button" data-size-chip="25">25%</button><button type="button" data-size-chip="50">50%</button><button type="button" data-size-chip="75">75%</button><button type="button" data-size-chip="100">Max</button></div>
+               <label class="trade-ticket-slider"><span>Size <em data-amount-slider-label>0%</em></span><input type="range" data-amount-slider min="0" max="100" step="1" value="0" aria-label="Size percent slider"></label>
+               <label class="trade-ticket-slider"><span>Offset from last <em data-offset-label>0 bps</em></span><input type="range" data-price-offset min="-200" max="200" step="5" value="0" aria-label="Price offset in basis points"></label>
                <div class="trade-order-grid">
                  <label class="trade-action-field trade-input-field"><span>Price</span><div><button type="button" class="trade-ticket-step" data-price-step="-1" aria-label="Lower price">−</button><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="Last print" aria-label="Price in XRP per PND"><button type="button" class="trade-ticket-step" data-price-step="1" aria-label="Raise price">+</button><b>XRP</b></div></label>
                  <label class="trade-action-field trade-input-field"><span data-ticket-amount-label>${isBuy ? "Buy" : "Sell"}</span><div><button type="button" class="trade-ticket-step" data-amount-step="-1" aria-label="Lower amount">−</button><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><button type="button" class="trade-ticket-step" data-amount-step="1" aria-label="Raise amount">+</button><b>PND</b></div></label>
                </div>
+               <div class="trade-ticket-tif" role="group" aria-label="Time in force"><button type="button" class="is-active" data-tif="gtc">GTC</button><button type="button" data-tif="ioc">IOC</button><button type="button" data-tif="fok">FOK</button></div>
+               <label class="trade-ticket-check"><input type="checkbox" data-post-only> Post only · unsigned flag</label>
                <div class="trade-action-field"><span data-ticket-total-label>${isBuy ? "Pay" : "Receive"}</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small data-ticket-vs-last>Unsigned · vs last —</small></div>
+               <div class="trade-ticket-actions"><button type="button" data-follow-last aria-pressed="false">Follow last</button><button type="button" data-ticket-reset>Reset</button></div>
                <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. Official Xaman signs. This terminal does not submit OfferCreate.</p>
                <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — Xaman signs</button>
             </div>`;
@@ -352,7 +358,10 @@ ${ticketPanelMarkup("sell")}
           <div class="trade-overview-card trade-chart-snapshot">
             <header class="trade-snapshot-head">
               <p class="trade-kicker">Market snapshot</p>
-              <button type="button" class="trade-snapshot-use-last" data-use-last>Use last</button>
+              <div class="trade-snapshot-head-actions">
+                <button type="button" class="trade-snapshot-use-last" data-copy-last>Copy</button>
+                <button type="button" class="trade-snapshot-use-last" data-use-last>Use last</button>
+              </div>
             </header>
             <div class="trade-snapshot-hero">
               <span>Last print</span>
@@ -372,9 +381,12 @@ ${ticketPanelMarkup("sell")}
               <div class="trade-overview-stat"><span>Basis</span><strong data-chart-stat-basis>—</strong></div>
               <div class="trade-overview-stat"><span>Prints</span><strong data-chart-stat-prints>—</strong></div>
               <div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div>
+              <div class="trade-overview-stat"><span>Your PND</span><strong data-chart-stat-wallet-pnd>—</strong></div>
+              <div class="trade-overview-stat"><span>Your XRP</span><strong data-chart-stat-wallet-xrp>—</strong></div>
               <div class="trade-overview-stat"><span>Ledger poll</span><strong data-chart-stat-poll>8s · waiting</strong></div>
               <div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div>
             </div>
+            <ol class="trade-snapshot-prints" data-snapshot-prints></ol>
           </div>
         <div class="trade-action-card trade-overview-ticket" data-order-ticket data-ticket-side="buy">
           <nav class="trade-action-tabs trade-ticket-sides" aria-label="Chart order type" data-tab-group="chart-order">
@@ -655,6 +667,7 @@ ${ticketPanelMarkup("sell")}
     let pollInFlight = false;
     let lastPollAt = 0;
     const ticketQuotes = { last: NaN, high: NaN, low: NaN, vwap: NaN, spot: NaN };
+    let followLast = false;
     let walletGeneration = 0;
     let chartController = null;
     let walletController = null;
@@ -708,6 +721,7 @@ ${ticketPanelMarkup("sell")}
         status.classList.toggle("is-live", liveMarket);
       }
       updateMarketPanels();
+      paintWalletStats();
     }
 
     function getMarketPrice(verification = state.verification) {
@@ -1072,6 +1086,31 @@ ${ticketPanelMarkup("sell")}
       setText("[data-quote-high]", high);
       setText("[data-quote-low]", low);
       setText("[data-quote-vwap]", vwap);
+    }
+
+    function paintWalletStats() {
+      const pnd = state.verification.walletPnd;
+      const xrpDrops = state.verification.walletXrpDrops;
+      const signedIn = Boolean(state.verification.walletAccount);
+      const pndText = signedIn && pnd != null ? `${formatIou(pnd)} PND` : "—";
+      const xrpText = signedIn && xrpDrops != null ? `${formatDrops(xrpDrops)} XRP` : "—";
+      setText("[data-chart-stat-wallet-pnd]", pndText);
+      setText("[data-chart-stat-wallet-xrp]", xrpText);
+      $$("[data-ticket-wallet]").forEach((node) => {
+        node.textContent = signedIn ? `${pndText} · ${xrpText}` : "Sign in with Xaman to size from balances";
+      });
+    }
+
+    function paintSnapshotPrints(prints = []) {
+      const list = $("[data-snapshot-prints]");
+      if (!list) return;
+      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 6);
+      list.innerHTML = rows.length
+        ? rows.map((print) => {
+            const clock = new Date(print.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+            return `<li><button type="button" data-print-fill="${escText(String(print.price))}"><strong>${escText(formatQuotePrice(print.price) || String(print.price))}</strong><span>${escText(formatIou(print.xrp || 0))} XRP</span><time>${escText(clock)}</time></button></li>`;
+          }).join("")
+        : "<li>No validated prints in this window.</li>";
     }
 
     function fillTicketPrices(value, force = false) {
@@ -1840,6 +1879,17 @@ ${ticketPanelMarkup("sell")}
           const orderKindButtons = [...panel.querySelectorAll("[data-order-kind]")];
           if (!price || !amount || !total || !submit) return;
           let orderKind = "limit";
+          let tif = "gtc";
+          let postOnly = false;
+          const amountSlider = panel.querySelector("[data-amount-slider]");
+          const amountSliderLabel = panel.querySelector("[data-amount-slider-label]");
+          const offsetSlider = panel.querySelector("[data-price-offset]");
+          const offsetLabel = panel.querySelector("[data-offset-label]");
+          const previewFlags = () => {
+            const flags = [`TIF ${tif.toUpperCase()}`];
+            if (postOnly) flags.push("post-only");
+            return `Unsigned · ${flags.join(" · ")} · Xaman signs, no OfferCreate here.`;
+          };
           const updateTotal = () => {
             if (orderKind === "market") {
               price.disabled = true;
@@ -1859,7 +1909,7 @@ ${ticketPanelMarkup("sell")}
             const last = ticketQuotes.last;
             if (vsLast && Number.isFinite(quoted) && quoted > 0 && Number.isFinite(last) && last > 0) {
               const basis = ((quoted - last) / last) * 100;
-              vsLast.textContent = `Unsigned · vs last ${basis >= 0 ? "+" : ""}${basis.toFixed(2)}%`;
+              vsLast.textContent = `Unsigned · vs last ${basis >= 0 ? "+" : ""}${basis.toFixed(2)}% · ${tif.toUpperCase()}${postOnly ? " · post" : ""}`;
               vsLast.classList.toggle("is-up", basis > 0);
               vsLast.classList.toggle("is-down", basis < 0);
             } else if (vsLast) {
@@ -1867,11 +1917,81 @@ ${ticketPanelMarkup("sell")}
               vsLast.classList.remove("is-up", "is-down");
             }
           };
+          const applyOffset = () => {
+            const last = ticketQuotes.last;
+            const bps = Number(offsetSlider?.value || 0);
+            if (offsetLabel) offsetLabel.textContent = `${bps > 0 ? "+" : ""}${bps} bps`;
+            if (!Number.isFinite(last) || last <= 0) return;
+            price.dataset.userEdited = "1";
+            price.value = formatQuotePrice(last * (1 + bps / 10000)) || String(last);
+            updateTotal();
+          };
+          const applySizePct = (pct) => {
+            amount.value = sizePreset(side, pct);
+            if (amountSlider) amountSlider.value = String(pct);
+            if (amountSliderLabel) amountSliderLabel.textContent = `${pct}%`;
+            updateTotal();
+          };
           price.addEventListener("input", () => {
             if (price.dataset.autofill !== "1") price.dataset.userEdited = "1";
             updateTotal();
           });
-          amount.addEventListener("input", updateTotal);
+          amount.addEventListener("input", () => {
+            if (amountSlider && amountSliderLabel) {
+              amountSliderLabel.textContent = "custom";
+              panel.querySelectorAll("[data-size-chip]").forEach((chip) => chip.classList.remove("is-active"));
+            }
+            updateTotal();
+          });
+          amountSlider?.addEventListener("input", () => applySizePct(Number(amountSlider.value) || 0));
+          offsetSlider?.addEventListener("input", applyOffset);
+          panel.querySelectorAll("[data-tif]").forEach((button) => {
+            button.addEventListener("click", () => {
+              tif = button.dataset.tif || "gtc";
+              panel.querySelectorAll("[data-tif]").forEach((item) => item.classList.toggle("is-active", item === button));
+              updateTotal();
+              setOrderStatus(previewFlags());
+            });
+          });
+          panel.querySelector("[data-post-only]")?.addEventListener("change", (event) => {
+            postOnly = Boolean(event.target.checked);
+            updateTotal();
+            setOrderStatus(previewFlags());
+          });
+          panel.querySelector("[data-follow-last]")?.addEventListener("click", (event) => {
+            followLast = !followLast;
+            $$("[data-follow-last]").forEach((button) => {
+              button.classList.toggle("is-active", followLast);
+              button.setAttribute("aria-pressed", String(followLast));
+            });
+            if (followLast) fillTicketPrices(ticketQuotes.last, true);
+            setOrderStatus(followLast ? "Follow last is on. New validated prints refill price. Unsigned only." : previewFlags(), followLast ? "ready" : "neutral");
+            event.currentTarget.classList.toggle("is-active", followLast);
+          });
+          panel.querySelector("[data-ticket-reset]")?.addEventListener("click", () => {
+            orderKind = "limit";
+            tif = "gtc";
+            postOnly = false;
+            followLast = false;
+            panel.querySelectorAll("[data-order-kind]").forEach((item) => item.classList.toggle("is-active", item.dataset.orderKind === "limit"));
+            panel.querySelectorAll("[data-tif]").forEach((item) => item.classList.toggle("is-active", item.dataset.tif === "gtc"));
+            panel.querySelectorAll("[data-size-chip]").forEach((chip) => chip.classList.remove("is-active"));
+            $$("[data-follow-last]").forEach((button) => {
+              button.classList.remove("is-active");
+              button.setAttribute("aria-pressed", "false");
+            });
+            const post = panel.querySelector("[data-post-only]");
+            if (post) post.checked = false;
+            if (amountSlider) amountSlider.value = "0";
+            if (amountSliderLabel) amountSliderLabel.textContent = "0%";
+            if (offsetSlider) offsetSlider.value = "0";
+            if (offsetLabel) offsetLabel.textContent = "0 bps";
+            amount.value = "";
+            price.dataset.userEdited = "";
+            fillTicketPrices(ticketQuotes.last, true);
+            updateTotal();
+            setOrderStatus("Ticket reset. Unsigned preview. Official Xaman signs.");
+          });
           orderKindButtons.forEach((button) => {
             button.addEventListener("click", () => {
               orderKind = button.dataset.orderKind || "limit";
@@ -1905,8 +2025,7 @@ ${ticketPanelMarkup("sell")}
           panel.querySelectorAll("[data-size-chip]").forEach((button) => {
             button.addEventListener("click", () => {
               panel.querySelectorAll("[data-size-chip]").forEach((chip) => chip.classList.toggle("is-active", chip === button));
-              amount.value = sizePreset(side, Number(button.dataset.sizeChip) || 25);
-              updateTotal();
+              applySizePct(Number(button.dataset.sizeChip) || 25);
             });
           });
           submit.addEventListener("click", () => {
@@ -1932,6 +2051,25 @@ ${ticketPanelMarkup("sell")}
       $("[data-use-last]")?.addEventListener("click", () => {
         fillTicketPrices(ticketQuotes.last, true);
         setOrderStatus("Filled from the last validated print. Unsigned preview only.", "ready");
+      });
+      $("[data-copy-last]")?.addEventListener("click", async () => {
+        const text = formatQuotePrice(ticketQuotes.last);
+        if (!text || !navigator.clipboard?.writeText) {
+          setOrderStatus("Nothing to copy yet.", "gated");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(text);
+          setOrderStatus(`Copied last print ${text} XRP. Unsigned preview only.`, "ready");
+        } catch {
+          setOrderStatus("Clipboard is blocked in this browser.", "gated");
+        }
+      });
+      $("[data-snapshot-prints]")?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-print-fill]");
+        if (!button) return;
+        fillTicketPrices(Number(button.dataset.printFill), true);
+        setOrderStatus("Filled from a validated print. Unsigned preview only.", "ready");
       });
     }
 
@@ -2011,6 +2149,9 @@ ${ticketPanelMarkup("sell")}
         setText("[data-chart-stat-spot]", "—");
         setSignedText("[data-chart-stat-basis]", "—", NaN);
         setText("[data-chart-stat-prints]", "—");
+        setText("[data-chart-stat-wallet-pnd]", "—");
+        setText("[data-chart-stat-wallet-xrp]", "—");
+        paintSnapshotPrints([]);
         setText("[data-chart-stat-rsi]", "—");
         setText("[data-chart-stat-macd]", "—");
         setText("[data-chart-symbol-price]", "—");
@@ -2655,6 +2796,9 @@ ${ticketPanelMarkup("sell")}
         setSignedText("[data-chart-ohlc-change]", formatPercent(change), change);
         setSignedText("[data-chart-symbol-change]", formatPercent(change), change);
         paintRangeMeter(livePrice, high, low);
+        paintWalletStats();
+        paintSnapshotPrints(used);
+        if (followLast) fillTicketPrices(livePrice, true);
         const status = $("[data-chart-stat-status]");
         if (status) {
           status.classList.toggle("is-gated", false);
