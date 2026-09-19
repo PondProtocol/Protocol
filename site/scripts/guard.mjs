@@ -679,12 +679,14 @@ check(
   "home hero frame matches the Private Browsing dock",
   indexHtml.includes('class="page-home page-index"') &&
     indexHtml.includes('class="home-screen"') &&
-    stylesText.includes("--home-frame: 1rem") &&
+    stylesText.includes("--home-frame: clamp(") &&
+    stylesText.includes("--home-scale") &&
     stylesText.includes("--privacy-reserve-h") &&
+    stylesText.includes("container-name: home-hero") &&
     stylesText.includes(".page-index .hero-inner") &&
-    /inset:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
-    /bottom:\s*calc\(\s*var\(--home-frame\) \+ var\(--privacy-reserve-h\)/.test(stylesText) &&
-    /right:\s*1rem/.test(stylesText.slice(stylesText.indexOf(".privacy-dock"))),
+    /padding:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
+    /bottom:\s*var\(--privacy-reserve-h\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
+    /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
@@ -997,6 +999,8 @@ check("privacy.js is copied into the build", existsSync(privacyJs));
 check(
   "home privacy notice sets the hero reserve height",
   privacyJsText.includes("syncHomePrivacyReserve") &&
+    privacyJsText.includes("syncHomeScale") &&
+    privacyJsText.includes("--home-scale") &&
     privacyJsText.includes("--privacy-reserve-h") &&
     privacyJsText.includes("page-index"),
 );

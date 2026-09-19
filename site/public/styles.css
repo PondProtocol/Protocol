@@ -3860,10 +3860,17 @@ code.addr {
   line-height: 1.45;
 }
 
-/* Home only: first viewport frame matches .privacy-dock, then clears the notice. */
+/* Home only: one frame token, then scale the hero to that box. */
 .page-index {
-  --home-frame: 1rem;
+  --home-frame: clamp(1rem, 2.2vw, 1.5rem);
+  --home-scale: 1;
   --privacy-reserve-h: 13rem;
+}
+
+.page-index .privacy-dock {
+  right: var(--home-frame);
+  bottom: var(--home-frame);
+  left: var(--home-frame);
 }
 
 .page-index .home-screen {
@@ -3872,7 +3879,17 @@ code.addr {
   box-sizing: border-box;
   height: 100svh;
   height: 100dvh;
+  padding: var(--home-frame);
   overflow: hidden;
+}
+
+.page-index .home-screen .topbar {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.page-index .home-screen .protocol-snapshot-title {
+  padding-left: 0;
 }
 
 .page-index .home-screen .hero {
@@ -3885,11 +3902,13 @@ code.addr {
 
 .page-index .hero-inner {
   position: absolute;
-  inset: var(--home-frame);
-  bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
+  inset: 0;
+  bottom: var(--privacy-reserve-h);
+  container-type: size;
+  container-name: home-hero;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
   width: auto;
   max-width: none;
@@ -3908,10 +3927,24 @@ code.addr {
   min-height: 0;
   max-width: none;
   align-items: end;
+  transform: scale(var(--home-scale));
+  transform-origin: center;
 }
 
 .page-index .hero-copy {
   align-self: center;
+}
+
+.page-index .hero .hero-kicker {
+  font-size: clamp(3.4rem, 16cqi, 10rem);
+}
+
+.page-index .hero-tagline {
+  font-size: clamp(1.55rem, 5cqi, 3.6rem);
+}
+
+.page-index .hero-lede {
+  font-size: clamp(0.86rem, 1.7cqi, 1.06rem);
 }
 
 .page-index .hero-pages {
@@ -3919,7 +3952,7 @@ code.addr {
   justify-self: end;
   align-self: end;
   width: auto;
-  height: 100%;
+  height: min(100%, 52cqi);
   max-width: 100%;
   min-height: 0;
   padding: 0.75rem;
@@ -3941,9 +3974,56 @@ code.addr {
   background: rgb(201 214 224 / 0.07);
 }
 
+.page-index .shell {
+  padding-left: var(--home-frame);
+  padding-right: var(--home-frame);
+}
+
+.page-index .footer {
+  padding-left: var(--home-frame);
+  padding-right: var(--home-frame);
+}
+
 @media (max-width: 480px) {
   .page-index {
-    --home-frame: 0.75rem;
+    --home-frame: clamp(0.75rem, 4vw, 1rem);
+  }
+}
+
+@media (max-width: 780px) {
+  .page-index .hero-main {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.8rem;
+  }
+
+  .page-index .hero-copy {
+    align-self: start;
+  }
+
+  .page-index .hero .hero-kicker {
+    font-size: clamp(2.5rem, 20cqi, 4.1rem);
+  }
+
+  .page-index .hero-heading {
+    padding-top: calc(0.62rem * 1.2 + 0.4rem);
+  }
+
+  .page-index .hero-pages {
+    width: 100%;
+    height: auto;
+    max-height: min(46cqb, 17.5rem);
+    aspect-ratio: 1 / 1;
+    justify-self: stretch;
+    align-self: start;
+  }
+
+  .page-index .hero-wallet {
+    padding: 0.48rem 0.7rem;
+  }
+
+  .page-index .hero-wallet .addr {
+    font-size: 0.68rem;
   }
 }
 
