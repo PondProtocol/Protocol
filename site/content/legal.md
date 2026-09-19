@@ -23,6 +23,12 @@ We use cookies. That is intentional.
   (with a `localStorage` backup). Anonymous users keep progress in that
   cookie. After you sign in, progress is merged and keyed to that XRPL
   address.
+- **Public profile.** After you sign in, this host assigns a tadpole
+  handle and stores handle, XRPL address, optional display name / bio,
+  and a Start Here progress pointer in a JSON file the site process can
+  write. Other visitors can open `/profile/<handle>/`. We do not store
+  seeds or private keys. Autoscale disk may be ephemeral, so that file
+  can reset on a new deploy.
 
 We remember the XRPL address you signed in with. We do not sell personal
 data. We do not run ads. We never ask for a seed, mnemonic, private key, or

@@ -10,5 +10,7 @@ var/
 *.tsbuildinfo
 site/dist/
 site/.screenshots/
+site/data/profiles.json
+site/data/*.tmp
 .config/
 .cache/

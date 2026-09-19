@@ -195,6 +195,7 @@
         setupNavigation();
         window.PondSession?.init?.();
         window.PondStart?.init?.();
+        window.PondProfile?.init?.();
         window.PondTrade?.init?.();
         window.PondXaman?.init?.();
       };

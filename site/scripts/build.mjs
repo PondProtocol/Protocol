@@ -531,7 +531,7 @@ function sessionChipHtml() {
     </div>
   </div>
   <div class="session-authed" data-session-authed hidden>
-    <span class="session-addr" data-session-addr></span>
+    <a class="session-addr" data-session-addr data-session-profile href="/profile/"></a>
     <button type="button" class="session-out" data-session-signout>Sign out</button>
   </div>
   <xrpl-wallet-connector id="pond-session-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
@@ -670,7 +670,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url === "/profile/" ? "page-profile page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
@@ -778,6 +778,7 @@ ${privacyDockHtml()}
 <script src="/nav.js" defer></script>
 <script src="/session.js" defer></script>
 <script src="/start.js" defer></script>
+<script src="/profile.js" defer></script>
 <script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>
 ${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}

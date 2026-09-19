@@ -887,6 +887,53 @@ check(
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleSession"),
 );
 
+const profileJs = join(DIST_DIR, "profile.js");
+const profileJsText = existsSync(profileJs) ? readFileSync(profileJs, "utf8") : "";
+const profileHtml = existsSync(join(DIST_DIR, "profile", "index.html"))
+  ? readFileSync(join(DIST_DIR, "profile", "index.html"), "utf8")
+  : "";
+const profilesSrc = existsSync(join(SITE_ROOT, "scripts", "profiles.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "profiles.mjs"), "utf8")
+  : "";
+check("profile.js is copied into the build", existsSync(profileJs));
+check(
+  "profile page is the complete-your-profile surface and not a Start here step",
+  profileHtml.includes("data-pond-profile") &&
+    /Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
+    profileHtml.includes("/profile.js") &&
+    !startHereLabels.includes("Profile") &&
+    !startHereOrder.includes("Profile") &&
+    startHereLabels.join(" | ") === startHereOrder.join(" | "),
+);
+check(
+  "logged-in chip links to /profile/<handle>/",
+  indexHtml.includes("data-session-profile") &&
+    indexHtml.includes('href="/profile/"') &&
+    sessionJsText.includes("/profile/") &&
+    sessionJsText.includes("handle"),
+);
+check(
+  "tadpole handles are assigned on login and persisted in a JSON file store",
+  profilesSrc.includes("tadpole01") &&
+    profilesSrc.includes("tadpole010") &&
+    profilesSrc.includes("r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B") &&
+    profilesSrc.includes("profiles.json") &&
+    profilesSrc.includes("Never stores seeds") &&
+    !profilesSrc.includes("database.greenhead.io") &&
+    readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("ensureProfile") &&
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleProfiles") &&
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage"),
+);
+check(
+  "profile forms never ask for a seed or password",
+  /never asks for a seed/i.test(asText(profileHtml)) &&
+    !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(profileHtml) &&
+    !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(profileJsText) &&
+    !profileJsText.includes('type="password"') &&
+    profileJsText.includes("displayName") &&
+    profileJsText.includes("bio"),
+);
+
 const startJs = join(DIST_DIR, "start.js");
 const startJsText = existsSync(startJs) ? readFileSync(startJs, "utf8") : "";
 const startPage = join(DIST_DIR, "start", "index.html");

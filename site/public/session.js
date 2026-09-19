@@ -45,6 +45,9 @@
     if (addrEl()) {
       addrEl().textContent = signedIn ? shortAddr(current.address) : "";
       addrEl().title = current?.address || "";
+      if (addrEl() instanceof HTMLAnchorElement) {
+        addrEl().href = current?.handle ? `/profile/${current.handle}/` : "/profile/";
+      }
     }
     document.querySelectorAll("[data-privacy-session]").forEach((el) => {
       el.hidden = !signedIn;
@@ -62,7 +65,9 @@
         credentials: "same-origin",
       });
       const data = await response.json().catch(() => ({}));
-      current = data.address ? { address: data.address, method: data.method } : null;
+      current = data.address
+        ? { address: data.address, method: data.method, handle: data.handle || "", admin: Boolean(data.admin) }
+        : null;
     } catch {
       current = null;
     }
@@ -90,7 +95,9 @@
       error.status = response.status;
       throw error;
     }
-    current = data.address ? { address: data.address, method: data.method } : null;
+    current = data.address
+      ? { address: data.address, method: data.method, handle: data.handle || "", admin: Boolean(data.admin) }
+      : null;
     paint();
     notify();
     window.PondStart?.init?.();
