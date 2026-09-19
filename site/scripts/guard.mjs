@@ -873,7 +873,8 @@ check(
     tradeJsText.includes("subscribeClick") &&
     stylesText.includes("trade-chart-nav-tools") &&
     stylesText.includes(".trade-chart-snapshot") &&
-    /data-mode="chart"\] \.trade-chart-snapshot[\s\S]*max-height:\s*38%/.test(stylesText) &&
+    /grid-template-rows:\s*minmax\(0,\s*26%\)/.test(stylesText) &&
+    stylesText.includes("trade-snapshot-dup") &&
     tradeJsText.includes("slice(0, 3)") &&
     tradeJsText.includes("compact: true") &&
     tradeJsText.includes("data-chart-period") &&

@@ -9991,7 +9991,7 @@ body.page-trade .trade-detail-window {
     position: relative;
     z-index: 4;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 26%) minmax(0, 1fr);
     align-content: stretch;
     gap: 0.28rem;
     width: 20rem;
@@ -10012,18 +10012,29 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-hero {
-    margin-bottom: 0.28rem;
-    padding: 0.28rem 0.35rem;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    margin-bottom: 0.12rem;
+    padding: 0.1rem 0.28rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-hero > span {
+    display: none;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-hero strong {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-range,
   body.page-trade .trade-app[data-mode="chart"] .trade-ticket-quote,
   body.page-trade .trade-app[data-mode="chart"] .trade-ticket-sizes {
-    margin-bottom: 0.28rem;
+    margin-bottom: 0.14rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-quote button {
+    padding: 0.12rem 0.2rem;
+    font-size: 0.52rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-input-field input {
@@ -10031,8 +10042,8 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat {
-    padding: 0.14rem 0;
-    font-size: 0.72rem;
+    padding: 0.02rem 0;
+    font-size: 0.62rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat strong {
@@ -10059,7 +10070,21 @@ body.page-trade .trade-detail-window {
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 0.4rem;
+    padding: 0.22rem 0.28rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-wallet {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-action-field {
+    margin-bottom: 0.16rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-connect-button {
+    min-height: 0;
+    padding: 0.28rem 0.4rem;
+    font-size: 0.62rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket .trade-empty-panel {
@@ -10253,7 +10278,7 @@ body.page-trade .trade-detail-window {
     display: flex;
     flex-direction: column;
     min-height: 0;
-    max-height: 38%;
+    max-height: 100%;
     overflow: hidden;
   }
 
@@ -10268,14 +10293,12 @@ body.page-trade .trade-detail-window {
     margin: 0 0 0.08rem;
   }
 
-  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(7),
-  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(8),
-  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(9) {
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-dup {
     display: none;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints {
-    margin-top: 0.12rem;
+    display: none;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints button,
@@ -10288,7 +10311,11 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="chart"] .trade-ticket-check,
   body.page-trade .trade-app[data-mode="chart"] .trade-order-grid,
   body.page-trade .trade-app[data-mode="chart"] .trade-ticket-tif {
-    margin-bottom: 0.18rem;
+    margin-bottom: 0.1rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-slider input[type="range"] {
+    height: 0.85rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-ticket-actions {
@@ -10296,9 +10323,16 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-order-status {
-    margin: 0 0 0.2rem;
-    font-size: 0.52rem;
-    line-height: 1.25;
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket .trade-action-field:not(.trade-input-field) {
+    margin-bottom: 0.08rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket .trade-action-field:not(.trade-input-field) small {
+    display: inline;
+    margin-left: 0.35rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket [data-dex-submit] {
