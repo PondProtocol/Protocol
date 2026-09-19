@@ -220,11 +220,7 @@
           <span>Profile photo URL</span>
           <input type="url" name="icon" maxlength="500" value="${esc(iconUrl)}" placeholder="https://… or leave blank for the generated photo" autocomplete="off">
         </label>
-        <label class="profile-public-card">
-          <input type="checkbox" name="publicCard" ${profile.publicCard ? "checked" : ""}>
-          <span>Show a public card (handle + avatar only — never the address)</span>
-        </label>
-        <p class="profile-form-note">Public card URL: <a href="/card/${esc(profile.handle)}/">/card/${esc(profile.handle)}/</a>. Visible only if you turn it on. Full profile stays Xaman-only. Never a seed, password, or private key.</p>
+        <p class="profile-form-note">Full profile stays Xaman-only. Never a seed, password, or private key.</p>
         <p class="profile-form-status" data-profile-status hidden></p>
         <div class="profile-form-actions">
           <button type="submit" class="button">Save profile</button>
@@ -344,7 +340,6 @@
         bio: form.bio.value,
         icon: form.dataset.iconData || form.icon.value.trim(),
         progress: window.PondStart?.flags?.() || profile.progress || {},
-        publicCard: Boolean(form.publicCard?.checked),
       };
       try {
         const saved = await saveOwn(body);

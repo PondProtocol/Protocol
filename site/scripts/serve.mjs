@@ -21,7 +21,7 @@ import { pipeline } from "node:stream";
 import { createGzip } from "node:zlib";
 import { DIST_DIR } from "./lib.mjs";
 import { handleIdenticon } from "./identicon.mjs";
-import { handleProfiles, isCardPage, isProfilePage } from "./profiles.mjs";
+import { handleProfiles, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
 import { allowedOrigin, handleApi } from "./xaman.mjs";
 
@@ -66,7 +66,6 @@ createServer(async (req, res) => {
 
   let path = join(DIST_DIR, normalize(url).replace(/^(\.\.[/\\])+/, ""));
   if (isProfilePage(url)) path = join(DIST_DIR, "profile", "index.html");
-  if (isCardPage(url)) path = join(DIST_DIR, "card", "index.html");
 
   if (existsSync(path) && statSync(path).isDirectory()) path = join(path, "index.html");
   if (!existsSync(path) || !statSync(path).isFile()) path = join(DIST_DIR, "404.html");

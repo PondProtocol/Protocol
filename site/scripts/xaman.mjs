@@ -38,10 +38,10 @@ const config = loadConfig();
 const issuer = config.site.issuerAddress;
 const treasury = config.site.treasuryAddress;
 const domain = config.site.domain;
-const ALLOWED_RETURN = new Set(["/connect/", "/trade/"]);
+const ALLOWED_RETURN = new Set(["/trade/"]);
 
 function payloadReturnUrl(returnTo) {
-  const path = ALLOWED_RETURN.has(returnTo) ? returnTo : "/connect/";
+  const path = ALLOWED_RETURN.has(returnTo) ? returnTo : "/trade/";
   return `https://${domain}${path}?payload={id}`;
 }
 

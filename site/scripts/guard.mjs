@@ -407,7 +407,16 @@ check(
     !existsSync(join(DIST_DIR, "connect", "index.html")) &&
     !existsSync(join(DIST_DIR, "team", "index.html")) &&
     !existsSync(join(DIST_DIR, "card", "index.html")) &&
-    !existsSync(join(DIST_DIR, "open-questions", "index.html")),
+    !existsSync(join(DIST_DIR, "open-questions", "index.html")) &&
+    !existsSync(join(DIST_DIR, "open-questions", "pnd", "index.html")),
+);
+const deletedHrefFiles = textFiles
+  .filter((f) => /href=["']\/(?:card|connect|team|open-questions)\//.test(readFileSync(f, "utf8")))
+  .map((f) => relative(DIST_DIR, f));
+check(
+  "built pages do not link to unpublished card, connect, team, or open-questions routes",
+  deletedHrefFiles.length === 0,
+  deletedHrefFiles.join(", "),
 );
 check(
   "kept app and identity routes still exist",
@@ -449,8 +458,8 @@ const startHereLabels = [];
 const startHereOrder = [];
 check(
   "top bar is Pond and Protocol, then search",
-  /<a class="topnav-page-link"[^>]*href="\/Pond\/">Pond<\/a>/.test(topnavHtml) &&
-    /<a class="topnav-start-link"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
+  /<a class="topnav-page-link(?: active)?"[^>]*href="\/Pond\/">Pond<\/a>/.test(topnavHtml) &&
+    /<a class="topnav-start-link(?: active)?"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
     headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/Pond/"') &&
@@ -673,6 +682,13 @@ check(
 const xamanSrc = existsSync(join(SITE_ROOT, "scripts", "xaman.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "xaman.mjs"), "utf8")
   : "";
+check(
+  "Xaman return URLs go to /trade/, not unpublished /connect/",
+  xamanJsText.includes('return "/trade/"') &&
+    !xamanJsText.includes('"/connect/"') &&
+    !xamanSrc.includes('"/connect/"') &&
+    xamanSrc.includes('"/trade/"'),
+);
 const sessionSrc = existsSync(join(SITE_ROOT, "scripts", "session.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8")
   : "";
@@ -1169,8 +1185,7 @@ check(
     profilesSrc.includes("xaman_required") &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("ensureProfile") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleProfiles") &&
-    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage") &&
-    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isCardPage"),
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage"),
 );
 check(
   "profile forms never ask for a seed or password",
@@ -1234,15 +1249,14 @@ check(
     !sessionJsText.includes("aria-label`, current?.address"),
 );
 check(
-  "optional public card is handle and avatar only",
-  existsSync(cardJs) &&
-    cardJsText.includes("/api/card/") &&
-    cardJsText.includes("public-card-handle") &&
-    !cardJsText.includes("shortAddr") &&
-    !cardJsText.includes(".address") &&
+  "public card HTML is unpublished; /api/card/ stays handle and avatar only",
+  !existsSync(join(DIST_DIR, "card", "index.html")) &&
+    !existsSync(cardJs) &&
+    !profileJsText.includes("/card/") &&
+    !profileJsText.includes("publicCard") &&
     profilesSrc.includes("getPublicCard") &&
     profilesSrc.includes("/api/card/") &&
-    profileJsText.includes("publicCard") &&
+    !profilesSrc.includes("shortAddr") &&
     /never the address/.test(profileJsText),
 );
 const identiconSrc = existsSync(join(SITE_ROOT, "scripts", "identicon.mjs"))

@@ -378,10 +378,6 @@ export function isProfilePage(url) {
   return url === "/profile" || url === "/profile/" || /^\/profile\/[A-Za-z0-9_-]+\/?$/.test(url);
 }
 
-export function isCardPage(url) {
-  return url === "/card" || url === "/card/" || /^\/card\/[A-Za-z0-9_-]+\/?$/.test(url);
-}
-
 function denyProfile(res, status, error, message) {
   json(res, status, { error, message });
   return false;

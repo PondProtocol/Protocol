@@ -69,15 +69,14 @@ is on the profile page. The profile also reads public XRPL balances for
 $PND, $rPND, $XRP, and $RLUSD, $PND / $rPND trust-line status, an honest
 Start Here checklist, session method + 24h idle expiry, membership NFT
 empty until a mint exists, and airdrop snapshot later as a hold amount
-(not an APY). An optional public card at `/card/<handle>/` is handle +
-avatar only. Autoscale disk can be ephemeral;
+(not an APY). Autoscale disk can be ephemeral;
 this process does not talk to `database.greenhead.io`.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
 **not** already have keys. Until both variables are set, `GET /health` reports
 `xaman.connect: "unavailable"` and Trade's Xaman menu option is disabled and
-short (*Xaman · keys unset*) instead of a page-wide banner. `/connect/` still
-works if you have the URL; it is not in the top bar.
+short (*Xaman · keys unset*) instead of a page-wide banner. Xaman return
+URLs go to `/trade/`. `/connect/` is unpublished.
 
 Useful routes after Publish:
 
