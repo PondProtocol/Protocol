@@ -861,6 +861,17 @@ check(
     tradeJsText.includes("data-chart-log") &&
     tradeJsText.includes("data-chart-grid") &&
     tradeJsText.includes("data-chart-fit") &&
+    tradeJsText.includes("data-chart-zoom") &&
+    tradeJsText.includes("data-chart-latest") &&
+    tradeJsText.includes("data-chart-hl") &&
+    tradeJsText.includes("data-chart-vol-sma") &&
+    tradeJsText.includes("data-chart-compact") &&
+    tradeJsText.includes("data-chart-tz") &&
+    tradeJsText.includes("data-chart-pin") &&
+    tradeJsText.includes("data-chart-reset") &&
+    tradeJsText.includes("data-chart-hud-prints") &&
+    tradeJsText.includes("subscribeClick") &&
+    stylesText.includes("trade-chart-nav-tools") &&
     tradeJsText.includes("data-chart-period") &&
     tradeJsText.includes("data-chart-bar-left") &&
     tradeJsText.includes("CrosshairMode.Magnet") &&
