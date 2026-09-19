@@ -313,7 +313,7 @@ ${ticketPanelMarkup("sell")}
             <button type="button" data-chart-latest>Latest</button>
             <button type="button" class="is-active" data-chart-hl aria-pressed="true">H/L</button>
             <button type="button" class="is-active" data-chart-vol-sma aria-pressed="true">Vol MA</button>
-            <button type="button" data-chart-compact aria-pressed="false">Compact</button>
+            <button type="button" class="is-active" data-chart-compact aria-pressed="true">Compact</button>
             <button type="button" data-chart-tz aria-pressed="false">Local</button>
             <button type="button" data-chart-pin aria-pressed="false">Pin</button>
             <button type="button" data-chart-reset>Reset</button>
@@ -1117,7 +1117,7 @@ ${ticketPanelMarkup("sell")}
     function paintSnapshotPrints(prints = []) {
       const list = $("[data-snapshot-prints]");
       if (!list) return;
-      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 6);
+      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 3);
       list.innerHTML = rows.length
         ? rows.map((print) => {
             const clock = new Date(print.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
@@ -2099,7 +2099,7 @@ ${ticketPanelMarkup("sell")}
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: false, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: true, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -2566,9 +2566,9 @@ ${ticketPanelMarkup("sell")}
         const panes = tv.chart.panes?.() || [];
         const paneBudget = Math.max(height, 220);
         const compact = Boolean(chartState.compact);
-        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(compact ? 48 : 72, Math.round(paneBudget * (compact ? 0.12 : 0.2))) : 0);
-        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(compact ? 40 : 56, Math.round(paneBudget * (compact ? 0.1 : 0.16))) : 0);
-        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(compact ? 44 : 64, Math.round(paneBudget * (compact ? 0.11 : 0.18))) : 0);
+        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(compact ? 36 : 56, Math.round(paneBudget * (compact ? 0.08 : 0.14))) : 0);
+        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(compact ? 32 : 48, Math.round(paneBudget * (compact ? 0.07 : 0.12))) : 0);
+        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(compact ? 34 : 52, Math.round(paneBudget * (compact ? 0.07 : 0.13))) : 0);
         tv.chart.timeScale().fitContent();
         const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
         const range = { minValue: domain.minValue, maxValue: domain.maxValue };
@@ -2602,9 +2602,9 @@ ${ticketPanelMarkup("sell")}
       function sizeTvPanes() {
         const panes = chartState.tv?.chart.panes?.() || [];
         const compact = Boolean(chartState.compact);
-        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? (compact ? 0.16 : 0.28) : 0);
-        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? (compact ? 0.12 : 0.2) : 0);
-        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? (compact ? 0.14 : 0.22) : 0);
+        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? (compact ? 0.1 : 0.18) : 0);
+        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? (compact ? 0.08 : 0.14) : 0);
+        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? (compact ? 0.09 : 0.16) : 0);
       }
 
       function ensureTvBoard() {

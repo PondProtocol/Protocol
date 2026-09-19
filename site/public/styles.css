@@ -9927,7 +9927,6 @@ body.page-trade .trade-detail-window {
     max-width: 100%;
     min-height: 0;
     overflow: hidden;
-    contain: paint;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-chart-market-controls,
@@ -10247,6 +10246,67 @@ body.page-trade .trade-detail-window {
     border: 0;
     background: transparent;
     pointer-events: none;
+  }
+
+  /* Snapshot + ticket stay in the rail. Price pane fills leftover plot. */
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-snapshot {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-height: 38%;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 0.45rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster-label {
+    grid-column: 1 / -1;
+    margin: 0 0 0.08rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(7),
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(8),
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-cluster .trade-overview-stat:nth-child(9) {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints {
+    margin-top: 0.12rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints button,
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints li:not(:has(button)) {
+    padding: 0.08rem 0;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-wallet,
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-slider,
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-check,
+  body.page-trade .trade-app[data-mode="chart"] .trade-order-grid,
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-tif {
+    margin-bottom: 0.18rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-actions {
+    margin: 0.16rem 0 0.2rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-order-status {
+    margin: 0 0 0.2rem;
+    font-size: 0.52rem;
+    line-height: 1.25;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket [data-dex-submit] {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 0.1rem;
+    background: var(--bg-soft);
   }
 
   body.page-trade .trade-app[data-network="production"] .trade-mainnet-gate:not([hidden]) {
