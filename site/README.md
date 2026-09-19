@@ -63,7 +63,15 @@ classic address. Later accounts get sequential numbers with a leading 0:
 public**: they require that Xaman session and expire after 24 hours of
 no activity. WalletConnect still connects for `/trade/` and does not
 open a profile. The file stores handle, XRPL address, display name, bio,
-Start Here progress, and trade-disclaimer acceptance — never a seed. Autoscale disk can be ephemeral;
+Start Here progress, trade-disclaimer acceptance, and a small profile
+icon — never a seed. The signed-in top bar is that icon only; hover
+shows the display name or handle, never the classic address. Sign out
+is on the profile page. The profile also reads public XRPL balances for
+$PND, $rPND, $XRP, and $RLUSD, $PND / $rPND trust-line status, an honest
+Start Here checklist, session method + 24h idle expiry, membership NFT
+empty until a mint exists, and airdrop snapshot later as a hold amount
+(not an APY). An optional public card at `/card/<handle>/` is handle +
+avatar only. Autoscale disk can be ephemeral;
 this process does not talk to `database.greenhead.io`.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
@@ -79,6 +87,7 @@ curl -sS https://pond.greenhead.io/health
 # POST /api/xaman/signin     → SignIn payload (QR + xumm.app/sign deep link)
 # GET  /api/xaman/payload/:uuid
 # POST /api/xaman/trustset   → optional TrustSet; $PND is not issued
+# GET  /api/card/:handle     → optional public card (handle + avatar only)
 ```
 
 Stay on Autoscale. Replit Static cannot run these routes or `.well-known`.

@@ -877,7 +877,17 @@ check(
     indexHtml.includes("XUMM_API_SECRET") &&
     sessionJsText.includes("/api/session") &&
     sessionJsText.includes("walletconnect") &&
-    sessionJsText.includes("PondTrade?.connectWallet"),
+    sessionJsText.includes("PondTrade?.connectWallet") &&
+    indexHtml.includes("data-xaman-autostart") &&
+    xamanJsText.includes("startSignIn") &&
+    xamanJsText.includes("/api/xaman/signin"),
+);
+check(
+  "Sign in menu auto-starts official Xaman QR without a second click",
+  xamanJsText.includes("data-xaman-autostart") &&
+    xamanJsText.includes("session-xaman-qr") &&
+    sessionJsText.includes("startSignIn") &&
+    /Official WalletConnect or Xaman/.test(indexHtml),
 );
 check(
   "serve.mjs can set a signed session cookie",
@@ -920,11 +930,27 @@ check(
     startHereLabels.join(" | ") === startHereOrder.join(" | "),
 );
 check(
-  "logged-in chip links to /profile/<handle>/",
+  "logged-in chip is a profile icon that links to /profile/<handle>/",
   indexHtml.includes("data-session-profile") &&
+    indexHtml.includes("data-session-avatar") &&
+    indexHtml.includes("/greenhead-duck.png") &&
     indexHtml.includes('href="/profile/"') &&
     sessionJsText.includes("/profile/") &&
-    sessionJsText.includes("handle"),
+    sessionJsText.includes("handle") &&
+    sessionJsText.includes("data-session-avatar") &&
+    !sessionJsText.includes("data-session-addr") &&
+    !headerHtml.includes("data-session-signout") &&
+    !headerHtml.includes("data-session-addr") &&
+    !headerHtml.includes("Sign out") &&
+    !headerHtml.includes("session-addr"),
+);
+check(
+  "Sign out lives on the profile page, not the top bar",
+  profileJsText.includes("data-profile-signout") &&
+    /Sign out/.test(profileJsText) &&
+    !sessionJsText.includes("data-session-signout") &&
+    headerHtml.includes("topbar-trade") &&
+    /<a class="topbar-trade" href="\/trade\/">Trade<\/a>/.test(headerHtml),
 );
 check(
   "tadpole handles are assigned on login and persisted in a JSON file store",
@@ -937,7 +963,8 @@ check(
     profilesSrc.includes("xaman_required") &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("ensureProfile") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleProfiles") &&
-    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage"),
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage") &&
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isCardPage"),
 );
 check(
   "profile forms never ask for a seed or password",
@@ -946,7 +973,81 @@ check(
     !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(profileJsText) &&
     !profileJsText.includes('type="password"') &&
     profileJsText.includes("displayName") &&
-    profileJsText.includes("bio"),
+    profileJsText.includes("bio") &&
+    profileJsText.includes("icon") &&
+    profilesSrc.includes("asIcon") &&
+    profileJsText.includes("$PND") &&
+    profileJsText.includes("$rPND") &&
+    profileJsText.includes("$XRP") &&
+    profileJsText.includes("$RLUSD") &&
+    /not issued/i.test(profileJsText) &&
+    existsSync(join(SITE_ROOT, "scripts", "balances.mjs")) &&
+    readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8").includes("xrplcluster.com") &&
+    !profileJsText.includes("rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"),
+);
+const cardJs = join(DIST_DIR, "card.js");
+const cardJsText = existsSync(cardJs) ? readFileSync(cardJs, "utf8") : "";
+const cardHtml = existsSync(join(DIST_DIR, "card", "index.html"))
+  ? readFileSync(join(DIST_DIR, "card", "index.html"), "utf8")
+  : "";
+const balancesSrc = existsSync(join(SITE_ROOT, "scripts", "balances.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8")
+  : "";
+check(
+  "profile shows trust lines, Start Here checklist, session expiry, and honest later fields",
+  profileJsText.includes("/start/trust-lines/") &&
+    profileJsText.includes("data-trust") &&
+    profileJsText.includes("Missing / not issued") &&
+    profileJsText.includes("profile-checklist") &&
+    profileJsText.includes("Done") &&
+    profileJsText.includes("Open") &&
+    profileJsText.includes("Signed in with") &&
+    profileJsText.includes("24 hours") &&
+    profileJsText.includes("data-privacy-controls") &&
+    /Privacy Controls/.test(profileJsText) &&
+    privacyJsText.includes("PondPrivacy") &&
+    privacyJsText.includes("openVault") &&
+    profileJsText.includes("Membership / seat NFT") &&
+    profileJsText.includes("not minted") &&
+    profileJsText.includes("not an APY") &&
+    profileJsText.includes("Last sign-in") &&
+    profileJsText.includes("Last disclaimer accept") &&
+    profileJsText.includes("Last profile save") &&
+    balancesSrc.includes("trustLines") &&
+    balancesSrc.includes("membership") &&
+    balancesSrc.includes("airdrop") &&
+    !balancesSrc.includes("account_nfts"),
+);
+check(
+  "nav icon hover uses display name or handle, never the classic address",
+  indexHtml.includes("data-session-name") &&
+    sessionJsText.includes("displayName") &&
+    sessionJsText.includes("data-session-name") &&
+    sessionJsText.includes("Your profile") &&
+    !sessionJsText.includes("link.title = shortAddr") &&
+    !sessionJsText.includes("aria-label`, current?.address"),
+);
+check(
+  "optional public card is handle and avatar only",
+  existsSync(cardJs) &&
+    cardHtml.includes("data-pond-card") &&
+    cardJsText.includes("/api/card/") &&
+    cardJsText.includes("public-card-handle") &&
+    !cardJsText.includes("shortAddr") &&
+    !cardJsText.includes(".address") &&
+    profilesSrc.includes("getPublicCard") &&
+    profilesSrc.includes("/api/card/") &&
+    profileJsText.includes("publicCard") &&
+    /never the address/.test(profileJsText) &&
+    !startHereLabels.includes("Public card") &&
+    !startHereOrder.includes("Public card"),
+);
+check(
+  "expired Xaman QR can be replaced without a full page reload",
+  xamanJsText.includes("data-xaman-retry") &&
+    /Get a new QR/.test(xamanJsText) &&
+    xamanJsText.includes("force: true") &&
+    xamanJsText.includes("options.force"),
 );
 
 const startJs = join(DIST_DIR, "start.js");

@@ -19,7 +19,8 @@ We use cookies. That is intentional.
   set a session cookie with the XRPL address you signed in with and the
   connect method. Activity on this host refreshes that cookie. After 24
   hours with no activity, the session ends and the next visit is signed
-  out. You can also Sign out. The cookie is `httpOnly` and `SameSite=Lax`
+  out. You can also Sign out from your profile page. The cookie is
+  `httpOnly` and `SameSite=Lax`
   when the site process can set it.
 - **Start Here progress.** `/start/` stores checklist progress in a cookie
   (with a `localStorage` backup). Anonymous users keep progress in that
@@ -27,12 +28,17 @@ We use cookies. That is intentional.
   address.
 - **Account profile.** After official **Xaman SignIn**, this host assigns
   a tadpole handle and stores handle, XRPL address, optional display
-  name / bio, and a Start Here progress pointer in a JSON file the site
-  process can write. That page is visible only while that Xaman session
-  is logged in. WalletConnect on Trade does not open it. Logged-out
-  visitors do not see handles or profile fields. We do not store seeds
-  or private keys. Autoscale disk may be ephemeral, so that file can
-  reset on a new deploy.
+  name / bio / profile icon, Start Here progress, trade-disclaimer
+  acceptance, an optional public-card flag, and compact activity times
+  (last sign-in, last disclaimer accept, last profile save) in a JSON
+  file the site process can write. The profile also reads public XRPL
+  wallet balances and $PND / $rPND trust-line status. That page is
+  visible only while that Xaman session is logged in. WalletConnect on
+  Trade does not open it. Logged-out visitors do not see handles or
+  profile fields. If you turn on the public card, the open web can see
+  only the handle and avatar — never the XRPL address. We do not store
+  seeds or private keys. Autoscale disk may be ephemeral, so that file
+  can reset on a new deploy.
 
 We remember the XRPL address you signed in with. We do not sell personal
 data. We do not run ads. We never ask for a seed, mnemonic, private key, or

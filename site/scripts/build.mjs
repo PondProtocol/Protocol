@@ -523,16 +523,26 @@ function sessionChipHtml() {
   <div class="session-guest" data-session-guest>
     <button type="button" class="session-toggle" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
     <div class="session-menu" id="session-menu" data-session-menu hidden>
-      <p class="session-menu-copy">Official WalletConnect or Xaman only. Pond never asks for a seed.</p>
-      <button type="button" class="session-wc" data-session-wc>WalletConnect</button>
-      <p class="session-wc-error" data-session-wc-error hidden></p>
-      <div data-xaman-app data-xaman-compact data-return="/trade/"></div>
-      <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
+      <p class="session-menu-kicker">Sign in</p>
+      <p class="session-menu-copy">Official WalletConnect or Xaman. Pond never asks for a seed.</p>
+      <div class="session-menu-block">
+        <p class="session-menu-label">WalletConnect</p>
+        <button type="button" class="session-wc" data-session-wc>Continue with WalletConnect</button>
+        <p class="session-wc-error" data-session-wc-error hidden></p>
+      </div>
+      <div class="session-menu-block">
+        <p class="session-menu-label">Xaman</p>
+        <p class="session-menu-hint">Official SignIn. The QR appears when this menu opens.</p>
+        <div data-xaman-app data-xaman-compact data-xaman-autostart data-return="/trade/"></div>
+        <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
+      </div>
     </div>
   </div>
   <div class="session-authed" data-session-authed hidden>
-    <a class="session-addr" data-session-addr data-session-profile href="/profile/"></a>
-    <button type="button" class="session-out" data-session-signout>Sign out</button>
+    <a class="session-profile" data-session-profile href="/profile/" aria-label="Open your profile">
+      <img class="session-avatar" data-session-avatar src="/greenhead-duck.png" width="30" height="30" alt="">
+      <span class="session-profile-name" data-session-name></span>
+    </a>
   </div>
   <xrpl-wallet-connector id="pond-session-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
 </div>`;
@@ -670,7 +680,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url === "/profile/" ? "page-profile page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url === "/profile/" ? "page-profile page-docs" : page.url === "/card/" ? "page-card page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
@@ -779,6 +789,7 @@ ${privacyDockHtml()}
 <script src="/session.js" defer></script>
 <script src="/start.js" defer></script>
 <script src="/profile.js" defer></script>
+<script src="/card.js" defer></script>
 <script src="/disclaimer.js" defer></script>
 <script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>

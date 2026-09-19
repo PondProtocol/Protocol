@@ -23,6 +23,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { readBalances } from "./balances.mjs";
 import { SITE_ROOT } from "./lib.mjs";
 
 export const ADMIN_ADDRESS = "r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B";
@@ -41,7 +42,8 @@ const STEP_IDS = [
 ];
 const NAME_MAX = 40;
 const BIO_MAX = 160;
-const MAX_BODY = 16 * 1024;
+const ICON_MAX = 48 * 1024;
+const MAX_BODY = 64 * 1024;
 
 export function storePath() {
   return process.env.POND_PROFILE_STORE?.trim() || join(SITE_ROOT, "data", "profiles.json");
@@ -81,6 +83,11 @@ function publicFields(row) {
     bio: row.bio || "",
     progress: { ...(row.progress || {}) },
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
+    disclaimerAcceptedAt: row.disclaimerAcceptedAt || 0,
+    icon: row.icon || "",
+    publicCard: Boolean(row.publicCard),
+    lastSignedInAt: row.lastSignedInAt || 0,
+    lastSavedAt: row.lastSavedAt || 0,
     admin: row.handle === ADMIN_HANDLE || isAdminAddress(row.address),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -251,37 +258,84 @@ function asProgress(value) {
   return out;
 }
 
+function asIcon(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (looksLikeSecret(text)) {
+    return { error: "bad_profile", message: "Do not paste a seed, mnemonic, or private key." };
+  }
+  if (text.length > ICON_MAX) {
+    return { error: "bad_profile", message: "That icon is too large. Use a small image." };
+  }
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(text)) {
+    return text.replace(/\s+/g, "");
+  }
+  if (/^https:\/\/[^\s<>"']+$/i.test(text) && text.length <= 500) return text;
+  if (/^\/(?!\/)[A-Za-z0-9._/-]+$/.test(text) && !text.includes("..") && text.length <= 200) {
+    return text;
+  }
+  return {
+    error: "bad_profile",
+    message: "Use an https image URL, a small image upload, or leave the icon blank.",
+  };
+}
+
 export function publicProfile(row) {
-  if (!row) return { handle: null, admin: false };
+  if (!row) return { handle: null, admin: false, displayName: "" };
   return {
     handle: row.handle,
     admin: Boolean(row.admin),
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
+    icon: row.icon || "",
+    displayName: row.displayName || "",
   };
+}
+
+export function getPublicCard(handle) {
+  const store = readStore();
+  const row = store.profiles.find((item) => item.handle === handle);
+  if (!row || !row.publicCard) return null;
+  return { handle: row.handle, icon: row.icon || "" };
+}
+
+export function markLastSignIn(address) {
+  if (!ADDR_RE.test(address || "")) return Promise.resolve(null);
+  return withStore((store) => {
+    const row = store.profiles.find((item) => item.address === address);
+    if (!row) return null;
+    row.lastSignedInAt = now();
+    return publicFields(row);
+  });
 }
 
 export async function updateOwnProfile(address, patch = {}) {
   if (!ADDR_RE.test(address || "")) {
     return { error: "bad_address", message: "That is not a classic XRPL address." };
   }
-  if (looksLikeSecret(patch.displayName) || looksLikeSecret(patch.bio)) {
+  if (looksLikeSecret(patch.displayName) || looksLikeSecret(patch.bio) || looksLikeSecret(patch.icon)) {
     return { error: "bad_profile", message: "Do not paste a seed, mnemonic, or private key." };
   }
   const displayName =
     patch.displayName === undefined ? undefined : stripText(patch.displayName, NAME_MAX);
   const bio = patch.bio === undefined ? undefined : stripText(patch.bio, BIO_MAX);
   const progress = patch.progress === undefined ? undefined : asProgress(patch.progress);
+  const icon = patch.icon === undefined ? undefined : asIcon(patch.icon);
+  if (icon && icon.error) return icon;
   return withStore((store) => {
     const row = store.profiles.find((item) => item.address === address);
     if (!row) return { error: "not_found", message: "Sign in first to create a profile." };
     if (displayName !== undefined) row.displayName = displayName;
     if (bio !== undefined) row.bio = bio;
     if (progress !== undefined) row.progress = { ...(row.progress || {}), ...progress };
+    if (icon !== undefined) row.icon = icon;
     if (patch.disclaimerAccepted === true) {
       row.disclaimerAccepted = true;
       row.disclaimerAcceptedAt = now();
     }
-    row.updatedAt = now();
+    if (patch.publicCard !== undefined) row.publicCard = Boolean(patch.publicCard);
+    const t = now();
+    row.lastSavedAt = t;
+    row.updatedAt = t;
     return publicFields(row);
   });
 }
@@ -325,6 +379,10 @@ export function isProfilePage(url) {
   return url === "/profile" || url === "/profile/" || /^\/profile\/[A-Za-z0-9_-]+\/?$/.test(url);
 }
 
+export function isCardPage(url) {
+  return url === "/card" || url === "/card/" || /^\/card\/[A-Za-z0-9_-]+\/?$/.test(url);
+}
+
 function denyProfile(res, status, error, message) {
   json(res, status, { error, message });
   return false;
@@ -350,10 +408,32 @@ function requireXaman(req, res, loadSession) {
  * @returns {Promise<boolean>} whether the request was a profile API route
  */
 export async function handleProfiles(req, res, url, { readSession }) {
+  const cardMatch = url.match(/^\/api\/card\/([^/]+)$/);
   const handleMatch = url.match(/^\/api\/profile\/([^/]+)$/);
   const collection = url === "/api/profile";
+  const balances = url === "/api/profile/balances";
 
-  if (!collection && !handleMatch) return false;
+  // GET /api/card/:handle is public: handle + icon only, never the address.
+  if (cardMatch) {
+    if (req.method === "OPTIONS") {
+      json(res, 204, {});
+      return true;
+    }
+    if (req.method !== "GET") {
+      json(res, 405, { error: "method_not_allowed", message: "Use GET." });
+      return true;
+    }
+    const handle = decodeURIComponent(cardMatch[1]);
+    const card = getPublicCard(handle);
+    if (!card) {
+      json(res, 404, { error: "not_found", message: "That card is not public." });
+      return true;
+    }
+    json(res, 200, card);
+    return true;
+  }
+
+  if (!collection && !handleMatch && !balances) return false;
 
   if (req.method === "OPTIONS") {
     json(res, 204, {});
@@ -362,6 +442,12 @@ export async function handleProfiles(req, res, url, { readSession }) {
 
   const session = requireXaman(req, res, readSession);
   if (session === false) return true;
+
+  if (req.method === "GET" && balances) {
+    const snapshot = await readBalances(session.address);
+    json(res, 200, snapshot);
+    return true;
+  }
 
   if (req.method === "GET" && handleMatch) {
     const row = await ensureProfile(session.address);

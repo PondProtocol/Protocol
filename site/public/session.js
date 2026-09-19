@@ -15,12 +15,44 @@
   let wcManager = null;
   let scriptsPromise = null;
 
+  const DEFAULT_ICON = "/greenhead-duck.png";
   const root = () => document.querySelector("[data-session-chip]");
   const menu = () => document.querySelector("[data-session-menu]");
   const toggle = () => document.querySelector("[data-session-toggle]");
   const guest = () => document.querySelector("[data-session-guest]");
   const authed = () => document.querySelector("[data-session-authed]");
-  const addrEl = () => document.querySelector("[data-session-addr]");
+  const profileLink = () => document.querySelector("[data-session-profile]");
+  const avatarEl = () => document.querySelector("[data-session-avatar]");
+  const nameEl = () => document.querySelector("[data-session-name]");
+
+  function iconSrc(value) {
+    const text = String(value || "").trim();
+    if (/^https:\/\//i.test(text) || /^data:image\//i.test(text) || /^\/(?!\/)/.test(text)) {
+      return text;
+    }
+    return DEFAULT_ICON;
+  }
+
+  function fromSession(data) {
+    if (!data?.address) return null;
+    return {
+      address: data.address,
+      method: data.method,
+      handle: data.handle || "",
+      admin: Boolean(data.admin),
+      disclaimerAccepted: Boolean(data.disclaimerAccepted),
+      icon: data.icon || "",
+      displayName: data.displayName || "",
+      signedInWith: data.signedInWith || "",
+      expiresAt: data.expiresAt || null,
+      activeAt: data.activeAt || null,
+      idleMs: data.idleMs || 0,
+    };
+  }
+
+  function profileLabel(session) {
+    return session?.displayName || session?.handle || "Your profile";
+  }
 
   function shortAddr(addr) {
     return addr && addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr || "";
@@ -36,19 +68,26 @@
     if (!panel || !button) return;
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      window.PondXaman?.startSignIn?.(document.querySelector("[data-xaman-autostart]"));
+    }
   }
 
   function paint() {
     const signedIn = Boolean(current?.address);
     if (guest()) guest().hidden = signedIn;
     if (authed()) authed().hidden = !signedIn;
-    if (addrEl()) {
-      addrEl().textContent = signedIn ? shortAddr(current.address) : "";
-      addrEl().title = current?.address || "";
-      if (addrEl() instanceof HTMLAnchorElement) {
-        addrEl().href = current?.handle ? `/profile/${current.handle}/` : "/profile/";
-      }
+    const link = profileLink();
+    const label = profileLabel(current);
+    if (link instanceof HTMLAnchorElement) {
+      link.href = current?.handle ? `/profile/${current.handle}/` : "/profile/";
+      link.setAttribute("aria-label", `Open ${label}`);
+      link.title = label;
     }
+    const avatar = avatarEl();
+    if (avatar) avatar.src = iconSrc(current?.icon);
+    const name = nameEl();
+    if (name) name.textContent = signedIn ? label : "";
     document.querySelectorAll("[data-privacy-session]").forEach((el) => {
       el.hidden = !signedIn;
       el.textContent = signedIn
@@ -65,15 +104,7 @@
         credentials: "same-origin",
       });
       const data = await response.json().catch(() => ({}));
-      current = data.address
-        ? {
-            address: data.address,
-            method: data.method,
-            handle: data.handle || "",
-            admin: Boolean(data.admin),
-            disclaimerAccepted: Boolean(data.disclaimerAccepted),
-          }
-        : null;
+      current = fromSession(data);
     } catch {
       current = null;
     }
@@ -101,15 +132,7 @@
       error.status = response.status;
       throw error;
     }
-    current = data.address
-      ? {
-          address: data.address,
-          method: data.method,
-          handle: data.handle || "",
-          admin: Boolean(data.admin),
-          disclaimerAccepted: Boolean(data.disclaimerAccepted),
-        }
-      : null;
+    current = fromSession(data);
     paint();
     notify();
     window.PondStart?.init?.();
@@ -271,9 +294,6 @@
         button.disabled = false;
       }
     });
-    document.querySelector("[data-session-signout]")?.addEventListener("click", () => {
-      logout();
-    });
     document.addEventListener("pointerdown", (event) => {
       const target = event.target;
       if (!(target instanceof Node)) return;
@@ -288,12 +308,20 @@
     refreshXamanNote();
   }
 
+  function patch(fields = {}) {
+    if (!current) return current;
+    current = { ...current, ...fields };
+    paint();
+    return current;
+  }
+
   window.PondSession = {
     init: setup,
     refresh,
     login,
     logout,
     logoutIf,
+    patch,
     current: () => current,
     connectWalletConnect,
   };

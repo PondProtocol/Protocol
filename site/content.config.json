@@ -220,6 +220,7 @@
         { "authored": "links.md", "url": "/links/", "title": "Official links" },
         { "authored": "legal.md", "url": "/legal/", "title": "Legal & privacy" },
         { "authored": "profile.md", "url": "/profile/", "title": "Profile" },
+        { "authored": "card.md", "url": "/card/", "title": "Public card" },
         { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
         { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }
       ]
