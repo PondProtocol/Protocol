@@ -27,8 +27,7 @@
     if (!document.body?.classList.contains("page-index")) return;
     const card = notice();
     const raw = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
-    const narrow = window.matchMedia("(max-width: 780px)").matches;
-    const height = narrow ? Math.min(raw, Math.round(window.innerHeight * 0.28)) : raw;
+    const height = raw ? raw + 8 : 0;
     document.body.style.setProperty("--privacy-reserve-h", `${height}px`);
   }
 
@@ -37,6 +36,10 @@
     const stage = document.querySelector(".page-index .hero-inner");
     const board = document.querySelector(".page-index .hero-main");
     if (!stage || !board) return;
+    if (window.matchMedia("(max-width: 780px)").matches) {
+      document.body.style.setProperty("--home-scale", "1");
+      return;
+    }
     document.body.style.setProperty("--home-scale", "1");
     board.style.transform = "none";
     const scale = Math.min(

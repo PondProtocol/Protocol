@@ -687,7 +687,8 @@ check(
     /padding:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /bottom:\s*var\(--privacy-reserve-h\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /minmax\(8\.75rem, 1fr\)/.test(stylesText),
+    /padding-bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(stylesText) &&
+    /flex:\s*0 0 10rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
@@ -1016,7 +1017,8 @@ check(
     privacyJsText.includes("syncHomeScale") &&
     privacyJsText.includes("--home-scale") &&
     privacyJsText.includes("--privacy-reserve-h") &&
-    privacyJsText.includes("page-index"),
+    privacyJsText.includes("page-index") &&
+    !privacyJsText.includes("0.28"),
 );
 check(
   "privacy dock is sitewide, including Trade",
