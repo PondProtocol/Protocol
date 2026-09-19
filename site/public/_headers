@@ -54,3 +54,33 @@
 
 /styles.*.css
   Cache-Control: public, max-age=31536000, immutable
+
+/session.js
+  Cache-Control: no-cache, must-revalidate
+
+/xaman.js
+  Cache-Control: no-cache, must-revalidate
+
+/profile.js
+  Cache-Control: no-cache, must-revalidate
+
+/trade.js
+  Cache-Control: no-cache, must-revalidate
+
+/disclaimer.js
+  Cache-Control: no-cache, must-revalidate
+
+/session.*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/xaman.*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/profile.*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/trade.*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/disclaimer.*.js
+  Cache-Control: public, max-age=31536000, immutable

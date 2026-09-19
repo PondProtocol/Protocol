@@ -839,25 +839,31 @@ function privacyDockHtml() {
 </div>`;
 }
 
+const HASHED_PAGE_SCRIPTS = ["session.js", "xaman.js", "profile.js", "trade.js", "disclaimer.js"];
+const scriptHrefs = Object.fromEntries(HASHED_PAGE_SCRIPTS.map((name) => [name, `/${name}`]));
+
+function pageSrc(name) {
+  return scriptHrefs[name] || `/${name}`;
+}
+
 function pageScripts(page) {
   const tags = [
     '<script src="/nav.js" defer></script>',
-    '<script src="/session.js" defer></script>',
+    `<script src="${pageSrc("session.js")}" defer></script>`,
     '<script src="/privacy.js" defer></script>',
-    '<script src="/xaman.js" defer></script>',
+    `<script src="${pageSrc("xaman.js")}" defer></script>`,
   ];
   if (isStartFlow(page.url)) tags.push('<script src="/start.js" defer></script>');
   if (page.url.startsWith("/profile/")) {
-    tags.push('<script src="/profile.js" defer></script>');
-    tags.push('<script src="/disclaimer.js" defer></script>');
+    tags.push(`<script src="${pageSrc("profile.js")}" defer></script>`);
+    tags.push(`<script src="${pageSrc("disclaimer.js")}" defer></script>`);
   }
   if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
   if (page.url === "/trade/") {
-    tags.push('<script src="/disclaimer.js" defer></script>');
-    // WalletConnect / xrpl are loaded on demand from trade.js and session.js.
-    // Putting jsDelivr in this defer list blocked /trade.js, so #trade-app
-    // stayed empty and page-trade CSS hid the footer — a blank dark page.
-    tags.push('<script src="/trade.js" defer></script>');
+    tags.push(`<script src="${pageSrc("disclaimer.js")}" defer></script>`);
+    // WalletConnect / xrpl load on demand from /vendor. Hashed page scripts
+    // sit in this list so a Publish cannot leave /trade/ on a one-hour stale file.
+    tags.push(`<script src="${pageSrc("trade.js")}" defer></script>`);
   }
   return tags.join("\n");
 }
@@ -1044,6 +1050,13 @@ ${pageScripts(page)}
 const stylesSource = compactCss(readFileSync(join(PUBLIC_DIR, "styles.css"), "utf8"));
 const stylesHash = createHash("sha256").update(stylesSource).digest("hex").slice(0, 10);
 const stylesHref = `/styles.${stylesHash}.css`;
+const hashedScriptSources = {};
+for (const name of HASHED_PAGE_SCRIPTS) {
+  const source = readFileSync(join(PUBLIC_DIR, name), "utf8");
+  hashedScriptSources[name] = source;
+  const hash = createHash("sha256").update(source).digest("hex").slice(0, 10);
+  scriptHrefs[name] = `/${name.replace(/\.js$/, `.${hash}.js`)}`;
+}
 
 rmSync(DIST_DIR, { recursive: true, force: true });
 mkdirSync(DIST_DIR, { recursive: true });
@@ -1074,6 +1087,9 @@ writeFileSync(
 if (existsSync(PUBLIC_DIR)) cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true, dereference: true });
 writeFileSync(join(DIST_DIR, "styles.css"), stylesSource);
 writeFileSync(join(DIST_DIR, `styles.${stylesHash}.css`), stylesSource);
+for (const name of HASHED_PAGE_SCRIPTS) {
+  writeFileSync(join(DIST_DIR, scriptHrefs[name].slice(1)), hashedScriptSources[name]);
+}
 writeFileSync(join(DIST_DIR, "hero-topo.svg"), buildHeroTopoMarkup());
 
 const wellKnown = join(DIST_DIR, WELL_KNOWN_PATH);

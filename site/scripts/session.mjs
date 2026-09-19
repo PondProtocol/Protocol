@@ -12,20 +12,48 @@
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ensureProfile, markLastSignIn, publicProfile } from "./profiles.mjs";
-import { signedXamanAccount } from "./xaman.mjs";
+import { healthBody, signedXamanAccount } from "./xaman.mjs";
 
 export const SESSION_COOKIE = "pond_session";
 export const IDLE_MS = 60 * 60 * 24 * 1000;
+export const XAMAN_STATUS_TTL_MS = 60 * 1000;
 const MAX_AGE = 60 * 60 * 24;
 const MAX_BODY = 16 * 1024;
 const ADDR_RE = /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/;
+const DEFAULT_WC_PROJECT_ID = "89408e9bcaa385da1a1867c446cfb7b2";
+
+let xamanStatusCache = { at: 0, value: null };
+
+export function sessionSecret() {
+  return process.env.POND_SESSION_SECRET?.trim() || "";
+}
 
 function secret() {
-  return (
-    process.env.POND_SESSION_SECRET?.trim() ||
-    process.env.XUMM_API_SECRET?.trim() ||
-    "pond-docs-session-v1"
-  );
+  return sessionSecret();
+}
+
+export function sessionConfigured() {
+  return Boolean(sessionSecret());
+}
+
+export function walletConnectProjectId() {
+  return process.env.WALLETCONNECT_PROJECT_ID?.trim() || DEFAULT_WC_PROJECT_ID;
+}
+
+export function cachedXamanStatus(now = Date.now()) {
+  if (xamanStatusCache.value && now - xamanStatusCache.at < XAMAN_STATUS_TTL_MS) {
+    return xamanStatusCache.value;
+  }
+  const value = healthBody().xaman;
+  xamanStatusCache = { at: now, value };
+  return value;
+}
+
+function sessionExtras() {
+  return {
+    xaman: cachedXamanStatus(),
+    walletconnect: { projectId: walletConnectProjectId() },
+  };
 }
 
 function json(res, status, body, extraHeaders = {}) {
@@ -80,8 +108,12 @@ function parseCookies(req) {
 }
 
 function sign(payload) {
+  const key = secret();
+  if (!key) {
+    throw new Error("POND_SESSION_SECRET is not set");
+  }
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const mac = createHmac("sha256", secret()).update(body).digest("base64url");
+  const mac = createHmac("sha256", key).update(body).digest("base64url");
   return `${body}.${mac}`;
 }
 
@@ -93,9 +125,11 @@ function safeEqual(left, right) {
 }
 
 function verify(token) {
+  const key = secret();
+  if (!key) return null;
   const [body, mac] = String(token || "").split(".");
   if (!body || !mac) return null;
-  const expected = createHmac("sha256", secret()).update(body).digest("base64url");
+  const expected = createHmac("sha256", key).update(body).digest("base64url");
   if (!safeEqual(mac, expected)) return null;
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
@@ -215,14 +249,14 @@ export async function handleSession(req, res, url) {
   }
 
   if (req.method === "GET") {
-    const session = touchSession(req, res);
+    const session = sessionConfigured() ? touchSession(req, res) : null;
     const profile = isXamanSession(session) ? await ensureProfile(session.address) : null;
-    json(res, 200, publicSession(session, profile));
+    json(res, 200, { ...publicSession(session, profile), ...sessionExtras() });
     return true;
   }
 
   if (req.method === "DELETE") {
-    json(res, 200, publicSession(null), { "Set-Cookie": cookieHeader("", req, { clear: true }) });
+    json(res, 200, { ...publicSession(null), ...sessionExtras() }, { "Set-Cookie": cookieHeader("", req, { clear: true }) });
     return true;
   }
 
@@ -239,6 +273,15 @@ export async function handleSession(req, res, url) {
     return true;
   }
 
+  if (!sessionConfigured()) {
+    json(res, 503, {
+      error: "session_unconfigured",
+      message: "Sign in is unavailable until Autoscale has POND_SESSION_SECRET.",
+      ...sessionExtras(),
+    });
+    return true;
+  }
+
   const method = body.method === "xaman" ? "xaman" : body.method === "walletconnect" ? "walletconnect" : "";
   if (!method) {
     json(res, 400, { error: "bad_request", message: "method must be walletconnect or xaman." });
@@ -247,7 +290,7 @@ export async function handleSession(req, res, url) {
 
   let address = "";
   if (method === "xaman") {
-    const looked = await signedXamanAccount(body.uuid);
+    const looked = await signedXamanAccount(body.uuid, req);
     if (looked.error) {
       json(res, looked.error === "xaman_unconfigured" ? 503 : 400, {
         error: looked.error,
@@ -271,7 +314,7 @@ export async function handleSession(req, res, url) {
     await ensureProfile(address);
     profile = await markLastSignIn(address);
   }
-  json(res, 200, publicSession(session, profile), {
+  json(res, 200, { ...publicSession(session, profile), ...sessionExtras() }, {
     "Set-Cookie": cookieHeader(signSession(session), req),
   });
   return true;

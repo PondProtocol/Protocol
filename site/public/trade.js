@@ -1,15 +1,5 @@
 (() => {
-  const WALLETCONNECT_PROJECT_ID = "89408e9bcaa385da1a1867c446cfb7b2";
-  const WC_SCRIPTS = [
-    {
-      src: "https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js",
-      integrity: "sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js",
-      integrity: "sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM",
-    },
-  ];
+  const WC_SCRIPTS = [{ src: "/vendor/xrpl-latest-min.js" }, { src: "/vendor/xrpl-connect.umd.js" }];
   let wcScriptsPromise = null;
 
   function loadWcScript(entry) {
@@ -27,8 +17,10 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = entry.src;
-      script.integrity = entry.integrity;
-      script.crossOrigin = "anonymous";
+      if (entry.integrity) {
+        script.integrity = entry.integrity;
+        script.crossOrigin = "anonymous";
+      }
       script.addEventListener(
         "load",
         () => {
@@ -695,11 +687,8 @@
     }
 
     function xamanAccount() {
-      try {
-        return JSON.parse(sessionStorage.getItem("pond-xaman-session") || "null")?.account || "";
-      } catch {
-        return "";
-      }
+      const session = window.PondSession?.current?.();
+      return session?.method === "xaman" ? session.address || "" : "";
     }
 
     function setConnectMenuOpen(open) {
@@ -774,8 +763,10 @@
         if (!api?.WalletManager || !api?.WalletConnectAdapter) {
           throw new Error("WalletConnect could not load. Try again.");
         }
+        const projectId = window.PondSession?.walletConnectProjectId?.();
+        if (!projectId) throw new Error("WalletConnect is not configured.");
         const adapter = new api.WalletConnectAdapter({
-          projectId: WALLETCONNECT_PROJECT_ID,
+          projectId,
           metadata: {
             name: "Pond Protocol",
             description: "Non-custodial XRPL market access for Pond Protocol.",
@@ -845,6 +836,9 @@
         setText("[data-wallet-status]", "Connecting…");
         setOrderStatus("Approve the XRPL account connection in your wallet.", "loading");
         try {
+          if (!window.PondSession?.walletConnectProjectId?.()) {
+            await window.PondSession?.refresh?.();
+          }
           await ensureWcScripts();
           await ensureNetwork();
           await connector.open();

@@ -229,6 +229,7 @@ const allowedAddresses = new Set([
 ]);
 const foreignAddresses = new Map();
 for (const file of textFiles) {
+  if (relative(DIST_DIR, file).startsWith("vendor/")) continue;
   for (const [match] of readFileSync(file, "utf8").matchAll(addressPattern)) {
     if (allowedAddresses.has(match)) continue;
     // The null address is what blackholing sets a regular key to. Naming it identifies no project.
@@ -705,6 +706,28 @@ check(
   secretLeak.length === 0,
   secretLeak.map((f) => relative(DIST_DIR, f)).join(", "),
 );
+const xamanSrc = existsSync(join(SITE_ROOT, "scripts", "xaman.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "xaman.mjs"), "utf8")
+  : "";
+const sessionSrc = existsSync(join(SITE_ROOT, "scripts", "session.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8")
+  : "";
+check(
+  "Xaman and session hardening: bound payloads, no public HMAC fallback, submit false, origin-locked CORS",
+  !sessionSrc.includes("pond-docs-session-v1") &&
+    sessionSrc.includes("POND_SESSION_SECRET") &&
+    sessionSrc.includes("session_unconfigured") &&
+    xamanSrc.includes("pond_xaman_payload") &&
+    xamanSrc.includes("payload_unbound") &&
+    xamanSrc.includes("submit: false") &&
+    !/submit:\s*true/.test(xamanSrc) &&
+    !xamanSrc.includes('Access-Control-Allow-Origin", "*"') &&
+    !xamanSrc.includes("Access-Control-Allow-Origin: *") &&
+    readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes("pond-xaman-qr") &&
+    !readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes("pond-xaman-session") &&
+    !readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes('fetch("/health"') &&
+    !readFileSync(join(DIST_DIR, "session.js"), "utf8").includes('fetch("/health"'),
+);
 
 const linksPage = join(DIST_DIR, "links", "index.html");
 const linksHtml = existsSync(linksPage) ? readFileSync(linksPage, "utf8") : "";
@@ -870,7 +893,7 @@ check(
 check(
   "top bar has a Sign in chip that reuses WalletConnect and Xaman",
   indexHtml.includes("data-session-chip") &&
-    indexHtml.includes("/session.js") &&
+    /\/session\.[a-f0-9]{10}\.js/.test(indexHtml) &&
     indexHtml.includes("data-session-wc") &&
     indexHtml.includes("data-xaman-compact") &&
     indexHtml.includes("XUMM_API_KEY") &&
@@ -928,7 +951,7 @@ check(
     profileHtml.includes("Sign in with official Xaman") &&
     !/Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
     !/Account pages open after official/i.test(asText(profileHtml)) &&
-    profileHtml.includes("/profile.js") &&
+    /\/profile\.[a-f0-9]{10}\.js/.test(profileHtml) &&
     !startHereLabels.includes("Profile") &&
     !startHereOrder.includes("Profile") &&
     startHereLabels.join(" | ") === startHereOrder.join(" | "),
@@ -993,14 +1016,21 @@ check(
     !indexHtml.includes("/card.js") &&
     !indexHtml.includes("/disclaimer.js") &&
     indexHtml.includes("/nav.js") &&
-    indexHtml.includes("/session.js") &&
+    /\/session\.[a-f0-9]{10}\.js/.test(indexHtml) &&
     indexHtml.includes("/privacy.js") &&
-    indexHtml.includes("/xaman.js") &&
-    tradeHtml.includes("/trade.js") &&
+    /\/xaman\.[a-f0-9]{10}\.js/.test(indexHtml) &&
+    /\/trade\.[a-f0-9]{10}\.js/.test(tradeHtml) &&
+    !/\/trade\.[a-f0-9]{10}\.js/.test(indexHtml) &&
     !tradeHtml.includes("cdn.jsdelivr.net") &&
+    !sessionJsText.includes("cdn.jsdelivr.net") &&
+    !tradeJsText.includes("cdn.jsdelivr.net") &&
+    !sessionJsText.includes("89408e9bcaa385da1a1867c446cfb7b2") &&
+    !tradeJsText.includes("89408e9bcaa385da1a1867c446cfb7b2") &&
+    existsSync(join(DIST_DIR, "vendor", "xrpl-latest-min.js")) &&
+    existsSync(join(DIST_DIR, "vendor", "xrpl-connect.umd.js")) &&
     tradeHtml.includes("data-disclaimer") &&
     tradeHtml.includes("Before you continue") &&
-    profileHtml.includes("/profile.js"),
+    /\/profile\.[a-f0-9]{10}\.js/.test(profileHtml),
 );
 check(
   "logged-in chip is a profile icon that links to /profile/<handle>/",
