@@ -3072,7 +3072,7 @@ code.addr {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  color: #000;
+  color: #c9d6e0;
 }
 
 .hero-topo-svg {
@@ -3082,35 +3082,22 @@ code.addr {
 }
 
 .hero-topo-svg text {
-  fill: #000;
-  stroke: #000;
-  stroke-width: 0.28;
+  fill: #c9d6e0;
+  stroke: #c9d6e0;
+  stroke-width: 0.14;
   font-family: var(--mono);
-  font-size: 9.5px;
-  font-weight: 620;
-  letter-spacing: 0.03em;
+  font-size: 6.15px;
+  font-weight: 540;
+  letter-spacing: 0.02em;
+  opacity: 0.46;
 }
 
 .hero-topo-svg text.hero-topo-index {
-  font-size: 12.5px;
-  font-weight: 750;
-  stroke-width: 0.7;
-  letter-spacing: 0.02em;
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    105deg,
-    rgb(21 27 33 / 0.86) 0%,
-    rgb(21 27 33 / 0.58) 32%,
-    rgb(21 27 33 / 0.2) 56%,
-    transparent 76%
-  );
+  font-size: 7.6px;
+  font-weight: 700;
+  stroke-width: 0.32;
+  letter-spacing: 0.015em;
+  opacity: 0.72;
 }
 
 .hero-inner {
@@ -3119,6 +3106,25 @@ code.addr {
   width: min(100%, 82rem);
   margin: 0 auto;
   padding: clamp(1.5rem, 5vh, 3.5rem) clamp(1rem, 4vw, 2.5rem);
+}
+
+.hero-inner::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(40rem, 94%);
+  height: min(38rem, 88%);
+  background: radial-gradient(
+    ellipse at 28% 42%,
+    rgb(21 27 33 / 0.9) 0%,
+    rgb(21 27 33 / 0.58) 46%,
+    rgb(21 27 33 / 0.18) 72%,
+    transparent 86%
+  );
+  pointer-events: none;
+  z-index: -1;
 }
 
 .hero-kicker {
@@ -3713,23 +3719,26 @@ code.addr {
     padding: clamp(1.25rem, 4vh, 2.5rem) clamp(1rem, 4vw, 2.5rem);
   }
 
-  .hero::after {
-    background: linear-gradient(
-      180deg,
-      rgb(21 27 33 / 0.7) 0%,
-      rgb(21 27 33 / 0.32) 46%,
-      rgb(21 27 33 / 0.08) 100%
+  .hero-inner::before {
+    width: min(34rem, 100%);
+    height: min(34rem, 80%);
+    background: radial-gradient(
+      ellipse at 40% 38%,
+      rgb(21 27 33 / 0.88) 0%,
+      rgb(21 27 33 / 0.5) 50%,
+      rgb(21 27 33 / 0.14) 74%,
+      transparent 88%
     );
   }
 
   .hero-topo-svg text {
-    font-size: 11px;
-    stroke-width: 0.35;
+    font-size: 6.8px;
+    stroke-width: 0.16;
   }
 
   .hero-topo-svg text.hero-topo-index {
-    font-size: 13.5px;
-    stroke-width: 0.75;
+    font-size: 8.2px;
+    stroke-width: 0.34;
   }
 
   .hero-readout {

@@ -471,36 +471,36 @@ function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
 
 function terrainHeight(x, y) {
   const features = [
-    { x: 0.8, y: 0.3, a: 1.18, rx: 0.12, ry: 0.08, th: 0.62 },
-    { x: 0.85, y: 0.23, a: 0.46, rx: 0.055, ry: 0.07, th: 1.05 },
-    { x: 0.69, y: 0.44, a: 0.58, rx: 0.09, ry: 0.2, th: -0.92 },
-    { x: 0.93, y: 0.55, a: 0.78, rx: 0.07, ry: 0.13, th: 0.2 },
-    { x: 0.24, y: 0.72, a: 0.92, rx: 0.11, ry: 0.09, th: 0.75 },
-    { x: 0.11, y: 0.26, a: 0.64, rx: 0.08, ry: 0.07, th: -0.45 },
-    { x: 0.56, y: 0.14, a: 0.52, rx: 0.3, ry: 0.05, th: 0.12 },
-    { x: 0.78, y: 0.86, a: 0.56, rx: 0.2, ry: 0.055, th: -0.28 },
-    { x: 0.4, y: 0.4, a: 0.36, rx: 0.07, ry: 0.16, th: 0.35 },
-    { x: 0.5, y: 0.58, a: -0.5, rx: 0.15, ry: 0.08, th: 0.4 },
+    { x: 0.08, y: 0.1, a: 0.72, rx: 0.1, ry: 0.08, th: 0.4 },
+    { x: 0.24, y: 0.07, a: 0.48, rx: 0.16, ry: 0.05, th: 0.08 },
+    { x: 0.46, y: 0.11, a: 0.58, rx: 0.14, ry: 0.06, th: -0.22 },
+    { x: 0.7, y: 0.13, a: 0.82, rx: 0.1, ry: 0.08, th: 0.55 },
+    { x: 0.92, y: 0.16, a: 0.5, rx: 0.08, ry: 0.1, th: -0.48 },
+    { x: 0.07, y: 0.38, a: 0.64, rx: 0.09, ry: 0.14, th: 0.88 },
+    { x: 0.2, y: 0.52, a: -0.42, rx: 0.11, ry: 0.07, th: 0.18 },
+    { x: 0.34, y: 0.3, a: 0.52, rx: 0.1, ry: 0.09, th: -0.62 },
+    { x: 0.5, y: 0.4, a: 0.44, rx: 0.12, ry: 0.08, th: 0.28 },
+    { x: 0.62, y: 0.5, a: -0.5, rx: 0.13, ry: 0.09, th: 0.35 },
+    { x: 0.4, y: 0.62, a: 0.46, rx: 0.08, ry: 0.13, th: 0.12 },
+    { x: 0.78, y: 0.34, a: 0.96, rx: 0.11, ry: 0.08, th: 0.48 },
+    { x: 0.88, y: 0.46, a: 0.56, rx: 0.07, ry: 0.13, th: 0.1 },
+    { x: 0.7, y: 0.6, a: 0.42, rx: 0.09, ry: 0.16, th: -0.82 },
+    { x: 0.12, y: 0.76, a: 0.74, rx: 0.12, ry: 0.09, th: 0.68 },
+    { x: 0.3, y: 0.88, a: 0.5, rx: 0.15, ry: 0.06, th: 0.04 },
+    { x: 0.52, y: 0.84, a: 0.4, rx: 0.18, ry: 0.06, th: -0.16 },
+    { x: 0.68, y: 0.9, a: -0.36, rx: 0.1, ry: 0.07, th: 0.42 },
+    { x: 0.86, y: 0.78, a: 0.74, rx: 0.1, ry: 0.09, th: -0.28 },
+    { x: 0.94, y: 0.92, a: 0.42, rx: 0.08, ry: 0.06, th: 0.78 },
+    { x: 0.58, y: 0.22, a: 0.36, rx: 0.2, ry: 0.05, th: 0.14 },
   ];
-  let z = 0;
+  let z =
+    0.38 +
+    0.2 * Math.sin(x * 3.05 + 0.35) * Math.cos(y * 2.35) +
+    0.14 * Math.sin((x * 0.85 + y) * 4.15) +
+    0.09 * Math.cos(x * 5.4 - y * 3.2);
   for (const feature of features) z += blobHeight(x, y, feature);
-  z += 0.06 * Math.sin(x * 6.4 + y * 2.5) * Math.cos(y * 5.1 - x * 1.9);
-  z += 0.035 * Math.sin((x * 1.7 + y) * 7.1);
+  z += 0.05 * Math.sin(x * 7.2 + y * 3.1) * Math.cos(y * 6.4 - x * 2.2);
   return z;
-}
-
-function contourBounds(pts) {
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-  for (const [x, y] of pts) {
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  }
-  return { w: maxX - minX, h: maxY - minY };
 }
 
 function keyPoint(p) {
@@ -553,15 +553,19 @@ function stitchSegments(segments) {
   return polylines;
 }
 
-function isolines(width, height, cols, rows, level) {
-  const dx = width / cols;
-  const dy = height / rows;
+function heightGrid(cols, rows) {
   const grid = [];
   for (let j = 0; j <= rows; j++) {
     const row = [];
     for (let i = 0; i <= cols; i++) row.push(terrainHeight(i / cols, j / rows));
     grid.push(row);
   }
+  return grid;
+}
+
+function isolines(width, height, cols, rows, level, grid) {
+  const dx = width / cols;
+  const dy = height / rows;
   const lerp = (p1, p2, v1, v2) => {
     const t = (level - v1) / ((v2 - v1) || 1e-9);
     return [p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t];
@@ -647,20 +651,30 @@ function heroTopoSvg() {
     `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
     `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
   ];
-  const levels = [0.2, 0.28, 0.34, 0.4, 0.46, 0.52, 0.58, 0.64, 0.7, 0.76, 0.82, 0.9, 0.98];
+  const cols = 92;
+  const rows = 52;
+  const grid = heightGrid(cols, rows);
+  let zMin = Infinity;
+  let zMax = -Infinity;
+  for (const row of grid) {
+    for (const z of row) {
+      if (z < zMin) zMin = z;
+      if (z > zMax) zMax = z;
+    }
+  }
+  const steps = 30;
+  const levels = Array.from(
+    { length: steps },
+    (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
+  );
   const contours = [];
   levels.forEach((level, levelIndex) => {
-    const index = levelIndex % 4 === 0;
-    for (const pts of isolines(1600, 900, 96, 54, level)) {
-      if (pts.length < 8 || pathLength(pts) < 80) continue;
+    const index = levelIndex % 5 === 0;
+    for (const pts of isolines(1600, 900, cols, rows, level, grid)) {
+      if (pts.length < 6 || pathLength(pts) < 48) continue;
       const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
       const body = closed ? pts.slice(0, -1) : pts;
-      if (body.length < 6) continue;
-      const box = contourBounds(body);
-      const fat = Math.max(box.w, box.h);
-      const thin = Math.min(box.w, box.h);
-      if (box.w > 1380 || box.h > 780) continue;
-      if (fat > 720 && thin / fat > 0.8) continue;
+      if (body.length < 5) continue;
       contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
     }
   });
@@ -669,7 +683,7 @@ function heroTopoSvg() {
     .join("");
   const texts = contours
     .map((c, i) => {
-      const repeats = Math.max(6, Math.min(16, Math.round(c.len / 140)));
+      const repeats = Math.max(4, Math.min(12, Math.round(c.len / 180)));
       const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join("  ·  "));
       const cls = c.index ? ' class="hero-topo-index"' : "";
       return `<text${cls}><textPath href="#hero-topo-p${i}" startOffset="${(i * 5) % 19}%">${payload}</textPath></text>`;

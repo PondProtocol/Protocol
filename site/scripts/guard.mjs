@@ -960,6 +960,8 @@ check(
     indexHtml.includes(config.site.issuerAddress) &&
     indexHtml.includes("Destination") &&
     indexHtml.includes("Flags") &&
+    /fill:\s*#c9d6e0/.test(stylesText) &&
+    /hero-inner::before/.test(stylesText) &&
     !/pixers|shutterstock|istock/i.test(indexHtml) &&
     !indexHtml.includes('src="/hero.png"') &&
     !tradeHtml.includes("hero-topo") &&
