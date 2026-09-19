@@ -6164,6 +6164,7 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-plot-tools,
+.trade-chart-nav-tools,
 .trade-indicator-periods {
   display: flex;
   align-items: center;
@@ -6171,7 +6172,13 @@ body:has([data-pond-profile]) .profile-card {
   gap: 0.25rem;
 }
 
+.trade-chart-nav-tools {
+  padding-left: 0.35rem;
+  border-left: 1px solid var(--border);
+}
+
 .trade-chart-plot-tools button,
+.trade-chart-nav-tools button,
 .trade-indicator-periods button {
   padding: 0.18rem 0.38rem;
   border: 1px solid var(--border);
@@ -6185,6 +6192,8 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-plot-tools button.is-active,
 .trade-chart-plot-tools button:hover,
+.trade-chart-nav-tools button.is-active,
+.trade-chart-nav-tools button:hover,
 .trade-indicator-periods button.is-active,
 .trade-indicator-periods button:hover {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
@@ -6587,6 +6596,11 @@ body:has([data-pond-profile]) .profile-card {
   color: #e6ebf0;
   font-family: var(--mono);
   font-size: 0.68rem;
+}
+
+.trade-chart-hud [data-chart-hud-prints],
+.trade-chart-hud [data-chart-hud-pin] {
+  color: #c9b27a;
 }
 
 .trade-chart-print-age {

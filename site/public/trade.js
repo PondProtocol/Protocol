@@ -307,6 +307,17 @@ ${ticketPanelMarkup("sell")}
             <button type="button" class="is-active" data-chart-grid aria-pressed="true">Grid</button>
             <button type="button" data-chart-fit>Fit</button>
           </div>
+          <div class="trade-chart-nav-tools" role="group" aria-label="Chart navigation">
+            <button type="button" data-chart-zoom="-1" aria-label="Zoom out">−</button>
+            <button type="button" data-chart-zoom="1" aria-label="Zoom in">+</button>
+            <button type="button" data-chart-latest>Latest</button>
+            <button type="button" class="is-active" data-chart-hl aria-pressed="true">H/L</button>
+            <button type="button" class="is-active" data-chart-vol-sma aria-pressed="true">Vol MA</button>
+            <button type="button" data-chart-compact aria-pressed="false">Compact</button>
+            <button type="button" data-chart-tz aria-pressed="false">Local</button>
+            <button type="button" data-chart-pin aria-pressed="false">Pin</button>
+            <button type="button" data-chart-reset>Reset</button>
+          </div>
           <div class="trade-indicator-tools" data-indicator-tools>
             <button type="button" class="is-active" data-chart-indicator="sma" aria-pressed="true"><i class="trade-ind-swatch is-sma"></i>SMA</button>
             <button type="button" class="is-active" data-chart-indicator="ema" aria-pressed="true"><i class="trade-ind-swatch is-ema"></i>EMA</button>
@@ -332,7 +343,7 @@ ${ticketPanelMarkup("sell")}
           <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
           <span class="trade-chart-ohlc-change"><strong data-chart-ohlc-change>—</strong></span>
           <span class="trade-chart-bar-left"><b>Bar</b><strong data-chart-bar-left>—</strong></span>
-          <span class="trade-chart-keys" data-chart-keys>1 5 Q W H 4 D · V S E R M B · L G F · Esc</span>
+          <span class="trade-chart-keys" data-chart-keys>1 5 Q W H 4 D · V S E R M B · L G F · − + . 0 U P · Esc</span>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
@@ -341,6 +352,8 @@ ${ticketPanelMarkup("sell")}
               <strong data-chart-hud-time>—</strong>
               <span data-chart-hud-ohlc>—</span>
               <span data-chart-hud-vol>—</span>
+              <span data-chart-hud-prints>—</span>
+              <span data-chart-hud-pin hidden>—</span>
               <span data-chart-hud-ind>—</span>
             </div>
             <span class="trade-chart-source" data-chart-source hidden>XRPL Testnet</span>
@@ -2086,7 +2099,7 @@ ${ticketPanelMarkup("sell")}
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, layout: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: false, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -2240,9 +2253,8 @@ ${ticketPanelMarkup("sell")}
           setText("[data-chart-stat-print]", "—");
           return;
         }
-        const clock = new Date(stamp).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
         const age = formatPrintAge(Date.now() - stamp);
-        setText("[data-chart-print-age]", `${clock} · ${age}`);
+        setText("[data-chart-print-age]", `${formatHudTime(stamp)} · ${age}`);
         setText("[data-chart-stat-print]", age);
       };
       const updateBarLeft = () => {
@@ -2358,16 +2370,139 @@ ${ticketPanelMarkup("sell")}
         gridToggle.setAttribute("aria-pressed", String(chartState.grid));
         applyPlotChrome();
       });
+      const syncNavButtons = () => {
+        const hlToggle = $("[data-chart-hl]");
+        hlToggle?.classList.toggle("is-active", chartState.hl !== false);
+        hlToggle?.setAttribute("aria-pressed", String(chartState.hl !== false));
+        const volSmaToggle = $("[data-chart-vol-sma]");
+        volSmaToggle?.classList.toggle("is-active", chartState.volSma !== false);
+        volSmaToggle?.setAttribute("aria-pressed", String(chartState.volSma !== false));
+        const compactToggle = $("[data-chart-compact]");
+        compactToggle?.classList.toggle("is-active", Boolean(chartState.compact));
+        compactToggle?.setAttribute("aria-pressed", String(Boolean(chartState.compact)));
+        const tzToggle = $("[data-chart-tz]");
+        if (tzToggle) {
+          tzToggle.classList.toggle("is-active", Boolean(chartState.utc));
+          tzToggle.setAttribute("aria-pressed", String(Boolean(chartState.utc)));
+          tzToggle.textContent = chartState.utc ? "UTC" : "Local";
+        }
+        const pinToggle = $("[data-chart-pin]");
+        pinToggle?.classList.toggle("is-active", Boolean(chartState.pin));
+        pinToggle?.setAttribute("aria-pressed", String(Boolean(chartState.pin)));
+      };
+
+      const formatHudTime = (timeMs) => {
+        if (!Number.isFinite(timeMs)) return "—";
+        const options = { hour: "numeric", minute: "2-digit", second: "2-digit" };
+        if (chartState.utc) {
+          return `${new Date(timeMs).toLocaleTimeString("en-GB", { ...options, timeZone: "UTC" })} UTC`;
+        }
+        return new Date(timeMs).toLocaleTimeString(undefined, options);
+      };
+
+      const applyHlRails = () => {
+        const tv = chartState.tv;
+        if (!tv) return;
+        const show = chartState.hl !== false;
+        tv.highLine?.applyOptions({ lineVisible: show, axisLabelVisible: show });
+        tv.lowLine?.applyOptions({ lineVisible: show, axisLabelVisible: show });
+      };
+
+      const applyPinLine = () => {
+        const tv = chartState.tv;
+        if (!tv?.pinLine) return;
+        const price = Number(chartState.pinPrice);
+        const show = Boolean(chartState.pin) && Number.isFinite(price) && price > 0;
+        tv.pinLine.applyOptions({
+          price: show ? price : 0,
+          lineVisible: show,
+          axisLabelVisible: show,
+        });
+        const pinHud = $("[data-chart-hud-pin]");
+        if (pinHud) {
+          pinHud.hidden = !show;
+          pinHud.textContent = show ? `Pin ${formatTick(price)}` : "";
+        }
+      };
+
+      const zoomTimeScale = (direction) => {
+        const ts = chartState.tv?.chart.timeScale();
+        if (!ts?.getVisibleLogicalRange || !ts.setVisibleLogicalRange) return;
+        const range = ts.getVisibleLogicalRange();
+        if (!range || !Number.isFinite(range.from) || !Number.isFinite(range.to)) return;
+        const factor = direction > 0 ? 0.72 : 1.38;
+        const mid = (range.from + range.to) / 2;
+        const half = Math.max(((range.to - range.from) / 2) * factor, 1.5);
+        ts.setVisibleLogicalRange({ from: mid - half, to: mid + half });
+      };
+
+      const scrollToLatest = () => {
+        const ts = chartState.tv?.chart.timeScale();
+        if (ts?.scrollToRealTime) ts.scrollToRealTime();
+        else if (ts?.scrollToPosition) ts.scrollToPosition(0, false);
+      };
+
+      const currentPlotRows = () => (chartState.data?.candles || chartState.data?.points || []).map((point) => ({
+        ...point,
+        close: point.close ?? point.value,
+        high: point.high ?? point.value,
+        low: point.low ?? point.value,
+      }));
+
+      const refitCurrent = () => {
+        const rows = currentPlotRows();
+        if (chartState.tv && rows.length) fitTvViewport(chartState.tv, rows, chartState.data?.livePrice ?? rows[rows.length - 1].close);
+      };
+
+      const resetChartView = () => {
+        chartState.compact = false;
+        chartState.pin = false;
+        chartState.pinPrice = null;
+        syncNavButtons();
+        sizeTvPanes();
+        applyPinLine();
+        refitCurrent();
+        scrollToLatest();
+      };
+
       $("[data-chart-fit]")?.addEventListener("click", () => {
         if (!chartState.tv || !chartState.data) return;
-        const rows = (chartState.data.candles || chartState.data.points || []).map((point) => ({
-          ...point,
-          close: point.close ?? point.value,
-          high: point.high ?? point.value,
-          low: point.low ?? point.value,
-        }));
+        const rows = currentPlotRows();
         if (rows.length) fitTvViewport(chartState.tv, rows, chartState.data.livePrice ?? rows[rows.length - 1].close);
       });
+      $$("[data-chart-zoom]").forEach((button) => {
+        button.addEventListener("click", () => zoomTimeScale(Number(button.dataset.chartZoom) || 1));
+      });
+      $("[data-chart-latest]")?.addEventListener("click", scrollToLatest);
+      $("[data-chart-hl]")?.addEventListener("click", () => {
+        chartState.hl = chartState.hl === false;
+        syncNavButtons();
+        applyHlRails();
+      });
+      $("[data-chart-vol-sma]")?.addEventListener("click", () => {
+        chartState.volSma = chartState.volSma === false;
+        syncNavButtons();
+        if (chartState.data) renderChart();
+      });
+      $("[data-chart-compact]")?.addEventListener("click", () => {
+        chartState.compact = !chartState.compact;
+        syncNavButtons();
+        sizeTvPanes();
+        refitCurrent();
+      });
+      $("[data-chart-tz]")?.addEventListener("click", () => {
+        chartState.utc = !chartState.utc;
+        syncNavButtons();
+        updatePrintAge();
+      });
+      $("[data-chart-pin]")?.addEventListener("click", () => {
+        chartState.pin = !chartState.pin;
+        if (!chartState.pin) chartState.pinPrice = null;
+        syncNavButtons();
+        applyPinLine();
+      });
+      $("[data-chart-reset]")?.addEventListener("click", resetChartView);
+      syncNavButtons();
       $$("[data-chart-period]").forEach((button) => {
         button.addEventListener("click", () => {
           chartState.period = Number(button.dataset.chartPeriod) || 8;
@@ -2430,9 +2565,10 @@ ${ticketPanelMarkup("sell")}
         const showMacd = indicatorOn("macd");
         const panes = tv.chart.panes?.() || [];
         const paneBudget = Math.max(height, 220);
-        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(72, Math.round(paneBudget * 0.2)) : 0);
-        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(56, Math.round(paneBudget * 0.16)) : 0);
-        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(64, Math.round(paneBudget * 0.18)) : 0);
+        const compact = Boolean(chartState.compact);
+        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(compact ? 48 : 72, Math.round(paneBudget * (compact ? 0.12 : 0.2))) : 0);
+        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(compact ? 40 : 56, Math.round(paneBudget * (compact ? 0.1 : 0.16))) : 0);
+        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(compact ? 44 : 64, Math.round(paneBudget * (compact ? 0.11 : 0.18))) : 0);
         tv.chart.timeScale().fitContent();
         const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
         const range = { minValue: domain.minValue, maxValue: domain.maxValue };
@@ -2465,9 +2601,10 @@ ${ticketPanelMarkup("sell")}
 
       function sizeTvPanes() {
         const panes = chartState.tv?.chart.panes?.() || [];
-        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? 0.28 : 0);
-        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? 0.2 : 0);
-        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? 0.22 : 0);
+        const compact = Boolean(chartState.compact);
+        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? (compact ? 0.16 : 0.28) : 0);
+        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? (compact ? 0.12 : 0.2) : 0);
+        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? (compact ? 0.14 : 0.22) : 0);
       }
 
       function ensureTvBoard() {
@@ -2541,6 +2678,11 @@ ${ticketPanelMarkup("sell")}
           }, 3);
           const highLine = candles.createPriceLine({ price: 0, color: "#74d3a0", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "H" });
           const lowLine = candles.createPriceLine({ price: 0, color: "#ef9a9a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "L" });
+          const pinLine = candles.createPriceLine({ price: 0, color: "#f7c66a", lineWidth: 1, lineStyle: 0, axisLabelVisible: false, title: "Pin", lineVisible: false });
+          const hudPrintsFor = (time) => {
+            const count = chartState.printByTime?.get(time);
+            return Number.isFinite(count) && count > 0 ? `${count} print${count === 1 ? "" : "s"}` : "—";
+          };
           chart.subscribeCrosshairMove((param) => {
             const candle = param.seriesData?.get(candles);
             if (!candle || param.time == null) {
@@ -2558,9 +2700,10 @@ ${ticketPanelMarkup("sell")}
             if (indicatorOn("ema") && emaPoint) parts.push(`EMA ${formatTick(emaPoint.value)}`);
             if (indicatorOn("rsi") && rsiPoint) parts.push(`RSI ${Number(rsiPoint.value).toFixed(1)}`);
             if (indicatorOn("macd") && macdPoint) parts.push(`MACD ${formatTick(macdPoint.value)}`);
-            setText("[data-chart-hud-time]", Number.isFinite(timeMs) ? new Date(timeMs).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }) : "—");
+            setText("[data-chart-hud-time]", formatHudTime(timeMs));
             setText("[data-chart-hud-ohlc]", `O ${formatTick(candle.open)}  H ${formatTick(candle.high)}  L ${formatTick(candle.low)}  C ${formatTick(candle.close)}`);
             setText("[data-chart-hud-vol]", `${formatIou(volumePoint?.value || 0)} XRP`);
+            setText("[data-chart-hud-prints]", hudPrintsFor(param.time));
             setText("[data-chart-hud-ind]", parts.join("  ") || "—");
             setText("[data-chart-ohlc-open]", formatAxis(candle.open));
             setText("[data-chart-ohlc-high]", formatAxis(candle.high));
@@ -2568,7 +2711,16 @@ ${ticketPanelMarkup("sell")}
             setText("[data-chart-ohlc-close]", formatAxis(candle.close));
             if (hud) hud.hidden = false;
           });
-          chartState.tv = { chart, candles, volume, overlay, closeLine, emaLine, bandHigh, bandLow, volumeSma, rsi, osc, macdLine, macdSignal, macdHist, highLine, lowLine };
+          chart.subscribeClick((param) => {
+            const candle = param.seriesData?.get(candles);
+            if (!candle || !Number.isFinite(candle.close)) return;
+            fillTicketPrices(candle.close, true);
+            if (chartState.pin) {
+              chartState.pinPrice = candle.close;
+              applyPinLine();
+            }
+          });
+          chartState.tv = { chart, candles, volume, overlay, closeLine, emaLine, bandHigh, bandLow, volumeSma, rsi, osc, macdLine, macdSignal, macdHist, highLine, lowLine, pinLine };
           sizeTvPanes();
           applyPlotChrome();
           const refit = () => {
@@ -2605,9 +2757,11 @@ ${ticketPanelMarkup("sell")}
             low,
             close,
             volume: point.volume || 0,
+            prints: Number(point.prints) || 0,
           };
         }).filter((row, index, list) => Number.isFinite(row.time) && (index === 0 || row.time > list[index - 1].time));
         if (!rows.length) return;
+        chartState.printByTime = new Map(rows.map((row) => [row.time, row.prints]));
         const values = rows.map((row) => row.close);
         const times = rows.map((row) => row.time);
         const maPeriod = Math.min(Math.max(chartState.period || 8, 2), Math.max(2, values.length));
@@ -2642,7 +2796,9 @@ ${ticketPanelMarkup("sell")}
           color: row.close >= row.open ? "rgba(38, 166, 154, 0.62)" : "rgba(239, 83, 80, 0.62)",
         })));
         tv.volume.applyOptions({ visible: showVolume });
-        tv.volumeSma?.setData(showVolume ? seriesPoints(times, volSma) : []);
+        const showVolSma = showVolume && chartState.volSma !== false;
+        tv.volumeSma?.setData(showVolSma ? seriesPoints(times, volSma) : []);
+        tv.volumeSma?.applyOptions({ visible: showVolSma });
         tv.overlay.setData(showSma ? seriesPoints(times, sma) : []);
         tv.emaLine?.setData(indicatorOn("ema") ? seriesPoints(times, ema) : []);
         tv.bandHigh.setData(indicatorOn("bollinger") ? seriesPoints(times, upper) : []);
@@ -2665,6 +2821,8 @@ ${ticketPanelMarkup("sell")}
         const windowLow = Math.min(...rows.map((row) => row.low));
         tv.highLine?.applyOptions({ price: windowHigh });
         tv.lowLine?.applyOptions({ price: windowLow });
+        applyHlRails();
+        applyPinLine();
         tv.candles.applyOptions({
           priceLineColor: lastUp ? "#26a69a" : "#ef5350",
           lastValueVisible: chartState.style !== "line",
@@ -2909,6 +3067,15 @@ ${ticketPanelMarkup("sell")}
         else if (key === "l") $("[data-chart-log]")?.click();
         else if (key === "g") $("[data-chart-grid]")?.click();
         else if (key === "f") $("[data-chart-fit]")?.click();
+        else if (key === "-" || key === "_") zoomTimeScale(-1);
+        else if (key === "+" || key === "=") zoomTimeScale(1);
+        else if (key === "." || key === "end") scrollToLatest();
+        else if (key === "0") resetChartView();
+        else if (key === "u") $("[data-chart-tz]")?.click();
+        else if (key === "p") $("[data-chart-pin]")?.click();
+        else if (key === "c") $("[data-chart-compact]")?.click();
+        else if (key === "y") $("[data-chart-hl]")?.click();
+        else if (key === "k") $("[data-chart-vol-sma]")?.click();
         else if (key === "escape") hideChartHud();
       });
       return { load, paintLedger: paintLedgerChart };
