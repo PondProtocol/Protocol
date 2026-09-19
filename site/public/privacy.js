@@ -26,9 +26,10 @@
   function syncHomePrivacyReserve() {
     if (!document.body?.classList.contains("page-index")) return;
     const card = notice();
-    const raw = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
-    const height = raw ? raw + 8 : 0;
-    document.body.style.setProperty("--privacy-reserve-h", `${height}px`);
+    const raw = card && !card.hidden ? Math.ceil(card.offsetHeight) : 0;
+    // Private Browsing is a popup overlay. Do not shrink the hero.
+    document.body.style.setProperty("--privacy-reserve-h", "0px");
+    document.body.dataset.homePrivacy = raw ? "open" : "closed";
   }
 
   function syncHomeScale() {
