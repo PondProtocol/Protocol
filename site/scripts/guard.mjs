@@ -952,15 +952,21 @@ check(
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
     indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),
 );
+const heroTopoSvg = existsSync(join(DIST_DIR, "hero-topo.svg"))
+  ? readFileSync(join(DIST_DIR, "hero-topo.svg"), "utf8")
+  : "";
 check(
   "landing hero contours are original XRPL textPaths",
   indexHtml.includes('class="hero-topo"') &&
-    indexHtml.includes("<textPath") &&
-    indexHtml.includes("TransactionType") &&
-    indexHtml.includes(config.site.issuerAddress) &&
-    indexHtml.includes("Destination") &&
-    indexHtml.includes("Flags") &&
-    /fill:\s*#c9d6e0/.test(stylesText) &&
+    indexHtml.includes('src="/hero-topo.svg"') &&
+    !indexHtml.includes("<textPath") &&
+    heroTopoSvg.includes("<textPath") &&
+    heroTopoSvg.includes("TransactionType") &&
+    heroTopoSvg.includes(config.site.issuerAddress) &&
+    heroTopoSvg.includes("Destination") &&
+    heroTopoSvg.includes("Flags") &&
+    /#c9d6e0/.test(stylesText) &&
+    /#c9d6e0/.test(heroTopoSvg) &&
     /hero-inner::before/.test(stylesText) &&
     !/pixers|shutterstock|istock/i.test(indexHtml) &&
     !indexHtml.includes('src="/hero.png"') &&

@@ -640,7 +640,7 @@ function pathLength(pts) {
   return n;
 }
 
-function heroTopoSvg() {
+function buildHeroTopoMarkup() {
   const issuer = site.issuerAddress;
   const treasury = site.treasuryAddress;
   const operations = site.operationsAddress;
@@ -651,8 +651,8 @@ function heroTopoSvg() {
     `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
     `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
   ];
-  const cols = 92;
-  const rows = 52;
+  const cols = 80;
+  const rows = 46;
   const grid = heightGrid(cols, rows);
   let zMin = Infinity;
   let zMax = -Infinity;
@@ -662,7 +662,7 @@ function heroTopoSvg() {
       if (z > zMax) zMax = z;
     }
   }
-  const steps = 30;
+  const steps = 20;
   const levels = Array.from(
     { length: steps },
     (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
@@ -678,20 +678,38 @@ function heroTopoSvg() {
       contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
     }
   });
-  const defs = contours
-    .map((c, i) => `<path id="hero-topo-p${i}" d="${c.d}" fill="none"/>`)
+  const strokes = contours
+    .map(
+      (c, i) =>
+        `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}" id="hero-topo-p${i}"/>`,
+    )
     .join("");
   const texts = contours
+    .filter((c, i) => c.index || i % 2 === 0)
     .map((c, i) => {
-      const repeats = Math.max(4, Math.min(12, Math.round(c.len / 180)));
-      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join("  ·  "));
-      const cls = c.index ? ' class="hero-topo-index"' : "";
-      return `<text${cls}><textPath href="#hero-topo-p${i}" startOffset="${(i * 5) % 19}%">${payload}</textPath></text>`;
+      const repeats = Math.max(2, Math.min(4, Math.round(c.len / 260)));
+      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join(" · "));
+      const cls = c.index ? ' class="index"' : "";
+      const href = contours.indexOf(c);
+      return `<text${cls}><textPath href="#hero-topo-p${href}" startOffset="${(i * 5) % 17}%">${payload}</textPath></text>`;
     })
     .join("");
-  return `<div class="hero-topo" aria-hidden="true">
-  <svg class="hero-topo-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" focusable="false"><defs>${defs}</defs>${texts}</svg>
-</div>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <style>
+    .iso { fill: none; stroke: #c9d6e0; stroke-width: 0.55; opacity: 0.3; }
+    .iso-index { stroke-width: 1.05; opacity: 0.46; }
+    text { fill: #c9d6e0; stroke: #c9d6e0; stroke-width: 0.12; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 5.8px; font-weight: 540; opacity: 0.55; }
+    text.index { font-size: 7.2px; font-weight: 700; stroke-width: 0.26; opacity: 0.78; }
+  </style>
+  ${strokes}
+  ${texts}
+</svg>
+`;
+}
+
+function heroTopoSvg() {
+  return `<div class="hero-topo" aria-hidden="true"><img class="hero-topo-img" src="/hero-topo.svg" alt="" decoding="async" fetchpriority="low"></div>`;
 }
 
 function heroHtml() {
@@ -1097,6 +1115,7 @@ writeFileSync(
  * exactly that path, and the assertion below refuses to produce output where it did not.
  */
 if (existsSync(PUBLIC_DIR)) cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true, dereference: true });
+writeFileSync(join(DIST_DIR, "hero-topo.svg"), buildHeroTopoMarkup());
 
 const wellKnown = join(DIST_DIR, WELL_KNOWN_PATH);
 if (!existsSync(wellKnown) || !statSync(wellKnown).isFile()) {
