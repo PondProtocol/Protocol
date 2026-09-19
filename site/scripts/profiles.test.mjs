@@ -198,6 +198,20 @@ test("profile API persists disclaimerAccepted for the signed-in Xaman account", 
     assert.equal(getProfileByHandle("tadpole01").disclaimerAccepted, true);
   }));
 
+test("balance API stays behind an active Xaman session", () =>
+  withStore(async () => {
+    const loggedOut = mockRes();
+    await handleProfiles({ method: "GET", headers: {}, socket: {} }, loggedOut, "/api/profile/balances", {
+      readSession: () => null,
+    });
+    assert.equal(loggedOut.statusCode, 401);
+    const wallet = mockRes();
+    await handleProfiles({ method: "GET", headers: {}, socket: {} }, wallet, "/api/profile/balances", {
+      readSession: () => ({ address: ADMIN_ADDRESS, method: "walletconnect" }),
+    });
+    assert.equal(wallet.statusCode, 403);
+  }));
+
 test("profile icon is stored on the JSON profile and rejects secrets", () =>
   withStore(async () => {
     await ensureProfile(ADMIN_ADDRESS);

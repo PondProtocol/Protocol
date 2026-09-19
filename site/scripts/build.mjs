@@ -523,11 +523,19 @@ function sessionChipHtml() {
   <div class="session-guest" data-session-guest>
     <button type="button" class="session-toggle" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
     <div class="session-menu" id="session-menu" data-session-menu hidden>
-      <p class="session-menu-copy">Official WalletConnect or Xaman only. Pond never asks for a seed.</p>
-      <button type="button" class="session-wc" data-session-wc>WalletConnect</button>
-      <p class="session-wc-error" data-session-wc-error hidden></p>
-      <div data-xaman-app data-xaman-compact data-return="/trade/"></div>
-      <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
+      <p class="session-menu-kicker">Sign in</p>
+      <p class="session-menu-copy">Official WalletConnect or Xaman. Pond never asks for a seed.</p>
+      <div class="session-menu-block">
+        <p class="session-menu-label">WalletConnect</p>
+        <button type="button" class="session-wc" data-session-wc>Continue with WalletConnect</button>
+        <p class="session-wc-error" data-session-wc-error hidden></p>
+      </div>
+      <div class="session-menu-block">
+        <p class="session-menu-label">Xaman</p>
+        <p class="session-menu-hint">Official SignIn. The QR appears when this menu opens.</p>
+        <div data-xaman-app data-xaman-compact data-xaman-autostart data-return="/trade/"></div>
+        <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
+      </div>
     </div>
   </div>
   <div class="session-authed" data-session-authed hidden>

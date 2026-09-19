@@ -58,6 +58,9 @@
     if (!panel || !button) return;
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      window.PondXaman?.startSignIn?.(document.querySelector("[data-xaman-autostart]"));
+    }
   }
 
   function paint() {

@@ -877,7 +877,17 @@ check(
     indexHtml.includes("XUMM_API_SECRET") &&
     sessionJsText.includes("/api/session") &&
     sessionJsText.includes("walletconnect") &&
-    sessionJsText.includes("PondTrade?.connectWallet"),
+    sessionJsText.includes("PondTrade?.connectWallet") &&
+    indexHtml.includes("data-xaman-autostart") &&
+    xamanJsText.includes("startSignIn") &&
+    xamanJsText.includes("/api/xaman/signin"),
+);
+check(
+  "Sign in menu auto-starts official Xaman QR without a second click",
+  xamanJsText.includes("data-xaman-autostart") &&
+    xamanJsText.includes("session-xaman-qr") &&
+    sessionJsText.includes("startSignIn") &&
+    /Official WalletConnect or Xaman/.test(indexHtml),
 );
 check(
   "serve.mjs can set a signed session cookie",
@@ -964,7 +974,15 @@ check(
     profileJsText.includes("displayName") &&
     profileJsText.includes("bio") &&
     profileJsText.includes("icon") &&
-    profilesSrc.includes("asIcon"),
+    profilesSrc.includes("asIcon") &&
+    profileJsText.includes("$PND") &&
+    profileJsText.includes("$rPND") &&
+    profileJsText.includes("$XRP") &&
+    profileJsText.includes("$RLUSD") &&
+    /not issued/i.test(profileJsText) &&
+    existsSync(join(SITE_ROOT, "scripts", "balances.mjs")) &&
+    readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8").includes("xrplcluster.com") &&
+    !profileJsText.includes("rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"),
 );
 
 const startJs = join(DIST_DIR, "start.js");

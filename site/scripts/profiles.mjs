@@ -23,6 +23,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { readBalances } from "./balances.mjs";
 import { SITE_ROOT } from "./lib.mjs";
 
 export const ADMIN_ADDRESS = "r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B";
@@ -380,8 +381,9 @@ function requireXaman(req, res, loadSession) {
 export async function handleProfiles(req, res, url, { readSession }) {
   const handleMatch = url.match(/^\/api\/profile\/([^/]+)$/);
   const collection = url === "/api/profile";
+  const balances = url === "/api/profile/balances";
 
-  if (!collection && !handleMatch) return false;
+  if (!collection && !handleMatch && !balances) return false;
 
   if (req.method === "OPTIONS") {
     json(res, 204, {});
@@ -390,6 +392,12 @@ export async function handleProfiles(req, res, url, { readSession }) {
 
   const session = requireXaman(req, res, readSession);
   if (session === false) return true;
+
+  if (req.method === "GET" && balances) {
+    const snapshot = await readBalances(session.address);
+    json(res, 200, snapshot);
+    return true;
+  }
 
   if (req.method === "GET" && handleMatch) {
     const row = await ensureProfile(session.address);

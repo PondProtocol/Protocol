@@ -63,6 +63,31 @@
     return DEFAULT_ICON;
   }
 
+  function balancesHtml(snapshot) {
+    const assets = snapshot?.assets?.length
+      ? snapshot.assets
+      : [
+          { id: "pnd", label: "$PND", value: "—", state: "loading", note: "Reading validated ledger…" },
+          { id: "rpnd", label: "$rPND", value: "—", state: "loading", note: "Reading validated ledger…" },
+          { id: "xrp", label: "$XRP", value: "—", state: "loading", note: "Reading validated ledger…" },
+          { id: "rlusd", label: "$RLUSD", value: "—", state: "loading", note: "Reading validated ledger…" },
+        ];
+    const rows = assets
+      .map(
+        (asset) => `<div class="profile-balance" data-balance="${esc(asset.id)}" data-state="${esc(asset.state)}">
+        <span>${esc(asset.label)}</span>
+        <strong>${esc(asset.value)}</strong>
+        <em>${esc(asset.note)}</em>
+      </div>`,
+      )
+      .join("");
+    return `<section class="profile-balances" data-profile-balances aria-label="Wallet balances">
+      <p class="profile-kicker">Wallet balances</p>
+      <p class="profile-form-note">Public XRPL account data only. $PND and $rPND stay 0 / not issued until they exist. Pond never asks for a seed.</p>
+      <div class="profile-balance-grid">${rows}</div>
+    </section>`;
+  }
+
   function signOutHtml() {
     return `<p class="profile-session-actions">
       <button type="button" class="button button-quiet" data-profile-signout>Sign out</button>
@@ -97,6 +122,7 @@
       </div>
       <p class="profile-handle">/profile/${esc(profile.handle)}/</p>
       <p class="profile-address" title="${esc(profile.address)}">${esc(shortAddr(profile.address))}</p>
+      ${balancesHtml(profile.balances)}
       <form class="profile-form" data-profile-form>
         <label>
           <span>Display name</span>
@@ -144,6 +170,10 @@
 
   async function loadOwn() {
     return fetchJson("/api/profile");
+  }
+
+  async function loadBalances() {
+    return fetchJson("/api/profile/balances");
   }
 
   async function saveOwn(fields) {
@@ -227,7 +257,7 @@
       try {
         const saved = await saveOwn(body);
         window.PondSession?.patch?.({ icon: saved.icon || "", handle: saved.handle || "" });
-        render(saved);
+        render({ ...saved, balances: profile.balances });
         setStatus("Saved.");
       } catch (error) {
         setStatus(error.message || "Could not save.");
@@ -274,6 +304,12 @@
         history.replaceState({}, "", `/profile/${own.handle}/`);
       }
       render(own);
+      try {
+        const snapshot = await loadBalances();
+        render({ ...own, balances: snapshot });
+      } catch {
+        /* keep the honest loading / empty rows */
+      }
     } catch (error) {
       if (error.status === 401 || error.status === 403) {
         render(null);

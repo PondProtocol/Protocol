@@ -3,6 +3,7 @@
   const issuer = () => window.POND?.issuer || "";
   const mounts = () => [...document.querySelectorAll("[data-xaman-app]")];
   const isCompact = (root) => root?.hasAttribute("data-xaman-compact");
+  const isAutostart = (root) => root?.hasAttribute("data-xaman-autostart");
   const returnTo = (root) => {
     const requested = root?.dataset.return;
     if (requested === "/trade/" || requested === "/connect/") return requested;
@@ -69,7 +70,26 @@
     window.dispatchEvent(new CustomEvent("pond:xaman-change", { detail: session() }));
   }
 
-  function unavailableHtml(reason, compact) {
+  function sessionWaitHtml(payload, heading) {
+    return `
+      <div class="session-xaman-panel" data-xaman-wait>
+        <p class="session-xaman-heading">${esc(heading)}</p>
+        ${
+          payload.qr
+            ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="168" height="168" alt="Xaman official SignIn QR">`
+            : `<p class="session-xaman-pending">Preparing official Xaman SignIn…</p>`
+        }
+        <p class="session-xaman-actions">
+          ${payload.next ? `<a class="session-xaman-open" href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
+        </p>
+        <p class="session-xaman-fine">Scan with official Xaman. Pond never asks for a seed.</p>
+      </div>`;
+  }
+
+  function unavailableHtml(reason, compact, autostart) {
+    if (autostart) {
+      return `<p class="session-xaman-error" role="status">${esc(reason)}</p>`;
+    }
     if (compact) {
       return `<button type="button" class="trade-connect-option" disabled title="${esc(reason)}">Xaman · keys unset</button>`;
     }
@@ -83,7 +103,10 @@
       </div>`;
   }
 
-  function idleHtml(compact) {
+  function idleHtml(compact, autostart) {
+    if (autostart) {
+      return `<p class="session-xaman-pending">Preparing official Xaman SignIn…</p>`;
+    }
     if (compact) {
       return `<button type="button" class="trade-connect-option" data-xaman-signin role="menuitem">Xaman</button>`;
     }
@@ -120,7 +143,8 @@
       </div>`;
   }
 
-  function waitingHtml(payload, heading, compact) {
+  function waitingHtml(payload, heading, compact, autostart) {
+    if (autostart) return sessionWaitHtml(payload, heading);
     if (compact) {
       return `
       <div class="trade-connect-xaman-wait">
@@ -197,7 +221,9 @@
     render(
       root,
       compact
-        ? `<p class="trade-connect-xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}`
+        ? isAutostart(root)
+          ? `<p class="session-xaman-error" role="alert">${esc(message)}</p>`
+          : `<p class="trade-connect-xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}`
         : `<div class="xaman-card"><p class="xaman-kicker">Xaman</p><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(false)}</div>`,
     );
     bind(root, health);
@@ -220,7 +246,7 @@
   }
 
   function pollUntilResolved(root, health, payload, heading) {
-    render(root, waitingHtml(payload, heading, isCompact(root)));
+    render(root, waitingHtml(payload, heading, isCompact(root), isAutostart(root)));
     if (isCompact(root)) revealCompactMenu(root);
     bind(root, health);
     stopPoll();
@@ -229,6 +255,7 @@
         const status = await getPayload(payload.uuid);
         if (status.signed && status.account) {
           stopPoll();
+          inflightSignIn = null;
           saveSession({ account: status.account, uuid: payload.uuid });
           window.PondSession?.login?.({
             method: "xaman",
@@ -240,6 +267,7 @@
         }
         if (status.cancelled || status.expired) {
           stopPoll();
+          inflightSignIn = null;
           showError(root, health, status.cancelled ? "Sign request cancelled." : "Sign request expired. Start again.");
         }
       } catch {
@@ -257,7 +285,7 @@
         pollUntilResolved(root, health, payload, "Sign in with Xaman");
       } catch (error) {
         if (error.status === 503) {
-          render(root, unavailableHtml(error.payload?.message || health.xaman?.reason || "Connect unavailable.", isCompact(root)));
+          render(root, unavailableHtml(error.payload?.message || health.xaman?.reason || "Connect unavailable.", isCompact(root), isAutostart(root)));
           return;
         }
         showError(root, health, error.message);
@@ -313,7 +341,7 @@
     setNav(current, health);
     notifyChange();
     if (!health.xaman?.configured) {
-      render(root, unavailableHtml(health.xaman?.reason || "Connect unavailable until Xaman app keys are set.", compact));
+      render(root, unavailableHtml(health.xaman?.reason || "Connect unavailable until Xaman app keys are set.", compact, isAutostart(root)));
       return;
     }
     if (current?.account) {
@@ -326,8 +354,45 @@
       resumePayload(root, health, returning);
       return;
     }
-    render(root, idleHtml(compact));
+    render(root, idleHtml(compact, isAutostart(root)));
     bind(root, health);
+  }
+
+  let lastHealth = null;
+  let inflightSignIn = null;
+
+  async function startSignIn(root) {
+    if (!root || !isAutostart(root)) return;
+    if (session()?.account) return;
+    if (!lastHealth) {
+      try {
+        lastHealth = await fetchHealth();
+      } catch {
+        return;
+      }
+    }
+    const health = lastHealth;
+    if (!health?.xaman?.configured) return;
+    if (inflightSignIn?.uuid) {
+      pollUntilResolved(root, health, inflightSignIn, "Sign in with Xaman");
+      return;
+    }
+    if (root.dataset.xamanBusy === "1") return;
+    root.dataset.xamanBusy = "1";
+    render(root, sessionWaitHtml({}, "Sign in with Xaman"));
+    try {
+      const payload = await post("/api/xaman/signin", { returnTo: returnTo(root) });
+      inflightSignIn = payload;
+      pollUntilResolved(root, health, payload, "Sign in with Xaman");
+    } catch (error) {
+      root.dataset.xamanBusy = "";
+      inflightSignIn = null;
+      if (error.status === 503) {
+        render(root, unavailableHtml(error.payload?.message || health.xaman?.reason || "Connect unavailable.", true, true));
+        return;
+      }
+      showError(root, health, error.message);
+    }
   }
 
   async function init() {
@@ -344,12 +409,13 @@
         },
       };
     }
+    lastHealth = health;
     setNav(session(), health);
     notifyChange();
     roots.forEach((root) => paint(root, health));
   }
 
-  window.PondXaman = { init, session };
+  window.PondXaman = { init, session, startSignIn };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
