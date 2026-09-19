@@ -1758,7 +1758,10 @@
         let started = false;
         return series
           .map((value, index) => {
-            if (value == null) return "";
+            if (value == null) {
+              started = false;
+              return "";
+            }
             const command = started ? "L" : "M";
             started = true;
             return `${command} ${x(index)} ${y(value)}`;
@@ -1907,6 +1910,8 @@
           const average = mean[index];
           return Math.sqrt(slice.reduce((sum, value) => sum + (value - average) ** 2, 0) / maPeriod);
         });
+        const inDomain = (value) => value != null && value >= low && value <= high;
+        const visibleSeries = (series) => series.map((value) => (inDomain(value) ? value : null));
         const upper = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value + standardDeviation[index] * 2));
         const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
         const maxVolume = Math.max(...volumes, 1);
@@ -1920,23 +1925,35 @@
           .join("");
         let indicatorPaths = "";
         if (values.length > 1) {
-          if (indicator === "sma") indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(sma, x, y)}"/>`;
-          if (indicator === "ema") indicatorPaths = `<path class="trade-chart-indicator is-secondary" d="${pathFor(ema, x, y)}"/>`;
+          if (indicator === "sma") indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(visibleSeries(sma), x, y)}"/>`;
+          if (indicator === "ema") indicatorPaths = `<path class="trade-chart-indicator is-secondary" d="${pathFor(visibleSeries(ema), x, y)}"/>`;
           if (indicator === "bollinger") {
-            indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(upper, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lower, x, y)}"/>`;
+            const mid = visibleSeries(mean);
+            const highBand = visibleSeries(upper);
+            const lowBand = visibleSeries(lower);
+            const bandCount = highBand.filter((value) => value != null).length + lowBand.filter((value) => value != null).length;
+            indicatorPaths = bandCount >= 4
+              ? `<path class="trade-chart-indicator" d="${pathFor(highBand, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lowBand, x, y)}"/>`
+              : `<path class="trade-chart-indicator" d="${pathFor(mid, x, y)}"/>`;
           }
         }
         const candleBodies = candles.map((candle, index) => {
           const cx = x(index);
-          const barWidth = Math.max(3, slot * 0.58);
+          const barWidth = Math.max(4, slot * 0.58);
+          const hi = Number.isFinite(candle.high) ? candle.high : candle.value;
+          const lo = Number.isFinite(candle.low) ? candle.low : candle.value;
+          if (hi < low || lo > high) {
+            const edge = hi < low ? priceBottom : top;
+            return `<rect class="trade-chart-candle ${candle.close >= candle.open ? "is-up" : "is-down"}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="4" rx="0.7"/>`;
+          }
           const up = candle.close >= candle.open;
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
           const direction = up ? "is-up" : "is-down";
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(candle.high)}" y2="${y(candle.low)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(1.2, bodyBot - bodyTop)}" rx="0.7"/>`;
+          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(candle.high)}" y2="${y(candle.low)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(3.2, bodyBot - bodyTop)}" rx="0.7"/>`;
         }).join("");
         const overlayPath = overlay.getAttribute("aria-pressed") === "true" && values.length > 1
-          ? `<path class="trade-chart-overlay-line" d="${pathFor(sma, x, y)}"/>`
+          ? `<path class="trade-chart-overlay-line" d="${pathFor(visibleSeries(sma), x, y)}"/>`
           : "";
         const lineLayer = candles.length
           ? candleBodies
