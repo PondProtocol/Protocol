@@ -676,6 +676,20 @@ check(
     /min-height:\s*13\.5rem/.test(stylesText.slice(stylesText.indexOf(".hero-page"))),
 );
 check(
+  "home hero frame matches the Private Browsing dock",
+  indexHtml.includes('class="page-home page-index"') &&
+    stylesText.includes("--home-frame: 1rem") &&
+    stylesText.includes(".page-index .hero-inner") &&
+    /padding:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
+    /right:\s*1rem/.test(stylesText.slice(stylesText.indexOf(".privacy-dock"))),
+);
+check(
+  "home 2x2 tiles are translucent over the Wyoming topo",
+  /background:\s*rgb\(10 16 22 \/ 0\.18\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
+    /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
+    /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+);
+check(
   "trade page does not use traffic-light disclaimer colors",
   !tradeHtml.includes("trade-disclaimer-new") &&
     !stylesText.includes("linear-gradient(135deg, #fb7185") &&
@@ -1396,6 +1410,8 @@ check(
     protocolLandingHtml.includes(config.site.operationsAddress) &&
     pondHtml.includes('class="hero-pages"') &&
     protocolLandingHtml.includes('class="hero-pages"') &&
+    !pondHtml.includes("page-index") &&
+    !protocolLandingHtml.includes("page-index") &&
     pondHtml.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
     protocolLandingHtml.includes(`https://bithomp.com/explorer/${config.site.operationsAddress}`) &&
     /Agent Tadpole/i.test(asText(pondHtml)) &&

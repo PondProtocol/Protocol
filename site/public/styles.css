@@ -3860,6 +3860,60 @@ code.addr {
   line-height: 1.45;
 }
 
+/* Home only: frame matches .privacy-dock (1rem / 0.75rem). */
+.page-index {
+  --home-frame: 1rem;
+}
+
+.page-index .hero-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: var(--home-frame);
+}
+
+.page-index .hero-main {
+  width: 100%;
+  max-width: none;
+  align-items: center;
+}
+
+.page-index .hero-pages {
+  aspect-ratio: 1 / 1;
+  justify-self: end;
+  align-self: center;
+  width: min(100%, calc(100svh - (2 * var(--home-frame))));
+  height: auto;
+  min-height: 0;
+  max-width: 100%;
+  padding: 1.05rem;
+  background: rgb(21 27 33 / 0.1);
+  border-color: rgb(236 242 248 / 0.28);
+  backdrop-filter: none;
+}
+
+.page-index .hero-page {
+  min-height: 0;
+  background: rgb(10 16 22 / 0.18);
+  backdrop-filter: none;
+}
+
+.page-index .hero-page:hover,
+.page-index .hero-page:focus-visible {
+  background: rgb(10 16 22 / 0.3);
+}
+
+@media (max-width: 480px) {
+  .page-index {
+    --home-frame: 0.75rem;
+  }
+}
+
 @media (max-width: 1100px) and (min-width: 781px) {
   .hero-main {
     grid-template-columns: minmax(18rem, 0.9fr) minmax(22rem, 1.15fr);

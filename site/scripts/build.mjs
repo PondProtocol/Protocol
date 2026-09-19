@@ -908,7 +908,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home page-index" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
