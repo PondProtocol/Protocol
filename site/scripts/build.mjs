@@ -432,9 +432,6 @@ function heroHtml() {
     </div>`
     : "";
   return `<section class="hero" aria-labelledby="hero-tagline">
-  <img class="hero-art" src="/hero.png" width="1920" height="1080" alt="">
-  <div class="hero-veil" aria-hidden="true"></div>
-  <div class="hero-signal" aria-hidden="true"><span></span></div>
   <div class="hero-inner">
     <p class="hero-kicker">Pond Protocol</p>
     <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>

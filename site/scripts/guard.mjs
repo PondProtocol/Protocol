@@ -921,13 +921,27 @@ check(
     sessionJsText.includes("disclaimerAccepted"),
 );
 check(
-  "profile page is the complete-your-profile surface and not a Start here step",
+  "profile page is the account surface and not a Start here step",
   profileHtml.includes("data-pond-profile") &&
-    /Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
+    !/Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
+    !/Account pages open after official/i.test(asText(profileHtml)) &&
     profileHtml.includes("/profile.js") &&
     !startHereLabels.includes("Profile") &&
     !startHereOrder.includes("Profile") &&
     startHereLabels.join(" | ") === startHereOrder.join(" | "),
+);
+check(
+  "landing hero is a solid color with Start Here below the fold",
+  /--hero-solid:\s*#4a90d9/.test(stylesText) &&
+    /min-height:\s*100svh/.test(stylesText) &&
+    /min-height:\s*100dvh/.test(stylesText) &&
+    !indexHtml.includes("hero-art") &&
+    !indexHtml.includes("hero-signal") &&
+    !indexHtml.includes('src="/hero.png"') &&
+    indexHtml.includes("hero-kicker") &&
+    indexHtml.includes("Where Liquidity Goes to Stay.") &&
+    /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
+    indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),
 );
 check(
   "logged-in chip is a profile icon that links to /profile/<handle>/",

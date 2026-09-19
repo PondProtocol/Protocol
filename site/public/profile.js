@@ -173,9 +173,8 @@
         : "Sign in with official Xaman to open your account page. Logged-out visitors do not see handles or profile fields.";
     const session = window.PondSession?.current?.();
     return `<div class="profile-card" data-profile-locked>
-      <p class="profile-kicker">Pond Protocol Profile</p>
-      <h2>Complete your Pond Protocol Profile</h2>
-      <p>${copy} Pond never asks for a seed.</p>
+      <p class="profile-kicker">Profile</p>
+      <p>${copy}</p>
       ${session?.address ? sessionMetaHtml() : ""}
       ${session?.address ? signOutHtml() : ""}
     </div>`;
@@ -187,7 +186,6 @@
     const icon = iconSrc(profile.icon);
     const iconUrl = /^https:\/\//i.test(profile.icon || "") ? profile.icon : "";
     return `<div class="profile-card" data-profile-card>
-      <p class="profile-kicker">Complete your Pond Protocol Profile</p>
       <div class="profile-id">
         <img class="profile-icon" data-profile-icon src="${esc(icon)}" width="48" height="48" alt="">
         <h2>${esc(name)}</h2>
@@ -368,7 +366,7 @@
       const session = window.PondSession?.current?.();
       mount.innerHTML = lockedHtml(session?.method === "walletconnect" ? "walletconnect" : "guest");
       bindSignOut(mount);
-      document.title = "Complete your Pond Protocol Profile — Pond Protocol";
+      document.title = "Profile — Pond Protocol";
       return;
     }
     mount.innerHTML = cardHtml(profile);
