@@ -148,24 +148,23 @@
     if (!form) return;
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const status = form.querySelector("[data-profile-status]");
       const body = {
         displayName: form.displayName.value,
         bio: form.bio.value,
         progress: window.PondStart?.flags?.() || profile.progress || {},
       };
+      const setStatus = (message) => {
+        const status = document.querySelector("[data-profile-status]");
+        if (!status) return;
+        status.hidden = false;
+        status.textContent = message;
+      };
       try {
         const saved = await saveOwn(body);
         render(saved, { mine: true });
-        if (status) {
-          status.hidden = false;
-          status.textContent = "Saved.";
-        }
+        setStatus("Saved.");
       } catch (error) {
-        if (status) {
-          status.hidden = false;
-          status.textContent = error.message || "Could not save.";
-        }
+        setStatus(error.message || "Could not save.");
       }
     });
   }
