@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { identiconPath } from "./identicon.mjs";
 import {
   ADMIN_ADDRESS,
   ADMIN_HANDLE,
@@ -74,6 +75,10 @@ test("login assigns reserved admin then tadpole02", () =>
     assert.equal(second.handle, "tadpole02");
     assert.equal(second.admin, false);
     assert.equal(third.handle, "tadpole03");
+    assert.equal(admin.icon, identiconPath(ADMIN_ADDRESS));
+    assert.equal(second.icon, identiconPath("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpADk"));
+    assert.notEqual(admin.icon, second.icon);
+    assert.doesNotMatch(admin.icon, /greenhead-duck/);
     assert.equal((await ensureProfile(ADMIN_ADDRESS)).handle, "tadpole01");
     assert.equal((await ensureProfile("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpADk")).handle, "tadpole02");
     const stored = JSON.parse(readFileSync(process.env.POND_PROFILE_STORE, "utf8"));
@@ -221,6 +226,12 @@ test("optional public card is handle and icon only", () =>
     assert.equal(hidden.data.handle, undefined);
     assert.equal(hidden.data.address, undefined);
     assert.equal(hidden.data.displayName, undefined);
+    await updateOwnProfile(ADMIN_ADDRESS, { publicCard: true });
+    const generated = await profileApi("/api/card/tadpole01");
+    assert.equal(generated.res.statusCode, 200);
+    assert.equal(generated.data.handle, "tadpole01");
+    assert.equal(generated.data.icon, identiconPath(ADMIN_ADDRESS));
+    assert.doesNotMatch(generated.data.icon, /greenhead-duck/);
     await updateOwnProfile(ADMIN_ADDRESS, { publicCard: true, icon: "/greenhead-duck.png" });
     const open = await profileApi("/api/card/tadpole01");
     assert.equal(open.res.statusCode, 200);
@@ -248,7 +259,7 @@ test("profile icon is stored on the JSON profile and rejects secrets", () =>
   withStore(async () => {
     await ensureProfile(ADMIN_ADDRESS);
     const blank = await updateOwnProfile(ADMIN_ADDRESS, {});
-    assert.equal(blank.icon, "");
+    assert.equal(blank.icon, identiconPath(ADMIN_ADDRESS));
     const saved = await updateOwnProfile(ADMIN_ADDRESS, { icon: "/greenhead-duck.png" });
     assert.equal(saved.icon, "/greenhead-duck.png");
     const remote = await updateOwnProfile(ADMIN_ADDRESS, {
@@ -259,7 +270,7 @@ test("profile icon is stored on the JSON profile and rejects secrets", () =>
     const uploaded = await updateOwnProfile(ADMIN_ADDRESS, { icon: tiny });
     assert.equal(uploaded.icon, tiny);
     const cleared = await updateOwnProfile(ADMIN_ADDRESS, { icon: "" });
-    assert.equal(cleared.icon, "");
+    assert.equal(cleared.icon, identiconPath(ADMIN_ADDRESS));
     const bad = await updateOwnProfile(ADMIN_ADDRESS, { icon: "javascript:alert(1)" });
     assert.equal(bad.error, "bad_profile");
     const seed = await updateOwnProfile(ADMIN_ADDRESS, {

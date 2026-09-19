@@ -14,7 +14,6 @@
   let wcConnecting = false;
   let xamanStatus = { configured: false, reason: "" };
 
-  const DEFAULT_ICON = "/greenhead-duck.png";
   const root = () => document.querySelector("[data-session-chip]");
   const menu = () => document.querySelector("[data-session-menu]");
   const toggle = () => document.querySelector("[data-session-toggle]");
@@ -24,12 +23,17 @@
   const avatarEl = () => document.querySelector("[data-session-avatar]");
   const nameEl = () => document.querySelector("[data-session-name]");
 
-  function iconSrc(value) {
+  function identiconSrc(address) {
+    const addr = String(address || "").trim();
+    return /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(addr) ? `/identicon/${addr}.svg` : "";
+  }
+
+  function iconSrc(value, address) {
     const text = String(value || "").trim();
     if (/^https:\/\//i.test(text) || /^data:image\//i.test(text) || /^\/(?!\/)/.test(text)) {
       return text;
     }
-    return DEFAULT_ICON;
+    return identiconSrc(address);
   }
 
   function rememberExtras(data) {
@@ -99,7 +103,10 @@
       link.title = label;
     }
     const avatar = avatarEl();
-    if (avatar) avatar.src = iconSrc(current?.icon);
+    if (avatar) {
+      const src = iconSrc(current?.icon, current?.address);
+      if (src) avatar.src = src;
+    }
     const name = nameEl();
     if (name) name.textContent = signedIn ? label : "";
     document.querySelectorAll("[data-privacy-session]").forEach((el) => {

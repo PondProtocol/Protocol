@@ -2,9 +2,10 @@
  * Public Pond Protocol profiles. JSON file store, no database.
  *
  * After official Xaman SignIn, serve.mjs assigns a handle and writes it
- * here. Account pages and profile JSON are visible only to that Xaman
- * session. WalletConnect does not unlock them. Logged-out visitors do
- * not see handles or profile fields.
+ * here. New accounts also get an address-derived identicon so the
+ * default photo is not the Greenhead duck. Account pages and profile
+ * JSON are visible only to that Xaman session. WalletConnect does not
+ * unlock them. Logged-out visitors do not see handles or profile fields.
  *
  * Handle rules: sequential integer 1 through 99999999999, always with a
  * leading 0 in front of that number.
@@ -24,6 +25,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { readBalances } from "./balances.mjs";
+import { identiconPath } from "./identicon.mjs";
 import { SITE_ROOT } from "./lib.mjs";
 
 export const ADMIN_ADDRESS = "r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B";
@@ -75,6 +77,25 @@ function now() {
   return Date.now();
 }
 
+function resolvedIcon(row) {
+  const text = String(row?.icon || "").trim();
+  if (text) return text;
+  return identiconPath(row?.address);
+}
+
+function newProfileRow(address, handle, t) {
+  return {
+    handle,
+    address,
+    displayName: "",
+    bio: "",
+    progress: {},
+    icon: identiconPath(address),
+    createdAt: t,
+    updatedAt: t,
+  };
+}
+
 function publicFields(row) {
   return {
     handle: row.handle,
@@ -84,7 +105,7 @@ function publicFields(row) {
     progress: { ...(row.progress || {}) },
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
     disclaimerAcceptedAt: row.disclaimerAcceptedAt || 0,
-    icon: row.icon || "",
+    icon: resolvedIcon(row),
     publicCard: Boolean(row.publicCard),
     lastSignedInAt: row.lastSignedInAt || 0,
     lastSavedAt: row.lastSavedAt || 0,
@@ -98,16 +119,7 @@ function seedAdmin(store) {
   if (store.profiles.some((row) => row.handle === ADMIN_HANDLE || row.address === ADMIN_ADDRESS)) {
     return store;
   }
-  const t = now();
-  store.profiles.push({
-    handle: ADMIN_HANDLE,
-    address: ADMIN_ADDRESS,
-    displayName: "",
-    bio: "",
-    progress: {},
-    createdAt: t,
-    updatedAt: t,
-  });
+  store.profiles.push(newProfileRow(ADMIN_ADDRESS, ADMIN_HANDLE, now()));
   return store;
 }
 
@@ -173,20 +185,12 @@ export function ensureProfile(address) {
         row = store.profiles.find((item) => item.handle === ADMIN_HANDLE);
       }
       if (!row) {
-        const t = now();
-        row = {
-          handle: ADMIN_HANDLE,
-          address: ADMIN_ADDRESS,
-          displayName: "",
-          bio: "",
-          progress: {},
-          createdAt: t,
-          updatedAt: t,
-        };
+        row = newProfileRow(ADMIN_ADDRESS, ADMIN_HANDLE, now());
         store.profiles.push(row);
       } else {
         row.handle = ADMIN_HANDLE;
         row.address = ADMIN_ADDRESS;
+        if (!String(row.icon || "").trim()) row.icon = identiconPath(ADMIN_ADDRESS);
       }
       assigned = publicFields(row);
       return assigned;
@@ -196,19 +200,14 @@ export function ensureProfile(address) {
         row.handle = nextHandle(usedHandles(store, row.address));
         row.updatedAt = now();
       }
+      if (!String(row.icon || "").trim()) {
+        row.icon = identiconPath(row.address);
+        row.updatedAt = now();
+      }
       assigned = publicFields(row);
       return assigned;
     }
-    const t = now();
-    row = {
-      handle: nextHandle(usedHandles(store)),
-      address,
-      displayName: "",
-      bio: "",
-      progress: {},
-      createdAt: t,
-      updatedAt: t,
-    };
+    row = newProfileRow(address, nextHandle(usedHandles(store)), now());
     store.profiles.push(row);
     assigned = publicFields(row);
     return assigned;
@@ -276,7 +275,7 @@ function asIcon(value) {
   }
   return {
     error: "bad_profile",
-    message: "Use an https image URL, a small image upload, or leave the icon blank.",
+    message: "Use an https image URL, a small image upload, or leave the icon blank for the generated photo.",
   };
 }
 
@@ -286,7 +285,7 @@ export function publicProfile(row) {
     handle: row.handle,
     admin: Boolean(row.admin),
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
-    icon: row.icon || "",
+    icon: resolvedIcon(row),
     displayName: row.displayName || "",
   };
 }
@@ -295,7 +294,7 @@ export function getPublicCard(handle) {
   const store = readStore();
   const row = store.profiles.find((item) => item.handle === handle);
   if (!row || !row.publicCard) return null;
-  return { handle: row.handle, icon: row.icon || "" };
+  return { handle: row.handle, icon: resolvedIcon(row) };
 }
 
 export function markLastSignIn(address) {

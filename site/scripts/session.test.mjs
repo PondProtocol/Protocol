@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { identiconPath } from "./identicon.mjs";
 import {
   ADMIN_ADDRESS,
   ensureProfile,
@@ -108,7 +109,7 @@ test("GET /api/session refreshes a live Xaman session", () =>
     assert.equal(data.address, ADMIN_ADDRESS);
     assert.equal(data.handle, "tadpole01");
     assert.equal(data.disclaimerAccepted, false);
-    assert.equal(data.icon, "");
+    assert.equal(data.icon, identiconPath(ADMIN_ADDRESS));
     assert.match(String(res.headers["Set-Cookie"] || ""), /pond_session=/);
     assert.doesNotMatch(String(res.headers["Set-Cookie"] || ""), /Max-Age=0/);
   }));
@@ -170,6 +171,7 @@ test("WalletConnect session does not return a handle", async () => {
   assert.equal(data.admin, false);
   assert.equal(data.signedInWith, "WalletConnect");
   assert.equal(data.displayName, "");
+  assert.equal(data.icon, identiconPath("rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpADk"));
   assert.ok(data.expiresAt > Date.now());
 });
 

@@ -7,7 +7,8 @@
  * same Content-Type and CORS headers that public/_headers asks a static host for, so a
  * local check and a production check look the same. Node standard library only.
  *
- * Also answers /health, /api/session, /api/profile/*, /api/card/*, and /api/xaman/* .
+ * Also answers /health, /api/session, /api/profile/*, /api/card/*, /identicon/*,
+ * and /api/xaman/* .
  * Those routes need this process (Autoscale). The Xaman API secret stays
  * here — it is never written into site/dist. Session cookies are signed
  * here. Tadpole profiles are a JSON file this process can persist and
@@ -19,6 +20,7 @@ import { extname, join, normalize } from "node:path";
 import { pipeline } from "node:stream";
 import { createGzip } from "node:zlib";
 import { DIST_DIR } from "./lib.mjs";
+import { handleIdenticon } from "./identicon.mjs";
 import { handleProfiles, isCardPage, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
 import { allowedOrigin, handleApi } from "./xaman.mjs";
@@ -48,6 +50,7 @@ createServer(async (req, res) => {
   const url = decodeURIComponent((req.url ?? "/").split("?")[0]);
 
   try {
+    if (handleIdenticon(req, res, url)) return;
     if (await handleSession(req, res, url)) return;
     if (await handleProfiles(req, res, url, { readSession: touchSession })) return;
     if (await handleApi(req, res, url, { readSession: touchSession })) return;
