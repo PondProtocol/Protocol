@@ -278,7 +278,7 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
         cookie: treasurySession,
       });
       assert.equal(amm.res.statusCode, 200);
-      assert.equal(amm.data.submit, false);
+      assert.equal(amm.data.submit, true);
       assert.equal(amm.data.network, "testnet");
       assert.equal(amm.data.uuid, AMM_UUID);
       const ammCookies = cookieMap(amm.res.headers["Set-Cookie"]);
@@ -288,7 +288,7 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(ammBound.uuid, AMM_UUID);
       assert.equal(ammBound.kind, "ammcreate");
       const ammBody = xumm.created.find((item) => item.txjson.TransactionType === "AMMCreate");
-      assert.equal(ammBody.options.submit, false);
+      assert.equal(ammBody.options.submit, true);
       assert.equal(ammBody.options.force_network, "TESTNET");
       assert.notEqual(ammBody.options.force_network, "MAINNET");
       assert.equal(ammBody.txjson.Account, TREASURY);

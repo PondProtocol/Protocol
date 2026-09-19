@@ -87,7 +87,7 @@ curl -sS https://pond.greenhead.io/health
 # POST /api/xaman/signin     → SignIn payload (QR + xumm.app/sign deep link)
 # GET  /api/xaman/payload/:uuid
 # POST /api/xaman/trustset   → optional TrustSet; $PND is not issued
-# POST /api/xaman/ammcreate  → Testnet AMMCreate via official Xaman; submit:false
+# POST /api/xaman/ammcreate  → Testnet AMMCreate via official Xaman; submit:true
 # GET  /api/card/:handle     → optional public card (handle + avatar only)
 ```
 

@@ -153,7 +153,7 @@
                 <div class="trade-panel is-active" data-panel="add">
                   <div class="trade-amm-create" data-amm-create>
                     <p class="trade-amm-create-kicker">Testnet AMMCreate</p>
-                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate, not a deposit into an existing pool — no pool yet. This server never signs. submit:false.</p>
+                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate, not a deposit into an existing pool — no pool yet. This server never signs. Xaman submits after you sign.</p>
                     <div class="trade-amm-pool-stats" data-amm-pool-stats>
                       <div class="trade-amm-stat"><span>Pool</span><strong data-amm-stat-pool>No AMM pool</strong><em data-amm-stat-pool-note>amm_info</em></div>
                       <div class="trade-amm-stat"><span>DEX</span><strong data-amm-stat-dex>—</strong><em>book_offers</em></div>
@@ -982,7 +982,7 @@
             <p class="session-xaman-actions">
               ${payload.next ? `<a class="session-xaman-open" href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
             </p>
-            <p class="session-xaman-fine">Official Xaman. Pond never asks for a seed. Server submit:false.</p>
+            <p class="session-xaman-fine">Official Xaman. Pond never asks for a seed. Xaman submits after you sign.</p>
           </div>`;
       };
       const pollPayload = (payload) => {
@@ -1012,7 +1012,7 @@
               setAmmStatus(
                 data.dispatchedResult
                   ? `Signed. Xaman result ${data.dispatchedResult}. Refreshing amm_info.`
-                  : "Signed. submit:false so this server did not submit. Refreshing amm_info if a pool appeared.",
+                  : "Signed. Waiting for Xaman to submit on Testnet. Refreshing amm_info.",
                 "ready",
               );
               refresh();
@@ -1057,7 +1057,7 @@
           const data = await response.json().catch(() => ({}));
           if (!response.ok) throw new Error(data.message || "Xaman did not create AMMCreate.");
           paintPayload(data);
-          setAmmStatus("Scan the QR or Open in Xaman. Unsigned AMMCreate. submit:false.", "ready");
+          setAmmStatus("Scan the QR or Open in Xaman. Unsigned AMMCreate. Xaman submits after you sign.", "ready");
           pollPayload(data);
         } catch (error) {
           mount.innerHTML = "";

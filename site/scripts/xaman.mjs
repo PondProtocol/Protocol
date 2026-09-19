@@ -6,9 +6,10 @@
  * are unset, callers get an honest "connect unavailable" payload instead of a
  * fake success.
  *
- * SignIn, TrustSet, and AMMCreate stay unsigned / submit:false. This process
- * never signs. Payload UUIDs are bound to an httpOnly cookie so a leaked id
- * cannot mint pond_session.
+ * SignIn and TrustSet stay unsigned / submit:false. AMMCreate stays unsigned
+ * on this server (submit:true so Xaman broadcasts after the treasury signs).
+ * This process never signs. Payload UUIDs are bound to an httpOnly cookie so a
+ * leaked id cannot mint pond_session.
  *
  * Docs: https://xumm.readme.io/reference/post-payload
  *       https://docs.xaman.dev/concepts/special-transaction-types/signin
@@ -465,14 +466,14 @@ async function createAmmCreate(req, res, body = {}, session = null) {
         TradingFee: tradingFee,
       },
       options: {
-        submit: false,
+        submit: true,
         expire: AMMCREATE_EXPIRE_MIN,
         force_network: "TESTNET",
         return_url: { app: back, web: back },
       },
       custom_meta: {
         instruction: payloadInstruction(
-          `Testnet AMMCreate ${pndValue} PND + ${xrpDrops} drops XRP, fee ${tradingFee}. submit:false. Pond never asks for a seed.`,
+          `Testnet AMMCreate ${pndValue} PND + ${xrpDrops} drops XRP, fee ${tradingFee}. Xaman submits after you sign. Pond never asks for a seed.`,
         ),
       },
     },
@@ -494,7 +495,7 @@ async function createAmmCreate(req, res, body = {}, session = null) {
       pnd: pndValue,
       xrpDrops,
       tradingFee,
-      submit: false,
+      submit: true,
       network: "testnet",
     },
     req,
