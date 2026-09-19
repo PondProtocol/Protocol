@@ -8427,4 +8427,42 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="amm"] .trade-amm-slider input[type="range"] {
     margin: 0;
   }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] {
+    gap: 0.16rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-pool-stats,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-create-balances,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-create-copy {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-create-session,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-side-note,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-slider small {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-wallet > div {
+    padding: 0.2rem 0.32rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-wallet em {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-amm-slider > div input {
+    padding: 0.16rem 0.32rem;
+    font-size: 0.74rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-deposit] .trade-connect-button {
+    margin-top: 0.08rem;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
 }
