@@ -28,6 +28,7 @@ export const AMMCREATE_EXPIRE_MIN = 15;
 export const DEFAULT_AMM_PND = "500000000000";
 export const DEFAULT_AMM_XRP = "5000";
 export const DEFAULT_AMM_FEE = 500;
+export const XUMM_INSTRUCTION_MAX = 280;
 
 const config = loadConfig();
 const issuer = config.site.issuerAddress;
@@ -232,6 +233,29 @@ function readBody(req) {
   });
 }
 
+function payloadInstruction(text) {
+  const clean = String(text || "")
+    .replace(/[^\x09\x0a\x0d\x20-\x7e]/g, "-")
+    .trim();
+  return clean.slice(0, XUMM_INSTRUCTION_MAX);
+}
+
+function xummCreateFailure(kind, status, data) {
+  const code = data?.error?.code;
+  const reference = data?.error?.reference;
+  const detail = typeof data?.error?.message === "string" ? data.error.message : "";
+  const parts = [`Xaman did not create a ${kind} payload.`];
+  if (detail) parts.push(detail.slice(0, 180));
+  if (Number.isFinite(code)) parts.push(`Xaman error ${code}.`);
+  console.error("xaman payload create failed", { kind, status, code, reference });
+  return {
+    error: "xaman_create_failed",
+    message: parts.join(" "),
+    xamanCode: Number.isFinite(code) ? code : null,
+    xamanReference: typeof reference === "string" ? reference : null,
+  };
+}
+
 async function xumm(path, { method = "GET", body } = {}) {
   const response = await fetch(`${XUMM_API}${path}`, {
     method,
@@ -294,16 +318,14 @@ async function createSignIn(req, res, body = {}) {
         return_url: { app: back, web: back },
       },
       custom_meta: {
-        instruction:
+        instruction: payloadInstruction(
           "Sign in to pond.greenhead.io on XRPL Testnet. This is not a payment and is never submitted to the ledger. Pond never asks for your seed.",
+        ),
       },
     },
   });
   if (!ok || !data?.uuid) {
-    json(res, status >= 400 ? status : 502, {
-      error: "xaman_create_failed",
-      message: "Xaman did not create a SignIn payload. Check the app keys and try again.",
-    }, req);
+    json(res, status >= 400 ? status : 502, xummCreateFailure("SignIn", status, data), req);
     return;
   }
   json(res, 200, { ...publicCreate(data, SIGNIN_EXPIRE_MIN), submit: false, network: "testnet" }, req, {
@@ -351,16 +373,14 @@ async function createTrustSet(req, res, body = {}, session = null) {
         return_url: { app: back, web: back },
       },
       custom_meta: {
-        instruction:
-          "$PND has not been issued. This only opens a trust line to the Pond issuer rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc. It does not give you tokens. This request is not submitted to the ledger.",
+        instruction: payloadInstruction(
+          "$PND has not been issued. This only opens a trust line to the Pond issuer. It does not give you tokens. This request is not submitted to the ledger.",
+        ),
       },
     },
   });
   if (!ok || !data?.uuid) {
-    json(res, status >= 400 ? status : 502, {
-      error: "xaman_create_failed",
-      message: "Xaman did not create a TrustSet payload. Check the app keys and try again.",
-    }, req);
+    json(res, status >= 400 ? status : 502, xummCreateFailure("TrustSet", status, data), req);
     return;
   }
   json(res, 200, { ...publicCreate(data, TRUSTSET_EXPIRE_MIN), kind: "TrustSet", issuer, currency: "PND", submit: false }, req, {
@@ -451,16 +471,14 @@ async function createAmmCreate(req, res, body = {}, session = null) {
         return_url: { app: back, web: back },
       },
       custom_meta: {
-        instruction:
-          `Testnet AMMCreate for PND/XRP. Amount is ${pndValue} PND IOU. Amount2 is ${xrpDrops} drops of XRP. TradingFee ${tradingFee} (500 = 0.5%). This is not a deposit into an existing pool — no pool exists yet. Live Testnet treasury ${treasury} currently holds 100B PND and about 220 XRP, so 500B PND + 5,000 XRP will tecUNFUNDED until you mint more PND and faucet more XRP. Pond never asks for a seed. This request is not submitted by the server (submit:false).`,
+        instruction: payloadInstruction(
+          `Testnet AMMCreate ${pndValue} PND + ${xrpDrops} drops XRP, fee ${tradingFee}. submit:false. Pond never asks for a seed.`,
+        ),
       },
     },
   });
   if (!ok || !data?.uuid) {
-    json(res, status >= 400 ? status : 502, {
-      error: "xaman_create_failed",
-      message: "Xaman did not create an AMMCreate payload. Check the app keys and try again.",
-    }, req);
+    json(res, status >= 400 ? status : 502, xummCreateFailure("AMMCreate", status, data), req);
     return;
   }
   json(
