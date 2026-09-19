@@ -1,8 +1,8 @@
 # Complete your Pond Protocol Profile
 
 Handles are assigned after official **WalletConnect** or **Xaman SignIn**.
-The first profile is **tadpole01**. Later accounts get the next tadpole
-handle by appending a `0`. Pond never asks for a seed.
+The first profile is **tadpole01**. The next is **tadpole02**, then
+**tadpole03**, through **tadpole010** and on. Pond never asks for a seed.
 
 <div class="pond-profile" data-pond-profile></div>
 
