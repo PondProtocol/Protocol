@@ -820,6 +820,8 @@ check(
     tradeJsText.includes('data-chart-range="1m"') &&
     tradeJsText.includes("trade-overview-ticket") &&
     stylesText.includes("trade-chart-candle") &&
+    stylesText.includes("trade-overview-rail") &&
+    /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
     tradeJsText.includes("24h AMM/DEX tape") &&
     stylesText.includes("trade-dex-live") &&
