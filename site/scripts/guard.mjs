@@ -568,12 +568,30 @@ check(
     !navJsText.includes("sessionStorage") &&
     navJsText.includes("pond_session"),
 );
-const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
+const heroPages = indexHtml.match(/class="hero-pages"[\s\S]*?<\/nav>/)?.[0] ?? "";
+const heroWallets = indexHtml.match(/class="hero-wallets"[\s\S]*?<\/div>/)?.[0] ?? "";
 check(
   "landing hero does not use a Connect Xaman CTA",
-  heroActions.includes("/Pond/") &&
-    heroActions.includes("/Protocol/") &&
-    !/Connect Xaman/i.test(heroActions),
+  heroPages.includes("/Pond/") &&
+    heroPages.includes("/Protocol/") &&
+    !/Connect Xaman/i.test(heroPages),
+);
+check(
+  "hero lists issuer, treasury, and operations on Bithomp",
+  heroWallets.includes("Issuer") &&
+    heroWallets.includes("Treasury") &&
+    heroWallets.includes("Operations") &&
+    heroWallets.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
+    heroWallets.includes(`https://bithomp.com/explorer/${config.site.treasuryAddress}`) &&
+    heroWallets.includes(`https://bithomp.com/explorer/${config.site.operationsAddress}`) &&
+    !heroWallets.includes("Canonical issuer"),
+);
+check(
+  "hero has a 2x2 box for Pond, Profile, Trade, and Protocol",
+  heroPages.includes('href="/Pond/"') &&
+    heroPages.includes('href="/profile/"') &&
+    heroPages.includes('href="/trade/"') &&
+    heroPages.includes('href="/Protocol/"'),
 );
 
 const tradePage = join(DIST_DIR, "trade", "index.html");
@@ -640,6 +658,11 @@ check(
 
 const stylesCss = join(DIST_DIR, "styles.css");
 const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
+check(
+  "hero page grid is a 2x2 box",
+  stylesText.includes(".hero-pages") &&
+    /grid-template-columns:\s*1fr 1fr/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))),
+);
 check(
   "trade page does not use traffic-light disclaimer colors",
   !tradeHtml.includes("trade-disclaimer-new") &&
@@ -1355,6 +1378,14 @@ check(
     protocolLandingHtml.includes("hero-topo") &&
     pondHtml.includes(config.site.issuerAddress) &&
     protocolLandingHtml.includes(config.site.issuerAddress) &&
+    pondHtml.includes(config.site.treasuryAddress) &&
+    protocolLandingHtml.includes(config.site.treasuryAddress) &&
+    pondHtml.includes(config.site.operationsAddress) &&
+    protocolLandingHtml.includes(config.site.operationsAddress) &&
+    pondHtml.includes('class="hero-pages"') &&
+    protocolLandingHtml.includes('class="hero-pages"') &&
+    pondHtml.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
+    protocolLandingHtml.includes(`https://bithomp.com/explorer/${config.site.operationsAddress}`) &&
     /Agent Tadpole/i.test(asText(pondHtml)) &&
     /Greenhead Labs/i.test(asText(pondHtml)) &&
     /Agent-AI-run/i.test(asText(protocolLandingHtml)) &&
