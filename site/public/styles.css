@@ -3987,43 +3987,127 @@ code.addr {
 @media (max-width: 480px) {
   .page-index {
     --home-frame: clamp(0.75rem, 4vw, 1rem);
+    --privacy-reserve-h: 8.75rem;
+  }
+
+  .page-index .privacy-notice {
+    padding: 0.65rem 0.7rem 0.7rem;
+  }
+
+  .page-index .privacy-notice-copy {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.72rem;
+    line-height: 1.35;
   }
 }
 
 @media (max-width: 780px) {
+  .page-index {
+    --privacy-reserve-h: 9.25rem;
+  }
+
+  .page-index .home-screen .topbar-end {
+    flex: 1 1 auto;
+    order: 0;
+    margin-left: auto;
+  }
+
+  .page-index .privacy-notice-copy {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .page-index .hero-inner {
+    align-items: stretch;
+  }
+
   .page-index .hero-main {
+    display: grid;
     grid-template-columns: 1fr;
-    align-items: start;
-    gap: 0.8rem;
+    grid-template-rows: minmax(0, auto) minmax(8.75rem, 1fr);
+    align-items: stretch;
+    gap: 0.55rem;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    transform-origin: top center;
   }
 
   .page-index .hero-copy {
-    align-self: start;
+    align-self: stretch;
+    min-height: 0;
+    overflow: auto;
   }
 
   .page-index .hero .hero-kicker {
-    font-size: clamp(2.5rem, 20cqi, 4.1rem);
+    display: none;
   }
 
   .page-index .hero-heading {
-    padding-top: calc(0.62rem * 1.2 + 0.4rem);
+    padding-top: 0;
+  }
+
+  .page-index .hero-tagline {
+    margin-bottom: 0.4rem;
+    font-size: clamp(1.45rem, 8cqi, 2rem);
+  }
+
+  .page-index .hero-lede {
+    margin-bottom: 0.4rem;
+  }
+
+  .page-index .hero-status {
+    margin-bottom: 0.4rem;
   }
 
   .page-index .hero-pages {
+    grid-row: 2;
     width: 100%;
     height: auto;
-    max-height: min(46cqb, 17.5rem);
-    aspect-ratio: 1 / 1;
+    min-height: 8.75rem;
+    max-height: none;
+    aspect-ratio: auto;
     justify-self: stretch;
-    align-self: start;
+    align-self: stretch;
+    padding: 0.4rem;
+    gap: 0.4rem;
+  }
+
+  .page-index .hero-page {
+    min-height: 0;
+    padding: 0.55rem 0.6rem;
+    gap: 0.18rem;
+  }
+
+  .page-index .hero-page strong {
+    font-size: 0.95rem;
+  }
+
+  .page-index .hero-page span {
+    font-size: 0.7rem;
+    line-height: 1.3;
   }
 
   .page-index .hero-wallet {
-    padding: 0.48rem 0.7rem;
+    padding: 0.35rem 0.55rem;
+    gap: 0.14rem;
   }
 
   .page-index .hero-wallet .addr {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
+  }
+
+  .page-index .hero-wallets {
+    gap: 0.3rem;
+  }
+
+  .page-index .hero-actions {
+    margin-top: 0.45rem;
   }
 }
 

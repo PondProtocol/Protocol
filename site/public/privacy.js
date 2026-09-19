@@ -26,7 +26,9 @@
   function syncHomePrivacyReserve() {
     if (!document.body?.classList.contains("page-index")) return;
     const card = notice();
-    const height = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
+    const raw = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
+    const narrow = window.matchMedia("(max-width: 780px)").matches;
+    const height = narrow ? Math.min(raw, Math.round(window.innerHeight * 0.28)) : raw;
     document.body.style.setProperty("--privacy-reserve-h", `${height}px`);
   }
 
