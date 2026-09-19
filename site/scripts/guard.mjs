@@ -151,9 +151,17 @@ if (existsSync(wellKnown)) {
 // 7. Pre-launch wording must be present while launchStatus is not live.
 const index = join(DIST_DIR, "index.html");
 if (config.site.launchStatus !== "live") {
-  check(
+    check(
     "pre-launch notice is rendered on the landing page",
-    existsSync(index) && readFileSync(index, "utf8").includes("has not launched"),
+    existsSync(index) &&
+      (() => {
+        const html = readFileSync(index, "utf8");
+        return (
+          html.includes("Testnet phase.") &&
+          html.includes("Mainnet has not issued $PND") &&
+          html.includes("100B $PND is issued to the Testnet treasury")
+        );
+      })(),
   );
     check(
       "verify page states no $PND has been issued",
@@ -1034,11 +1042,19 @@ check(
     indexHtml.includes("hero-kicker") &&
     indexHtml.includes('<p class="hero-kicker">Pond</p>') &&
     !indexHtml.includes('<p class="hero-kicker">Pond Protocol</p>') &&
-    /<h1[^>]*hero-tagline[^>]*>Join the Flock at the<br>The Pond<\/h1>/.test(indexHtml) &&
+    /<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>The Pond<\/h1>/.test(indexHtml) &&
+    indexHtml.includes("Testnet phase.") &&
+    indexHtml.includes("100B $PND is issued to the Testnet treasury") &&
+    indexHtml.includes("Faucet XRP is worthless") &&
+    indexHtml.includes("Mainnet has not issued $PND") &&
+    !/<p class="hero-lede">[\s\S]*?Target 1 October 2026/.test(indexHtml) &&
+    !/<p class="hero-lede">[\s\S]*?has not launched/.test(indexHtml) &&
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
     /<link rel="stylesheet" href="\/styles\.[a-f0-9]{10}\.css">/.test(indexHtml) &&
     /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&
     /\.hero \.hero-kicker[\s\S]*?font-size:\s*clamp\(8\.75rem/.test(stylesText) &&
+    /\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 - 0\.4rem\)/.test(stylesText) &&
+    !/\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 \+ 3\.3rem\)/.test(stylesText) &&
     !/\.hero \.hero-kicker[\s\S]*?height:\s*1\.326rem/.test(stylesText) &&
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
     indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),

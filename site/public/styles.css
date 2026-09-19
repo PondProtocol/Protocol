@@ -3152,7 +3152,8 @@ code.addr {
 .hero .hero-kicker {
   position: absolute;
   left: 0;
-  bottom: calc(100% - 0.78rem * 1.7 + 3.3rem);
+  /* Sit just above the reserved tagline slot — less air than +3.3rem. */
+  bottom: calc(100% - 0.78rem * 1.7 - 0.4rem);
   margin: 0;
   height: auto;
   overflow: visible;
