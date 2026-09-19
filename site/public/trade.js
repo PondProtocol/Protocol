@@ -264,7 +264,7 @@
     <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="chart" aria-label="Market chart" hidden>
       <section class="trade-overview-chart">
         <div class="trade-chart-market-controls">
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button></div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="1d">1D</button></div>
           <div class="trade-chart-tools">
             <span class="is-active">Candles</span>
             <button type="button" class="is-active" data-chart-volume aria-pressed="true">Volume</button>
@@ -924,7 +924,7 @@
       return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
     }
 
-    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000 };
+    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "1d": 24 * 60 * 60_000 };
 
     function printsToCandles(prints = [], intervalMs) {
       if (!intervalMs || !prints.length) return [];
@@ -1686,9 +1686,9 @@
         "pnd-xrp": "PND / XRP",
         "pnd-usd": "PND / USD",
       };
-      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1 };
-      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48 };
-      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m" };
+      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "1d": 90 };
+      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "1d": 90 };
+      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "1d": "1D" };
       const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null, hoverIndex: null, lastPrintTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
@@ -2172,7 +2172,7 @@
           );
           return;
         }
-        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 60 * 60 * 1000, "4h": 4 * 60 * 60 * 1000, "1d": 24 * 60 * 60 * 1000, "1w": 7 * 24 * 60 * 60 * 1000 };
+        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 14 * 24 * 60 * 60 * 1000, "1d": 90 * 24 * 60 * 60 * 1000 };
         const windowMs = windows[chartState.range];
         const cutoff = windowMs ? Date.now() - windowMs : 0;
         let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);

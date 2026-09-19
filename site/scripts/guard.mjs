@@ -829,8 +829,11 @@ check(
     !tradeJsText.includes("tv.js") &&
     !tradeHtml.includes("s.tradingview.com") &&
     tradeJsText.includes('data-chart-range="1m"') &&
+    tradeJsText.includes('data-chart-range="1h"') &&
+    tradeJsText.includes('data-chart-range="1d"') &&
+    tradeJsText.includes('"1h": 60 * 60_000') &&
+    tradeJsText.includes('"1d": 24 * 60 * 60_000') &&
     !tradeJsText.includes('data-chart-pair="xrp-usd"') &&
-    !tradeJsText.includes('data-chart-range="1h"') &&
     !tradeJsText.includes("print candles") &&
     tradeJsText.includes("data-chart-volume") &&
     tradeJsText.includes("continuePoolTape") &&
