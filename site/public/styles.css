@@ -2100,6 +2100,12 @@ code.addr {
   box-shadow: 0 0 10px rgb(248 113 113 / 0.55);
 }
 
+.trade-app[data-poll="live"] .trade-live-dot,
+.trade-app[data-poll="busy"] .trade-live-dot {
+  background: #74d3a0;
+  box-shadow: 0 0 10px rgb(116 211 160 / 0.55);
+}
+
 .trade-terminal-actions {
   display: flex;
   align-items: center;
@@ -2129,6 +2135,14 @@ code.addr {
   padding: 0;
   color: var(--accent-bright);
   font-size: 1.1rem;
+}
+
+.trade-icon-button.is-busy {
+  animation: trade-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes trade-refresh-spin {
+  to { transform: rotate(360deg); }
 }
 
 .trade-connect-top {
@@ -2311,6 +2325,26 @@ code.addr {
   color: var(--text-muted);
   font-size: 0.65rem;
   white-space: nowrap;
+}
+
+.trade-poll-note {
+  color: #74d3a0;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.trade-app[data-poll="paused"] .trade-poll-note {
+  color: var(--text-muted);
+}
+
+.trade-app [data-price].is-fresh,
+.trade-app [data-chart-stat-price].is-fresh,
+.trade-app [data-chart-symbol-price].is-fresh {
+  color: #74d3a0;
+}
+
+.trade-dex-tape.is-fresh li:first-child {
+  background: rgb(116 211 160 / 0.12);
 }
 
 .trade-pulse {

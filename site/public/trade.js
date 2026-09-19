@@ -42,6 +42,8 @@
     return wcScriptsPromise;
   }
 
+  const LEDGER_POLL_MS = 8000;
+
   const networks = {
     testnet: {
       label: "XRPL Testnet",
@@ -97,7 +99,7 @@
        <button type="button" data-tab="dex" aria-selected="false">DEX</button>
        <button type="button" data-tab="amm" aria-selected="false">AMM</button>
        <button type="button" data-tab="data" aria-selected="false">Data</button>
-        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>PND / XRP · Testnet ledger</span></span>
+        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>PND / XRP · Testnet ledger</span><span class="trade-poll-note" data-poll-note>Live · 8s</span></span>
     </nav>
 
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
@@ -309,7 +311,7 @@
         <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA · EMA · RSI · MACD · BB</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
-          <div class="trade-overview-card trade-chart-snapshot"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Window high</span><strong data-chart-stat-high>—</strong></div><div class="trade-overview-stat"><span>Window low</span><strong data-chart-stat-low>—</strong></div><div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
+          <div class="trade-overview-card trade-chart-snapshot"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Window high</span><strong data-chart-stat-high>—</strong></div><div class="trade-overview-stat"><span>Window low</span><strong data-chart-stat-low>—</strong></div><div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div><div class="trade-overview-stat"><span>Ledger poll</span><strong data-chart-stat-poll>8s · waiting</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
         <div class="trade-action-card trade-overview-ticket" data-order-ticket>
           <nav class="trade-action-tabs" aria-label="Chart order type" data-tab-group="chart-order">
             <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
@@ -365,6 +367,7 @@
         <div class="trade-data-stat"><span>AMM</span><strong data-data-amm>—</strong><em data-data-amm-note>amm_info</em></div>
         <div class="trade-data-stat"><span>Issuer lines</span><strong data-data-holders>—</strong><em data-data-holders-note>account_lines</em></div>
         <div class="trade-data-stat"><span>Ledger</span><strong data-data-ledger>—</strong><em data-data-ledger-note>validated</em></div>
+        <div class="trade-data-stat"><span>Ledger poll</span><strong data-data-poll>—</strong><em data-data-poll-note>validated · 8s</em></div>
         <div class="trade-data-stat"><span>Network</span><strong data-data-network>XRPL Testnet</strong><em>Default for this page</em></div>
         <div class="trade-data-stat"><span>Mainnet $PND</span><strong>Not issued</strong><em>Same issuer r-address</em></div>
       </div>
@@ -590,6 +593,9 @@
       },
     };
     let refreshController = null;
+    let pollTimer = 0;
+    let pollInFlight = false;
+    let lastPollAt = 0;
     let walletGeneration = 0;
     let chartController = null;
     let walletController = null;
@@ -633,8 +639,9 @@
       const volumeXrp = volume24hXrp(verification.trades || []);
       setText("[data-volume]", volumeXrp > 0 ? `${formatIou(volumeXrp)} XRP` : "—");
       setText("[data-volume-note]", volumeXrp > 0 ? "24h AMM/DEX tape" : liveMarket ? "No 24h tape yet" : "No trades to count");
-      setText("[data-chart-source-label]", onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
-      setText("[data-chart-symbol-source]", liveMarket ? "XRPL validated ledger" : onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
+      const pollLabel = `${onTestnet ? "XRPL Testnet" : "XRPL Mainnet"} · live ${LEDGER_POLL_MS / 1000}s`;
+      setText("[data-chart-source-label]", pollLabel);
+      setText("[data-chart-symbol-source]", liveMarket ? `XRPL validated ledger · live ${LEDGER_POLL_MS / 1000}s` : pollLabel);
       setText("[data-chart-stat-status]", liveMarket ? "Live PND/XRP market" : "No AMM or DEX book");
       const status = $("[data-chart-stat-status]");
       if (status) {
@@ -920,6 +927,35 @@
       return items.map(ledgerTrade).filter(Boolean);
     }
 
+    function poolTxHash(item) {
+      return item?.hash || item?.tx?.hash || item?.tx_json?.hash || "";
+    }
+
+    function mergePoolHistory(previous = {}, incoming = {}) {
+      const seen = new Set();
+      const merged = [];
+      for (const item of [...(incoming.poolTxs || []), ...(previous.poolTxs || [])]) {
+        const hash = poolTxHash(item);
+        const key = hash || `${item?.ledger_index || ""}:${item?.tx?.Sequence || item?.tx_json?.Sequence || merged.length}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        merged.push(item);
+      }
+      return {
+        ...incoming,
+        poolTxs: merged,
+        trades: ledgerTrades(merged),
+        tapeMarker: previous.poolTxComplete ? null : (previous.tapeMarker || incoming.tapeMarker),
+        poolTxComplete: Boolean(previous.poolTxComplete || incoming.poolTxComplete),
+        tapeLoading: previous.poolTxComplete ? false : Boolean(incoming.tapeLoading),
+      };
+    }
+
+    function countNewPrints(previous = {}, next = {}) {
+      const before = new Set((previous.trades || []).map((trade) => trade.hash).filter(Boolean));
+      return (next.trades || []).filter((trade) => trade.hash && !before.has(trade.hash)).length;
+    }
+
     function volume24hXrp(trades = []) {
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
@@ -1073,13 +1109,14 @@
     }
 
     function setMode(mode) {
+      const liveNote = `live ${LEDGER_POLL_MS / 1000}s`;
       const labels = {
-        amm: "AMM · Testnet ledger",
+        amm: `AMM · ${liveNote}`,
         dex: (state.verification.offers || []).length || (state.verification.trades || []).length
-          ? "DEX · live book"
-          : "DEX · empty book",
-        chart: "PND / XRP · Testnet ledger",
-        data: "Data · live Testnet read",
+          ? `DEX · live book · ${liveNote}`
+          : `DEX · empty book · ${liveNote}`,
+        chart: `PND / XRP · ${liveNote}`,
+        data: `Data · ${liveNote}`,
       };
       $$("[data-tab-group='mode'] [data-tab]").forEach((button) => {
         const active = button.dataset.tab === mode;
@@ -2201,9 +2238,9 @@
         setText("[data-chart-symbol]", label);
         setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
         setText("[data-chart-legend-primary]", label);
-        setText("[data-chart-symbol-source]", "XRPL Testnet");
-        setText("[data-chart-source-label]", "XRPL Testnet");
-        setText("[data-chart-source]", "Source: XRPL Testnet");
+        setText("[data-chart-symbol-source]", `XRPL Testnet · live ${LEDGER_POLL_MS / 1000}s`);
+        setText("[data-chart-source-label]", `XRPL Testnet · live ${LEDGER_POLL_MS / 1000}s`);
+        setText("[data-chart-source]", `Source: XRPL Testnet · live ${LEDGER_POLL_MS / 1000}s`);
         if (!hasMarket && (tapeLoading || state.verification.tapeLoading)) {
           setChartLoading();
           return;
@@ -2348,7 +2385,6 @@
       const load = () => {
         paintLedgerChart();
       };
-      window.setInterval(load, 60000);
       window.setInterval(updatePrintAge, 4000);
       return { load, paintLedger: paintLedgerChart };
     }
@@ -2552,21 +2588,78 @@
       setMarketState(state.verification);
     }
 
-    async function refresh() {
+    function setPollChrome({ busy = false, at = lastPollAt, ledger = state.verification.ledger?.seq, added = 0 } = {}) {
+      const refreshBtn = $("[data-refresh]");
+      if (refreshBtn) {
+        refreshBtn.classList.toggle("is-busy", Boolean(busy));
+        refreshBtn.setAttribute("aria-busy", String(Boolean(busy)));
+      }
+      const seconds = LEDGER_POLL_MS / 1000;
+      const hidden = document.hidden;
+      root.dataset.poll = busy ? "busy" : hidden ? "paused" : "live";
+      const clock = at
+        ? new Date(at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" })
+        : "waiting";
+      const pollText = hidden ? "Paused" : `Live · ${seconds}s`;
+      setText("[data-poll-note]", added > 0 ? `${pollText} · +${added}` : pollText);
+      setText("[data-chart-stat-poll]", `${seconds}s · ${clock}`);
+      setText("[data-data-poll]", clock);
+      setText("[data-data-poll-note]", ledger ? `validated ${ledger} · ${seconds}s` : `validated · ${seconds}s`);
+    }
+
+    function flashNewPrints(count) {
+      if (!(count > 0)) return;
+      root.dataset.freshPrints = String(count);
+      $$("[data-price], [data-chart-stat-price], [data-chart-symbol-price]").forEach((node) => {
+        node.classList.remove("is-fresh");
+        void node.offsetWidth;
+        node.classList.add("is-fresh");
+      });
+      $("[data-dex-tape]")?.classList.add("is-fresh");
+      window.setTimeout(() => {
+        root.querySelectorAll(".is-fresh").forEach((node) => node.classList.remove("is-fresh"));
+        delete root.dataset.freshPrints;
+      }, 1600);
+    }
+
+    async function pollLedger() {
+      return refresh({ quiet: true });
+    }
+
+    function startLedgerPoll() {
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = window.setInterval(pollLedger, LEDGER_POLL_MS);
+      document.addEventListener("visibilitychange", onTradeVisibility);
+      setPollChrome({ busy: false });
+    }
+
+    function onTradeVisibility() {
+      setPollChrome({ busy: pollInFlight });
+      if (!document.hidden) pollLedger();
+    }
+
+    async function refresh(options = {}) {
+      const quiet = Boolean(options.quiet);
+      if (quiet && (document.hidden || pollInFlight)) return;
       const generation = ++state.requestGeneration;
       refreshController?.abort();
       refreshController = new AbortController();
       const { signal } = refreshController;
-      setStatus("loading", "Reading ledger…");
-      setText("[data-issuer-status]", "Checking issuer account");
-      setText("[data-issuer-detail]", "Network state is read directly from XRPL.");
-      setText("[data-issuer-value]", issuer || "Issuer address not configured");
-      setText(
-        "[data-issuer-short]",
-        issuer ? `${issuer.slice(0, 6)}…${issuer.slice(-4)}` : "Not configured",
-      );
+      pollInFlight = true;
+      setPollChrome({ busy: true });
+      if (!quiet) {
+        setStatus("loading", "Reading ledger…");
+        setText("[data-issuer-status]", "Checking issuer account");
+        setText("[data-issuer-detail]", "Network state is read directly from XRPL.");
+        setText("[data-issuer-value]", issuer || "Issuer address not configured");
+        setText(
+          "[data-issuer-short]",
+          issuer ? `${issuer.slice(0, 6)}…${issuer.slice(-4)}` : "Not configured",
+        );
+        const icon = $("[data-issuer-icon]");
+        if (icon) icon.dataset.state = "loading";
+      }
       const icon = $("[data-issuer-icon]");
-      if (icon) icon.dataset.state = "loading";
       if (!issuer) {
         setStatus("offline", "Issuer unavailable");
         setText("[data-issuer-status]", "Issuer address unavailable");
@@ -2574,32 +2667,49 @@
         if (icon) icon.dataset.state = "error";
         state.verification = { ...state.verification, issuer: false, issued: false, market: false, tapeLoading: false };
         setMarketState(state.verification);
+        pollInFlight = false;
+        setPollChrome({ busy: false });
         return;
       }
       try {
-        const verification = await readMarketState(signal);
+        const previous = state.verification;
+        let verification = await readMarketState(signal);
         if (!isCurrent(generation)) return;
+        if (quiet) verification = mergePoolHistory(previous, verification);
+        const added = countNewPrints(previous, verification);
         state.verification = verification;
+        lastPollAt = Date.now();
         const ledgerIndex = verification.ledger?.seq || "available";
-        setStatus("online", `Validated ledger ${ledgerIndex}`);
+        setStatus("online", quiet ? `Live · ledger ${ledgerIndex}` : `Validated ledger ${ledgerIndex}`);
         setMarketState(verification);
-        if (verification.tapeMarker) await continuePoolTape(signal, generation);
+        setPollChrome({ busy: false, at: lastPollAt, ledger: verification.ledger?.seq, added });
+        flashNewPrints(added);
+        if (!quiet && verification.tapeMarker) await continuePoolTape(signal, generation);
         if (icon) icon.dataset.state = verification.issuer ? "ready" : "error";
-        setText("[data-issuer-status]", verification.market
-          ? "PND/XRP market on this network"
-          : verification.issued
-            ? "Issued · no AMM or DEX book"
-            : state.network === "testnet"
-              ? "Testnet issuer check"
-              : "Mainnet $PND not issued");
+        if (!quiet) {
+          setText("[data-issuer-status]", verification.market
+            ? "PND/XRP market on this network"
+            : verification.issued
+              ? "Issued · no AMM or DEX book"
+              : state.network === "testnet"
+                ? "Testnet issuer check"
+                : "Mainnet $PND not issued");
+        }
       } catch (error) {
         if (isAbortError(error) || !isCurrent(generation)) return;
-        setStatus("offline", "Ledger unavailable");
-        setText("[data-issuer-status]", "Issuer check unavailable");
-        setText("[data-issuer-detail]", error.message || "The selected XRPL endpoint did not respond.");
-        if (icon) icon.dataset.state = "error";
-        state.verification = { ...state.verification, issuer: false, issued: false, orderBook: false, amm: false, market: false, tapeLoading: false };
-        setMarketState(state.verification);
+        if (!quiet) {
+          setStatus("offline", "Ledger unavailable");
+          setText("[data-issuer-status]", "Issuer check unavailable");
+          setText("[data-issuer-detail]", error.message || "The selected XRPL endpoint did not respond.");
+          if (icon) icon.dataset.state = "error";
+          state.verification = { ...state.verification, issuer: false, issued: false, orderBook: false, amm: false, market: false, tapeLoading: false };
+          setMarketState(state.verification);
+        }
+      } finally {
+        if (isCurrent(generation)) {
+          pollInFlight = false;
+          setPollChrome({ busy: false, at: lastPollAt });
+        }
       }
     }
 
@@ -2635,7 +2745,7 @@
         : "chart";
     setMode(initialMode);
     setNetworkButtons();
-    refresh();
+    refresh().finally(() => startLedgerPoll());
     window.PondXaman?.init?.();
   }
 

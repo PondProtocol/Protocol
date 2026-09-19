@@ -837,6 +837,13 @@ check(
     !tradeJsText.includes("print candles") &&
     tradeJsText.includes("data-chart-volume") &&
     tradeJsText.includes("continuePoolTape") &&
+    tradeJsText.includes("const LEDGER_POLL_MS = 8000") &&
+    tradeJsText.includes("pollLedger") &&
+    tradeJsText.includes("mergePoolHistory") &&
+    tradeJsText.includes("visibilitychange") &&
+    !tradeJsText.includes("window.setInterval(load, 60000)") &&
+    tradeJsText.includes("data-chart-stat-poll") &&
+    tradeJsText.includes("data-poll-note") &&
     tradeJsText.includes("setChartLoading") &&
     tradeJsText.includes("Loading Testnet tape") &&
     tradeJsText.includes('data-chart-indicator="sma"') &&
@@ -855,6 +862,8 @@ check(
     stylesText.includes(".trade-chart-board table") &&
     stylesText.includes("100svh !important") &&
     stylesText.includes("#site-view") &&
+    stylesText.includes("trade-poll-note") &&
+    stylesText.includes("trade-refresh-spin") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
