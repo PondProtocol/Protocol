@@ -150,7 +150,21 @@
                 <button type="button" data-tab="remove" aria-selected="false">Remove</button>
               </div>
               <div data-tab-panels="amm-liquidity">
-                <div class="trade-panel is-active" data-panel="add"><div class="trade-empty-panel"><strong>Add liquidity</strong><span>No Testnet AMM to deposit into. This terminal does not sign or submit.</span></div></div>
+                <div class="trade-panel is-active" data-panel="add">
+                  <div class="trade-amm-create" data-amm-create>
+                    <p class="trade-amm-create-kicker">Testnet AMMCreate</p>
+                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate, not a deposit into an existing pool — no pool yet. This server never signs. submit:false.</p>
+                    <p class="trade-amm-create-balances">Treasury <code data-amm-treasury>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</code><br>Live PND: <strong data-amm-live-pnd>—</strong><br>Live XRP: <strong data-amm-live-xrp>—</strong></p>
+                    <p class="trade-amm-create-warn" data-amm-unfunded>Asked amounts are 500,000,000,000 PND + 5,000 XRP. Live Testnet treasury holds 100B PND and about 220 XRP. Those amounts will tecUNFUNDED until you mint more PND and faucet more XRP.</p>
+                    <p class="trade-amm-create-session" data-amm-session>Sign in with Xaman as the treasury, then send.</p>
+                    <label class="trade-action-field trade-input-field"><span>PND amount</span><div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="500000000000" aria-label="PND amount for AMMCreate"><b>PND</b></div></label>
+                    <label class="trade-action-field trade-input-field"><span>XRP amount</span><div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="5000" aria-label="XRP amount for AMMCreate"><b>XRP</b></div></label>
+                    <label class="trade-action-field trade-input-field"><span>TradingFee</span><div><input data-amm-fee inputmode="numeric" autocomplete="off" value="500" aria-label="AMMCreate TradingFee"><b>0.5%</b></div><small>Units of 1/100,000. 500 = 0.5%. Max 1000.</small></label>
+                    <p class="trade-order-status" data-amm-create-status>Testnet only. Mainnet AMMCreate is disabled.</p>
+                    <button type="button" class="trade-connect-button" data-amm-send>Send AMMCreate to Xaman</button>
+                    <div data-amm-xaman></div>
+                  </div>
+                </div>
                 <div class="trade-panel" data-panel="remove" hidden><div class="trade-empty-panel"><strong>Remove liquidity</strong><span>No LP position to read. This terminal does not sign or submit.</span></div></div>
               </div>
             </div>
@@ -496,6 +510,7 @@
         offers: [],
         ammInfo: null,
         treasuryPnd: null,
+        treasuryXrpDrops: null,
         treasuryAccount: null,
       },
     };
@@ -604,6 +619,7 @@
       setText("[data-data-integrity-copy]", onTestnet
         ? "Faucet XRP is worthless. 100B PND is at the Testnet treasury. Mainnet is not issued."
         : "Same issuer r-address. No mainnet obligations. Testnet holds the issued 100B.");
+      paintAmmCreateBalances();
       const emptyRows = root.querySelectorAll(".trade-empty-row");
       emptyRows.forEach((row) => {
         row.textContent = offers.length
@@ -886,6 +902,166 @@
           window.PondSession?.logoutIf?.({ method: "walletconnect" });
         },
       };
+    }
+
+    function paintAmmCreateBalances() {
+      const onTestnet = state.network === "testnet";
+      const pnd = state.verification.treasuryPnd;
+      const xrpDrops = state.verification.treasuryXrpDrops;
+      setText("[data-amm-live-pnd]", pnd != null ? `${formatIou(pnd)} PND` : "Reading…");
+      setText("[data-amm-live-xrp]", xrpDrops != null ? `${formatDrops(xrpDrops)} XRP` : "Reading…");
+      if (treasury) setText("[data-amm-treasury]", treasury);
+      const session = window.PondSession?.current?.();
+      const signed = session?.method === "xaman" ? session.address || "" : "";
+      const sessionEl = $("[data-amm-session]");
+      if (sessionEl) {
+        if (!onTestnet) {
+          sessionEl.textContent = "AMMCreate is Testnet only. Switch back to Testnet.";
+        } else if (!signed) {
+          sessionEl.textContent = "Sign in with Xaman as the treasury, then send.";
+        } else if (treasury && signed === treasury) {
+          sessionEl.textContent = `Signed in as treasury ${shortAccount(signed)}. Account on AMMCreate will be this address.`;
+        } else {
+          sessionEl.textContent = `Signed in as ${shortAccount(signed)}. AMMCreate.Account will be this address, not treasury, unless you Sign in as ${shortAccount(treasury)}.`;
+        }
+      }
+      const send = $("[data-amm-send]");
+      if (send) send.disabled = !onTestnet;
+      const askedPnd = Number($("[data-amm-pnd]")?.value || 500000000000);
+      const askedXrp = Number($("[data-amm-xrp]")?.value || 5000);
+      const livePnd = pnd != null ? Number(pnd) : 100000000000;
+      const liveXrp = xrpDrops != null ? Number(xrpDrops) / 1e6 : 220;
+      const warn = $("[data-amm-unfunded]");
+      if (warn) {
+        const short = askedPnd > livePnd || askedXrp > liveXrp;
+        warn.hidden = false;
+        warn.textContent = short
+          ? `Asked amounts are ${formatIou(askedPnd)} PND + ${formatIou(askedXrp)} XRP. Live treasury is ${pnd != null ? formatIou(pnd) : "100B"} PND and ${xrpDrops != null ? formatDrops(xrpDrops) : "~220"} XRP. Those amounts will tecUNFUNDED until you mint more PND and faucet more XRP.`
+          : `Live treasury can cover ${formatIou(askedPnd)} PND + ${formatIou(askedXrp)} XRP on this read. AMMCreate is still Testnet-only, unsigned, submit:false.`;
+      }
+    }
+
+    function setupAmmCreate() {
+      const mount = $("[data-amm-xaman]");
+      const send = $("[data-amm-send]");
+      const status = $("[data-amm-create-status]");
+      if (!send || !mount) return;
+      let pollTimer = 0;
+      const esc = (value) =>
+        String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      const setAmmStatus = (message, kind = "neutral") => {
+        if (!status) return;
+        status.dataset.state = kind;
+        status.textContent = message;
+      };
+      const stopPoll = () => {
+        if (pollTimer) window.clearInterval(pollTimer);
+        pollTimer = 0;
+      };
+      const paintPayload = (payload) => {
+        mount.innerHTML = `
+          <div class="session-xaman-panel" data-amm-wait>
+            <p class="session-xaman-heading">Sign Testnet AMMCreate in Xaman</p>
+            ${
+              payload.qr
+                ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="168" height="168" alt="Xaman official AMMCreate QR">`
+                : `<p class="session-xaman-pending">Preparing official Xaman payload…</p>`
+            }
+            <p class="session-xaman-actions">
+              ${payload.next ? `<a class="session-xaman-open" href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
+            </p>
+            <p class="session-xaman-fine">Official Xaman. Pond never asks for a seed. Server submit:false.</p>
+          </div>`;
+      };
+      const pollPayload = (payload) => {
+        stopPoll();
+        const expiresAt = Number(payload.expiresAt) || Date.now() + 15 * 60 * 1000;
+        pollTimer = window.setInterval(async () => {
+          if (Date.now() > expiresAt) {
+            stopPoll();
+            setAmmStatus("AMMCreate request expired. Start again.", "error");
+            return;
+          }
+          try {
+            const response = await fetch(`/api/xaman/payload/${encodeURIComponent(payload.uuid)}`, {
+              headers: { Accept: "application/json" },
+              credentials: "same-origin",
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) return;
+            if (data.dispatchedResult === "tesSUCCESS") {
+              stopPoll();
+              setAmmStatus("tesSUCCESS. Refreshing amm_info.", "ready");
+              refresh();
+              return;
+            }
+            if (data.signed) {
+              stopPoll();
+              setAmmStatus(
+                data.dispatchedResult
+                  ? `Signed. Xaman result ${data.dispatchedResult}. Refreshing amm_info.`
+                  : "Signed. submit:false so this server did not submit. Refreshing amm_info if a pool appeared.",
+                "ready",
+              );
+              refresh();
+              return;
+            }
+            if (data.cancelled || data.expired) {
+              stopPoll();
+              setAmmStatus(data.cancelled ? "AMMCreate cancelled in Xaman." : "AMMCreate expired.", "error");
+            }
+          } catch {
+            /* keep QR; next tick retries */
+          }
+        }, 2500);
+      };
+      ["data-amm-pnd", "data-amm-xrp", "data-amm-fee"].forEach((key) => {
+        $(`[${key}]`)?.addEventListener("input", paintAmmCreateBalances);
+      });
+      send.addEventListener("click", async () => {
+        if (state.network !== "testnet") {
+          setAmmStatus("AMMCreate is Testnet only. No mainnet AMMCreate.", "error");
+          return;
+        }
+        if (xamanAccount() === "") {
+          setAmmStatus("Sign in with official Xaman first. WalletConnect cannot send AMMCreate.", "error");
+          return;
+        }
+        send.disabled = true;
+        setAmmStatus("Creating official Xaman AMMCreate payload…", "loading");
+        try {
+          const response = await fetch("/api/xaman/ammcreate", {
+            method: "POST",
+            headers: { Accept: "application/json", "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              network: "testnet",
+              returnTo: "/trade/",
+              pnd: $("[data-amm-pnd]")?.value || "500000000000",
+              xrp: $("[data-amm-xrp]")?.value || "5000",
+              tradingFee: Number($("[data-amm-fee]")?.value || 500),
+            }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(data.message || "Xaman did not create AMMCreate.");
+          paintPayload(data);
+          setAmmStatus("Scan the QR or Open in Xaman. Unsigned AMMCreate. submit:false.", "ready");
+          pollPayload(data);
+        } catch (error) {
+          mount.innerHTML = "";
+          setAmmStatus(error.message || "Could not start AMMCreate.", "error");
+        } finally {
+          send.disabled = state.network !== "testnet";
+        }
+      });
+      window.addEventListener("pond:session-change", () => {
+        if (document.body.contains(root)) paintAmmCreateBalances();
+      });
+      paintAmmCreateBalances();
     }
 
     function setupDexOrder() {
@@ -1317,12 +1493,18 @@
 
     async function readMarketState(signal) {
       const endpoint = networks[state.network].endpoint;
-      const [serverResponse, accountResponse, issuerLinesResponse, treasuryLinesResponse, gatewayResponse] = await Promise.all([
+      const [serverResponse, accountResponse, treasuryInfoResponse, issuerLinesResponse, treasuryLinesResponse, gatewayResponse] = await Promise.all([
         wsRpc(endpoint, "server_info", {}, signal),
         wsRpc(endpoint, "account_info", {
           account: issuer,
           ledger_index: "validated",
         }, signal),
+        treasury
+          ? wsRpc(endpoint, "account_info", {
+              account: treasury,
+              ledger_index: "validated",
+            }, signal).catch(() => null)
+          : Promise.resolve(null),
         wsRpc(endpoint, "account_lines", {
           account: issuer,
           ledger_index: "validated",
@@ -1348,6 +1530,7 @@
       const treasuryLine = (treasuryLinesResponse?.result?.lines || []).find((line) => line.currency === "PND");
       const gatewayHeld = gatewayResponse?.result?.balances?.[treasury]?.find((row) => row.currency === "PND");
       const treasuryPnd = treasuryLine?.balance ?? gatewayHeld?.value ?? null;
+      const treasuryXrpDrops = treasuryInfoResponse?.result?.account_data?.Balance || null;
       const issued = Boolean(
         treasuryPnd != null && Number(treasuryPnd) !== 0
         || pndLines.some((line) => Number(line.balance || 0) !== 0),
@@ -1391,6 +1574,7 @@
         pndLines,
         ammInfo: ammInfo?.result || null,
         treasuryPnd,
+        treasuryXrpDrops,
         treasuryAccount: treasuryLinesResponse?.result?.account || null,
       };
     }
@@ -1468,9 +1652,12 @@
       connectWallet: () => walletController?.connect?.(),
     };
     setupDexOrder();
+    setupAmmCreate();
     chartController = setupChartControls();
     const initialMode = window.location.hash === "#data"
         ? "data"
+        : window.location.hash === "#amm"
+          ? "amm"
         : "chart";
     setMode(initialMode);
     setNetworkButtons();

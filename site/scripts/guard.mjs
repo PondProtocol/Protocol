@@ -660,7 +660,12 @@ check(
     tradeJsText.includes('network: "testnet"') &&
     tradeJsText.includes("gateway_balances") &&
     tradeJsText.includes("amm_info") &&
-    tradeJsText.includes("book_offers"),
+    tradeJsText.includes("book_offers") &&
+    tradeJsText.includes("/api/xaman/ammcreate") &&
+    tradeJsText.includes("AMMCreate") &&
+    tradeJsText.includes("tesSUCCESS") &&
+    !tradeJsText.includes("AMMDeposit") &&
+    !tradeJsText.includes("mnemonic"),
 );
 check(
   "xaman.js keeps an honest /connect/ unavailable card and a short disabled Trade option",
@@ -748,6 +753,24 @@ check(
     !readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes("pond-xaman-session") &&
     !readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes('fetch("/health"') &&
     !readFileSync(join(DIST_DIR, "session.js"), "utf8").includes('fetch("/health"'),
+);
+check(
+  "Testnet AMMCreate is official Xaman only, unsigned, and never mainnet",
+  xamanSrc.includes("/api/xaman/ammcreate") &&
+    xamanSrc.includes('TransactionType: "AMMCreate"') &&
+    xamanSrc.includes('force_network: "TESTNET"') &&
+    xamanSrc.includes("kind: \"ammcreate\"") &&
+    xamanSrc.includes("submit: false") &&
+    !xamanSrc.includes("AMMDeposit") &&
+    !xamanSrc.includes("mnemonic") &&
+    !xamanSrc.includes("family seed") &&
+    /createAmmCreate[\s\S]*force_network: "TESTNET"/.test(xamanSrc) &&
+    !/createAmmCreate[\s\S]*force_network: "MAINNET"/.test(xamanSrc) &&
+    tradeJsText.includes("data-amm-send") &&
+    tradeJsText.includes("data-amm-live-pnd") &&
+    tradeJsText.includes("Open in Xaman") &&
+    !indexHtml.includes("/trade.js") &&
+    !/\/trade\.[a-f0-9]{10}\.js/.test(indexHtml),
 );
 
 const linksPage = join(DIST_DIR, "links", "index.html");

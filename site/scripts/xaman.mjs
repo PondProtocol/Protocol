@@ -1,13 +1,14 @@
 /**
  * Official Xaman (Xumm) Platform API, server-side only.
  *
- * Creates SignIn and optional TrustSet payloads. The API secret never leaves
- * this process. If XUMM_API_KEY / XUMM_API_SECRET are unset, callers get an
- * honest "connect unavailable" payload instead of a fake success.
+ * Creates SignIn, optional TrustSet, and Testnet-only AMMCreate payloads.
+ * The API secret never leaves this process. If XUMM_API_KEY / XUMM_API_SECRET
+ * are unset, callers get an honest "connect unavailable" payload instead of a
+ * fake success.
  *
- * SignIn and TrustSet stay unsigned / submit:false until $PND exists.
- * Payload UUIDs are bound to an httpOnly cookie so a leaked id cannot
- * mint pond_session.
+ * SignIn, TrustSet, and AMMCreate stay unsigned / submit:false. This process
+ * never signs. Payload UUIDs are bound to an httpOnly cookie so a leaked id
+ * cannot mint pond_session.
  *
  * Docs: https://xumm.readme.io/reference/post-payload
  *       https://docs.xaman.dev/concepts/special-transaction-types/signin
@@ -23,9 +24,14 @@ const MAX_BODY = 16 * 1024;
 export const PAYLOAD_COOKIE = "pond_xaman_payload";
 export const SIGNIN_EXPIRE_MIN = 10;
 export const TRUSTSET_EXPIRE_MIN = 15;
+export const AMMCREATE_EXPIRE_MIN = 15;
+export const DEFAULT_AMM_PND = "500000000000";
+export const DEFAULT_AMM_XRP = "5000";
+export const DEFAULT_AMM_FEE = 500;
 
 const config = loadConfig();
 const issuer = config.site.issuerAddress;
+const treasury = config.site.treasuryAddress;
 const domain = config.site.domain;
 const ALLOWED_RETURN = new Set(["/connect/", "/trade/"]);
 
@@ -162,7 +168,9 @@ export function readBoundPayload(req) {
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (!UUID_RE.test(payload.uuid || "")) return null;
-    if (payload.kind !== "signin" && payload.kind !== "trustset") return null;
+    if (payload.kind !== "signin" && payload.kind !== "trustset" && payload.kind !== "ammcreate") {
+      return null;
+    }
     if (!Number.isFinite(payload.exp) || payload.exp <= Date.now()) return null;
     return payload;
   } catch {
@@ -364,6 +372,124 @@ async function createTrustSet(req, res, body = {}, session = null) {
   });
 }
 
+function parseIouValue(value, fallback) {
+  const text = String(value ?? fallback).trim();
+  if (!/^(?:0|[1-9]\d{0,15})(?:\.\d{1,15})?$/.test(text)) return null;
+  if (Number(text) <= 0) return null;
+  return text;
+}
+
+function parseXrpDrops(value, fallback) {
+  const text = String(value ?? fallback).trim();
+  if (!/^(?:0|[1-9]\d{0,15})(?:\.\d{1,6})?$/.test(text)) return null;
+  const [whole, fraction = ""] = text.split(".");
+  const drops = BigInt(whole) * 1000000n + BigInt((fraction + "000000").slice(0, 6));
+  if (drops <= 0n || drops > 100000000000000000n) return null;
+  return drops.toString();
+}
+
+function parseTradingFee(value) {
+  if (value === undefined || value === null || value === "") return DEFAULT_AMM_FEE;
+  const fee = Number(value);
+  if (!Number.isInteger(fee) || fee < 0 || fee > 1000) return null;
+  return fee;
+}
+
+async function createAmmCreate(req, res, body = {}, session = null) {
+  if (!xamanConfigured()) return unavailable(res, req);
+  if (!cookieSecret()) {
+    json(res, 503, {
+      error: "session_unconfigured",
+      message: "Sign in is unavailable until Autoscale has POND_SESSION_SECRET.",
+    }, req);
+    return;
+  }
+  if (session?.method !== "xaman" || !ADDR_RE.test(session.address || "")) {
+    json(res, 401, {
+      error: "xaman_required",
+      message: "Send Testnet AMMCreate after official Xaman SignIn.",
+    }, req);
+    return;
+  }
+  if (String(body.network || "testnet").toLowerCase() === "mainnet" || String(body.network || "").toLowerCase() === "production") {
+    json(res, 400, {
+      error: "testnet_only",
+      message: "AMMCreate is Testnet only. Mainnet has no $PND issued.",
+    }, req);
+    return;
+  }
+  const pndValue = parseIouValue(body.pnd, DEFAULT_AMM_PND);
+  const xrpDrops = parseXrpDrops(body.xrp, DEFAULT_AMM_XRP);
+  const tradingFee = parseTradingFee(body.tradingFee);
+  if (!pndValue || !xrpDrops || tradingFee == null) {
+    json(res, 400, {
+      error: "bad_amount",
+      message: "PND, XRP, and TradingFee must be positive ledger amounts. TradingFee is 0–1000.",
+    }, req);
+    return;
+  }
+  const account = session.address;
+  const back = payloadReturnUrl("/trade/");
+  const { ok, status, data } = await xumm("/payload", {
+    method: "POST",
+    body: {
+      txjson: {
+        TransactionType: "AMMCreate",
+        Account: account,
+        Amount: {
+          currency: "PND",
+          issuer,
+          value: pndValue,
+        },
+        Amount2: xrpDrops,
+        TradingFee: tradingFee,
+      },
+      options: {
+        submit: false,
+        expire: AMMCREATE_EXPIRE_MIN,
+        force_network: "TESTNET",
+        return_url: { app: back, web: back },
+      },
+      custom_meta: {
+        instruction:
+          `Testnet AMMCreate for PND/XRP. Amount is ${pndValue} PND IOU. Amount2 is ${xrpDrops} drops of XRP. TradingFee ${tradingFee} (500 = 0.5%). This is not a deposit into an existing pool — no pool exists yet. Live Testnet treasury ${treasury} currently holds 100B PND and about 220 XRP, so 500B PND + 5,000 XRP will tecUNFUNDED until you mint more PND and faucet more XRP. Pond never asks for a seed. This request is not submitted by the server (submit:false).`,
+      },
+    },
+  });
+  if (!ok || !data?.uuid) {
+    json(res, status >= 400 ? status : 502, {
+      error: "xaman_create_failed",
+      message: "Xaman did not create an AMMCreate payload. Check the app keys and try again.",
+    }, req);
+    return;
+  }
+  json(
+    res,
+    200,
+    {
+      ...publicCreate(data, AMMCREATE_EXPIRE_MIN),
+      kind: "AMMCreate",
+      account,
+      treasury,
+      issuer,
+      currency: "PND",
+      pnd: pndValue,
+      xrpDrops,
+      tradingFee,
+      submit: false,
+      network: "testnet",
+    },
+    req,
+    {
+      "Set-Cookie": payloadCookieHeader(req, {
+        uuid: data.uuid,
+        kind: "ammcreate",
+        expireMin: AMMCREATE_EXPIRE_MIN,
+      }),
+    },
+  );
+}
+
 export async function signedXamanAccount(uuid, req) {
   if (!xamanConfigured()) {
     return { error: "xaman_unconfigured", message: healthBody().xaman.reason };
@@ -413,7 +539,7 @@ async function getPayload(req, res, uuid) {
   }
   const payload = publicPayload(data);
   if (
-    bound.kind === "trustset" &&
+    (bound.kind === "trustset" || bound.kind === "ammcreate") &&
     payload.signed &&
     payload.account &&
     req.pondSession?.address &&
@@ -421,7 +547,10 @@ async function getPayload(req, res, uuid) {
   ) {
     json(res, 403, {
       error: "account_mismatch",
-      message: "That trust line request is for a different XRPL address.",
+      message:
+        bound.kind === "ammcreate"
+          ? "That AMMCreate request is for a different XRPL address."
+          : "That trust line request is for a different XRPL address.",
     }, req);
     return;
   }
@@ -466,6 +595,18 @@ export async function handleApi(req, res, url, { readSession } = {}) {
       return true;
     }
     await createTrustSet(req, res, body, session);
+    return true;
+  }
+
+  if (url === "/api/xaman/ammcreate" && req.method === "POST") {
+    let body;
+    try {
+      body = await readBody(req);
+    } catch (error) {
+      json(res, 400, { error: "bad_request", message: error.message }, req);
+      return true;
+    }
+    await createAmmCreate(req, res, body, session);
     return true;
   }
 

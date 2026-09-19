@@ -2462,6 +2462,38 @@ code.addr {
   font-size: 0.72rem;
 }
 
+.trade-amm-create {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.trade-amm-create-kicker,
+.trade-amm-create-copy,
+.trade-amm-create-balances,
+.trade-amm-create-warn,
+.trade-amm-create-session {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.trade-amm-create-kicker {
+  color: var(--accent-bright);
+  font: 750 0.68rem var(--font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.trade-amm-create-warn {
+  color: #e6c27a;
+}
+
+.trade-amm-create [data-amm-xaman] {
+  display: grid;
+  justify-items: center;
+}
+
 .trade-empty-panel {
   display: grid;
   min-height: 22rem;
