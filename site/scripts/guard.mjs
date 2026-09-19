@@ -863,6 +863,19 @@ check(
     tradeJsText.includes("visibilitychange") &&
     !tradeJsText.includes("window.setInterval(load, 60000)") &&
     tradeJsText.includes("data-chart-stat-poll") &&
+    tradeJsText.includes("data-chart-stat-vwap") &&
+    tradeJsText.includes("data-chart-stat-spot") &&
+    tradeJsText.includes("data-chart-stat-basis") &&
+    tradeJsText.includes("data-use-last") &&
+    tradeJsText.includes("data-quote-fill") &&
+    tradeJsText.includes("data-size-chip") &&
+    tradeJsText.includes("data-ticket-side") &&
+    tradeJsText.includes("tapeVwap") &&
+    tradeJsText.includes("ammSpotNumber") &&
+    tradeJsText.includes("ticketPanelMarkup") &&
+    stylesText.includes("trade-snapshot-hero") &&
+    stylesText.includes("trade-ticket-quote") &&
+    stylesText.includes("trade-ticket-sides") &&
     tradeJsText.includes("data-poll-note") &&
     tradeJsText.includes("setChartLoading") &&
     tradeJsText.includes("Loading Testnet tape") &&

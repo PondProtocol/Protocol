@@ -6798,6 +6798,223 @@ body:has([data-pond-profile]) .profile-card {
   color: var(--critical);
 }
 
+.trade-snapshot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.trade-snapshot-head .trade-kicker {
+  margin: 0;
+}
+
+.trade-snapshot-use-last {
+  padding: 0.16rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.trade-snapshot-hero {
+  display: grid;
+  gap: 0.08rem;
+  margin-bottom: 0.4rem;
+  padding: 0.4rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-code) 70%, transparent);
+}
+
+.trade-snapshot-hero > span {
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.trade-snapshot-hero strong {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-snapshot-hero em,
+.trade-overview-stat strong.is-up,
+.trade-chart-ohlc-change strong.is-up,
+.trade-chart-readout span.is-up,
+[data-ticket-vs-last].is-up {
+  color: #74d3a0;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.trade-snapshot-hero em.is-down,
+.trade-overview-stat strong.is-down,
+.trade-chart-ohlc-change strong.is-down,
+.trade-chart-readout span.is-down,
+[data-ticket-vs-last].is-down {
+  color: #ef9a9a;
+}
+
+.trade-snapshot-range {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-snapshot-range-track {
+  position: relative;
+  height: 0.28rem;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #ef9a9a, #f7c66a, #74d3a0);
+}
+
+.trade-snapshot-range-track i {
+  position: absolute;
+  top: 50%;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: 1px solid #0c1114;
+  border-radius: 50%;
+  background: #e8eaed;
+  transform: translate(-50%, -50%);
+}
+
+.trade-snapshot-cluster-label {
+  margin: 0 0 0.12rem;
+  color: var(--text-muted);
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trade-ticket-sides [data-tab="buy"].is-active,
+.trade-ticket-sides .is-buy.is-active {
+  border-color: color-mix(in srgb, #26a69a 55%, var(--border));
+  background: color-mix(in srgb, #26a69a 18%, transparent);
+  color: #74d3a0;
+}
+
+.trade-ticket-sides [data-tab="sell"].is-active,
+.trade-ticket-sides .is-sell.is-active {
+  border-color: color-mix(in srgb, #ef5350 55%, var(--border));
+  background: color-mix(in srgb, #ef5350 16%, transparent);
+  color: #ef9a9a;
+}
+
+.trade-action-card[data-ticket-side="buy"] .trade-connect-button {
+  border-color: color-mix(in srgb, #26a69a 40%, var(--border));
+}
+
+.trade-action-card[data-ticket-side="sell"] .trade-connect-button {
+  border-color: color-mix(in srgb, #ef5350 40%, var(--border));
+}
+
+.trade-ticket-quote {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.2rem;
+  padding: 0.35rem 0.4rem 0;
+}
+
+.trade-ticket-quote button {
+  display: grid;
+  gap: 0.08rem;
+  padding: 0.22rem 0.18rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.52rem;
+  text-align: left;
+}
+
+.trade-ticket-quote button:hover,
+.trade-ticket-quote button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--text);
+}
+
+.trade-ticket-quote strong {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.trade-ticket-sizes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.trade-ticket-sizes button {
+  padding: 0.18rem 0.2rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.56rem;
+  font-weight: 700;
+}
+
+.trade-ticket-sizes button.is-active,
+.trade-ticket-sizes button:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-input-field > div {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.trade-ticket-step {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.trade-ticket-step:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--text);
+}
+
+[data-ticket-vs-last] {
+  font-family: var(--mono);
+}
+
 .trade-overview-note,
 .trade-overview-risk span {
   display: block;
@@ -9532,6 +9749,25 @@ body.page-trade .trade-detail-window {
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-card {
     padding: 0.28rem 0.4rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-hero {
+    margin-bottom: 0.28rem;
+    padding: 0.28rem 0.35rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-hero strong {
+    font-size: 0.92rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-range,
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-quote,
+  body.page-trade .trade-app[data-mode="chart"] .trade-ticket-sizes {
+    margin-bottom: 0.28rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-input-field input {
+    font-size: 0.86rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat {
