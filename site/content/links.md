@@ -39,8 +39,7 @@ off.
   <div class="wallet-head"><span class="wallet-role">xrp-ledger.toml</span></div>
   <p><a href="https://{{domain}}/.well-known/xrp-ledger.toml">https://{{domain}}/.well-known/xrp-ledger.toml</a></p>
   <p>XLS-26 metadata. The issuer’s on-ledger <code>Domain</code> is
-  <code>{{domain}}</code>. How wallets pick that up:
-  <a href="/discovery/">How wallets learn the name</a>.</p>
+  <code>{{domain}}</code>.</p>
 </div>
 
 <div class="wallet">

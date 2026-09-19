@@ -408,13 +408,26 @@ check(
     !existsSync(join(DIST_DIR, "team", "index.html")) &&
     !existsSync(join(DIST_DIR, "card", "index.html")) &&
     !existsSync(join(DIST_DIR, "open-questions", "index.html")) &&
-    !existsSync(join(DIST_DIR, "open-questions", "pnd", "index.html")),
+    !existsSync(join(DIST_DIR, "open-questions", "pnd", "index.html")) &&
+    !existsSync(join(DIST_DIR, "protocol", "index.html")) &&
+    !existsSync(join(DIST_DIR, "protocol", "overview", "index.html")) &&
+    !existsSync(join(DIST_DIR, "protocol", "architecture", "index.html")) &&
+    !existsSync(join(DIST_DIR, "protocol", "two-tokens", "index.html")) &&
+    !existsSync(join(DIST_DIR, "protocol", "glossary", "index.html")) &&
+    !existsSync(join(DIST_DIR, "discovery", "index.html")) &&
+    !existsSync(join(DIST_DIR, "xrp-ledger-toml", "index.html")) &&
+    !existsSync(join(DIST_DIR, "spec", "index.html")) &&
+    !existsSync(join(DIST_DIR, "spec", "tokens", "index.html")),
 );
 const deletedHrefFiles = textFiles
-  .filter((f) => /href=["']\/(?:card|connect|team|open-questions)\//.test(readFileSync(f, "utf8")))
+  .filter((f) =>
+    /href=["']\/(?:card|connect|team|open-questions|protocol|discovery|xrp-ledger-toml|spec)\//.test(
+      readFileSync(f, "utf8"),
+    ),
+  )
   .map((f) => relative(DIST_DIR, f));
 check(
-  "built pages do not link to unpublished card, connect, team, or open-questions routes",
+  "built pages do not link to unpublished card, connect, team, docs, or spec routes",
   deletedHrefFiles.length === 0,
   deletedHrefFiles.join(", "),
 );
@@ -425,8 +438,7 @@ check(
     existsSync(join(DIST_DIR, "links", "index.html")) &&
     existsSync(join(DIST_DIR, "legal", "index.html")) &&
     existsSync(join(DIST_DIR, "Pond", "index.html")) &&
-    existsSync(join(DIST_DIR, "Protocol", "index.html")) &&
-    existsSync(join(DIST_DIR, "protocol", "index.html")),
+    existsSync(join(DIST_DIR, "Protocol", "index.html")),
 );
 
 const xamanJs = join(DIST_DIR, "xaman.js");
@@ -459,7 +471,7 @@ const startHereOrder = [];
 check(
   "top bar is Pond and Protocol, then search",
   /<a class="topnav-page-link(?: active)?"[^>]*href="\/Pond\/">Pond<\/a>/.test(topnavHtml) &&
-    /<a class="topnav-start-link(?: active)?"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
+    /<a class="topnav-page-link(?: active)?"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
     headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/Pond/"') &&
@@ -481,8 +493,10 @@ check(
   headerHtml.includes("data-site-search") &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/Pond/"') &&
-    headerHtml.indexOf('data-topnav-menu="protocol"') < headerHtml.indexOf("data-site-search") &&
-    headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search"),
+    headerHtml.indexOf('href="/Protocol/"') < headerHtml.indexOf("data-site-search") &&
+    headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search") &&
+    !headerHtml.includes("data-topnav-menu") &&
+    !topnavHtml.includes("<details"),
 );
 check(
   "green Trade button sits immediately after search as the far-right control",
@@ -494,17 +508,13 @@ check(
     !topnavSummaries.includes("Trade"),
 );
 check(
-  "Protocol dropdown matches the Docs Index Protocol group",
-  protocolMenu.includes("Docs") &&
-    protocolMenu.includes("Overview") &&
-    protocolMenu.includes("Architecture") &&
-    protocolMenu.includes("$PND and $rPND compared") &&
-    protocolMenu.includes("Glossary") &&
-    protocolMenu.includes("How wallets learn the name") &&
-    protocolMenu.includes("xrp-ledger.toml") &&
-    protocolMenu.includes("Status and conventions") &&
-    protocolMenu.includes("01 — Tokens") &&
-    protocolMenu.includes("07 — Security considerations"),
+  "Protocol is a single top-bar link with no docs dropdown",
+  !protocolMenu &&
+    /<a class="topnav-page-link(?: active)?"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
+    !topnavHtml.includes("topnav-menu") &&
+    !topnavHtml.includes("Docs") &&
+    !topnavHtml.includes("Overview") &&
+    !topnavHtml.includes("Architecture"),
 );
 check(
   "Pond and Protocol landing pages are published",
@@ -848,10 +858,11 @@ check(
   /not launching on 1 October 2026/i.test(asText(indexHtml)),
 );
 
-const discPage = join(DIST_DIR, "discovery", "index.html");
 check(
-  "discovery page exists and does not invent a DEX trade URL",
-  existsSync(discPage) && !/firstledger\.net\/token/i.test(readFileSync(discPage, "utf8")),
+  "discovery and spec docs pages are unpublished",
+  !existsSync(join(DIST_DIR, "discovery", "index.html")) &&
+    !existsSync(join(DIST_DIR, "spec", "index.html")) &&
+    !existsSync(join(DIST_DIR, "xrp-ledger-toml", "index.html")),
 );
 
 const joinInputs = [];
