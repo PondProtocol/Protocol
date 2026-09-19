@@ -1792,6 +1792,8 @@
         setText("[data-chart-legend-primary]", label);
         setText("[data-chart-symbol-source]", "XRPL validated ledger");
         setText("[data-chart-source-label]", "XRPL Testnet prints");
+        setText("[data-chart-source]", "Source: XRPL Testnet validated prints");
+        setText("[data-chart-indicator-note]", "Indicators are computed from validated PND/XRP prints. Not invented candles.");
         if (!hasMarket) {
           chartState.data = null;
           resetChartStats();
