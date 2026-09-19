@@ -5846,8 +5846,122 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-live {
+  position: relative;
   flex: 1 1 auto;
   overflow: hidden;
+}
+
+.trade-chart-chrome,
+.trade-chart-hud {
+  pointer-events: none;
+}
+
+.trade-chart-chrome {
+  position: absolute;
+  inset: 0;
+}
+
+.trade-chart-y-axis,
+.trade-chart-x-axis {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-chart-y-axis {
+  inset: 0 auto 1.15rem 0.28rem;
+  width: 4.2rem;
+}
+
+.trade-chart-y-axis li {
+  position: absolute;
+  transform: translateY(-50%);
+  color: #c5ccd4;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 4px #101214;
+}
+
+.trade-chart-x-axis {
+  left: 0;
+  right: 0;
+  bottom: 0.12rem;
+  height: 1.05rem;
+}
+
+.trade-chart-x-axis li {
+  position: absolute;
+  color: #c5ccd4;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+}
+
+.trade-chart-x-axis li.is-start {
+  transform: none;
+}
+
+.trade-chart-x-axis li.is-end {
+  transform: translateX(-100%);
+}
+
+.trade-chart-last-pill {
+  position: absolute;
+  right: 0.2rem;
+  transform: translateY(-50%);
+  padding: 0.12rem 0.32rem;
+  border-radius: 3px;
+  background: #26a69a;
+  color: #0c1114;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-chart-last-pill[hidden],
+.trade-chart-vol-caption[hidden],
+.trade-chart-hud[hidden] {
+  display: none !important;
+}
+
+.trade-chart-vol-caption {
+  position: absolute;
+  left: 0.4rem;
+  color: #9aa3ad;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trade-chart-hud {
+  position: absolute;
+  top: 0.35rem;
+  left: 4.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.65rem;
+  padding: 0.22rem 0.45rem;
+  border: 1px solid #2a3036;
+  border-radius: 4px;
+  background: rgb(16 18 20 / 0.9);
+  color: #e6ebf0;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+}
+
+.trade-chart-print-age {
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+}
+
+.trade-chart-candle.is-current {
+  stroke-width: 2;
 }
 
 .trade-chart-svg {
@@ -8866,7 +8980,17 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat {
-    padding: 0.08rem 0;
+    padding: 0.14rem 0;
+    font-size: 0.72rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat strong {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-readout strong {
+    font-size: 0.95rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-risk {
