@@ -819,6 +819,7 @@ check(
     tradeJsText.includes("printsToCandles") &&
     tradeJsText.includes("recentPriceDomain") &&
     tradeJsText.includes("visibleSeries") &&
+    tradeJsText.includes("focusCount") &&
     tradeJsText.includes("trade-chart-price-clip") &&
     tradeJsText.includes('data-chart-range="1m"') &&
     tradeJsText.includes("trade-overview-ticket") &&
