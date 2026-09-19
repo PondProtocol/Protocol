@@ -1818,20 +1818,16 @@
       function recentPriceDomain(points, livePrice) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
-        const recent = points.slice(-Math.min(12, points.length));
-        const lows = recent.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
-        const highs = recent.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
-        const closes = recent.map((point) => point.close ?? point.value);
-        let minValue = Math.min(lastPrice, ...lows, ...closes);
-        let maxValue = Math.max(lastPrice, ...highs, ...closes);
-        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.12 || minValue < lastPrice * 0.9)) {
-          const near = closes.filter((value) => value >= lastPrice * 0.88 && value <= lastPrice * 1.12);
-          const pad = Math.max(
-            lastPrice * 0.045,
-            ...(near.length ? near : [lastPrice]).map((value) => Math.abs(value - lastPrice)),
-          );
-          minValue = Math.min(lastPrice - pad, ...(near.length ? near : [lastPrice]));
-          maxValue = Math.max(lastPrice + pad, ...(near.length ? near : [lastPrice]));
+        const lows = points.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
+        const highs = points.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
+        const closes = points.map((point) => point.close ?? point.value);
+        let minValue = Math.min(lastPrice, ...lows);
+        let maxValue = Math.max(lastPrice, ...highs);
+        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 2.2 || minValue < lastPrice * 0.45)) {
+          const near = closes.filter((value) => value >= lastPrice * 0.6 && value <= lastPrice * 1.6);
+          const pad = Math.max(lastPrice * 0.06, ...(near.length ? near : closes).map((value) => Math.abs(value - lastPrice)));
+          minValue = Math.min(lastPrice - pad, ...near);
+          maxValue = Math.max(lastPrice + pad, ...near);
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
@@ -1842,7 +1838,7 @@
         const allCandles = chartState.data?.candles || [];
         const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
         if (!allPoints.length) return;
-        const focusCount = Math.min(allPoints.length, 32);
+        const focusCount = Math.min(allPoints.length, 20);
         const points = allPoints.slice(-focusCount);
         const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
         const values = points.map((point) => point.close ?? point.value);
@@ -1879,7 +1875,7 @@
         const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
         let { minValue, maxValue, lastPrice } = recentPriceDomain(points, chartState.data?.livePrice);
         const tapeBands = [...sma, ...ema, ...upper, ...lower].filter((value) => (
-          value != null && Number.isFinite(lastPrice) && value >= lastPrice * 0.88 && value <= lastPrice * 1.12
+          value != null && Number.isFinite(lastPrice) && value >= minValue && value <= maxValue
         ));
         if (tapeBands.length) {
           minValue = Math.min(minValue, ...tapeBands);
@@ -1919,7 +1915,7 @@
           })
           .join("");
         const maxVolume = Math.max(...volumes, 1);
-        const barWidth = Math.max(6, slot * 0.78);
+        const barWidth = Math.max(8, slot * 0.82);
         const volumeBars = showVolume
           ? volumes
             .map((volume, index) => {
@@ -1941,7 +1937,7 @@
           }
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
-          const bodyHeight = Math.max(8, bodyBot - bodyTop);
+          const bodyHeight = Math.max(12, bodyBot - bodyTop);
           const bodyY = bodyTop - (bodyHeight - Math.max(1, bodyBot - bodyTop)) / 2;
           return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyY}" width="${barWidth}" height="${bodyHeight}"/>`;
         }).join("");
