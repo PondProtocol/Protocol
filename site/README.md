@@ -44,7 +44,7 @@ from Trade's **Connect wallet** control (WalletConnect or Xaman). The frontend
 never receives the API secret. There is no airdrop claim, no DEX trade, and no
 seed field. The top bar is Pond · Protocol, then docs
 search, then a Trade button to `/trade/`. Pond opens `/Pond/`. Protocol
-opens `/Protocol/` and keeps the Protocol docs menu.
+opens `/Protocol/` with no docs dropdown.
 
 Set these on the **Replit Autoscale** app (Secrets / env), then Publish. Do not
 put them in the repo, in `site/dist`, or in browser JavaScript.

@@ -26,8 +26,7 @@ Identity is the pair **(PND, issuer address)**. Copy the issuer from
 Pond does not take custody of your wallet. Official connect is WalletConnect
 or Xaman only. There is no claim button. There is no official Telegram.
 
-The protocol layer is [Protocol](/Protocol/). The public specification stays
-on the [docs](/protocol/). Trade is a Testnet terminal, not a live mainnet
-DEX.
+The protocol layer is [Protocol](/Protocol/). Trade is a Testnet terminal,
+not a live mainnet DEX.
 
 <p><code class="addr">{{issuerAddress}}</code></p>

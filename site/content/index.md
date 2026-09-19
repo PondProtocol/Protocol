@@ -34,4 +34,4 @@ Policy supply is 100 billion $PND (issuer policy, not a ledger cap). High-level 
 
 Holder months are a **snapshot of $PND held**, then **treasury payments**, proportional. They are **not TokenEscrow**. This site will never show a claim button.
 
-**$rPND is not launching on 1 October 2026.** That date is for $PND. Details: [two tokens](/protocol/two-tokens/).
+**$rPND is not launching on 1 October 2026.** That date is for $PND. Details: [Protocol](/Protocol/).

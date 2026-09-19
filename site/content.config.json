@@ -164,22 +164,7 @@
     {
       "section": "Protocol",
       "pages": [
-        { "authored": "protocol-run.md", "url": "/Protocol/", "title": "Protocol" },
-        { "authored": "protocol.md", "url": "/protocol/", "title": "Docs" },
-        { "repo": "protocol", "path": "README.md", "url": "/protocol/overview/", "title": "Overview", "publish": true },
-        { "repo": "protocol", "path": "docs/architecture.md", "url": "/protocol/architecture/", "title": "Architecture", "publish": true },
-        { "repo": "pnd", "path": "docs/pnd-vs-rpnd.md", "url": "/protocol/two-tokens/", "title": "$PND and $rPND compared", "publish": true },
-        { "repo": "protocol", "path": "docs/glossary.md", "url": "/protocol/glossary/", "title": "Glossary", "publish": true },
-        { "authored": "discovery.md", "url": "/discovery/", "title": "How wallets learn the name" },
-        { "authored": "well-known.md", "url": "/xrp-ledger-toml/", "title": "xrp-ledger.toml" },
-        { "repo": "protocol", "path": "docs/spec/README.md", "url": "/spec/", "title": "Status and conventions", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/01-tokens.md", "url": "/spec/tokens/", "title": "01 — Tokens", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/02-accounts-and-roles.md", "url": "/spec/accounts-and-roles/", "title": "02 — Accounts and roles", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/03-issuance-and-supply.md", "url": "/spec/issuance-and-supply/", "title": "03 — Issuance and supply", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/04-token-relationship.md", "url": "/spec/token-relationship/", "title": "04 — Token relationship", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/05-metadata-and-discovery.md", "url": "/spec/metadata-and-discovery/", "title": "05 — Metadata and discovery", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/06-governance-and-change-control.md", "url": "/spec/governance/", "title": "06 — Governance", "publish": true },
-        { "repo": "protocol", "path": "docs/spec/07-security-considerations.md", "url": "/spec/security/", "title": "07 — Security considerations", "publish": true }
+        { "authored": "protocol-run.md", "url": "/Protocol/", "title": "Protocol" }
       ]
     },
     {
@@ -236,6 +221,78 @@
       "path": "docs/tokens.md",
       "publish": false,
       "reason": "Owner unpublished the $rPND docs routes. Keep the file in the rPND repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "README.md",
+      "publish": false,
+      "reason": "Owner unpublished /protocol/overview/. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/architecture.md",
+      "publish": false,
+      "reason": "Owner unpublished /protocol/architecture/. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "pnd",
+      "path": "docs/pnd-vs-rpnd.md",
+      "publish": false,
+      "reason": "Owner unpublished /protocol/two-tokens/. Keep the file in the PND repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/glossary.md",
+      "publish": false,
+      "reason": "Owner unpublished /protocol/glossary/. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/README.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/01-tokens.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/02-accounts-and-roles.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/03-issuance-and-supply.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/04-token-relationship.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/05-metadata-and-discovery.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/06-governance-and-change-control.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/spec/07-security-considerations.md",
+      "publish": false,
+      "reason": "Owner unpublished /spec/* pages. Keep the file in the Protocol repo."
     },
     {
       "repo": "protocol",

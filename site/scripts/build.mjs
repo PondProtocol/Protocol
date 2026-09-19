@@ -340,22 +340,13 @@ function isLanding(url) {
 
 function topnavHtml(currentUrl) {
   const pondCls = currentUrl === "/Pond/" ? "topnav-page-link active" : "topnav-page-link";
-  const protocolCls = currentUrl === "/Protocol/" ? "topnav-start-link active" : "topnav-start-link";
+  const protocolCls = currentUrl === "/Protocol/" ? "topnav-page-link active" : "topnav-page-link";
   const pondCurrent = currentUrl === "/Pond/" ? ' aria-current="page"' : "";
   const protocolCurrent = currentUrl === "/Protocol/" ? ' aria-current="page"' : "";
-  const group = config.nav.find((g) => g.section === "Protocol");
-  const visible = group ? publishedPages(group) : [];
   let out = `<nav class="topnav" aria-label="Primary">`;
   out += `<a class="${pondCls}"${pondCurrent} href="/Pond/">Pond</a>`;
-  out += `<div class="topnav-start">`;
   out += `<a class="${protocolCls}"${protocolCurrent} href="/Protocol/">Protocol</a>`;
-  if (visible.length) {
-    out += `<details class="topnav-menu" data-topnav-menu="protocol">`;
-    out += `<summary aria-label="Open Protocol menu"><span class="visually-hidden">Protocol menu</span></summary>`;
-    out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
-    out += `</details>`;
-  }
-  out += `</div></nav>`;
+  out += `</nav>`;
   return out;
 }
 
@@ -851,7 +842,7 @@ function layout(page, html) {
 public, 10 billion team, 80 billion to holders at 10 billion per month from
 2027-01-01 through 2027-08-01, proportional to $PND held. Snapshot plus
 treasury payments, not TokenEscrow, not a claim.
-<a href="/protocol/two-tokens/">$PND and $rPND compared</a>.</p>
+<a href="/Protocol/">Protocol</a>.</p>
 </div>`
     : "";
 
@@ -925,24 +916,21 @@ ${landing ? heroHtml() : ""}
       <nav class="footer-column" aria-label="Protocol links">
         <h2>Protocol</h2>
         <a href="/Protocol/">Protocol</a>
-        <a href="/protocol/">Docs</a>
-        <a href="/protocol/architecture/">Architecture</a>
-        <a href="/protocol/two-tokens/">Two tokens</a>
-        <a href="/discovery/">Discovery</a>
+        <a href="/Pond/">Pond</a>
+        <a href="/trade/">Trade</a>
+        <a href="/links/">Official links</a>
       </nav>
       <nav class="footer-column" aria-label="Markets and assets">
         <h2>Markets &amp; assets</h2>
         <a href="/trade/">Trade terminal</a>
         <a href="/Pond/">Pond</a>
         <a href="/links/">Official links</a>
-        <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
-        <a href="/spec/">Specification</a>
       </nav>
       <nav class="footer-column footer-column-stacked" aria-label="Resources and company">
         <div>
           <h2>Resources</h2>
           <a href="/links/">Official links</a>
-          <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
+          <a href="/.well-known/xrp-ledger.toml">xrp-ledger.toml</a>
           <a href="/profile/">Profile</a>
         </div>
         <div>
@@ -969,8 +957,6 @@ ${landing ? heroHtml() : ""}
           <a href="/Protocol/">Protocol</a>
           <span aria-hidden="true">|</span>
           <a href="/links/">Official links</a>
-          <span aria-hidden="true">|</span>
-          <a href="/spec/security/">Security</a>
           <span aria-hidden="true">|</span>
           <a href="/legal/">Legal</a>
         </div>
