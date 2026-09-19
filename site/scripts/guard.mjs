@@ -941,7 +941,7 @@ check(
 );
 check(
   "landing hero is a solid color with Start Here below the fold",
-  /--hero-solid:\s*#4a90d9/.test(stylesText) &&
+  /--hero-solid:\s*#151b21/.test(stylesText) &&
     /min-height:\s*100svh/.test(stylesText) &&
     /min-height:\s*100dvh/.test(stylesText) &&
     !indexHtml.includes("hero-art") &&
