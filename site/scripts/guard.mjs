@@ -1062,6 +1062,17 @@ check(
     !privacyJsText.includes("0.28"),
 );
 check(
+  "home first paint shows Private Browsing without JS",
+  indexHtml.includes('data-privacy-mode="notice"') &&
+    /data-privacy-fab\s+hidden/.test(indexHtml) &&
+    !/<div class="privacy-notice"[^>]*\bhidden\b/.test(indexHtml),
+);
+check(
+  "trade privacy dock still starts as the fab",
+  tradeHtml.includes('data-privacy-mode="fab"') &&
+    /data-privacy-notice hidden/.test(tradeHtml),
+);
+check(
   "privacy dock is sitewide, including Trade",
   indexHtml.includes('data-privacy-dock') &&
     indexHtml.includes("/privacy.js") &&

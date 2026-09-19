@@ -3897,7 +3897,8 @@ code.addr {
   right: var(--home-frame);
   left: var(--home-frame);
   bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
-  container-type: size;
+  /* inline-size only — size + cqi caused a first-paint FOUC that clipped the buttons. */
+  container-type: inline-size;
   container-name: home-hero;
   display: flex;
   align-items: stretch;
@@ -3928,13 +3929,14 @@ code.addr {
 }
 
 .page-index .hero-copy {
-  align-self: start;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  height: 100%;
   max-height: 100%;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .page-index .hero-heading {
@@ -3947,10 +3949,17 @@ code.addr {
   width: auto;
   max-width: 100%;
   overflow: visible;
-  font-size: clamp(3.2rem, 9cqi, 5.4rem);
+  font-size: clamp(3.2rem, 6vw, 5.4rem);
   line-height: 0.88;
   letter-spacing: -0.06em;
   margin: 0 0 0.12rem;
+}
+
+.page-index .hero-lede,
+.page-index .hero-status,
+.page-index .hero-wallets {
+  flex-shrink: 1;
+  min-height: 0;
 }
 
 .page-index .hero-actions {
@@ -3958,11 +3967,11 @@ code.addr {
 }
 
 .page-index .hero-tagline {
-  font-size: clamp(1.55rem, 5cqi, 3.6rem);
+  font-size: clamp(1.55rem, 3.4vw, 3.2rem);
 }
 
 .page-index .hero-lede {
-  font-size: clamp(0.86rem, 1.7cqi, 1.06rem);
+  font-size: clamp(0.86rem, 1.15vw, 1.06rem);
 }
 
 .page-index .hero-pages {
@@ -4080,20 +4089,21 @@ code.addr {
   }
 
   .page-index .hero-copy {
-    align-self: start;
+    align-self: stretch;
     min-height: 0;
+    height: 100%;
     max-height: 100%;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .page-index .hero .hero-kicker {
-    font-size: clamp(1.85rem, 12cqi, 2.4rem);
+    font-size: clamp(1.85rem, 8vw, 2.4rem);
     line-height: 0.88;
   }
 
   .page-index .hero-tagline {
     margin-bottom: 0.35rem;
-    font-size: clamp(1.35rem, 7.5cqi, 1.85rem);
+    font-size: clamp(1.35rem, 5.5vw, 1.85rem);
   }
 
   .page-index .hero-lede {

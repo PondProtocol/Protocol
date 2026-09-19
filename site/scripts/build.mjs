@@ -749,17 +749,20 @@ function sessionChipHtml() {
 </div>`;
 }
 
-function privacyDockHtml() {
-  return `<div class="privacy-dock" data-privacy-dock data-privacy-mode="fab" data-testid="privacy-bottom-dock">
+function privacyDockHtml({ home = false } = {}) {
+  const mode = home ? "notice" : "fab";
+  const fabHidden = home ? " hidden" : "";
+  const noticeHidden = home ? "" : " hidden";
+  return `<div class="privacy-dock" data-privacy-dock data-privacy-mode="${mode}" data-testid="privacy-bottom-dock">
   <div class="privacy-dock-stack" data-privacy-stack>
-    <button type="button" class="privacy-fab" data-privacy-fab aria-label="Open privacy vault" data-testid="button-cookie-settings">
+    <button type="button" class="privacy-fab" data-privacy-fab${fabHidden} aria-label="Open privacy vault" data-testid="button-cookie-settings">
       <span class="privacy-fab-mark" aria-hidden="true">
         <span class="privacy-fab-shield">${iconShield}</span>
         <span class="privacy-fab-lock">${iconLock}</span>
       </span>
       <span class="privacy-fab-tip">Privacy vault</span>
     </button>
-    <div class="privacy-notice" data-privacy-notice hidden role="status" data-testid="privacy-first-visit-notice">
+    <div class="privacy-notice" data-privacy-notice${noticeHidden} role="status" data-testid="privacy-first-visit-notice">
       <div class="privacy-notice-head">
         <p class="privacy-kicker privacy-kicker-notice">Private Browsing</p>
         <button type="button" class="privacy-icon-btn" data-privacy-close-notice aria-label="Close private browsing notice" data-testid="button-close-privacy-notice">${iconX}</button>
@@ -908,7 +911,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home page-index" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home page-index" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}"${isHome ? ' data-home-privacy="open"' : ""}>
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 ${isHome ? `<div class="home-screen">` : ""}
@@ -1006,7 +1009,7 @@ ${isHome ? `</div>` : ""}
   </div>
 </footer>
 </div>
-${privacyDockHtml()}
+${privacyDockHtml({ home: isHome })}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 ${pageScripts(page)}
 </body>
