@@ -790,6 +790,8 @@ check(
     !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
     !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&
+    tradeJsText.includes("data-amm-wait") &&
+    /\[data-amm-wait[\s\S]*overflow:\s*visible/.test(stylesText) &&
     xamanSrc.includes("XUMM_INSTRUCTION_MAX = 280") &&
     xamanSrc.includes("payloadInstruction") &&
     !/createAmmCreate[\s\S]*tecUNFUNDED/.test(xamanSrc) &&
