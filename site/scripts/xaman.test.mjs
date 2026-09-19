@@ -10,6 +10,7 @@ import {
   PAYLOAD_COOKIE,
   SIGNIN_EXPIRE_MIN,
   DEFAULT_AMM_PND,
+  XUMM_INSTRUCTION_MAX,
   allowedOrigin,
   handleApi,
   readBoundPayload,
@@ -94,7 +95,13 @@ async function xamanApi(url, options) {
   return { handled, res, data: res.body ? JSON.parse(res.body) : {} };
 }
 
-function installXummMock({ signed = true, account = ADMIN_ADDRESS, txType = "SignIn" } = {}) {
+function installXummMock({
+  signed = true,
+  account = ADMIN_ADDRESS,
+  txType = "SignIn",
+  createStatus = 200,
+  createError = null,
+} = {}) {
   const previous = globalThis.fetch;
   const created = [];
   globalThis.fetch = async (url, opts = {}) => {
@@ -102,6 +109,13 @@ function installXummMock({ signed = true, account = ADMIN_ADDRESS, txType = "Sig
     if (path.endsWith("/payload") && opts.method === "POST") {
       const body = JSON.parse(opts.body);
       created.push(body);
+      if (createStatus >= 400) {
+        return {
+          ok: false,
+          status: createStatus,
+          json: async () => createError || { error: { code: 600, reference: "test-ref" } },
+        };
+      }
       const uuid =
         body.txjson.TransactionType === "TrustSet"
           ? TRUST_UUID
@@ -170,6 +184,7 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(signInBody.options.force_network, "TESTNET");
       assert.notEqual(signInBody.options.force_network, "MAINNET");
       assert.ok(String(signInBody.custom_meta.instruction).includes("XRPL Testnet"));
+      assert.ok(signInBody.custom_meta.instruction.length <= XUMM_INSTRUCTION_MAX);
       const cookies = cookieMap(created.res.headers["Set-Cookie"]);
       assert.ok(cookies[PAYLOAD_COOKIE]);
       assert.match(String(created.res.headers["Set-Cookie"]), /HttpOnly/);
@@ -282,6 +297,8 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(ammBody.txjson.Amount2, "5000000000");
       assert.equal(ammBody.txjson.TradingFee, 500);
       assert.equal(ammBody.txjson.TransactionType, "AMMCreate");
+      assert.ok(ammBody.custom_meta.instruction.length <= XUMM_INSTRUCTION_MAX);
+      assert.ok(!/[^\x09\x0a\x0d\x20-\x7e]/.test(ammBody.custom_meta.instruction));
       assert.ok(!JSON.stringify(ammBody).includes("AMMDeposit"));
       assert.ok(!JSON.stringify(ammBody).includes("mnemonic"));
       assert.ok(!JSON.stringify(ammBody).includes("family seed"));
@@ -343,5 +360,50 @@ test("SignIn force_network is TESTNET even if the client asks for Mainnet", () =
       assert.notEqual(xumm.created.at(-1).options.force_network, "MAINNET");
     } finally {
       xumm.restore();
+    }
+  }));
+
+test("AMMCreate instruction stays within Xaman's 280-character limit and Xaman errors are not hidden", () =>
+  withStore(async () => {
+    const now = Date.now();
+    const sessionCookie = signSession({
+      address: TREASURY,
+      method: "xaman",
+      t: now,
+      active: now,
+    });
+    const okMock = installXummMock();
+    try {
+      const amm = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { pnd: DEFAULT_AMM_PND, xrp: "5000", tradingFee: 500, returnTo: "/trade/" },
+        cookie: sessionCookie,
+      });
+      assert.equal(amm.res.statusCode, 200);
+      const instruction = okMock.created.at(-1).custom_meta.instruction;
+      assert.ok(instruction.length <= 280);
+      assert.equal(instruction.length <= XUMM_INSTRUCTION_MAX, true);
+      assert.ok(!instruction.includes("tecUNFUNDED"));
+    } finally {
+      okMock.restore();
+    }
+
+    const failMock = installXummMock({
+      createStatus: 400,
+      createError: { error: { code: 600, reference: "amm-instr", message: "instruction too long" } },
+    });
+    try {
+      const failed = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { pnd: DEFAULT_AMM_PND, xrp: "5000", tradingFee: 500 },
+        cookie: sessionCookie,
+      });
+      assert.equal(failed.res.statusCode, 400);
+      assert.equal(failed.data.error, "xaman_create_failed");
+      assert.equal(failed.data.xamanCode, 600);
+      assert.match(failed.data.message, /instruction too long|Xaman error 600/);
+      assert.ok(!String(failed.data.message).includes("Check the app keys"));
+    } finally {
+      failMock.restore();
     }
   }));

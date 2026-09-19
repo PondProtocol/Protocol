@@ -781,6 +781,9 @@ check(
     tradeJsText.includes("data-amm-send") &&
     tradeJsText.includes("data-amm-live-pnd") &&
     tradeJsText.includes("Open in Xaman") &&
+    xamanSrc.includes("XUMM_INSTRUCTION_MAX = 280") &&
+    xamanSrc.includes("payloadInstruction") &&
+    !/createAmmCreate[\s\S]*tecUNFUNDED/.test(xamanSrc) &&
     !indexHtml.includes("/trade.js") &&
     !/\/trade\.[a-f0-9]{10}\.js/.test(indexHtml),
 );
