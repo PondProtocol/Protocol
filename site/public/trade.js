@@ -1845,9 +1845,12 @@
       }
 
       function renderChart() {
-        const candles = chartState.data?.candles || [];
-        const points = candles.length ? candles : (chartState.data?.points || []);
-        if (!points.length) return;
+        const allCandles = chartState.data?.candles || [];
+        const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
+        if (!allPoints.length) return;
+        const focusCount = CANDLE_MS[chartState.range] ? Math.min(allPoints.length, 12) : allPoints.length;
+        const points = allPoints.slice(-focusCount);
+        const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
         const values = points.map((point) => point.value);
         const volumes = points.map((point) => point.volume || 0);
         const width = 1000;
