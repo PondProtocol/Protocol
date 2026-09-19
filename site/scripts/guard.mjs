@@ -685,6 +685,7 @@ check(
     stylesText.includes("container-name: home-hero") &&
     stylesText.includes(".page-index .hero-inner") &&
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
+    /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
@@ -1032,6 +1033,7 @@ check(
     privacyJsText.includes("--home-scale") &&
     privacyJsText.includes("--privacy-reserve-h") &&
     privacyJsText.includes("page-index") &&
+    privacyJsText.includes("offsetHeight") &&
     !privacyJsText.includes("0.28"),
 );
 check(

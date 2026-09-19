@@ -36,24 +36,22 @@
     const stage = document.querySelector(".page-index .hero-inner");
     const board = document.querySelector(".page-index .hero-main");
     if (!stage || !board) return;
-    if (window.matchMedia("(max-width: 780px)").matches) {
-      document.body.style.setProperty("--home-scale", "1");
-      return;
-    }
     document.body.style.setProperty("--home-scale", "1");
     board.style.transform = "none";
     const scale = Math.min(
       1,
-      stage.clientWidth / Math.max(board.scrollWidth, 1),
-      stage.clientHeight / Math.max(board.scrollHeight, 1),
+      stage.clientWidth / Math.max(board.scrollWidth, board.offsetWidth, 1),
+      stage.clientHeight / Math.max(board.scrollHeight, board.offsetHeight, 1),
     );
     board.style.transform = "";
-    document.body.style.setProperty("--home-scale", String(Math.max(0.62, scale)));
+    document.body.style.setProperty("--home-scale", String(Math.max(0.5, scale)));
   }
 
   function syncHomeFrame() {
     syncHomePrivacyReserve();
-    requestAnimationFrame(syncHomeScale);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(syncHomeScale);
+    });
   }
 
   function setMode(next) {
@@ -150,8 +148,10 @@
     else setMode("fab");
     syncHomeFrame();
     window.addEventListener("resize", syncHomeFrame);
-    if (typeof ResizeObserver === "function" && notice()) {
-      new ResizeObserver(syncHomeFrame).observe(notice());
+    if (typeof ResizeObserver === "function") {
+      if (notice()) new ResizeObserver(syncHomeFrame).observe(notice());
+      const stage = document.querySelector(".page-index .hero-inner");
+      if (stage) new ResizeObserver(syncHomeFrame).observe(stage);
     }
   }
 
