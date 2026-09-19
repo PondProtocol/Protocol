@@ -207,7 +207,6 @@
       <section class="trade-market-pane trade-dex-chart-pane" aria-label="PND market chart">
         <div class="trade-chart-toolbar">
           <div class="trade-chart-tools"><span class="is-active">$PND / XRP</span><span>XRPL DEX</span></div>
-          <div class="trade-range-tools"><button type="button" class="is-active">1H</button><button type="button">1D</button><button type="button">1W</button><button type="button">All</button></div>
         </div>
         <div class="trade-market-panels">
           <div class="trade-panel is-active">
@@ -219,12 +218,14 @@
                 <span>No validated Testnet offers. The chart stays blank until the ledger has a book or AMM.</span>
               </div>
               <div class="trade-dex-live" data-dex-live hidden>
-                <section class="trade-dex-book-wrap">
+                <section class="trade-dex-book-wrap" data-dex-book-wrap>
                   <p class="trade-kicker">Validated book</p>
+                  <div class="trade-dex-book-head"><span>Price</span><span>PND</span><span>XRP</span></div>
                   <ol class="trade-dex-book" data-dex-book></ol>
                 </section>
                 <section class="trade-dex-tape-wrap">
                   <p class="trade-kicker">Trade tape</p>
+                  <div class="trade-dex-tape-head"><span>Side</span><span>Price</span><span>Size</span><span>Time</span></div>
                   <ol class="trade-dex-tape" data-dex-tape></ol>
                 </section>
               </div>
@@ -268,22 +269,19 @@
             <button type="button" class="is-active" data-chart-pair="pnd-xrp">PND / XRP</button>
             <button type="button" data-chart-pair="pnd-usd">PND / USD</button>
           </div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span><strong class="trade-chart-pair-label" data-chart-pair-label hidden>PND / XRP · Testnet ledger</strong></div>
+          <div class="trade-chart-ohlc" aria-label="Chart price details">
+            <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
+            <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
+            <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
+            <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
+            <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
+          </div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
-        </div>
-        <div class="trade-chart-ohlc" aria-label="Chart price details">
-          <span><b>O</b><strong data-chart-ohlc-open>—</strong></span>
-          <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
-          <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
-          <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
-          <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
-        </div>
-        <div class="trade-overview-toolbar">
-          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Testnet ledger</strong></div>
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
           <div class="trade-chart-tools"><span>Crosshair</span><span class="is-active">Candles</span><span>Line</span><span>Volume</span></div>
@@ -747,6 +745,84 @@
       }
     }
 
+    function liveAmmReservePair() {
+      const reserves = state.verification.ammInfo?.amm ?? state.verification.ammInfo;
+      if (!reserves) return null;
+      const { xrp, iou } = splitAmmAssets(reserves);
+      let xrpReserve = NaN;
+      try {
+        xrpReserve = xrp != null ? Number(formatDrops(xrp)) : NaN;
+      } catch {
+        xrpReserve = NaN;
+      }
+      const pndReserve = iou?.value != null ? Number(iou.value) : NaN;
+      if (!Number.isFinite(xrpReserve) || !Number.isFinite(pndReserve) || xrpReserve <= 0 || pndReserve <= 0) {
+        return null;
+      }
+      return { xrpReserve, pndReserve, xrpPerPnd: xrpReserve / pndReserve };
+    }
+
+    function isEvenDeposit() {
+      return Boolean($("[data-amm-side='two']")?.classList.contains("is-active"));
+    }
+
+    function writeAmmAmount(kind, value) {
+      const decimals = kind === "xrp" ? 6 : 6;
+      const n = Number(value);
+      const text = Number.isFinite(n) && n > 0 ? String(Number(n.toFixed(decimals))) : "0";
+      const input = $(kind === "pnd" ? "[data-amm-pnd]" : "[data-amm-xrp]");
+      const range = $(kind === "pnd" ? "[data-amm-pnd-range]" : "[data-amm-xrp-range]");
+      if (input) input.value = text;
+      if (range) range.value = text;
+    }
+
+    function ammWalletMaxes() {
+      const signedPnd = Number(state.verification.walletPnd);
+      let signedXrp = NaN;
+      try {
+        signedXrp = state.verification.walletXrpDrops != null ? Number(formatDrops(state.verification.walletXrpDrops)) : NaN;
+      } catch {
+        signedXrp = NaN;
+      }
+      const rangePnd = Number($("[data-amm-pnd-range]")?.max || 0);
+      const rangeXrp = Number($("[data-amm-xrp-range]")?.max || 0);
+      return {
+        pnd: Number.isFinite(signedPnd) && signedPnd > 0 ? signedPnd : (Number.isFinite(rangePnd) ? rangePnd : 0),
+        xrp: Number.isFinite(signedXrp) && signedXrp > 0 ? signedXrp : (Number.isFinite(rangeXrp) ? rangeXrp : 0),
+      };
+    }
+
+    function coupleEvenDeposit(driver) {
+      if (!isEvenDeposit()) return;
+      const pair = liveAmmReservePair();
+      if (!pair) return;
+      const maxes = ammWalletMaxes();
+      const clampToMax = (value, max) => {
+        const n = Math.max(0, Number(value) || 0);
+        if (Number.isFinite(max) && max > 0 && n > max) return max;
+        return n;
+      };
+      let pnd = Number($("[data-amm-pnd]")?.value) || 0;
+      let xrp = Number($("[data-amm-xrp]")?.value) || 0;
+      if (driver === "xrp") {
+        xrp = clampToMax(xrp, maxes.xrp);
+        pnd = xrp / pair.xrpPerPnd;
+        if (maxes.pnd > 0 && pnd > maxes.pnd) {
+          pnd = maxes.pnd;
+          xrp = pnd * pair.xrpPerPnd;
+        }
+      } else {
+        pnd = clampToMax(pnd, maxes.pnd);
+        xrp = pnd * pair.xrpPerPnd;
+        if (maxes.xrp > 0 && xrp > maxes.xrp) {
+          xrp = maxes.xrp;
+          pnd = xrp / pair.xrpPerPnd;
+        }
+      }
+      writeAmmAmount("pnd", pnd);
+      writeAmmAmount("xrp", xrp);
+    }
+
     function txRecord(item) {
       const tx = item?.tx || item?.tx_json || {};
       const meta = item?.meta || {};
@@ -888,6 +964,7 @@
     function paintDexMarket() {
       const empty = $("[data-dex-empty]");
       const live = $("[data-dex-live]");
+      const bookWrap = $("[data-dex-book-wrap]");
       const book = $("[data-dex-book]");
       const tape = $("[data-dex-tape]");
       if (!empty || !live) return;
@@ -895,6 +972,8 @@
       const hasMarket = offers.length > 0 || trades.length > 0;
       empty.hidden = hasMarket;
       live.hidden = !hasMarket;
+      live.classList.toggle("is-tape-only", offers.length === 0);
+      if (bookWrap) bookWrap.hidden = offers.length === 0;
       if (book) {
         book.innerHTML = offers.length
           ? offers.map((offer) => {
@@ -905,11 +984,11 @@
               const price = pnd > 0 && Number.isFinite(xrp) ? xrp / pnd : null;
               return `<li><strong>${escText(price != null ? `${price.toFixed(8)} XRP` : "—")}</strong><span>${escText(Number.isFinite(pnd) ? `${formatIou(pnd)} PND` : "—")}</span><em>${escText(Number.isFinite(xrp) ? `${formatIou(xrp)} XRP` : "—")}</em></li>`;
             }).join("")
-          : "<li>No resting PND/XRP offers.</li>";
+          : "";
       }
       if (tape) {
         tape.innerHTML = trades.length
-          ? trades.slice(0, 24).map((trade) => `<li><strong>${escText(trade.side === "buy" ? "Buy" : "Sell")}</strong><span>${escText(`${trade.price.toFixed(8)} XRP`)}</span><em>${escText(`${formatIou(trade.pnd)} PND · ${formatIou(trade.xrp)} XRP`)}</em><time>${escText(rippleDate(trade.date))}</time></li>`).join("")
+          ? trades.slice(0, 24).map((trade) => `<li data-side="${escText(trade.side === "buy" ? "buy" : "sell")}"><strong>${escText(trade.side === "buy" ? "Buy" : "Sell")}</strong><span>${escText(`${trade.price.toFixed(8)} XRP`)}</span><em>${escText(`${formatIou(trade.pnd)} PND · ${formatIou(trade.xrp)} XRP`)}</em><time>${escText(rippleDate(trade.date))}</time></li>`).join("")
           : "<li>No validated AMM/DEX prints yet.</li>";
       }
       const sellNote = $("[data-dex-sell-note]");
@@ -1243,6 +1322,7 @@
       };
       cap(pndInput, pndRange, Number(pndRange?.max || 0));
       cap(xrpInput, xrpRange, Number(xrpRange?.max || 0));
+      if (isEvenDeposit()) coupleEvenDeposit(Number(pndInput?.value) > 0 ? "pnd" : "xrp");
     }
 
     function setupAmmCreate() {
@@ -1279,8 +1359,11 @@
         });
         const note = $("[data-amm-side-note]");
         if (note) {
+          const pair = liveAmmReservePair();
           note.textContent = side === "two"
-            ? "tfTwoAsset · both assets"
+            ? pair
+              ? `tfTwoAsset · paired at ${pair.xrpPerPnd.toFixed(8)} XRP / PND`
+              : "tfTwoAsset · both assets"
             : `tfSingleAsset · ${singleAsset} only`;
         }
         const pndRow = $("[data-amm-pnd-row]");
@@ -1305,6 +1388,28 @@
           if ($("[data-amm-xrp]")) $("[data-amm-xrp]").value = "0";
           if ($("[data-amm-xrp-range]")) $("[data-amm-xrp-range]").value = "0";
         }
+        if (side === "two") {
+          const pnd = Number($("[data-amm-pnd]")?.value) || 0;
+          const xrp = Number($("[data-amm-xrp]")?.value) || 0;
+          if (pnd > 0) coupleEvenDeposit("pnd");
+          else if (xrp > 0) coupleEvenDeposit("xrp");
+        }
+      };
+      let coupling = false;
+      const bindPairedSlider = (rangeSel, inputSel, driver) => {
+        const range = $(rangeSel);
+        const input = $(inputSel);
+        if (!range || !input) return;
+        const paint = (fromRange) => {
+          if (coupling) return;
+          coupling = true;
+          if (fromRange) input.value = range.value;
+          else range.value = input.value || "0";
+          coupleEvenDeposit(driver);
+          coupling = false;
+        };
+        range.addEventListener("input", () => paint(true));
+        input.addEventListener("input", () => paint(false));
       };
       const bindSlider = (rangeSel, inputSel, labelSel, format) => {
         const range = $(rangeSel);
@@ -1318,8 +1423,8 @@
         range.addEventListener("input", () => paint(true));
         input.addEventListener("input", () => paint(false));
       };
-      bindSlider("[data-amm-pnd-range]", "[data-amm-pnd]");
-      bindSlider("[data-amm-xrp-range]", "[data-amm-xrp]");
+      bindPairedSlider("[data-amm-pnd-range]", "[data-amm-pnd]", "pnd");
+      bindPairedSlider("[data-amm-xrp-range]", "[data-amm-xrp]", "xrp");
       bindSlider("[data-amm-fee-range]", "[data-amm-fee]", "[data-amm-fee-label]", (value) => {
         const n = Number(value);
         return Number.isFinite(n) ? `${(n / 1000).toFixed(n % 10 ? 3 : 1)}%` : "0%";
