@@ -3879,17 +3879,8 @@ code.addr {
   box-sizing: border-box;
   height: 100svh;
   height: 100dvh;
-  padding: var(--home-frame);
+  padding: 0;
   overflow: hidden;
-}
-
-.page-index .home-screen .topbar {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.page-index .home-screen .protocol-snapshot-title {
-  padding-left: 0;
 }
 
 .page-index .home-screen .hero {
@@ -3902,8 +3893,10 @@ code.addr {
 
 .page-index .hero-inner {
   position: absolute;
-  inset: 0;
-  bottom: var(--privacy-reserve-h);
+  top: var(--home-frame);
+  right: var(--home-frame);
+  left: var(--home-frame);
+  bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
   container-type: size;
   container-name: home-hero;
   display: flex;
@@ -3974,16 +3967,6 @@ code.addr {
   background: rgb(201 214 224 / 0.07);
 }
 
-.page-index .shell {
-  padding-left: var(--home-frame);
-  padding-right: var(--home-frame);
-}
-
-.page-index .footer {
-  padding-left: var(--home-frame);
-  padding-right: var(--home-frame);
-}
-
 @media (max-width: 480px) {
   .page-index {
     --home-frame: clamp(0.75rem, 4vw, 1rem);
@@ -4019,10 +4002,6 @@ code.addr {
     --privacy-reserve-h: 12.25rem;
   }
 
-  .page-index .home-screen {
-    padding-bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
-  }
-
   .page-index .home-screen .topbar-end {
     flex: 1 1 auto;
     order: 0;
@@ -4055,7 +4034,6 @@ code.addr {
 
   .page-index .hero-inner {
     align-items: stretch;
-    bottom: 0;
   }
 
   .page-index .hero-main {

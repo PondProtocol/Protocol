@@ -684,10 +684,12 @@ check(
     stylesText.includes("--privacy-reserve-h") &&
     stylesText.includes("container-name: home-hero") &&
     stylesText.includes(".page-index .hero-inner") &&
-    /padding:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
-    /bottom:\s*var\(--privacy-reserve-h\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
+    /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
+    /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
+    /bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
+    ) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /padding-bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(stylesText) &&
     /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
 );
 check(
