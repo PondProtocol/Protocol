@@ -313,7 +313,7 @@ ${ticketPanelMarkup("sell")}
             <button type="button" data-chart-latest>Latest</button>
             <button type="button" class="is-active" data-chart-hl aria-pressed="true">H/L</button>
             <button type="button" class="is-active" data-chart-vol-sma aria-pressed="true">Vol MA</button>
-            <button type="button" data-chart-compact aria-pressed="false">Compact</button>
+            <button type="button" class="is-active" data-chart-compact aria-pressed="true">Compact</button>
             <button type="button" data-chart-tz aria-pressed="false">Local</button>
             <button type="button" data-chart-pin aria-pressed="false">Pin</button>
             <button type="button" data-chart-reset>Reset</button>
@@ -321,8 +321,8 @@ ${ticketPanelMarkup("sell")}
           <div class="trade-indicator-tools" data-indicator-tools>
             <button type="button" class="is-active" data-chart-indicator="sma" aria-pressed="true"><i class="trade-ind-swatch is-sma"></i>SMA</button>
             <button type="button" class="is-active" data-chart-indicator="ema" aria-pressed="true"><i class="trade-ind-swatch is-ema"></i>EMA</button>
-            <button type="button" class="is-active" data-chart-indicator="rsi" aria-pressed="true"><i class="trade-ind-swatch is-rsi"></i>RSI</button>
-            <button type="button" class="is-active" data-chart-indicator="macd" aria-pressed="true"><i class="trade-ind-swatch is-macd"></i>MACD</button>
+            <button type="button" data-chart-indicator="rsi" aria-pressed="false"><i class="trade-ind-swatch is-rsi"></i>RSI</button>
+            <button type="button" data-chart-indicator="macd" aria-pressed="false"><i class="trade-ind-swatch is-macd"></i>MACD</button>
             <button type="button" class="is-active" data-chart-indicator="bollinger" aria-pressed="true"><i class="trade-ind-swatch is-bb"></i>BB</button>
             <span class="trade-indicator-periods" role="group" aria-label="Indicator period">
               <button type="button" data-chart-period="5">5</button>
@@ -393,9 +393,9 @@ ${ticketPanelMarkup("sell")}
               <div class="trade-overview-stat"><span>AMM spot</span><strong data-chart-stat-spot>—</strong></div>
               <div class="trade-overview-stat"><span>Basis</span><strong data-chart-stat-basis>—</strong></div>
               <div class="trade-overview-stat"><span>Prints</span><strong data-chart-stat-prints>—</strong></div>
-              <div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div>
-              <div class="trade-overview-stat"><span>Your PND</span><strong data-chart-stat-wallet-pnd>—</strong></div>
-              <div class="trade-overview-stat"><span>Your XRP</span><strong data-chart-stat-wallet-xrp>—</strong></div>
+              <div class="trade-overview-stat trade-snapshot-dup"><span>Last print</span><strong data-chart-stat-print>—</strong></div>
+              <div class="trade-overview-stat trade-snapshot-dup"><span>Your PND</span><strong data-chart-stat-wallet-pnd>—</strong></div>
+              <div class="trade-overview-stat trade-snapshot-dup"><span>Your XRP</span><strong data-chart-stat-wallet-xrp>—</strong></div>
               <div class="trade-overview-stat"><span>Ledger poll</span><strong data-chart-stat-poll>8s · waiting</strong></div>
               <div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div>
             </div>
@@ -1117,7 +1117,7 @@ ${ticketPanelMarkup("sell")}
     function paintSnapshotPrints(prints = []) {
       const list = $("[data-snapshot-prints]");
       if (!list) return;
-      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 6);
+      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 3);
       list.innerHTML = rows.length
         ? rows.map((print) => {
             const clock = new Date(print.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
@@ -2099,7 +2099,7 @@ ${ticketPanelMarkup("sell")}
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: false, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: true, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: false, macd: false, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -2564,11 +2564,19 @@ ${ticketPanelMarkup("sell")}
         const showRsi = indicatorOn("rsi");
         const showMacd = indicatorOn("macd");
         const panes = tv.chart.panes?.() || [];
-        const paneBudget = Math.max(height, 220);
         const compact = Boolean(chartState.compact);
-        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(compact ? 48 : 72, Math.round(paneBudget * (compact ? 0.12 : 0.2))) : 0);
-        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(compact ? 40 : 56, Math.round(paneBudget * (compact ? 0.1 : 0.16))) : 0);
-        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(compact ? 44 : 64, Math.round(paneBudget * (compact ? 0.11 : 0.18))) : 0);
+        const rsiH = showRsi ? Math.round(height * (compact ? 0.12 : 0.16)) : 0;
+        const macdH = showMacd ? Math.round(height * (compact ? 0.12 : 0.16)) : 0;
+        if (panes[0]?.setHeight) panes[0].setHeight(Math.max(140, height - rsiH - macdH));
+        if (panes[1]?.setHeight) panes[1].setHeight(rsiH);
+        if (panes[2]?.setHeight) panes[2].setHeight(macdH);
+        tv.volume?.priceScale().applyOptions({
+          scaleMargins: { top: showVolume ? 0.8 : 1, bottom: 0 },
+          borderVisible: false,
+        });
+        tv.candles.priceScale().applyOptions({
+          scaleMargins: { top: 0.08, bottom: showVolume ? 0.2 : 0.06 },
+        });
         tv.chart.timeScale().fitContent();
         const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
         const range = { minValue: domain.minValue, maxValue: domain.maxValue };
@@ -2582,10 +2590,11 @@ ${ticketPanelMarkup("sell")}
         tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         const scale = tv.candles.priceScale();
+        const margins = { top: 0.08, bottom: showVolume ? 0.2 : 0.06 };
         if (chartState.log) {
-          scale.applyOptions({ autoScale: true, scaleMargins: { top: 0.08, bottom: 0.06 } });
+          scale.applyOptions({ autoScale: true, scaleMargins: margins });
         } else {
-          scale.applyOptions({ autoScale: false, scaleMargins: { top: 0.08, bottom: 0.06 } });
+          scale.applyOptions({ autoScale: false, scaleMargins: margins });
           if (scale.setVisibleRange) scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
         }
       }
@@ -2602,9 +2611,9 @@ ${ticketPanelMarkup("sell")}
       function sizeTvPanes() {
         const panes = chartState.tv?.chart.panes?.() || [];
         const compact = Boolean(chartState.compact);
-        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? (compact ? 0.16 : 0.28) : 0);
-        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? (compact ? 0.12 : 0.2) : 0);
-        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? (compact ? 0.14 : 0.22) : 0);
+        if (panes[0]?.setStretchFactor) panes[0].setStretchFactor(1);
+        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(indicatorOn("rsi") ? (compact ? 0.14 : 0.2) : 0.001);
+        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("macd") ? (compact ? 0.14 : 0.2) : 0.001);
       }
 
       function ensureTvBoard() {
@@ -2651,8 +2660,9 @@ ${ticketPanelMarkup("sell")}
             priceFormat: { type: "volume" },
             priceLineVisible: false,
             lastValueVisible: false,
-          }, 1);
-          volume.priceScale().applyOptions({ scaleMargins: { top: 0.16, bottom: 0 } });
+            priceScaleId: "vol",
+          });
+          volume.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 }, borderVisible: false });
           const lineOpts = (color, width = 2) => ({
             color,
             lineWidth: width,
@@ -2665,17 +2675,17 @@ ${ticketPanelMarkup("sell")}
           const emaLine = chart.addSeries(LC.LineSeries, lineOpts("#ff8a4c"));
           const bandHigh = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
           const bandLow = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
-          const volumeSma = chart.addSeries(LC.LineSeries, lineOpts("#8be9fd", 1), 1);
-          const rsi = chart.addSeries(LC.LineSeries, lineOpts("#b687f0"), 2);
+          const volumeSma = chart.addSeries(LC.LineSeries, { ...lineOpts("#8be9fd", 1), priceScaleId: "vol" });
+          const rsi = chart.addSeries(LC.LineSeries, lineOpts("#b687f0"), 1);
           const osc = rsi;
           rsi.createPriceLine({ price: 70, color: "#ef5350", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "70" });
           rsi.createPriceLine({ price: 30, color: "#26a69a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "30" });
-          const macdLine = chart.addSeries(LC.LineSeries, lineOpts("#26a69a"), 3);
-          const macdSignal = chart.addSeries(LC.LineSeries, lineOpts("#ef5350", 1), 3);
+          const macdLine = chart.addSeries(LC.LineSeries, lineOpts("#26a69a"), 2);
+          const macdSignal = chart.addSeries(LC.LineSeries, lineOpts("#ef5350", 1), 2);
           const macdHist = chart.addSeries(LC.HistogramSeries, {
             priceLineVisible: false,
             lastValueVisible: false,
-          }, 3);
+          }, 2);
           const highLine = candles.createPriceLine({ price: 0, color: "#74d3a0", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "H" });
           const lowLine = candles.createPriceLine({ price: 0, color: "#ef9a9a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "L" });
           const pinLine = candles.createPriceLine({ price: 0, color: "#f7c66a", lineWidth: 1, lineStyle: 0, axisLabelVisible: false, title: "Pin", lineVisible: false });

@@ -872,6 +872,11 @@ check(
     tradeJsText.includes("data-chart-hud-prints") &&
     tradeJsText.includes("subscribeClick") &&
     stylesText.includes("trade-chart-nav-tools") &&
+    stylesText.includes(".trade-chart-snapshot") &&
+    /grid-template-rows:\s*minmax\(0,\s*26%\)/.test(stylesText) &&
+    stylesText.includes("trade-snapshot-dup") &&
+    tradeJsText.includes("slice(0, 3)") &&
+    tradeJsText.includes("compact: true") &&
     tradeJsText.includes("data-chart-period") &&
     tradeJsText.includes("data-chart-bar-left") &&
     tradeJsText.includes("CrosshairMode.Magnet") &&
