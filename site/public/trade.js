@@ -264,7 +264,7 @@
     <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="chart" aria-label="Market chart" hidden>
       <section class="trade-overview-chart">
         <div class="trade-chart-market-controls">
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button></div>
+          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="1d">1D</button></div>
           <div class="trade-chart-tools">
             <span class="is-active">Candles</span>
             <button type="button" class="is-active" data-chart-volume aria-pressed="true">Volume</button>
@@ -924,7 +924,7 @@
       return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
     }
 
-    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000 };
+    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "1d": 24 * 60 * 60_000 };
 
     function printsToCandles(prints = [], intervalMs) {
       if (!intervalMs || !prints.length) return [];
@@ -1686,9 +1686,9 @@
         "pnd-xrp": "PND / XRP",
         "pnd-usd": "PND / USD",
       };
-      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1 };
-      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48 };
-      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m" };
+      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "1d": 90 };
+      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "1d": 90 };
+      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "1d": "1D" };
       const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null, hoverIndex: null, lastPrintTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
@@ -1893,20 +1893,52 @@
       function recentPriceDomain(points, livePrice) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
-        const lows = points.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
-        const highs = points.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
-        const closes = points.map((point) => point.close ?? point.value);
+        const window = points.slice(-Math.min(points.length, 48));
+        const lows = window.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
+        const highs = window.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
+        const closes = window.map((point) => point.close ?? point.value);
         let minValue = Math.min(lastPrice, ...lows);
         let maxValue = Math.max(lastPrice, ...highs);
-        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 2.2 || minValue < lastPrice * 0.45)) {
-          const near = closes.filter((value) => value >= lastPrice * 0.6 && value <= lastPrice * 1.6);
-          const pad = Math.max(lastPrice * 0.06, ...(near.length ? near : closes).map((value) => Math.abs(value - lastPrice)));
-          minValue = Math.min(lastPrice - pad, ...near);
-          maxValue = Math.max(lastPrice + pad, ...near);
+        const sorted = [...closes].filter(Number.isFinite).sort((a, b) => a - b);
+        const mid = sorted[Math.floor(sorted.length / 2)] || lastPrice;
+        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > mid * 8 || minValue < mid / 8 || maxValue > lastPrice * 2.2 || minValue < lastPrice * 0.45)) {
+          const near = window.filter((point) => {
+            const close = point.close ?? point.value;
+            return close >= mid * 0.35 && close <= Math.max(mid * 2.8, lastPrice * 1.15);
+          });
+          const use = near.length >= 3 ? near : window;
+          minValue = Math.min(lastPrice, ...use.map((point) => (Number.isFinite(point.low) ? point.low : point.value)));
+          maxValue = Math.max(lastPrice, ...use.map((point) => (Number.isFinite(point.high) ? point.high : point.value)));
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
-        return { minValue, maxValue, lastPrice };
+        const pad = Math.max((maxValue - minValue) * 0.08, Math.abs(lastPrice) * 0.04, 1e-5);
+        return { minValue: minValue - pad, maxValue: maxValue + pad, lastPrice };
+      }
+
+      function fitTvViewport(tv, rows, livePrice) {
+        const width = Math.floor(board.clientWidth);
+        const height = Math.floor(board.clientHeight);
+        if (width > 40 && height > 80) tv.chart.resize(width, height);
+        const showVolume = chartState.volume !== false;
+        const showOsc = chartState.indicator === "rsi" || chartState.indicator === "macd";
+        const panes = tv.chart.panes?.() || [];
+        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(64, Math.round(Math.min(height, 480) * 0.22)) : 0);
+        if (panes[2]?.setHeight) panes[2].setHeight(showOsc ? Math.max(52, Math.round(Math.min(height, 480) * 0.18)) : 0);
+        tv.chart.timeScale().fitContent();
+        const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
+        const range = { minValue: domain.minValue, maxValue: domain.maxValue };
+        tv.candles.applyOptions({
+          lastValueVisible: true,
+          priceLineVisible: true,
+          autoscaleInfoProvider: () => ({ priceRange: range }),
+        });
+        tv.overlay.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        const scale = tv.candles.priceScale();
+        scale.applyOptions({ autoScale: false, scaleMargins: { top: 0.08, bottom: 0.06 } });
+        if (scale.setVisibleRange) scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
       }
 
       function renderChart() {
@@ -2013,6 +2045,16 @@
           });
           chartState.tv = { chart, candles, volume, overlay, bandHigh, bandLow, osc };
           sizeTvPanes(true, false);
+          window.addEventListener("resize", () => {
+            if (!chartState.tv || !chartState.data) return;
+            const rows = (chartState.data.candles || chartState.data.points || []).map((point) => ({
+              ...point,
+              close: point.close ?? point.value,
+              high: point.high ?? point.value,
+              low: point.low ?? point.value,
+            }));
+            if (rows.length) fitTvViewport(chartState.tv, rows, chartState.data.livePrice ?? rows[rows.length - 1].close);
+          });
           return chartState.tv;
         });
         return chartState.tvReady;
@@ -2081,10 +2123,12 @@
           priceLineVisible: true,
         });
         sizeTvPanes(showVolume, showOsc);
-        tv.chart.timeScale().fitContent();
         liveChart.hidden = false;
         emptyChart.hidden = true;
         emptyChart.classList.remove("is-loading");
+        const livePrice = chartState.data.livePrice ?? last.close;
+        fitTvViewport(tv, rows, livePrice);
+        requestAnimationFrame(() => fitTvViewport(tv, rows, livePrice));
         setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
         setText("[data-chart-stat-high]", formatAxis(Math.max(...rows.map((row) => row.high))));
         setText("[data-chart-stat-low]", formatAxis(Math.min(...rows.map((row) => row.low))));
@@ -2128,7 +2172,7 @@
           );
           return;
         }
-        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 60 * 60 * 1000, "4h": 4 * 60 * 60 * 1000, "1d": 24 * 60 * 60 * 1000, "1w": 7 * 24 * 60 * 60 * 1000 };
+        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 14 * 24 * 60 * 60 * 1000, "1d": 90 * 24 * 60 * 60 * 1000 };
         const windowMs = windows[chartState.range];
         const cutoff = windowMs ? Date.now() - windowMs : 0;
         let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);

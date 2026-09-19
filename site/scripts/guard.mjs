@@ -829,8 +829,11 @@ check(
     !tradeJsText.includes("tv.js") &&
     !tradeHtml.includes("s.tradingview.com") &&
     tradeJsText.includes('data-chart-range="1m"') &&
+    tradeJsText.includes('data-chart-range="1h"') &&
+    tradeJsText.includes('data-chart-range="1d"') &&
+    tradeJsText.includes('"1h": 60 * 60_000') &&
+    tradeJsText.includes('"1d": 24 * 60 * 60_000') &&
     !tradeJsText.includes('data-chart-pair="xrp-usd"') &&
-    !tradeJsText.includes('data-chart-range="1h"') &&
     !tradeJsText.includes("print candles") &&
     tradeJsText.includes("data-chart-volume") &&
     tradeJsText.includes("continuePoolTape") &&
@@ -842,7 +845,10 @@ check(
     tradeJsText.includes("data-chart-print-age") &&
     tradeJsText.includes("data-chart-ohlc") &&
     tradeJsText.includes("formatCompact") &&
+    tradeJsText.includes("setVisibleRange") &&
+    tradeJsText.includes("fitTvViewport") &&
     stylesText.includes("trade-chart-board") &&
+    stylesText.includes(".trade-chart-board table") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
