@@ -5796,11 +5796,11 @@ body:has([data-pond-profile]) .profile-card {
   display: grid;
   min-height: 27rem;
   flex: 1 1 auto;
-  place-content: center;
-  justify-items: center;
-  gap: 0.45rem;
+  place-content: stretch;
+  justify-items: stretch;
+  gap: 0;
   overflow: hidden;
-  padding: 0.45rem 0.6rem 0.7rem;
+  padding: 0.2rem 0.25rem 0.3rem;
   background: #101214;
   text-align: center;
 }
@@ -5911,6 +5911,22 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-volume.is-down {
   fill: #bd5260;
+}
+
+.trade-chart-wick {
+  stroke-width: 1.2;
+}
+
+.trade-chart-wick.is-up,
+.trade-chart-candle.is-up {
+  stroke: #74d3a0;
+  fill: #74d3a0;
+}
+
+.trade-chart-wick.is-down,
+.trade-chart-candle.is-down {
+  stroke: #f0a3a3;
+  fill: #f0a3a3;
 }
 
 .trade-chart-rsi,
@@ -8687,8 +8703,8 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-view {
     display: grid;
     flex: 1;
-    grid-template-columns: minmax(0, 1fr) minmax(14rem, 17.5rem);
-    gap: 0.45rem;
+    grid-template-columns: minmax(0, 1fr) minmax(16.5rem, 20rem);
+    gap: 0.4rem;
     min-height: 0;
     margin-top: 0.28rem;
     overflow: hidden;
@@ -8739,18 +8755,42 @@ body.page-trade .trade-detail-window {
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-sidebar {
     display: grid;
-    align-content: start;
-    gap: 0.32rem;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-content: stretch;
+    gap: 0.28rem;
     min-height: 0;
     overflow: hidden;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-card {
-    padding: 0.32rem 0.42rem;
+    padding: 0.28rem 0.4rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-stat {
-    padding: 0.12rem 0;
+    padding: 0.08rem 0;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-risk {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket .trade-action-panels {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.4rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket .trade-empty-panel {
+    min-height: 0;
+    padding: 0.7rem 0.4rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-detail-window {
