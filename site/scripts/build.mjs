@@ -424,6 +424,112 @@ function searchHtml(currentUrl) {
 </form>`;
 }
 
+function smoothClosed(pts) {
+  const n = pts.length;
+  let d = "";
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n];
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n];
+    const p3 = pts[(i + 2) % n];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    if (i === 0) d += `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`;
+    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return `${d}Z`;
+}
+
+function smoothOpen(pts) {
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
+function closedContour(cx, cy, rx, ry, { lobes = 3, phase = 0, wobble = 0.14, n = 40 } = {}) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const t = (i / n) * Math.PI * 2;
+    const w =
+      1 +
+      wobble * Math.sin(t * lobes + phase) +
+      wobble * 0.48 * Math.cos(t * (lobes + 1) - phase * 1.25) +
+      wobble * 0.2 * Math.sin(t * (lobes + 3) + phase * 0.55);
+    pts.push([cx + Math.cos(t) * rx * w, cy + Math.sin(t) * ry * w]);
+  }
+  return smoothClosed(pts);
+}
+
+function ridgePath(y, amp, freq, x0, x1, phase) {
+  const pts = [];
+  for (let x = x0; x <= x1; x += 24) {
+    const t = (x - x0) / Math.max(1, x1 - x0);
+    const yy =
+      y +
+      amp * Math.sin(t * Math.PI * freq + phase) +
+      amp * 0.38 * Math.cos(t * Math.PI * (freq + 1.35) - phase);
+    pts.push([x, yy]);
+  }
+  return smoothOpen(pts);
+}
+
+function heroTopoSvg() {
+  const issuer = site.issuerAddress;
+  const treasury = site.treasuryAddress;
+  const operations = site.operationsAddress;
+  const lines = [
+    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${treasury}","Amount":"0","Flags":0}`,
+    `{"TransactionType":"AccountSet","Account":"${issuer}","Flags":0}`,
+    `{"TransactionType":"TrustSet","Account":"${operations}","Flags":131072,"LimitAmount":{"currency":"PND","issuer":"${issuer}","value":"0"}}`,
+    `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
+    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
+  ];
+  const paths = [];
+  const hill = (cx, cy, r0, r1, step, lobes, phase0) => {
+    for (let r = r0; r <= r1; r += step) {
+      const t = (r - r0) / Math.max(1, r1 - r0);
+      paths.push(
+        closedContour(cx, cy, r, r * (0.62 + t * 0.12), {
+          lobes,
+          phase: phase0 + t * 0.7,
+          wobble: 0.11 + t * 0.05,
+          n: 42,
+        }),
+      );
+    }
+  };
+  hill(1185, 355, 56, 430, 34, 3, 0.35);
+  hill(1488, 730, 48, 210, 36, 4, 1.1);
+  hill(620, 790, 42, 168, 36, 3, 2.2);
+  for (let i = 0; i < 5; i++) {
+    paths.push(ridgePath(118 + i * 148, 38 + (i % 3) * 10, 2.2 + i * 0.18, -40, 1680, i * 0.7));
+  }
+  const defs = paths
+    .map((d, i) => `<path id="hero-topo-p${i}" d="${d}" fill="none"/>`)
+    .join("");
+  const texts = paths
+    .map((_, i) => {
+      const payload = esc(Array.from({ length: 10 }, () => lines[i % lines.length]).join("  ·  "));
+      return `<text><textPath href="#hero-topo-p${i}" startOffset="${(i * 7) % 23}%">${payload}</textPath></text>`;
+    })
+    .join("");
+  return `<div class="hero-topo" aria-hidden="true">
+  <svg class="hero-topo-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" focusable="false"><defs>${defs}</defs>${texts}</svg>
+</div>`;
+}
+
 function heroHtml() {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -432,6 +538,7 @@ function heroHtml() {
     </div>`
     : "";
   return `<section class="hero" aria-labelledby="hero-tagline">
+  ${heroTopoSvg()}
   <div class="hero-inner">
     <p class="hero-kicker">Pond Protocol</p>
     <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>
@@ -447,7 +554,7 @@ function heroHtml() {
       <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
       <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
     </p>
-   </div>
+  </div>
 </section>`;
 }
 

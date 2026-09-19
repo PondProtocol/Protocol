@@ -953,6 +953,19 @@ check(
     indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),
 );
 check(
+  "landing hero contours are original XRPL textPaths",
+  indexHtml.includes('class="hero-topo"') &&
+    indexHtml.includes("<textPath") &&
+    indexHtml.includes("TransactionType") &&
+    indexHtml.includes(config.site.issuerAddress) &&
+    indexHtml.includes("Destination") &&
+    indexHtml.includes("Flags") &&
+    !/pixers|shutterstock|istock/i.test(indexHtml) &&
+    !indexHtml.includes('src="/hero.png"') &&
+    !tradeHtml.includes("hero-topo") &&
+    !profileHtml.includes("hero-topo"),
+);
+check(
   "logged-in chip is a profile icon that links to /profile/<handle>/",
   indexHtml.includes("data-session-profile") &&
     indexHtml.includes("data-session-avatar") &&
