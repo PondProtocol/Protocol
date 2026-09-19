@@ -780,6 +780,10 @@ check(
     xamanJsText.includes("/api/xaman/signin") &&
     tradeJsText.includes("data-amm-send") &&
     tradeJsText.includes("data-amm-live-pnd") &&
+    tradeJsText.includes("data-amm-pool-stats") &&
+    tradeJsText.includes("No AMM pool") &&
+    !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
+    !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&
     xamanSrc.includes("XUMM_INSTRUCTION_MAX = 280") &&
     xamanSrc.includes("payloadInstruction") &&

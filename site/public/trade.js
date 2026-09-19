@@ -154,8 +154,15 @@
                   <div class="trade-amm-create" data-amm-create>
                     <p class="trade-amm-create-kicker">Testnet AMMCreate</p>
                     <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate, not a deposit into an existing pool — no pool yet. This server never signs. submit:false.</p>
-                    <p class="trade-amm-create-balances">Treasury <code data-amm-treasury>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</code><br>Live PND: <strong data-amm-live-pnd>—</strong><br>Live XRP: <strong data-amm-live-xrp>—</strong></p>
-                    <p class="trade-amm-create-warn" data-amm-unfunded>Asked amounts are 500,000,000,000 PND + 5,000 XRP. Live Testnet treasury holds 100B PND and about 220 XRP. Those amounts will tecUNFUNDED until you mint more PND and faucet more XRP.</p>
+                    <div class="trade-amm-pool-stats" data-amm-pool-stats>
+                      <div class="trade-amm-stat"><span>Pool</span><strong data-amm-stat-pool>No AMM pool</strong><em data-amm-stat-pool-note>amm_info</em></div>
+                      <div class="trade-amm-stat"><span>DEX</span><strong data-amm-stat-dex>—</strong><em>book_offers</em></div>
+                      <div class="trade-amm-stat"><span>Treasury PND</span><strong data-amm-live-pnd>—</strong><em>validated line</em></div>
+                      <div class="trade-amm-stat"><span>Treasury XRP</span><strong data-amm-live-xrp>—</strong><em>account_info</em></div>
+                      <div class="trade-amm-stat"><span>Price</span><strong data-amm-stat-price>—</strong><em data-amm-stat-price-note>No AMM or DEX book</em></div>
+                      <div class="trade-amm-stat"><span>Ledger</span><strong data-amm-stat-ledger>—</strong><em>validated</em></div>
+                    </div>
+                    <p class="trade-amm-create-balances">Treasury <code data-amm-treasury>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</code></p>
                     <p class="trade-amm-create-session" data-amm-session>Sign in with Xaman as the treasury, then send.</p>
                     <label class="trade-action-field trade-input-field"><span>PND amount</span><div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="500000000000" aria-label="PND amount for AMMCreate"><b>PND</b></div></label>
                     <label class="trade-action-field trade-input-field"><span>XRP amount</span><div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="5000" aria-label="XRP amount for AMMCreate"><b>XRP</b></div></label>
@@ -927,18 +934,19 @@
       }
       const send = $("[data-amm-send]");
       if (send) send.disabled = !onTestnet;
-      const askedPnd = Number($("[data-amm-pnd]")?.value || 500000000000);
-      const askedXrp = Number($("[data-amm-xrp]")?.value || 5000);
-      const livePnd = pnd != null ? Number(pnd) : 100000000000;
-      const liveXrp = xrpDrops != null ? Number(xrpDrops) / 1e6 : 220;
-      const warn = $("[data-amm-unfunded]");
-      if (warn) {
-        const short = askedPnd > livePnd || askedXrp > liveXrp;
-        warn.hidden = false;
-        warn.textContent = short
-          ? `Asked amounts are ${formatIou(askedPnd)} PND + ${formatIou(askedXrp)} XRP. Live treasury is ${pnd != null ? formatIou(pnd) : "100B"} PND and ${xrpDrops != null ? formatDrops(xrpDrops) : "~220"} XRP. Those amounts will tecUNFUNDED until you mint more PND and faucet more XRP.`
-          : `Live treasury can cover ${formatIou(askedPnd)} PND + ${formatIou(askedXrp)} XRP on this read. AMMCreate is still Testnet-only, unsigned, submit:false.`;
-      }
+      const { ammInfo, offers = [], market, ledger } = state.verification;
+      const reserves = ammInfo?.amm ?? ammInfo;
+      setText("[data-amm-stat-pool]", reserves ? "Pool found" : "No AMM pool");
+      setText(
+        "[data-amm-stat-pool-note]",
+        reserves
+          ? `${formatAssetAmount(reserves.amount)} · ${formatAssetAmount(reserves.amount2)}`
+          : "amm_info · no pool yet",
+      );
+      setText("[data-amm-stat-dex]", String(offers.length));
+      setText("[data-amm-stat-price]", market ? getMarketPrice(state.verification) : "—");
+      setText("[data-amm-stat-price-note]", market ? "Validated book or AMM" : "No AMM or DEX book");
+      setText("[data-amm-stat-ledger]", ledger?.seq ? String(ledger.seq) : "—");
     }
 
     function setupAmmCreate() {

@@ -2471,7 +2471,6 @@ code.addr {
 .trade-amm-create-kicker,
 .trade-amm-create-copy,
 .trade-amm-create-balances,
-.trade-amm-create-warn,
 .trade-amm-create-session {
   margin: 0;
   color: var(--text-muted);
@@ -2486,8 +2485,36 @@ code.addr {
   text-transform: uppercase;
 }
 
-.trade-amm-create-warn {
-  color: #e6c27a;
+.trade-amm-pool-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.trade-amm-stat {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+  padding: 0.5rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg-soft) 84%, #000);
+}
+
+.trade-amm-stat span,
+.trade-amm-stat em {
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trade-amm-stat strong {
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1.15;
 }
 
 .trade-amm-create [data-amm-xaman] {
