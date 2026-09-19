@@ -974,6 +974,21 @@ check(
     !profileHtml.includes("hero-topo"),
 );
 check(
+  "homepage first paint stays light",
+  heroTopoSvg.length < 80000 &&
+    (heroTopoSvg.match(/<textPath/g) || []).length <= 16 &&
+    !indexHtml.includes("/trade.js") &&
+    !indexHtml.includes("/profile.js") &&
+    !indexHtml.includes("/card.js") &&
+    !indexHtml.includes("/disclaimer.js") &&
+    indexHtml.includes("/nav.js") &&
+    indexHtml.includes("/session.js") &&
+    indexHtml.includes("/privacy.js") &&
+    indexHtml.includes("/xaman.js") &&
+    tradeHtml.includes("/trade.js") &&
+    profileHtml.includes("/profile.js"),
+);
+check(
   "logged-in chip is a profile icon that links to /profile/<handle>/",
   indexHtml.includes("data-session-profile") &&
     indexHtml.includes("data-session-avatar") &&

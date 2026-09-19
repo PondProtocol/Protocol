@@ -424,39 +424,56 @@ function searchHtml(currentUrl) {
 </form>`;
 }
 
-function smoothPolyline(pts, closed) {
-  const ring = closed ? pts : pts;
-  if (ring.length < 2) return "";
-  if (!closed) {
-    let d = `M${ring[0][0].toFixed(1)} ${ring[0][1].toFixed(1)}`;
-    for (let i = 0; i < ring.length - 1; i++) {
-      const p0 = ring[Math.max(0, i - 1)];
-      const p1 = ring[i];
-      const p2 = ring[i + 1];
-      const p3 = ring[Math.min(ring.length - 1, i + 2)];
-      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-      const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-      const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-      d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+function simplifyPolyline(pts, epsilon) {
+  if (pts.length <= 2) return pts;
+  const limit = epsilon * epsilon;
+  const keep = new Uint8Array(pts.length);
+  keep[0] = 1;
+  keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [start, end] = stack.pop();
+    const a = pts[start];
+    const b = pts[end];
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len2 = dx * dx + dy * dy || 1;
+    let max = 0;
+    let idx = -1;
+    for (let i = start + 1; i < end; i++) {
+      const p = pts[i];
+      const t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2;
+      const x = a[0] + dx * t;
+      const y = a[1] + dy * t;
+      const d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y);
+      if (d > max) {
+        max = d;
+        idx = i;
+      }
     }
-    return d;
+    if (max > limit && idx > 0) {
+      keep[idx] = 1;
+      stack.push([start, idx], [idx, end]);
+    }
   }
-  const n = ring.length;
-  let d = "";
-  for (let i = 0; i < n; i++) {
-    const p0 = ring[(i - 1 + n) % n];
-    const p1 = ring[i];
-    const p2 = ring[(i + 1) % n];
-    const p3 = ring[(i + 2) % n];
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    if (i === 0) d += `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`;
-    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
-  }
-  return `${d}Z`;
+  return pts.filter((_, i) => keep[i]);
+}
+
+function polylinePath(pts, closed) {
+  const ring = simplifyPolyline(pts, 4.5);
+  if (ring.length < 2) return "";
+  let d = `M${Math.round(ring[0][0])} ${Math.round(ring[0][1])}`;
+  for (let i = 1; i < ring.length; i++) d += `L${Math.round(ring[i][0])} ${Math.round(ring[i][1])}`;
+  return closed ? `${d}Z` : d;
+}
+
+function compactCss(css) {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\s*\n\s*/g, "\n")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
 }
 
 function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
@@ -645,14 +662,14 @@ function buildHeroTopoMarkup() {
   const treasury = site.treasuryAddress;
   const operations = site.operationsAddress;
   const lines = [
-    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${treasury}","Amount":"0","Flags":0}`,
-    `{"TransactionType":"AccountSet","Account":"${issuer}","Flags":0}`,
-    `{"TransactionType":"TrustSet","Account":"${operations}","Flags":131072,"LimitAmount":{"currency":"PND","issuer":"${issuer}","value":"0"}}`,
-    `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
-    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
+    `TransactionType Payment Account ${issuer} Destination ${treasury} Amount 0 Flags 0`,
+    `TransactionType AccountSet Account ${issuer} Flags 0`,
+    `TransactionType TrustSet Account ${operations} Flags 131072`,
+    `Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
+    `TransactionType Payment Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
   ];
-  const cols = 80;
-  const rows = 46;
+  const cols = 56;
+  const rows = 32;
   const grid = heightGrid(cols, rows);
   let zMin = Infinity;
   let zMax = -Infinity;
@@ -662,50 +679,40 @@ function buildHeroTopoMarkup() {
       if (z > zMax) zMax = z;
     }
   }
-  const steps = 20;
+  const steps = 14;
   const levels = Array.from(
     { length: steps },
     (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
   );
   const contours = [];
   levels.forEach((level, levelIndex) => {
-    const index = levelIndex % 5 === 0;
+    const index = levelIndex % 4 === 0;
     for (const pts of isolines(1600, 900, cols, rows, level, grid)) {
-      if (pts.length < 6 || pathLength(pts) < 48) continue;
+      if (pts.length < 6 || pathLength(pts) < 64) continue;
       const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
       const body = closed ? pts.slice(0, -1) : pts;
       if (body.length < 5) continue;
-      contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
+      const d = polylinePath(body, closed);
+      if (!d) continue;
+      contours.push({ d, index, len: pathLength(body) });
     }
   });
   const strokes = contours
-    .map(
-      (c, i) =>
-        `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}" id="hero-topo-p${i}"/>`,
-    )
-    .join("");
-  const texts = contours
-    .filter((c, i) => c.index || i % 2 === 0)
     .map((c, i) => {
-      const repeats = Math.max(2, Math.min(4, Math.round(c.len / 260)));
-      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join(" · "));
-      const cls = c.index ? ' class="index"' : "";
-      const href = contours.indexOf(c);
-      return `<text${cls}><textPath href="#hero-topo-p${href}" startOffset="${(i * 5) % 17}%">${payload}</textPath></text>`;
+      const id = c.index ? ` id="hero-topo-p${i}"` : "";
+      return `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}"${id}/>`;
     })
     .join("");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-  <style>
-    .iso { fill: none; stroke: #c9d6e0; stroke-width: 0.55; opacity: 0.3; }
-    .iso-index { stroke-width: 1.05; opacity: 0.46; }
-    text { fill: #c9d6e0; stroke: #c9d6e0; stroke-width: 0.12; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 5.8px; font-weight: 540; opacity: 0.55; }
-    text.index { font-size: 7.2px; font-weight: 700; stroke-width: 0.26; opacity: 0.78; }
-  </style>
-  ${strokes}
-  ${texts}
-</svg>
-`;
+  const texts = contours
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => c.index)
+    .map(({ c, i }, n) => {
+      const repeats = c.len > 520 ? 2 : 1;
+      const payload = esc(Array.from({ length: repeats }, () => lines[n % lines.length]).join(" · "));
+      return `<text class="index"><textPath href="#hero-topo-p${i}" startOffset="${(n * 7) % 19}%">${payload}</textPath></text>`;
+    })
+    .join("");
+  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><style>.iso{fill:none;stroke:#c9d6e0;stroke-width:.55;opacity:.3}.iso-index{stroke-width:1.05;opacity:.46}text{fill:#c9d6e0;stroke:#c9d6e0;stroke-width:.2;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:7px;font-weight:700;opacity:.72}</style>${strokes}${texts}</svg>`;
 }
 
 function heroTopoSvg() {
@@ -900,6 +907,32 @@ function privacyDockHtml() {
 </div>`;
 }
 
+function pageScripts(page) {
+  const tags = [
+    '<script src="/nav.js" defer></script>',
+    '<script src="/session.js" defer></script>',
+    '<script src="/privacy.js" defer></script>',
+    '<script src="/xaman.js" defer></script>',
+  ];
+  if (isStartFlow(page.url)) tags.push('<script src="/start.js" defer></script>');
+  if (page.url.startsWith("/profile/")) {
+    tags.push('<script src="/profile.js" defer></script>');
+    tags.push('<script src="/disclaimer.js" defer></script>');
+  }
+  if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
+  if (page.url === "/trade/") {
+    tags.push('<script src="/disclaimer.js" defer></script>');
+    tags.push(
+      '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script>',
+    );
+    tags.push(
+      '<script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>',
+    );
+    tags.push('<script src="/trade.js" defer></script>');
+  }
+  return tags.join("\n");
+}
+
 function layout(page, html) {
   const isHome = page.url === "/";
   const title = isHome ? site.title : `${page.title} — ${site.title}`;
@@ -1071,16 +1104,7 @@ ${isHome ? heroHtml() : ""}
 </div>
 ${privacyDockHtml()}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
-<script src="/nav.js" defer></script>
-<script src="/session.js" defer></script>
-<script src="/start.js" defer></script>
-<script src="/profile.js" defer></script>
-<script src="/card.js" defer></script>
-<script src="/disclaimer.js" defer></script>
-<script src="/privacy.js" defer></script>
-<script src="/xaman.js" defer></script>
-${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}
-<script src="/trade.js" defer></script>
+${pageScripts(page)}
 </body>
 </html>
 `;
@@ -1115,6 +1139,8 @@ writeFileSync(
  * exactly that path, and the assertion below refuses to produce output where it did not.
  */
 if (existsSync(PUBLIC_DIR)) cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true, dereference: true });
+const builtCss = join(DIST_DIR, "styles.css");
+if (existsSync(builtCss)) writeFileSync(builtCss, compactCss(readFileSync(builtCss, "utf8")));
 writeFileSync(join(DIST_DIR, "hero-topo.svg"), buildHeroTopoMarkup());
 
 const wellKnown = join(DIST_DIR, WELL_KNOWN_PATH);
