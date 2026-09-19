@@ -65,7 +65,8 @@ no activity. WalletConnect still connects for `/trade/` and does not
 open a profile. The file stores handle, XRPL address, display name, bio,
 Start Here progress, trade-disclaimer acceptance, and a small profile
 icon — never a seed. The signed-in top bar is that icon only; Sign out
-is on the profile page. Autoscale disk can be ephemeral;
+is on the profile page. The profile also reads public XRPL balances for
+$PND, $rPND, $XRP, and $RLUSD and says not issued when that is true. Autoscale disk can be ephemeral;
 this process does not talk to `database.greenhead.io`.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
