@@ -392,12 +392,9 @@
   }
 
   function paintSignInHint() {
-    const hint = document.querySelector(".session-menu-hint");
+    const hint = document.querySelector(".session-menu-block:has([data-xaman-app]) .session-menu-hint");
     if (!hint) return;
-    hint.textContent =
-      signInNetwork() === "testnet"
-        ? "Official SignIn on XRPL Testnet. The QR appears when this menu opens."
-        : "Official SignIn. The QR appears when this menu opens.";
+    hint.textContent = "Official SignIn on XRPL Testnet. The QR appears when this menu opens.";
   }
 
   function paint(root, health) {
