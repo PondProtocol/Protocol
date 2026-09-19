@@ -658,7 +658,7 @@ function heroHtml() {
   return `<section class="hero" aria-labelledby="hero-tagline">
   ${heroTopoSvg()}
   <div class="hero-inner">
-    <p class="hero-kicker">Pond Protocol</p>
+    <p class="hero-kicker">Pond</p>
     <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>
     <p class="hero-lede"><strong>$PND has not launched.</strong> Target 1 October 2026.
     Identity is the pair <strong>(PND, issuer address)</strong>, never the ticker.

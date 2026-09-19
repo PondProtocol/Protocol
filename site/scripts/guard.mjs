@@ -948,7 +948,11 @@ check(
     !indexHtml.includes("hero-signal") &&
     !indexHtml.includes('src="/hero.png"') &&
     indexHtml.includes("hero-kicker") &&
+    indexHtml.includes('<p class="hero-kicker">Pond</p>') &&
+    !indexHtml.includes('<p class="hero-kicker">Pond Protocol</p>') &&
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
+    /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&
+    /\.hero-kicker[\s\S]*?font-size:\s*clamp\(5\.25rem/.test(stylesText) &&
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
     indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),
 );
