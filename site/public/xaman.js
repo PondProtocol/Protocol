@@ -6,9 +6,9 @@
   const isAutostart = (root) => root?.hasAttribute("data-xaman-autostart");
   const returnTo = (root) => {
     const requested = root?.dataset.return;
-    if (requested === "/trade/" || requested === "/connect/") return requested;
+    if (requested === "/trade/") return requested;
     if (window.location.pathname.startsWith("/trade")) return "/trade/";
-    return "/connect/";
+    return "/trade/";
   };
   const signInNetwork = () => "testnet";
   const signInBody = (root) => ({ returnTo: returnTo(root), network: "testnet" });

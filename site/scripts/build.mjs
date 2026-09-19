@@ -339,14 +339,16 @@ function isLanding(url) {
 }
 
 function topnavHtml(currentUrl) {
-  const pondActive = currentUrl === "/Pond/" ? ' class="active" aria-current="page"' : "";
-  const protocolActive = currentUrl === "/Protocol/" ? ' class="active" aria-current="page"' : "";
+  const pondCls = currentUrl === "/Pond/" ? "topnav-page-link active" : "topnav-page-link";
+  const protocolCls = currentUrl === "/Protocol/" ? "topnav-start-link active" : "topnav-start-link";
+  const pondCurrent = currentUrl === "/Pond/" ? ' aria-current="page"' : "";
+  const protocolCurrent = currentUrl === "/Protocol/" ? ' aria-current="page"' : "";
   const group = config.nav.find((g) => g.section === "Protocol");
   const visible = group ? publishedPages(group) : [];
   let out = `<nav class="topnav" aria-label="Primary">`;
-  out += `<a class="topnav-page-link"${pondActive} href="/Pond/">Pond</a>`;
+  out += `<a class="${pondCls}"${pondCurrent} href="/Pond/">Pond</a>`;
   out += `<div class="topnav-start">`;
-  out += `<a class="topnav-start-link"${protocolActive} href="/Protocol/">Protocol</a>`;
+  out += `<a class="${protocolCls}"${protocolCurrent} href="/Protocol/">Protocol</a>`;
   if (visible.length) {
     out += `<details class="topnav-menu" data-topnav-menu="protocol">`;
     out += `<summary aria-label="Open Protocol menu"><span class="visually-hidden">Protocol menu</span></summary>`;
@@ -807,7 +809,6 @@ function pageScripts(page) {
     tags.push(`<script src="${pageSrc("profile.js")}" defer></script>`);
     tags.push(`<script src="${pageSrc("disclaimer.js")}" defer></script>`);
   }
-  if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
   if (page.url === "/trade/") {
     // WalletConnect / xrpl load on demand from /vendor. Hashed page scripts
     // sit in this list so a Publish cannot leave /trade/ on a one-hour stale file.

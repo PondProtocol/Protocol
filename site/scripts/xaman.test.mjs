@@ -418,14 +418,16 @@ test("SignIn force_network is TESTNET even if the client asks for Mainnet", () =
       assert.equal(tradeExplicit.data.network, "testnet");
       assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
 
-      const docs = await xamanApi("/api/xaman/signin", {
+      const unpublished = await xamanApi("/api/xaman/signin", {
         method: "POST",
         body: { returnTo: "/connect/" },
       });
-      assert.equal(docs.res.statusCode, 200);
-      assert.equal(docs.data.network, "testnet");
+      assert.equal(unpublished.res.statusCode, 200);
+      assert.equal(unpublished.data.network, "testnet");
       assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
       assert.equal(xumm.created.at(-1).options.submit, false);
+      assert.match(xumm.created.at(-1).options.return_url.web, /\/trade\/\?payload=/);
+      assert.doesNotMatch(xumm.created.at(-1).options.return_url.web, /\/connect\//);
 
       const ignoredMainnet = await xamanApi("/api/xaman/signin", {
         method: "POST",

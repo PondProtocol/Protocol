@@ -190,13 +190,7 @@
     return (
       path === "/trade" ||
       path === "/trade/" ||
-      path.startsWith("/profile/") ||
-      path === "/card" ||
-      path === "/card/" ||
-      path === "/connect" ||
-      path === "/connect/" ||
-      path === "/start" ||
-      path.startsWith("/start/")
+      path.startsWith("/profile/")
     );
   }
 
