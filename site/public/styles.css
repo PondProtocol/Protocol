@@ -3110,12 +3110,19 @@ code.addr {
   z-index: -1;
 }
 
-.hero-kicker {
-  /* Keep the original small-label slot so the tagline does not move. */
-  display: flex;
-  align-items: flex-end;
-  margin: 0 0 0.9rem;
-  height: 1.326rem;
+.hero-heading {
+  position: relative;
+  /* Old small-kicker occupancy so the tagline stays in place. */
+  padding-top: calc(0.78rem * 1.7 + 0.9rem);
+}
+
+.hero .hero-kicker {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% - 0.78rem * 1.7 + 1.4rem);
+  margin: 0;
+  height: auto;
+  overflow: visible;
   font-size: clamp(5.25rem, 10.5vw, 7.25rem);
   font-weight: 720;
   line-height: 0.86;
@@ -3124,12 +3131,11 @@ code.addr {
   color: var(--accent-bright);
   text-shadow: 0 1px 18px rgb(21 27 33 / 0.92);
   width: max-content;
-  transform: translateY(-1.85rem);
 }
 
 .hero-tagline {
   margin: 0 0 0.8rem;
-  max-width: 14ch;
+  max-width: 24ch;
   font-size: clamp(2.4rem, 5vw, 4rem);
   font-weight: 720;
   line-height: 0.98;
@@ -3703,7 +3709,7 @@ code.addr {
   }
 
   .hero-tagline {
-    max-width: 12ch;
+    max-width: 24ch;
   }
 
   .hero-inner {
