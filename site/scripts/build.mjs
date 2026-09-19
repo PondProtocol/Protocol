@@ -362,8 +362,8 @@ function startProgressHtml(currentUrl) {
     <div class="start-progress-head">
       <p class="start-eyebrow">Start here · 7 steps</p>
       <p class="start-progress-title">Complete every step before you buy.</p>
-      <p class="start-progress-count"><strong data-start-progress-count>0 / 7</strong> done in this browser</p>
-      <p class="start-progress-note">No live buy button. $PND is not issued. Last step opens Trade — a preview, not a live DEX.</p>
+      <p class="start-progress-count"><strong data-start-progress-count>0 / 7</strong> saved in a cookie</p>
+      <p class="start-progress-note">Progress is a cookie (localStorage backup). After Sign in, it is keyed to your XRPL address. No live buy button. $PND is not issued. Last step opens Trade — a preview, not a live DEX.</p>
     </div>
     <ol class="start-progress-list">${items}</ol>
   </nav>`;
@@ -518,6 +518,26 @@ const iconBan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const iconCookie = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>`;
 const iconScan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg>`;
 
+function sessionChipHtml() {
+  return `<div class="session-chip" data-session-chip>
+  <div class="session-guest" data-session-guest>
+    <button type="button" class="session-toggle" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
+    <div class="session-menu" id="session-menu" data-session-menu hidden>
+      <p class="session-menu-copy">Official WalletConnect or Xaman only. Pond never asks for a seed.</p>
+      <button type="button" class="session-wc" data-session-wc>WalletConnect</button>
+      <p class="session-wc-error" data-session-wc-error hidden></p>
+      <div data-xaman-app data-xaman-compact data-return="/trade/"></div>
+      <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
+    </div>
+  </div>
+  <div class="session-authed" data-session-authed hidden>
+    <span class="session-addr" data-session-addr></span>
+    <button type="button" class="session-out" data-session-signout>Sign out</button>
+  </div>
+  <xrpl-wallet-connector id="pond-session-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
+</div>`;
+}
+
 function privacyDockHtml() {
   return `<div class="privacy-dock" data-privacy-dock data-privacy-mode="fab" data-testid="privacy-bottom-dock">
   <div class="privacy-dock-stack" data-privacy-stack>
@@ -533,7 +553,7 @@ function privacyDockHtml() {
         <p class="privacy-kicker privacy-kicker-notice">Private Browsing</p>
         <button type="button" class="privacy-icon-btn" data-privacy-close-notice aria-label="Close private browsing notice" data-testid="button-close-privacy-notice">${iconX}</button>
       </div>
-      <p class="privacy-notice-copy">Tracking is off. We do not sell your data, run ads, or ask for seeds, keys, or passwords. This is the $PND / Pond Protocol site, not the Greenhead Labs agent product.</p>
+      <p class="privacy-notice-copy">We use cookies to keep you signed in and to remember Start Here progress. We do not sell your data, run ads, or ask for seeds, keys, or passwords. This is the $PND / Pond Protocol site, not the Greenhead Labs agent product.</p>
       <div class="privacy-notice-actions">
         <a class="privacy-btn privacy-btn-mint" href="/legal/" data-privacy-legal data-testid="button-privacy-notice-legal">Legal</a>
         <button type="button" class="privacy-btn privacy-btn-ghost" data-privacy-open-vault data-testid="button-open-privacy-vault-from-notice">Privacy vault</button>
@@ -548,32 +568,30 @@ function privacyDockHtml() {
           </div>
           <button type="button" class="privacy-icon-btn" data-privacy-close-vault aria-label="Close cookie settings" data-testid="button-close-cookie-settings">${iconX}</button>
         </div>
-        <p class="privacy-vault-lede">This is pond.greenhead.io, the Pond Protocol / $PND documentation site — not the Greenhead Labs agent product at greenhead.io. Analytics and advertising scripts are not installed. We do not sell or share personal information. We will never ask for seed phrases, private keys, or passwords in a message or pop-up. Connect wallet on Trade is the official XRPL connect; it is not a seed prompt.</p>
-        <p class="privacy-gpc" data-privacy-gpc hidden data-testid="privacy-gpc-note">Your browser sent a Global Privacy Control or Do Not Track signal. Tracking stays off.</p>
+        <p class="privacy-vault-lede">This is pond.greenhead.io, the Pond Protocol / $PND documentation site — not the Greenhead Labs agent product at greenhead.io. We use cookies for your login session and Start Here progress. After you sign in with WalletConnect or Xaman, we remember the XRPL address you signed in with. Analytics and advertising scripts are not installed. We do not sell or share personal information. We will never ask for seed phrases, private keys, or passwords in a message or pop-up. Connect is official XRPL WalletConnect or Xaman only; it is not a seed prompt.</p>
+        <p class="privacy-gpc" data-privacy-gpc hidden data-testid="privacy-gpc-note">Your browser sent a Global Privacy Control or Do Not Track signal. Session and Start Here cookies still run so you stay logged in and keep progress. Analytics stay off.</p>
+        <p class="privacy-session" data-privacy-session hidden></p>
         <div class="privacy-rows">
           <div class="privacy-row">
             <span>
-              <span class="privacy-row-title">No Tracking Or Data Collection</span>
-              <span class="privacy-row-copy">We do not profile you, fingerprint your browser, or build a record of who you are. Public pages do not collect your name, email, wallet, location, or visit history. We will never ask for seed phrases, private keys, or passwords in a pop-up, email, or chat.</span>
+              <span class="privacy-row-title">Cookies</span>
+              <span class="privacy-row-copy">On for login session and Start Here progress. Not advertising cookies. Anonymous progress is kept until you sign in; then it is keyed to your XRPL address.</span>
             </span>
-            <span class="privacy-blocked" aria-label="Tracking blocked">
-              <span class="privacy-blocked-scan">${iconScan}</span>
-              <span class="privacy-blocked-x">${iconX}</span>
+            <span class="privacy-on" aria-label="Session and progress cookies on">${iconCookie}On</span>
+          </div>
+          <div class="privacy-row">
+            <span>
+              <span class="privacy-row-title">Wallet login</span>
+              <span class="privacy-row-copy">Identity is the XRPL address from official WalletConnect or Xaman SignIn. We remember that address in a session cookie. We will never ask for seed phrases, private keys, or passwords in a pop-up, email, or chat.</span>
             </span>
+            <span class="privacy-on" aria-label="Wallet login uses cookies">${iconLock}On</span>
           </div>
           <div class="privacy-row">
             <span>
               <span class="privacy-row-title">Analytics</span>
-              <span class="privacy-row-copy">No analytics scripts are installed. We do not use your data, visit history, or cookies to measure you, and we will not sell or share a browsing profile. There is no Pond visitor counter on this site.</span>
+              <span class="privacy-row-copy">No analytics scripts are installed. We do not sell or share a browsing profile. There is no Pond visitor counter on this site.</span>
             </span>
             <span class="privacy-off" aria-label="Analytics not installed">${iconBan}Off</span>
-          </div>
-          <div class="privacy-row">
-            <span>
-              <span class="privacy-row-title">Cookies</span>
-              <span class="privacy-row-copy">This docs site does not set advertising or tracking cookies. There is no public account system on these pages. WalletConnect or Xaman on Trade may run in your wallet app; that is wallet software, not Pond analytics.</span>
-            </span>
-            <span class="privacy-off" aria-label="Tracking cookies not used">${iconCookie}Off</span>
           </div>
         </div>
       </div>
@@ -669,6 +687,7 @@ ${canonical}
     ${topnavHtml(page.url)}
     ${searchHtml(page.url)}
     <a class="topbar-trade" href="/trade/">Trade</a>
+    ${sessionChipHtml()}
   </div>
 </header>
 ${banner}
@@ -757,6 +776,7 @@ ${isHome ? heroHtml() : ""}
 ${privacyDockHtml()}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 <script src="/nav.js" defer></script>
+<script src="/session.js" defer></script>
 <script src="/start.js" defer></script>
 <script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>

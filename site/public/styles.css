@@ -317,6 +317,109 @@ a:hover {
   box-shadow: 0 8px 24px var(--accent-glow);
 }
 
+.session-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+
+.session-toggle,
+.session-out,
+.session-wc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid #344454;
+  border-radius: 0.5rem;
+  background: rgb(10 16 22 / 0.82);
+  color: var(--text);
+  font: 650 0.78rem var(--font);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.session-toggle:hover,
+.session-out:hover,
+.session-wc:hover,
+.session-toggle:focus-visible,
+.session-out:focus-visible,
+.session-wc:focus-visible {
+  border-color: var(--accent);
+  background: #0c151e;
+}
+
+.session-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  z-index: 40;
+  display: grid;
+  gap: 0.55rem;
+  width: min(18.5rem, calc(100vw - 1.5rem));
+  padding: 0.8rem;
+  border: 1px solid #344454;
+  border-radius: 0.7rem;
+  background: rgb(10 16 22 / 0.96);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.35);
+}
+
+.session-guest[hidden],
+.session-authed[hidden],
+.session-menu[hidden],
+.session-wc-error[hidden],
+.session-xaman-note[hidden] {
+  display: none;
+}
+
+.session-menu-copy,
+.session-xaman-note,
+.session-wc-error {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.session-wc {
+  width: 100%;
+}
+
+.session-wc-error {
+  color: #f0a8a8;
+}
+
+.session-authed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.12rem 0.18rem 0.12rem 0.55rem;
+  border: 1px solid #344454;
+  border-radius: 999px;
+  background: rgb(10 16 22 / 0.82);
+}
+
+.session-addr {
+  font: 650 0.74rem var(--mono);
+  color: var(--accent-bright);
+}
+
+.session-out {
+  min-height: 1.6rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+}
+
+#pond-session-connector {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .topnav-start {
   position: relative;
   display: inline-flex;
@@ -3423,7 +3526,8 @@ code.addr {
     margin-left: 0;
   }
 
-  .topbar-trade {
+  .topbar-trade,
+  .session-chip {
     flex: none;
   }
 
@@ -7149,6 +7253,14 @@ body.page-trade .trade-detail-window {
   stroke-width: 2.4;
 }
 
+.privacy-session {
+  margin: 0 0 0.85rem;
+  color: var(--accent-bright);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.privacy-on,
 .privacy-off {
   display: flex;
   flex-shrink: 0;
@@ -7162,6 +7274,11 @@ body.page-trade .trade-detail-window {
   text-transform: uppercase;
 }
 
+.privacy-on {
+  color: #86efac;
+}
+
+.privacy-on svg,
 .privacy-off svg {
   width: 0.875rem;
   height: 0.875rem;

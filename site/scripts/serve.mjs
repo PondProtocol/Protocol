@@ -7,13 +7,15 @@
  * same Content-Type and CORS headers that public/_headers asks a static host for, so a
  * local check and a production check look the same. Node standard library only.
  *
- * Also answers /health and /api/xaman/* . Those routes need this process (Autoscale).
- * The Xaman API secret stays here — it is never written into site/dist.
+ * Also answers /health, /api/session, and /api/xaman/* . Those routes need this
+ * process (Autoscale). The Xaman API secret stays here — it is never written
+ * into site/dist. Session cookies are signed in this process.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { DIST_DIR } from "./lib.mjs";
+import { handleSession } from "./session.mjs";
 import { handleApi } from "./xaman.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
@@ -41,6 +43,7 @@ createServer(async (req, res) => {
   const url = decodeURIComponent((req.url ?? "/").split("?")[0]);
 
   try {
+    if (await handleSession(req, res, url)) return;
     if (await handleApi(req, res, url)) return;
   } catch (error) {
     res.statusCode = 500;

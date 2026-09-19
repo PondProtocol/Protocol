@@ -25,8 +25,8 @@ top bar.
 
 Pond does not take custody of your account. Xaman SignIn is a `SignIn`
 pseudo-transaction. It is never submitted to the XRP Ledger. This site can
-show the r-address that signed. WalletConnect is the same idea: your wallet
-stays in control.
+show the r-address that signed and keep it in a session cookie so you stay
+logged in. WalletConnect is the same idea: your wallet stays in control.
 
 After launch, your wallet still creates the trust line and signs locally.
 See [Set Trust Lines](/start/trust-lines/).

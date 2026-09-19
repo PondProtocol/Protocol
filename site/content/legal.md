@@ -11,28 +11,42 @@ the XLS-26 identity file, and the Trade terminal. Identity is the pair
 **(PND, issuer address)**. Copy the issuer from [Verify](/verify/), not from a
 search box.
 
+## Cookies and login
+
+We use cookies. That is intentional.
+
+- **Login session.** After official **WalletConnect** or **Xaman SignIn**, we
+  set a session cookie with the XRPL address you signed in with and the
+  connect method. You stay logged in until you Sign out. The cookie is
+  `httpOnly` and `SameSite=Lax` when the site process can set it.
+- **Start Here progress.** `/start/` stores checklist progress in a cookie
+  (with a `localStorage` backup). Anonymous users keep progress in that
+  cookie. After you sign in, progress is merged and keyed to that XRPL
+  address.
+
+We remember the XRPL address you signed in with. We do not sell personal
+data. We do not run ads. We never ask for a seed, mnemonic, private key, or
+password in a form, pop-up, email, or chat. If a page that says Pond asks
+for one, close it.
+
+Official wallet connect is [Trade](/trade/) or the Sign in chip (same
+WalletConnect and Xaman paths). That is a wallet you already control. It is
+not a seed prompt and not a claim. Xaman stays unavailable until the owner
+sets `XUMM_API_KEY` and `XUMM_API_SECRET` on Replit Autoscale.
+
 ## What we do not do
 
-- **No tracking.** We do not profile you, fingerprint your browser, or build a
-  visit history.
 - **No ads.** There are no advertising scripts on this site.
-- **No analytics scripts.** Nothing here measures you for a Pond visitor count
-  or a browsing profile. We do not sell or share personal information.
+- **No analytics scripts.** Nothing here measures you for a Pond visitor
+  count or a browsing profile. We do not sell or share personal information.
 - **No seeds.** Nobody from Pond Protocol will ask for a seed, mnemonic,
-  private key, or password in a pop-up, email, or chat. If a page that says
-  Pond asks for one, close it.
+  private key, or password.
 
-Official wallet connect is [Trade](/trade/) (WalletConnect or Xaman). That is a
-wallet you already control. It is not a seed prompt and not a claim.
+We do not fingerprint you for advertising. Session and progress cookies are
+not that.
 
-## Cookies
-
-These public docs do not set advertising or tracking cookies. There is no
-public account system on this host. The Trade terminal may open WalletConnect
-or Xaman in *your* wallet app; that software is not Pond analytics.
-
-The host may set infrastructure cookies (for example the reverse proxy in
-front of the app). Pond does not use those to identify you.
+The host may also set infrastructure cookies (for example the reverse proxy
+in front of the app).
 
 ## Legal
 

@@ -9,7 +9,8 @@ lives on [Trade](/trade/); this URL is kept working and is not in the top bar.
 ## What this does
 
 1. **Connect** — Xaman signs a `SignIn` pseudo-transaction. It is never
-   submitted to the XRP Ledger. This site then shows the r-address that signed.
+   submitted to the XRP Ledger. This site then shows the r-address that
+   signed and keeps it in a session cookie so you stay logged in.
 2. **Verify the issuer** — same address as [Verify](/verify/):
    `{{issuerAddress}}`. Open it in Xaman or an explorer. Do not search `PND`.
 3. **Optional TrustSet** — if you choose it, Xaman can open a trust line to
