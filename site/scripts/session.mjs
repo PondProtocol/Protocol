@@ -7,6 +7,7 @@
  * logins send the address the wallet already returned on /trade/.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { ensureProfile, publicProfile } from "./profiles.mjs";
 import { signedXamanAccount } from "./xaman.mjs";
 
 const COOKIE = "pond_session";
@@ -121,10 +122,17 @@ function cookieHeader(value, req, { clear = false } = {}) {
   return parts.join("; ");
 }
 
-function publicSession(session) {
-  return session
-    ? { address: session.address, method: session.method }
-    : { address: null, method: null };
+function publicSession(session, profile = null) {
+  if (!session) return { address: null, method: null, handle: null, admin: false };
+  return {
+    address: session.address,
+    method: session.method,
+    ...publicProfile(profile),
+  };
+}
+
+export function readSession(req) {
+  return verify(parseCookies(req)[COOKIE]);
 }
 
 /**
@@ -139,7 +147,9 @@ export async function handleSession(req, res, url) {
   }
 
   if (req.method === "GET") {
-    json(res, 200, publicSession(verify(parseCookies(req)[COOKIE])));
+    const session = readSession(req);
+    const profile = session ? await ensureProfile(session.address) : null;
+    json(res, 200, publicSession(session, profile));
     return true;
   }
 
@@ -187,6 +197,7 @@ export async function handleSession(req, res, url) {
   }
 
   const session = { address, method, t: Date.now() };
-  json(res, 200, publicSession(session), { "Set-Cookie": cookieHeader(sign(session), req) });
+  const profile = await ensureProfile(address);
+  json(res, 200, publicSession(session, profile), { "Set-Cookie": cookieHeader(sign(session), req) });
   return true;
 }

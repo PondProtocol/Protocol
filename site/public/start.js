@@ -123,6 +123,7 @@
       store.accounts[addr] = { ...(store.accounts[addr] || {}), [step.id]: true };
     }
     persist(store);
+    syncProfile(store);
   }
 
   function paint() {
@@ -149,9 +150,20 @@
     paint();
   }
 
-  window.PondStart = { init };
+  function flags() {
+    return flagsFor(loadStore());
+  }
+
+  function syncProfile(store) {
+    if (!sessionAddress()) return;
+    window.PondProfile?.syncProgress?.(flagsFor(store));
+  }
+
+  window.PondStart = { init, flags, steps: STEPS };
   window.addEventListener("pond:session-change", () => {
-    persist(mergeLogin(loadStore()));
+    const store = mergeLogin(loadStore());
+    persist(store);
+    syncProfile(store);
     paint();
   });
   if (document.readyState === "loading") {
