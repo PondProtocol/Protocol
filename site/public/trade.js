@@ -1481,7 +1481,7 @@
               tabButton.classList.toggle("is-active", active);
               tabButton.setAttribute("aria-selected", String(active));
             });
-            panels.querySelectorAll("[data-panel]").forEach((panel) => {
+            panels.querySelectorAll(":scope > [data-panel]").forEach((panel) => {
               const active = panel.dataset.panel === tab;
               panel.classList.toggle("is-active", active);
               panel.hidden = !active;
