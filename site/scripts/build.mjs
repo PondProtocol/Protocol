@@ -908,9 +908,10 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home page-index" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
+${isHome ? `<div class="home-screen">` : ""}
 <header class="topbar">
   <div class="brand-cluster">
     <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="28" height="28" alt=""><span class="brand-word">Pond</span></a>
@@ -935,6 +936,7 @@ ${canonical}
 ${banner}
 ${protocolSnapshotHtml()}
 ${landing ? heroHtml() : ""}
+${isHome ? `</div>` : ""}
 <div class="shell">
   <main id="main">
     ${landing ? "" : tocHtml(html)}
