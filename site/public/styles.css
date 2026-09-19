@@ -2522,6 +2522,107 @@ code.addr {
   justify-items: center;
 }
 
+.trade-amm-wallet {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.28rem;
+}
+
+.trade-amm-wallet > div,
+.trade-amm-sides,
+.trade-amm-single {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
+.trade-amm-wallet > div {
+  display: grid;
+  gap: 0.08rem;
+  padding: 0.32rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg-soft) 84%, #000);
+}
+
+.trade-amm-wallet span,
+.trade-amm-wallet em,
+.trade-amm-side-note {
+  color: var(--text-muted);
+  font-size: 0.56rem;
+  font-style: normal;
+}
+
+.trade-amm-wallet strong {
+  font-size: 0.72rem;
+}
+
+.trade-amm-sides button,
+.trade-amm-single button {
+  flex: 1;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font: 650 0.64rem var(--font);
+}
+
+.trade-amm-sides button.is-active,
+.trade-amm-single button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-amm-side-note {
+  margin: 0;
+}
+
+.trade-amm-slider {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.trade-amm-slider > span {
+  color: var(--text-muted);
+  font-size: 0.6rem;
+  font-weight: 650;
+}
+
+.trade-amm-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.trade-amm-slider > div {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.trade-amm-slider > div input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.28rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-code);
+  color: var(--text);
+  font: 650 0.82rem var(--font);
+}
+
+.trade-amm-slider.is-off {
+  opacity: 0.42;
+}
+
+.trade-amm-slider small {
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  line-height: 1.3;
+}
+
 .trade-empty-panel {
   display: grid;
   min-height: 22rem;
@@ -8316,5 +8417,14 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-hero dd,
   body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-facts dd {
     font-size: 0.68rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-wallet,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-slider {
+    gap: 0.12rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-slider input[type="range"] {
+    margin: 0;
   }
 }

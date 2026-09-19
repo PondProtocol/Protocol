@@ -10,6 +10,8 @@ import {
   PAYLOAD_COOKIE,
   SIGNIN_EXPIRE_MIN,
   DEFAULT_AMM_PND,
+  TF_AMM_SINGLE_ASSET,
+  TF_AMM_TWO_ASSET,
   XUMM_INSTRUCTION_MAX,
   allowedOrigin,
   handleApi,
@@ -23,6 +25,7 @@ process.env.XUMM_API_SECRET ??= "test-xumm-secret";
 const SIGNIN_UUID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const TRUST_UUID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const AMM_UUID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const DEPOSIT_UUID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 const TREASURY = "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b";
 
 function withStore(run) {
@@ -121,7 +124,9 @@ function installXummMock({
           ? TRUST_UUID
           : body.txjson.TransactionType === "AMMCreate"
             ? AMM_UUID
-            : SIGNIN_UUID;
+            : body.txjson.TransactionType === "AMMDeposit"
+              ? DEPOSIT_UUID
+              : SIGNIN_UUID;
       return {
         ok: true,
         status: 200,
@@ -315,6 +320,78 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(editedBody.txjson.Amount2, "200000000");
       assert.equal(editedBody.txjson.TradingFee, 250);
       assert.equal(editedBody.options.force_network, "TESTNET");
+
+      const guestDeposit = await xamanApi("/api/xaman/ammdeposit", { method: "POST", body: { returnTo: "/trade/" } });
+      assert.equal(guestDeposit.res.statusCode, 401);
+
+      const wcDeposit = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { side: "two", pnd: "10", xrp: "10" },
+        cookie: wcSession,
+      });
+      assert.equal(wcDeposit.res.statusCode, 401);
+
+      const mainnetDeposit = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { network: "mainnet", side: "two", pnd: "10", xrp: "10" },
+        cookie: treasurySession,
+      });
+      assert.equal(mainnetDeposit.res.statusCode, 400);
+      assert.equal(mainnetDeposit.data.error, "testnet_only");
+
+      const two = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { side: "two", pnd: "25", xrp: "10", returnTo: "/trade/" },
+        cookie: treasurySession,
+      });
+      assert.equal(two.res.statusCode, 200);
+      assert.equal(two.data.kind, "AMMDeposit");
+      assert.equal(two.data.submit, true);
+      assert.equal(two.data.uuid, DEPOSIT_UUID);
+      const twoBound = readBoundPayload({
+        headers: { cookie: `${PAYLOAD_COOKIE}=${encodeURIComponent(cookieMap(two.res.headers["Set-Cookie"])[PAYLOAD_COOKIE])}` },
+      });
+      assert.equal(twoBound.kind, "ammdeposit");
+      const twoBody = xumm.created.filter((item) => item.txjson.TransactionType === "AMMDeposit").at(-1);
+      assert.equal(twoBody.options.submit, true);
+      assert.equal(twoBody.options.force_network, "TESTNET");
+      assert.equal(twoBody.txjson.Flags, TF_AMM_TWO_ASSET);
+      assert.equal(twoBody.txjson.Asset.currency, "XRP");
+      assert.equal(twoBody.txjson.Asset2.currency, "PND");
+      assert.equal(twoBody.txjson.Amount.value, "25");
+      assert.equal(twoBody.txjson.Amount2, "10000000");
+      assert.equal(twoBody.txjson.TradingFee, undefined);
+      assert.ok(!Object.hasOwn(twoBody.txjson, "TradingFee"));
+      assert.ok(twoBody.custom_meta.instruction.length <= XUMM_INSTRUCTION_MAX);
+
+      const singleXrp = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { side: "single", asset: "XRP", xrp: "3" },
+        cookie: treasurySession,
+      });
+      assert.equal(singleXrp.res.statusCode, 200);
+      const singleXrpBody = xumm.created.filter((item) => item.txjson.TransactionType === "AMMDeposit").at(-1);
+      assert.equal(singleXrpBody.txjson.Flags, TF_AMM_SINGLE_ASSET);
+      assert.equal(singleXrpBody.txjson.Amount, "3000000");
+      assert.equal(singleXrpBody.txjson.Amount2, undefined);
+
+      const singlePnd = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { side: "single", asset: "PND", pnd: "7" },
+        cookie: treasurySession,
+      });
+      assert.equal(singlePnd.res.statusCode, 200);
+      const singlePndBody = xumm.created.filter((item) => item.txjson.TransactionType === "AMMDeposit").at(-1);
+      assert.equal(singlePndBody.txjson.Flags, TF_AMM_SINGLE_ASSET);
+      assert.equal(singlePndBody.txjson.Amount.currency, "PND");
+      assert.equal(singlePndBody.txjson.Amount.value, "7");
+
+      const zeroTwo = await xamanApi("/api/xaman/ammdeposit", {
+        method: "POST",
+        body: { side: "two", pnd: "0", xrp: "0" },
+        cookie: treasurySession,
+      });
+      assert.equal(zeroTwo.res.statusCode, 400);
     } finally {
       xumm.restore();
     }

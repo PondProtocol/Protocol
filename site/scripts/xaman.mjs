@@ -1,13 +1,13 @@
 /**
  * Official Xaman (Xumm) Platform API, server-side only.
  *
- * Creates SignIn, optional TrustSet, and Testnet-only AMMCreate payloads.
+ * Creates SignIn, optional TrustSet, Testnet AMMCreate, and Testnet AMMDeposit payloads.
  * The API secret never leaves this process. If XUMM_API_KEY / XUMM_API_SECRET
  * are unset, callers get an honest "connect unavailable" payload instead of a
  * fake success.
  *
- * SignIn and TrustSet stay unsigned / submit:false. AMMCreate stays unsigned
- * on this server (submit:true so Xaman broadcasts after the treasury signs).
+ * SignIn and TrustSet stay unsigned / submit:false. AMMCreate and AMMDeposit
+ * stay unsigned on this server (submit:true so Xaman broadcasts after sign).
  * This process never signs. Payload UUIDs are bound to an httpOnly cookie so a
  * leaked id cannot mint pond_session.
  *
@@ -26,6 +26,9 @@ export const PAYLOAD_COOKIE = "pond_xaman_payload";
 export const SIGNIN_EXPIRE_MIN = 10;
 export const TRUSTSET_EXPIRE_MIN = 15;
 export const AMMCREATE_EXPIRE_MIN = 15;
+export const AMMDEPOSIT_EXPIRE_MIN = 15;
+export const TF_AMM_SINGLE_ASSET = 0x00080000;
+export const TF_AMM_TWO_ASSET = 0x00100000;
 export const DEFAULT_AMM_PND = "500000000000";
 export const DEFAULT_AMM_XRP = "5000";
 export const DEFAULT_AMM_FEE = 500;
@@ -170,7 +173,7 @@ export function readBoundPayload(req) {
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (!UUID_RE.test(payload.uuid || "")) return null;
-    if (payload.kind !== "signin" && payload.kind !== "trustset" && payload.kind !== "ammcreate") {
+    if (payload.kind !== "signin" && payload.kind !== "trustset" && payload.kind !== "ammcreate" && payload.kind !== "ammdeposit") {
       return null;
     }
     if (!Number.isFinite(payload.exp) || payload.exp <= Date.now()) return null;
@@ -509,6 +512,122 @@ async function createAmmCreate(req, res, body = {}, session = null) {
   );
 }
 
+async function createAmmDeposit(req, res, body = {}, session = null) {
+  if (!xamanConfigured()) return unavailable(res, req);
+  if (!cookieSecret()) {
+    json(res, 503, {
+      error: "session_unconfigured",
+      message: "Sign in is unavailable until Autoscale has POND_SESSION_SECRET.",
+    }, req);
+    return;
+  }
+  if (session?.method !== "xaman" || !ADDR_RE.test(session.address || "")) {
+    json(res, 401, {
+      error: "xaman_required",
+      message: "Send Testnet AMMDeposit after official Xaman SignIn.",
+    }, req);
+    return;
+  }
+  if (String(body.network || "testnet").toLowerCase() === "mainnet" || String(body.network || "").toLowerCase() === "production") {
+    json(res, 400, {
+      error: "testnet_only",
+      message: "AMMDeposit is Testnet only. Mainnet has no $PND issued.",
+    }, req);
+    return;
+  }
+  const side = String(body.side || "two").toLowerCase() === "single" ? "single" : "two";
+  const singleAsset = String(body.asset || "PND").toUpperCase() === "XRP" ? "XRP" : "PND";
+  const pndValue = parseIouValue(body.pnd, null);
+  const xrpDrops = parseXrpDrops(body.xrp, null);
+  const txjson = {
+    TransactionType: "AMMDeposit",
+    Account: session.address,
+    Asset: { currency: "XRP" },
+    Asset2: { currency: "PND", issuer },
+  };
+  let instruction;
+  if (side === "two") {
+    if (!pndValue || !xrpDrops) {
+      json(res, 400, {
+        error: "bad_amount",
+        message: "Even-sided AMMDeposit needs both PND and XRP above 0 (tfTwoAsset).",
+      }, req);
+      return;
+    }
+    txjson.Flags = TF_AMM_TWO_ASSET;
+    txjson.Amount = { currency: "PND", issuer, value: pndValue };
+    txjson.Amount2 = xrpDrops;
+    instruction = `Testnet AMMDeposit tfTwoAsset ${pndValue} PND + ${xrpDrops} drops XRP. Xaman submits after you sign. Pond never asks for a seed.`;
+  } else if (singleAsset === "XRP") {
+    if (!xrpDrops) {
+      json(res, 400, {
+        error: "bad_amount",
+        message: "Single-sided XRP AMMDeposit needs XRP above 0 (tfSingleAsset).",
+      }, req);
+      return;
+    }
+    txjson.Flags = TF_AMM_SINGLE_ASSET;
+    txjson.Amount = xrpDrops;
+    instruction = `Testnet AMMDeposit tfSingleAsset ${xrpDrops} drops XRP. Xaman submits after you sign. Pond never asks for a seed.`;
+  } else {
+    if (!pndValue) {
+      json(res, 400, {
+        error: "bad_amount",
+        message: "Single-sided PND AMMDeposit needs PND above 0 (tfSingleAsset).",
+      }, req);
+      return;
+    }
+    txjson.Flags = TF_AMM_SINGLE_ASSET;
+    txjson.Amount = { currency: "PND", issuer, value: pndValue };
+    instruction = `Testnet AMMDeposit tfSingleAsset ${pndValue} PND. Xaman submits after you sign. Pond never asks for a seed.`;
+  }
+  const back = payloadReturnUrl("/trade/");
+  const { ok, status, data } = await xumm("/payload", {
+    method: "POST",
+    body: {
+      txjson,
+      options: {
+        submit: true,
+        expire: AMMDEPOSIT_EXPIRE_MIN,
+        force_network: "TESTNET",
+        return_url: { app: back, web: back },
+      },
+      custom_meta: { instruction: payloadInstruction(instruction) },
+    },
+  });
+  if (!ok || !data?.uuid) {
+    json(res, status >= 400 ? status : 502, xummCreateFailure("AMMDeposit", status, data), req);
+    return;
+  }
+  json(
+    res,
+    200,
+    {
+      ...publicCreate(data, AMMDEPOSIT_EXPIRE_MIN),
+      kind: "AMMDeposit",
+      account: session.address,
+      treasury,
+      issuer,
+      currency: "PND",
+      side,
+      asset: side === "single" ? singleAsset : "both",
+      pnd: pndValue,
+      xrpDrops,
+      flags: txjson.Flags,
+      submit: true,
+      network: "testnet",
+    },
+    req,
+    {
+      "Set-Cookie": payloadCookieHeader(req, {
+        uuid: data.uuid,
+        kind: "ammdeposit",
+        expireMin: AMMDEPOSIT_EXPIRE_MIN,
+      }),
+    },
+  );
+}
+
 export async function signedXamanAccount(uuid, req) {
   if (!xamanConfigured()) {
     return { error: "xaman_unconfigured", message: healthBody().xaman.reason };
@@ -558,7 +677,7 @@ async function getPayload(req, res, uuid) {
   }
   const payload = publicPayload(data);
   if (
-    (bound.kind === "trustset" || bound.kind === "ammcreate") &&
+    (bound.kind === "trustset" || bound.kind === "ammcreate" || bound.kind === "ammdeposit") &&
     payload.signed &&
     payload.account &&
     req.pondSession?.address &&
@@ -567,9 +686,11 @@ async function getPayload(req, res, uuid) {
     json(res, 403, {
       error: "account_mismatch",
       message:
-        bound.kind === "ammcreate"
-          ? "That AMMCreate request is for a different XRPL address."
-          : "That trust line request is for a different XRPL address.",
+        bound.kind === "ammdeposit"
+          ? "That AMMDeposit request is for a different XRPL address."
+          : bound.kind === "ammcreate"
+            ? "That AMMCreate request is for a different XRPL address."
+            : "That trust line request is for a different XRPL address.",
     }, req);
     return;
   }
@@ -626,6 +747,18 @@ export async function handleApi(req, res, url, { readSession } = {}) {
       return true;
     }
     await createAmmCreate(req, res, body, session);
+    return true;
+  }
+
+  if (url === "/api/xaman/ammdeposit" && req.method === "POST") {
+    let body;
+    try {
+      body = await readBody(req);
+    } catch (error) {
+      json(res, 400, { error: "bad_request", message: error.message }, req);
+      return true;
+    }
+    await createAmmDeposit(req, res, body, session);
     return true;
   }
 
