@@ -26,8 +26,31 @@
   function syncHomePrivacyReserve() {
     if (!document.body?.classList.contains("page-index")) return;
     const card = notice();
-    const height = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
+    const raw = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
+    const narrow = window.matchMedia("(max-width: 780px)").matches;
+    const height = narrow ? Math.min(raw, Math.round(window.innerHeight * 0.28)) : raw;
     document.body.style.setProperty("--privacy-reserve-h", `${height}px`);
+  }
+
+  function syncHomeScale() {
+    if (!document.body?.classList.contains("page-index")) return;
+    const stage = document.querySelector(".page-index .hero-inner");
+    const board = document.querySelector(".page-index .hero-main");
+    if (!stage || !board) return;
+    document.body.style.setProperty("--home-scale", "1");
+    board.style.transform = "none";
+    const scale = Math.min(
+      1,
+      stage.clientWidth / Math.max(board.scrollWidth, 1),
+      stage.clientHeight / Math.max(board.scrollHeight, 1),
+    );
+    board.style.transform = "";
+    document.body.style.setProperty("--home-scale", String(Math.max(0.62, scale)));
+  }
+
+  function syncHomeFrame() {
+    syncHomePrivacyReserve();
+    requestAnimationFrame(syncHomeScale);
   }
 
   function setMode(next) {
@@ -37,8 +60,7 @@
     if (notice()) notice().hidden = next !== "notice";
     if (vault()) vault().hidden = next !== "vault";
     root.dataset.privacyMode = next;
-    syncHomePrivacyReserve();
-    requestAnimationFrame(syncHomePrivacyReserve);
+    syncHomeFrame();
   }
 
   function applyGpc() {
@@ -123,8 +145,11 @@
 
     if (isHome(window.location.pathname)) setMode("notice");
     else setMode("fab");
-    syncHomePrivacyReserve();
-    window.addEventListener("resize", syncHomePrivacyReserve);
+    syncHomeFrame();
+    window.addEventListener("resize", syncHomeFrame);
+    if (typeof ResizeObserver === "function" && notice()) {
+      new ResizeObserver(syncHomeFrame).observe(notice());
+    }
   }
 
   const pushState = history.pushState.bind(history);

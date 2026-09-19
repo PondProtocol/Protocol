@@ -3860,37 +3860,65 @@ code.addr {
   line-height: 1.45;
 }
 
-/* Home only: first viewport frame matches .privacy-dock, then clears the notice. */
+/* Home only: one frame token, then scale the hero to that box. */
 .page-index {
-  --home-frame: 1rem;
+  --home-frame: clamp(1rem, 2.2vw, 1.5rem);
+  --home-scale: 1;
   --privacy-reserve-h: 13rem;
 }
 
+.page-index .privacy-dock {
+  right: var(--home-frame);
+  bottom: var(--home-frame);
+  left: var(--home-frame);
+}
+
 .page-index .home-screen {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   box-sizing: border-box;
-  min-height: 100svh;
-  min-height: 100dvh;
+  height: 100svh;
+  height: 100dvh;
+  padding: var(--home-frame);
+  overflow: hidden;
+}
+
+.page-index .home-screen .topbar {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.page-index .home-screen .protocol-snapshot-title {
+  padding-left: 0;
 }
 
 .page-index .home-screen .hero {
-  flex: 1 1 auto;
+  position: relative;
   min-height: 0;
+  height: auto;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .page-index .hero-inner {
+  position: absolute;
+  inset: 0;
+  bottom: var(--privacy-reserve-h);
+  container-type: size;
+  container-name: home-hero;
   display: flex;
-  align-items: stretch;
-  justify-content: stretch;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   max-width: none;
-  height: 100%;
+  height: auto;
   margin: 0;
-  padding: var(--home-frame);
-  padding-bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
+  padding: 0;
+}
+
+.page-index .hero-inner::before {
+  width: min(34rem, 48%);
 }
 
 .page-index .hero-main {
@@ -3899,10 +3927,24 @@ code.addr {
   min-height: 0;
   max-width: none;
   align-items: end;
+  transform: scale(var(--home-scale));
+  transform-origin: center;
 }
 
 .page-index .hero-copy {
   align-self: center;
+}
+
+.page-index .hero .hero-kicker {
+  font-size: clamp(3.4rem, 16cqi, 10rem);
+}
+
+.page-index .hero-tagline {
+  font-size: clamp(1.55rem, 5cqi, 3.6rem);
+}
+
+.page-index .hero-lede {
+  font-size: clamp(0.86rem, 1.7cqi, 1.06rem);
 }
 
 .page-index .hero-pages {
@@ -3910,31 +3952,162 @@ code.addr {
   justify-self: end;
   align-self: end;
   width: auto;
-  height: 100%;
+  height: min(100%, 52cqi);
   max-width: 100%;
   min-height: 0;
-  padding: 0.85rem;
+  padding: 0.75rem;
   background: transparent;
-  border-color: rgb(236 242 248 / 0.2);
+  border-color: rgb(236 242 248 / 0.18);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .page-index .hero-page {
   min-height: 0;
-  background: rgb(201 214 224 / 0.05);
+  background: rgb(201 214 224 / 0.03);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .page-index .hero-page:hover,
 .page-index .hero-page:focus-visible {
-  background: rgb(201 214 224 / 0.1);
+  background: rgb(201 214 224 / 0.07);
+}
+
+.page-index .shell {
+  padding-left: var(--home-frame);
+  padding-right: var(--home-frame);
+}
+
+.page-index .footer {
+  padding-left: var(--home-frame);
+  padding-right: var(--home-frame);
 }
 
 @media (max-width: 480px) {
   .page-index {
-    --home-frame: 0.75rem;
+    --home-frame: clamp(0.75rem, 4vw, 1rem);
+    --privacy-reserve-h: 8.75rem;
+  }
+
+  .page-index .privacy-notice {
+    padding: 0.65rem 0.7rem 0.7rem;
+  }
+
+  .page-index .privacy-notice-copy {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 780px) {
+  .page-index {
+    --privacy-reserve-h: 9.25rem;
+  }
+
+  .page-index .home-screen .topbar-end {
+    flex: 1 1 auto;
+    order: 0;
+    margin-left: auto;
+  }
+
+  .page-index .privacy-notice-copy {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .page-index .hero-inner {
+    align-items: stretch;
+  }
+
+  .page-index .hero-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, auto) minmax(8.75rem, 1fr);
+    align-items: stretch;
+    gap: 0.55rem;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    transform-origin: top center;
+  }
+
+  .page-index .hero-copy {
+    align-self: stretch;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .page-index .hero .hero-kicker {
+    display: none;
+  }
+
+  .page-index .hero-heading {
+    padding-top: 0;
+  }
+
+  .page-index .hero-tagline {
+    margin-bottom: 0.4rem;
+    font-size: clamp(1.45rem, 8cqi, 2rem);
+  }
+
+  .page-index .hero-lede {
+    margin-bottom: 0.4rem;
+  }
+
+  .page-index .hero-status {
+    margin-bottom: 0.4rem;
+  }
+
+  .page-index .hero-pages {
+    grid-row: 2;
+    width: 100%;
+    height: auto;
+    min-height: 8.75rem;
+    max-height: none;
+    aspect-ratio: auto;
+    justify-self: stretch;
+    align-self: stretch;
+    padding: 0.4rem;
+    gap: 0.4rem;
+  }
+
+  .page-index .hero-page {
+    min-height: 0;
+    padding: 0.55rem 0.6rem;
+    gap: 0.18rem;
+  }
+
+  .page-index .hero-page strong {
+    font-size: 0.95rem;
+  }
+
+  .page-index .hero-page span {
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
+
+  .page-index .hero-wallet {
+    padding: 0.35rem 0.55rem;
+    gap: 0.14rem;
+  }
+
+  .page-index .hero-wallet .addr {
+    font-size: 0.62rem;
+  }
+
+  .page-index .hero-wallets {
+    gap: 0.3rem;
+  }
+
+  .page-index .hero-actions {
+    margin-top: 0.45rem;
   }
 }
 
