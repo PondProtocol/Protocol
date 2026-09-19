@@ -784,6 +784,9 @@ check(
     tradeJsText.includes("data-amm-live-pnd") &&
     tradeJsText.includes("data-amm-pool-stats") &&
     tradeJsText.includes("No AMM pool") &&
+    /\.trade-app\[data-mode="amm"\] \.trade-detail-window/.test(stylesText) &&
+    /body\.page-trade \.trade-app\[data-mode="amm"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
+    /:has\(#trade-app\[data-mode="amm"\]\)[\s\S]*overflow:\s*hidden/.test(stylesText) &&
     !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
     !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&
