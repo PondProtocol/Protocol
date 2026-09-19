@@ -3929,8 +3929,16 @@ code.addr {
   align-self: center;
 }
 
+.page-index .hero-heading {
+  padding-top: 0;
+}
+
 .page-index .hero .hero-kicker {
-  font-size: clamp(3.4rem, 16cqi, 10rem);
+  position: static;
+  font-size: clamp(3.6rem, 11cqi, 7rem);
+  line-height: 0.82;
+  letter-spacing: -0.06em;
+  margin: 0 0 0.12rem;
 }
 
 .page-index .hero-tagline {
@@ -4059,14 +4067,7 @@ code.addr {
   }
 
   .page-index .hero .hero-kicker {
-    position: static;
-    font-size: clamp(2.1rem, 16cqi, 2.8rem);
-    line-height: 0.82;
-    letter-spacing: -0.07em;
-  }
-
-  .page-index .hero-heading {
-    padding-top: 0;
+    font-size: clamp(2.2rem, 14cqi, 3rem);
   }
 
   .page-index .hero-tagline {

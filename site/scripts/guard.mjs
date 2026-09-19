@@ -691,7 +691,8 @@ check(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
     ) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
+    /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
