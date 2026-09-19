@@ -211,11 +211,23 @@
         </div>
         <div class="trade-market-panels">
           <div class="trade-panel is-active">
-            <div class="trade-chart-empty trade-dex-chart-empty">
-              <div class="trade-chart-grid"></div>
-              <span class="trade-chart-mark">P</span>
-              <strong>PND / XRP DEX book is empty</strong>
-              <span>No validated Testnet offers. The chart stays blank until the ledger has a book or AMM.</span>
+            <div class="trade-dex-market" data-dex-market>
+              <div class="trade-chart-empty trade-dex-chart-empty" data-dex-empty>
+                <div class="trade-chart-grid"></div>
+                <span class="trade-chart-mark">P</span>
+                <strong>PND / XRP DEX book is empty</strong>
+                <span>No validated Testnet offers. The chart stays blank until the ledger has a book or AMM.</span>
+              </div>
+              <div class="trade-dex-live" data-dex-live hidden>
+                <section class="trade-dex-book-wrap">
+                  <p class="trade-kicker">Validated book</p>
+                  <ol class="trade-dex-book" data-dex-book></ol>
+                </section>
+                <section class="trade-dex-tape-wrap">
+                  <p class="trade-kicker">Trade tape</p>
+                  <ol class="trade-dex-tape" data-dex-tape></ol>
+                </section>
+              </div>
             </div>
           </div>
         </div>
@@ -241,7 +253,7 @@
             </div>
             <div class="trade-panel" data-panel="sell" hidden>
                <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
-               <div class="trade-empty-panel"><strong>Sell ticket</strong><span>Display only. No signing. The Testnet PND/XRP book is empty.</span></div>
+               <div class="trade-empty-panel"><strong>Sell ticket</strong><span data-dex-sell-note>Display only. No signing. The Testnet PND/XRP book is empty.</span></div>
             </div>
           </div>
         </div>
@@ -540,6 +552,7 @@
         offers: [],
         ammInfo: null,
         poolTxs: [],
+        trades: [],
         poolTxComplete: true,
         treasuryPnd: null,
         treasuryXrpDrops: null,
@@ -590,8 +603,9 @@
       setText("[data-treasury-value]", treasury || "Treasury address not configured");
       setText("[data-price]", price);
       setText("[data-price-note]", liveMarket ? "Validated book or AMM" : "No AMM or DEX book");
-      setText("[data-volume]", "—");
-      setText("[data-volume-note]", liveMarket ? "No 24h tape yet" : "No trades to count");
+      const volumeXrp = volume24hXrp(verification.trades || []);
+      setText("[data-volume]", volumeXrp > 0 ? `${formatIou(volumeXrp)} XRP` : "—");
+      setText("[data-volume-note]", volumeXrp > 0 ? "24h AMM/DEX tape" : liveMarket ? "No 24h tape yet" : "No trades to count");
       setText("[data-chart-source-label]", onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
       setText("[data-chart-symbol-source]", liveMarket ? "XRPL validated ledger" : onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
       setText("[data-chart-stat-status]", liveMarket ? "Live PND/XRP market" : "No AMM or DEX book");
@@ -605,13 +619,22 @@
 
     function getMarketPrice(verification = state.verification) {
       const offer = verification.offers?.[0];
-      if (!offer) return "—";
-      const gets = typeof offer.TakerGets === "string" ? BigInt(offer.TakerGets) : null;
-      const pays = offer.TakerPays && typeof offer.TakerPays.value === "string"
-        ? Number(offer.TakerPays.value)
-        : null;
-      if (gets == null || !Number.isFinite(pays) || pays <= 0) return "—";
-      return `${(Number(gets) / 1000000 / pays).toFixed(8)} XRP`;
+      if (offer) {
+        const gets = typeof offer.TakerGets === "string" ? Number(offer.TakerGets) : null;
+        const pays = offer.TakerPays && typeof offer.TakerPays.value === "string"
+          ? Number(offer.TakerPays.value)
+          : null;
+        if (Number.isFinite(gets) && Number.isFinite(pays) && pays > 0) {
+          return `${(gets / 1000000 / pays).toFixed(8)} XRP`;
+        }
+      }
+      const last = verification.trades?.[0];
+      if (last?.price > 0) return `${last.price.toFixed(8)} XRP`;
+      const amm = verification.ammInfo?.amm;
+      const { xrp, iou } = splitAmmAssets(amm);
+      const spot = Number(formatDrops(xrp || "0")) / Number(iou?.value);
+      if (Number.isFinite(spot) && spot > 0) return `${spot.toFixed(8)} XRP`;
+      return "—";
     }
 
     function updateMarketPanels() {
@@ -656,11 +679,16 @@
         : "Same issuer r-address. No mainnet obligations. Testnet holds the issued 100B.");
       paintAmmCreateBalances();
       paintAmmPools();
+      paintDexMarket();
+      chartController?.paintLedger?.();
       const emptyRows = root.querySelectorAll(".trade-empty-row");
+      const trades = state.verification.trades || [];
       emptyRows.forEach((row) => {
-        row.textContent = offers.length
-          ? `${offers.length} validated XRPL offer${offers.length === 1 ? "" : "s"} on ${networks[state.network].label}.`
-          : "No AMM or DEX fills on this network yet.";
+        row.textContent = trades.length
+          ? `${trades.length} validated PND/XRP print${trades.length === 1 ? "" : "s"} on ${networks[state.network].label}.`
+          : offers.length
+            ? `${offers.length} validated XRPL offer${offers.length === 1 ? "" : "s"} on ${networks[state.network].label}.`
+            : "No AMM or DEX fills on this network yet.";
       });
     }
 
@@ -731,6 +759,67 @@
       };
     }
 
+    const RIPPLE_EPOCH = 946684800;
+
+    function parseLedgerAmount(value) {
+      if (value == null) return null;
+      if (typeof value === "string") {
+        const drops = Number(value);
+        if (!Number.isFinite(drops)) return null;
+        return { asset: "XRP", xrp: drops / 1_000_000 };
+      }
+      if (value.currency === "PND" && value.value != null) {
+        const n = Number(value.value);
+        if (!Number.isFinite(n)) return null;
+        return { asset: "PND", value: n };
+      }
+      return null;
+    }
+
+    function ledgerTrade(item) {
+      const tx = item?.tx || item?.tx_json || {};
+      const meta = item?.meta || {};
+      if (meta.TransactionResult && meta.TransactionResult !== "tesSUCCESS") return null;
+      if (tx.TransactionType !== "Payment") return null;
+      const delivered = parseLedgerAmount(meta.delivered_amount ?? meta.DeliveredAmount ?? tx.Amount);
+      const sendMax = parseLedgerAmount(tx.SendMax);
+      let xrp = 0;
+      let pnd = 0;
+      let side = "buy";
+      if (delivered?.asset === "XRP" && sendMax?.asset === "PND") {
+        xrp = delivered.xrp;
+        pnd = sendMax.value;
+        side = "sell";
+      } else if (delivered?.asset === "PND" && sendMax?.asset === "XRP") {
+        pnd = delivered.value;
+        xrp = sendMax.xrp;
+        side = "buy";
+      } else {
+        return null;
+      }
+      if (!(xrp > 0) || !(pnd > 0)) return null;
+      const date = Number(tx.date);
+      return {
+        type: "Payment",
+        side,
+        xrp,
+        pnd,
+        price: xrp / pnd,
+        date,
+        time: Number.isFinite(date) ? (date + RIPPLE_EPOCH) * 1000 : null,
+        hash: tx.hash || item?.hash || "",
+      };
+    }
+
+    function ledgerTrades(items = []) {
+      return items.map(ledgerTrade).filter(Boolean);
+    }
+
+    function volume24hXrp(trades = []) {
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
+    }
+
     function paintAmmPools() {
       const list = $("[data-amm-pools]");
       const activity = $("[data-amm-activity]");
@@ -796,6 +885,41 @@
       }
     }
 
+    function paintDexMarket() {
+      const empty = $("[data-dex-empty]");
+      const live = $("[data-dex-live]");
+      const book = $("[data-dex-book]");
+      const tape = $("[data-dex-tape]");
+      if (!empty || !live) return;
+      const { offers = [], trades = [] } = state.verification;
+      const hasMarket = offers.length > 0 || trades.length > 0;
+      empty.hidden = hasMarket;
+      live.hidden = !hasMarket;
+      if (book) {
+        book.innerHTML = offers.length
+          ? offers.map((offer) => {
+              const gets = typeof offer.TakerGets === "string" ? Number(offer.TakerGets) / 1_000_000 : Number(offer.TakerGets?.value);
+              const pays = typeof offer.TakerPays === "string" ? Number(offer.TakerPays) / 1_000_000 : Number(offer.TakerPays?.value);
+              const xrp = typeof offer.TakerGets === "string" ? gets : pays;
+              const pnd = typeof offer.TakerGets === "string" ? pays : gets;
+              const price = pnd > 0 && Number.isFinite(xrp) ? xrp / pnd : null;
+              return `<li><strong>${escText(price != null ? `${price.toFixed(8)} XRP` : "—")}</strong><span>${escText(Number.isFinite(pnd) ? `${formatIou(pnd)} PND` : "—")}</span><em>${escText(Number.isFinite(xrp) ? `${formatIou(xrp)} XRP` : "—")}</em></li>`;
+            }).join("")
+          : "<li>No resting PND/XRP offers.</li>";
+      }
+      if (tape) {
+        tape.innerHTML = trades.length
+          ? trades.slice(0, 24).map((trade) => `<li><strong>${escText(trade.side === "buy" ? "Buy" : "Sell")}</strong><span>${escText(`${trade.price.toFixed(8)} XRP`)}</span><em>${escText(`${formatIou(trade.pnd)} PND · ${formatIou(trade.xrp)} XRP`)}</em><time>${escText(rippleDate(trade.date))}</time></li>`).join("")
+          : "<li>No validated AMM/DEX prints yet.</li>";
+      }
+      const sellNote = $("[data-dex-sell-note]");
+      if (sellNote) {
+        sellNote.textContent = hasMarket
+          ? "Display only. No signing. Live Testnet book and AMM tape are on the left."
+          : "Display only. No signing. The Testnet PND/XRP book is empty.";
+      }
+    }
+
     function setNetworkButtons() {
       $$("[data-network]").forEach((button) => {
         const active = button.dataset.network === state.network;
@@ -808,7 +932,9 @@
     function setMode(mode) {
       const labels = {
         amm: "AMM · Testnet ledger",
-        dex: "DEX · empty book",
+        dex: (state.verification.offers || []).length || (state.verification.trades || []).length
+          ? "DEX · live book"
+          : "DEX · empty book",
         chart: "PND / XRP · Testnet ledger",
         data: "Data · live Testnet read",
       };
@@ -1490,12 +1616,7 @@
           if (chartState.pair === "xrp-usd") {
             loadXrpData();
           } else {
-            chartState.data = null;
-            resetChartStats();
-            setChartEmpty(
-              `No ${label} candles`,
-              "There is no PND/XRP AMM or DEX book to plot. Last price, volume, and candles stay blank.",
-            );
+            paintLedgerChart();
           }
         });
       });
@@ -1505,6 +1626,7 @@
           chartState.range = button.dataset.chartRange || "1h";
           setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
           if (chartState.pair === "xrp-usd") loadXrpData();
+          else paintLedgerChart();
         });
       });
 
@@ -1524,8 +1646,8 @@
         setText(
           "[data-chart-empty-copy]",
           active
-            ? "Overlay stays off for PND until Testnet has a book or AMM. XRP/USD can still overlay CoinGecko."
-            : "PND candles stay blank without an AMM or DEX book.",
+            ? "Overlay is a moving average of validated PND/XRP prints, not invented candles."
+            : "PND/XRP plots validated AMM/DEX prints. No invented candles.",
         );
         if (chartState.data) renderChart();
       });
@@ -1562,7 +1684,7 @@
           const gridY = top + (index / 4) * (priceBottom - top);
           const gridValue = high - (index / 4) * (high - low);
           grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
-          grid.push(svgText(plotRight + 8, gridY + 3, formatUsd(gridValue), "trade-chart-axis-label"));
+          grid.push(svgText(plotRight + 8, gridY + 3, formatAxis(gridValue), "trade-chart-axis-label"));
         }
         for (let index = 0; index <= 6; index += 1) {
           const gridX = left + (index / 6) * (plotRight - left);
@@ -1644,11 +1766,84 @@
         svg.innerHTML = `${grid.join("")}${panelChrome}<path class="trade-chart-area" d="${areaPath}"/><path class="trade-chart-price" d="${pricePath}"/>${indicatorPaths}${overlayPath}${panelPaths}${macdBars}${volumeBars}${labels}`;
         liveChart.hidden = false;
         emptyChart.hidden = true;
-        setText("[data-chart-stat-sma]", formatUsd(sma[sma.length - 1]));
+        setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
         setText("[data-chart-stat-rsi]", Number.isFinite(rsi[rsi.length - 1]) ? rsi[rsi.length - 1].toFixed(1) : "—");
         setText("[data-chart-stat-macd]", Number.isFinite(macd[macd.length - 1]) ? macd[macd.length - 1].toFixed(4) : "—");
-        setText("[data-chart-symbol-price]", formatUsd(chartState.data.livePrice));
+        setText("[data-chart-symbol-price]", formatAxis(chartState.data.livePrice));
         setText("[data-chart-symbol-change]", formatPercent(chartState.data.change));
+      }
+
+      const formatAxis = (value) => {
+        if (!Number.isFinite(value)) return "—";
+        if (chartState.data?.quote === "XRP") {
+          return `${value.toFixed(value >= 1 ? 4 : 8)} XRP`;
+        }
+        return formatUsd(value);
+      };
+
+      function paintLedgerChart() {
+        const label = pairLabels[chartState.pair] || "PND / XRP";
+        const trades = state.verification.trades || [];
+        const offers = state.verification.offers || [];
+        const hasMarket = Boolean(state.verification.market) || trades.length > 0 || offers.length > 0;
+        setText("[data-chart-symbol]", label);
+        setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
+        setText("[data-chart-pair-label]", `${label} · Testnet ledger`);
+        setText("[data-chart-legend-primary]", label);
+        setText("[data-chart-symbol-source]", "XRPL validated ledger");
+        setText("[data-chart-source-label]", "XRPL Testnet prints");
+        setText("[data-chart-source]", "Source: XRPL Testnet validated prints");
+        setText("[data-chart-indicator-note]", "Indicators are computed from validated PND/XRP prints. Not invented candles.");
+        if (!hasMarket) {
+          chartState.data = null;
+          resetChartStats();
+          setChartEmpty(
+            `No ${label} candles on Testnet`,
+            "There is no AMM or DEX book to plot. Last price, volume, and candles stay blank.",
+          );
+          return;
+        }
+        const windows = { "1h": 60 * 60 * 1000, "4h": 4 * 60 * 60 * 1000, "1d": 24 * 60 * 60 * 1000, "1w": 7 * 24 * 60 * 60 * 1000 };
+        const windowMs = windows[chartState.range];
+        const cutoff = windowMs ? Date.now() - windowMs : 0;
+        let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);
+        if (used.length < 2) used = [...trades].filter((trade) => trade.time).sort((a, b) => a.time - b.time);
+        if (used.length < 1) {
+          const spot = Number(String(getMarketPrice()).replace(" XRP", ""));
+          used = [{
+            time: Date.now(),
+            price: Number.isFinite(spot) ? spot : 0,
+            xrp: 0,
+            pnd: 0,
+          }];
+        }
+        const points = used.map((trade) => ({ time: trade.time, value: trade.price, volume: trade.xrp || 0 }));
+        if (points.length === 1) {
+          points.unshift({ time: points[0].time - 60 * 1000, value: points[0].value, volume: 0 });
+        }
+        const open = points[0].value;
+        const high = Math.max(...points.map((point) => point.value));
+        const low = Math.min(...points.map((point) => point.value));
+        const livePrice = points[points.length - 1].value;
+        const change = open ? ((livePrice - open) / open) * 100 : 0;
+        const volume = volume24hXrp(trades);
+        chartState.data = { points, livePrice, change, volume, open, high, low, quote: "XRP" };
+        setText("[data-chart-stat-price]", formatAxis(livePrice));
+        setText("[data-chart-stat-change]", formatPercent(change));
+        setText("[data-chart-stat-volume]", volume > 0 ? `${formatIou(volume)} XRP` : "—");
+        setText("[data-chart-stat-market-cap]", state.verification.treasuryPnd != null ? `${formatIou(state.verification.treasuryPnd)} PND` : "—");
+        setText("[data-chart-ohlc-open]", formatAxis(open));
+        setText("[data-chart-ohlc-high]", formatAxis(high));
+        setText("[data-chart-ohlc-low]", formatAxis(low));
+        setText("[data-chart-ohlc-close]", formatAxis(livePrice));
+        setText("[data-chart-ohlc-change]", formatPercent(change));
+        const status = $("[data-chart-stat-status]");
+        if (status) {
+          status.classList.toggle("is-gated", false);
+          status.classList.toggle("is-live", true);
+          status.textContent = `${used.length} validated print${used.length === 1 ? "" : "s"}`;
+        }
+        renderChart();
       }
 
       async function loadXrpData() {
@@ -1715,9 +1910,10 @@
 
       const load = () => {
         if (chartState.pair === "xrp-usd") loadXrpData();
+        else paintLedgerChart();
       };
       window.setInterval(load, 60000);
-      return { load };
+      return { load, paintLedger: paintLedgerChart };
     }
 
     function setupTabs() {
@@ -1822,16 +2018,24 @@
       let poolTxs = [];
       let poolTxComplete = true;
       if (amm?.account) {
-        const history = await wsRpc(endpoint, "account_tx", {
-          account: amm.account,
-          ledger_index_min: -1,
-          ledger_index_max: -1,
-          limit: 50,
-          forward: true,
-        }, signal).catch(() => null);
-        poolTxs = history?.result?.transactions || [];
-        poolTxComplete = !history?.result?.marker;
+        let marker;
+        for (let page = 0; page < 4 && poolTxs.length < 200; page += 1) {
+          const history = await wsRpc(endpoint, "account_tx", {
+            account: amm.account,
+            ledger_index_min: -1,
+            ledger_index_max: -1,
+            limit: 50,
+            forward: false,
+            ...(marker ? { marker } : {}),
+          }, signal).catch(() => null);
+          const batch = history?.result?.transactions || [];
+          poolTxs.push(...batch);
+          marker = history?.result?.marker;
+          if (!marker || !batch.length) break;
+        }
+        poolTxComplete = !marker;
       }
+      const trades = ledgerTrades(poolTxs);
       let walletPnd = null;
       let walletXrpDrops = null;
       const walletAccount = xamanAccount();
@@ -1867,6 +2071,7 @@
         ammInfo: ammInfo?.result || null,
         poolTxs,
         poolTxComplete,
+        trades,
         treasuryPnd,
         treasuryXrpDrops,
         treasuryAccount: treasuryLinesResponse?.result?.account || null,
