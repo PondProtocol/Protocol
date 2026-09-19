@@ -934,6 +934,21 @@ check(
     /Official WalletConnect or Xaman/.test(indexHtml),
 );
 check(
+  "Sign in menu auto-starts official WalletConnect QR without a second click",
+  indexHtml.includes("data-session-wc-qr") &&
+    /Continue with WalletConnect/.test(indexHtml) &&
+    /Open in Xaman/.test(xamanJsText) &&
+    sessionJsText.includes("startWalletConnectQr") &&
+    sessionJsText.includes("onQRCode") &&
+    sessionJsText.includes("walletconnect.projectId") &&
+    sessionJsText.includes("data-session-wc-qr") &&
+    sessionJsText.includes("/vendor/pond-qr.js") &&
+    existsSync(join(DIST_DIR, "vendor", "pond-qr.js")) &&
+    !sessionJsText.includes("89408e9bcaa385da1a1867c446cfb7b2") &&
+    !sessionJsText.includes("mnemonic") &&
+    !sessionJsText.includes("family seed"),
+);
+check(
   "serve.mjs can set a signed session cookie",
   existsSync(join(SITE_ROOT, "scripts", "session.mjs")) &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("pond_session") &&
@@ -1049,6 +1064,9 @@ check(
     !tradeJsText.includes("89408e9bcaa385da1a1867c446cfb7b2") &&
     existsSync(join(DIST_DIR, "vendor", "xrpl-latest-min.js")) &&
     existsSync(join(DIST_DIR, "vendor", "xrpl-connect.umd.js")) &&
+    existsSync(join(DIST_DIR, "vendor", "pond-qr.js")) &&
+    !indexHtml.includes("/pond-qr") &&
+    !indexHtml.includes("/vendor/xrpl") &&
     !tradeHtml.includes("data-disclaimer") &&
     !tradeHtml.includes("Before you continue") &&
     !tradeHtml.includes("/disclaimer.") &&

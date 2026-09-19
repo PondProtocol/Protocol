@@ -391,6 +391,7 @@ a:hover {
   line-height: 1.45;
 }
 
+.session-wc-qr,
 .session-xaman-panel {
   display: grid;
   justify-items: center;

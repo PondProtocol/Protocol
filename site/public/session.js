@@ -1,10 +1,17 @@
 (() => {
-  const WC_SCRIPTS = [{ src: "/vendor/xrpl-latest-min.js" }, { src: "/vendor/xrpl-connect.umd.js" }];
+  const WC_SCRIPTS = [
+    { src: "/vendor/xrpl-latest-min.js" },
+    { src: "/vendor/xrpl-connect.umd.js" },
+    { src: "/vendor/pond-qr.js" },
+  ];
 
   let current = null;
   let wcManager = null;
   let scriptsPromise = null;
   let wcProjectId = "";
+  let wcQrUri = "";
+  let wcQrGeneration = 0;
+  let wcConnecting = false;
   let xamanStatus = { configured: false, reason: "" };
 
   const DEFAULT_ICON = "/greenhead-duck.png";
@@ -60,6 +67,14 @@
     window.dispatchEvent(new CustomEvent("pond:session-change", { detail: current }));
   }
 
+  function esc(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function setMenuOpen(open) {
     const panel = menu();
     const button = toggle();
@@ -68,6 +83,7 @@
     button.setAttribute("aria-expanded", String(open));
     if (open) {
       window.PondXaman?.startSignIn?.(document.querySelector("[data-xaman-autostart]"));
+      startWalletConnectQr();
     }
   }
 
@@ -167,10 +183,17 @@
     return logout();
   }
 
+  function scriptReady(entry) {
+    if (String(entry.src).includes("pond-qr")) return typeof window.PondQr?.dataUrl === "function";
+    return Boolean(window.XRPLConnect);
+  }
+
   function loadScript(entry) {
-    const existing = [...document.scripts].find((node) => node.src === entry.src);
+    const existing = [...document.scripts].find(
+      (node) => node.getAttribute("src") === entry.src || node.src.endsWith(entry.src),
+    );
     if (existing) {
-      return existing.dataset.loaded === "1" || window.XRPLConnect
+      return existing.dataset.loaded === "1" || scriptReady(entry)
         ? Promise.resolve()
         : new Promise((resolve, reject) => {
             existing.addEventListener("load", resolve, { once: true });
@@ -201,19 +224,33 @@
   }
 
   function ensureScripts() {
-    if (window.XRPLConnect?.WalletManager) return Promise.resolve();
     if (!scriptsPromise) {
       scriptsPromise = WC_SCRIPTS.reduce((chain, entry) => chain.then(() => loadScript(entry)), Promise.resolve());
     }
     return scriptsPromise;
   }
 
-  async function connectWalletConnect() {
-    if (document.getElementById("trade-app") && typeof window.PondTrade?.connectWallet === "function") {
-      setMenuOpen(false);
-      window.PondTrade.connectWallet();
-      return;
+  function paintWcQr(uri, status) {
+    const mount = document.querySelector("[data-session-wc-qr]");
+    if (!mount) return;
+    if (uri) {
+      const src = typeof window.PondQr?.dataUrl === "function" ? window.PondQr.dataUrl(uri) : "";
+      if (src.startsWith("data:image/")) {
+        mount.innerHTML = `<img class="session-xaman-qr" src="${esc(src)}" width="168" height="168" alt="WalletConnect official pairing QR">`;
+        return;
+      }
     }
+    mount.innerHTML = `<p class="session-xaman-pending">${esc(status || "Preparing official WalletConnect…")}</p>`;
+  }
+
+  function acceptWcUri(uri) {
+    const text = String(uri || "");
+    if (!text.startsWith("wc:")) return;
+    wcQrUri = text;
+    paintWcQr(text);
+  }
+
+  async function ensureWalletManager() {
     if (!wcProjectId) await refresh();
     if (!wcProjectId) throw new Error("WalletConnect is not configured.");
     await ensureScripts();
@@ -232,6 +269,7 @@
           icons: [],
         },
         themeMode: "dark",
+        useModal: false,
       });
       wcManager = new api.WalletManager({
         adapters: [adapter],
@@ -245,10 +283,80 @@
         if (account?.address) login({ method: "walletconnect", address: account.address });
       });
       wcManager.on("disconnect", () => {
+        wcQrUri = "";
         logoutIf({ method: "walletconnect" });
       });
       connector.setWalletManager(wcManager);
     }
+    return wcManager;
+  }
+
+  function startWalletConnectQr() {
+    const mount = document.querySelector("[data-session-wc-qr]");
+    if (!mount || current?.address) return;
+    if (wcQrUri) {
+      paintWcQr(wcQrUri);
+      return;
+    }
+    paintWcQr("", "Preparing official WalletConnect…");
+    const gen = ++wcQrGeneration;
+    void (async () => {
+      try {
+        await ensureWalletManager();
+        if (gen !== wcQrGeneration) return;
+        if (wcQrUri) {
+          paintWcQr(wcQrUri);
+          return;
+        }
+        const adapter = wcManager.wallets?.find((wallet) => wallet.id === "walletconnect");
+        if (typeof adapter?.preInitialize === "function") {
+          await adapter.preInitialize("mainnet", (uri) => {
+            if (gen === wcQrGeneration) acceptWcUri(uri);
+          });
+        }
+        if (gen !== wcQrGeneration || wcConnecting) return;
+        wcConnecting = true;
+        wcManager
+          .connect("walletconnect", {
+            onQRCode(uri) {
+              if (gen === wcQrGeneration) acceptWcUri(uri);
+            },
+          })
+          .catch(() => {})
+          .finally(() => {
+            wcConnecting = false;
+          });
+      } catch (error) {
+        if (gen !== wcQrGeneration) return;
+        const message = error.message || "WalletConnect could not start.";
+        paintWcQr("", message);
+        const note = document.querySelector("[data-session-wc-error]");
+        if (note) {
+          note.hidden = false;
+          note.textContent = message;
+        }
+      }
+    })();
+  }
+
+  async function connectWalletConnect() {
+    if (document.getElementById("trade-app") && typeof window.PondTrade?.connectWallet === "function") {
+      setMenuOpen(false);
+      window.PondTrade.connectWallet();
+      return;
+    }
+    await ensureWalletManager();
+    if (wcConnecting) {
+      try {
+        await wcManager.disconnect();
+      } catch {
+        /* official modal starts a fresh pairing */
+      }
+      wcConnecting = false;
+      wcQrUri = "";
+    }
+    const connector = document.getElementById("pond-session-connector");
+    if (!connector) throw new Error("WalletConnect could not load. Open Trade and connect there.");
     setMenuOpen(false);
     await connector.open();
   }
