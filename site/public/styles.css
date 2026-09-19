@@ -4007,14 +4007,52 @@ code.addr {
 
 .page-index .hero-page {
   min-height: 0;
-  background: rgb(236 242 248 / 0.58);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
-.page-index .hero-page:hover,
-.page-index .hero-page:focus-visible {
-  background: rgb(236 242 248 / 0.72);
+.page-index .hero-page-pond {
+  background: rgb(74 144 217 / 0.75);
+}
+
+.page-index .hero-page-profile {
+  background: rgb(168 140 196 / 0.75);
+}
+
+.page-index .hero-page-trade {
+  background: rgb(0 180 150 / 0.75);
+}
+
+.page-index .hero-page-protocol {
+  background: rgb(214 176 72 / 0.75);
+}
+
+.page-index .hero-page-pond:hover,
+.page-index .hero-page-pond:focus-visible {
+  background: rgb(74 144 217 / 0.88);
+}
+
+.page-index .hero-page-profile:hover,
+.page-index .hero-page-profile:focus-visible {
+  background: rgb(168 140 196 / 0.88);
+}
+
+.page-index .hero-page-trade:hover,
+.page-index .hero-page-trade:focus-visible {
+  background: rgb(0 180 150 / 0.88);
+}
+
+.page-index .hero-page-protocol:hover,
+.page-index .hero-page-protocol:focus-visible {
+  background: rgb(214 176 72 / 0.88);
+}
+
+.page-index .hero-page strong {
+  color: #102028;
+}
+
+.page-index .hero-page span {
+  color: #243038;
 }
 
 @media (max-width: 480px) {

@@ -603,15 +603,15 @@ function heroWalletHtml(label, address) {
 
 function heroPagesHtml() {
   const cards = [
-    ["/Pond/", "Pond", "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole."],
-    ["/profile/", "Profile", "Xaman account. Handle and balances. Never a seed."],
-    ["/trade/", "Trade", "Testnet terminal. Not a live mainnet DEX."],
-    ["/Protocol/", "Protocol", "Decentralized and Agent-AI-run."],
+    ["/Pond/", "Pond", "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole.", "pond"],
+    ["/profile/", "Profile", "Xaman account. Handle and balances. Never a seed.", "profile"],
+    ["/trade/", "Trade", "Testnet terminal. Not a live mainnet DEX.", "trade"],
+    ["/Protocol/", "Protocol", "Decentralized and Agent-AI-run.", "protocol"],
   ];
   return `<nav class="hero-pages" aria-label="Pond pages">${cards
     .map(
-      ([href, title, blurb]) =>
-        `<a class="hero-page" href="${esc(href)}"><strong>${esc(title)}</strong><span>${esc(blurb)}</span></a>`,
+      ([href, title, blurb, key]) =>
+        `<a class="hero-page hero-page-${key}" href="${esc(href)}"><strong>${esc(title)}</strong><span>${esc(blurb)}</span></a>`,
     )
     .join("")}</nav>`;
 }
