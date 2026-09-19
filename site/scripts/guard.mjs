@@ -691,7 +691,10 @@ check(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
     ) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
+    /grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .hero-main")),
+    ) &&
+    /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
 check(

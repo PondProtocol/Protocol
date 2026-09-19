@@ -3900,7 +3900,7 @@ code.addr {
   container-type: size;
   container-name: home-hero;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   box-sizing: border-box;
   width: auto;
@@ -3916,17 +3916,21 @@ code.addr {
 }
 
 .page-index .hero-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.1rem 1.4rem;
   width: 100%;
-  height: auto;
+  height: 100%;
   min-height: 0;
   max-width: 100%;
-  align-items: end;
-  transform: scale(var(--home-scale));
-  transform-origin: center center;
+  align-items: stretch;
+  transform: none;
 }
 
 .page-index .hero-copy {
   align-self: center;
+  min-width: 0;
+  min-height: 0;
 }
 
 .page-index .hero-heading {
@@ -3951,17 +3955,21 @@ code.addr {
 
 .page-index .hero-pages {
   aspect-ratio: 1 / 1;
-  justify-self: end;
-  align-self: end;
-  width: min(32rem, 48cqi);
-  height: auto;
-  max-width: 100%;
+  justify-self: stretch;
+  align-self: stretch;
+  width: 100%;
+  height: 100%;
+  max-width: none;
   min-height: 0;
   padding: 0.75rem;
   background: transparent;
   border-color: rgb(236 242 248 / 0.18);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+.page-index .hero-pages {
+  aspect-ratio: auto;
 }
 
 .page-index .hero-page {
@@ -4042,28 +4050,26 @@ code.addr {
   }
 
   .page-index .hero-inner {
-    align-items: center;
+    align-items: stretch;
   }
 
   .page-index .hero-main {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    justify-content: stretch;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: 0.45rem;
     width: 100%;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    transform: scale(var(--home-scale));
-    transform-origin: center center;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    transform: none;
   }
 
   .page-index .hero-copy {
-    flex: 0 0 auto;
-    align-self: stretch;
+    align-self: center;
     min-height: 0;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .page-index .hero .hero-kicker {
@@ -4088,12 +4094,11 @@ code.addr {
   }
 
   .page-index .hero-pages {
-    flex: 0 0 11rem;
     grid-row: auto;
     width: 100%;
-    height: 11rem;
-    min-height: 11rem;
-    max-height: 11rem;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     aspect-ratio: auto;
     justify-self: stretch;
     align-self: stretch;
