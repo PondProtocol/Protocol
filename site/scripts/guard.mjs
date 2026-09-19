@@ -760,6 +760,13 @@ check(
     tradeJsText.includes("data-chart-volume") &&
     tradeJsText.includes("continuePoolTape") &&
     tradeJsText.includes("const LEDGER_POLL_MS = 8000") &&
+    tradeJsText.includes("data-mainnet-gate") &&
+    tradeJsText.includes("data-return-testnet") &&
+    tradeJsText.includes("We are not on Mainnet yet") &&
+    tradeJsText.includes("applyMainnetGate") &&
+    tradeJsText.includes('if (state.network === "production")') &&
+    stylesText.includes("trade-mainnet-gate") &&
+    stylesText.includes("trade-mainnet-return") &&
     tradeJsText.includes("pollLedger") &&
     tradeJsText.includes("mergePoolHistory") &&
     tradeJsText.includes("visibilitychange") &&

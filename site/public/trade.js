@@ -102,6 +102,16 @@
         <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>PND / XRP · Testnet ledger</span><span class="trade-poll-note" data-poll-note>Live · 8s</span></span>
     </nav>
 
+    <section class="trade-mainnet-gate" data-mainnet-gate hidden>
+      <div class="trade-mainnet-gate-card">
+        <span class="trade-chart-mark">P</span>
+        <p class="trade-kicker">XRPL Mainnet</p>
+        <strong>We are not on Mainnet yet.</strong>
+        <span>Mainnet still has no $PND issued. This terminal does not invent Mainnet candles or a Mainnet book. The live PND/XRP tape is Testnet only.</span>
+        <button type="button" class="trade-mainnet-return" data-return-testnet>Return to Testnet</button>
+      </div>
+    </section>
+
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
       <section class="trade-market-pane" aria-label="Market view">
         <nav class="trade-subtabs" aria-label="AMM market detail" data-tab-group="amm-market">
@@ -1099,6 +1109,29 @@
       });
     }
 
+    function applyMainnetGate() {
+      const onMainnet = state.network === "production";
+      root.dataset.network = state.network;
+      const gate = $("[data-mainnet-gate]");
+      if (gate) gate.hidden = !onMainnet;
+      if (onMainnet) {
+        $("[data-chart-live]")?.setAttribute("hidden", "");
+        $("[data-chart-empty-state]")?.setAttribute("hidden", "");
+        setText("[data-honesty]", "XRPL Mainnet · $PND is not issued · we are not on Mainnet yet");
+        setText("[data-mode-note]", "Mainnet · not issued yet");
+        setText("[data-poll-note]", "Off");
+        setStatus("online", "Mainnet · not issued yet");
+      }
+    }
+
+    function returnToTestnet() {
+      if (state.network === "testnet") return;
+      state.network = "testnet";
+      setNetworkButtons();
+      walletController?.switchNetwork();
+      refresh();
+    }
+
     function setNetworkButtons() {
       $$("[data-network]").forEach((button) => {
         const active = button.dataset.network === state.network;
@@ -1106,6 +1139,7 @@
         button.setAttribute("aria-pressed", String(active));
       });
       setText("[data-network-label]", networks[state.network].label);
+      applyMainnetGate();
     }
 
     function setMode(mode) {
@@ -2230,6 +2264,12 @@
       };
 
       function paintLedgerChart() {
+        if (state.network === "production") {
+          liveChart.hidden = true;
+          emptyChart.hidden = true;
+          hideChartHud();
+          return;
+        }
         const label = pairLabels[chartState.pair] || "PND / XRP";
         const trades = state.verification.trades || [];
         const offers = state.verification.offers || [];
@@ -2640,6 +2680,13 @@
 
     async function refresh(options = {}) {
       const quiet = Boolean(options.quiet);
+      if (state.network === "production") {
+        refreshController?.abort();
+        applyMainnetGate();
+        pollInFlight = false;
+        setPollChrome({ busy: false });
+        return;
+      }
       if (quiet && (document.hidden || pollInFlight)) return;
       const generation = ++state.requestGeneration;
       refreshController?.abort();
@@ -2721,6 +2768,7 @@
         refresh();
       });
     });
+    $("[data-return-testnet]")?.addEventListener("click", returnToTestnet);
     $("[data-refresh]")?.addEventListener("click", refresh);
     setupTabs();
     setupControlGroups();
