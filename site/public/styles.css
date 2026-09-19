@@ -3119,7 +3119,7 @@ code.addr {
 .hero .hero-kicker {
   position: absolute;
   left: 0;
-  bottom: calc(100% - 0.78rem * 1.7);
+  bottom: calc(100% - 0.78rem * 1.7 + 1.4rem);
   margin: 0;
   height: auto;
   overflow: visible;
