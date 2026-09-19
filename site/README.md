@@ -42,8 +42,9 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 Official Xaman / Xumm **payload SignIn** lives in `serve.mjs` and is offered
 from Trade's **Connect wallet** control (WalletConnect or Xaman). The frontend
 never receives the API secret. There is no airdrop claim, no DEX trade, and no
-seed field. The top bar is Pond · Protocol, then docs
-search, then a Trade button to `/trade/`. Pond opens `/Pond/`. Protocol
+seed field. The top bar groups Pond, Protocol, and search in one
+outlined box. Login (Launch when signed in) and the account icon sit
+together and go to `/trade/`. Pond opens `/Pond/`. Protocol
 opens `/Protocol/` with no docs dropdown.
 
 Set these on the **Replit Autoscale** app (Secrets / env), then Publish. Do not

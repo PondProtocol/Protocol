@@ -499,13 +499,19 @@ check(
     !topnavHtml.includes("<details"),
 );
 check(
-  "green Trade button sits immediately after search as the far-right control",
-  headerHtml.includes('class="topbar-trade"') &&
-    headerHtml.includes('href="/trade/"') &&
-    /<a class="topbar-trade" href="\/trade\/">Trade<\/a>/.test(headerHtml) &&
-    headerHtml.indexOf("data-site-search") < headerHtml.indexOf("topbar-trade") &&
-    headerHtml.indexOf("</form>") < headerHtml.indexOf("topbar-trade") &&
-    !topnavSummaries.includes("Trade"),
+  "Login CTA sits with the account cluster after the Pond-Protocol-search group",
+  headerHtml.includes('class="topbar-nav-group"') &&
+    headerHtml.includes('class="topbar-account-group"') &&
+    headerHtml.includes('class="topbar-trade"') &&
+    headerHtml.includes('data-topbar-cta') &&
+    /<a class="topbar-trade" href="\/trade\/"[^>]*>Login<\/a>/.test(headerHtml) &&
+    headerHtml.indexOf("topbar-nav-group") < headerHtml.indexOf('href="/Pond/"') &&
+    headerHtml.indexOf('href="/Protocol/"') < headerHtml.indexOf("data-site-search") &&
+    headerHtml.indexOf("data-site-search") < headerHtml.indexOf("topbar-account-group") &&
+    headerHtml.indexOf("topbar-account-group") < headerHtml.indexOf("topbar-trade") &&
+    headerHtml.indexOf("topbar-trade") < headerHtml.indexOf("data-session-chip") &&
+    !topnavSummaries.includes("Trade") &&
+    !/>Trade</.test(headerHtml.match(/<a class="topbar-trade"[\s\S]*?<\/a>/)?.[0] ?? ""),
 );
 check(
   "Protocol is a single top-bar link with no docs dropdown",
@@ -647,8 +653,11 @@ check(
     !/\.topnav-menu\s*\{[^}]*display:\s*none/.test(stylesText),
 );
 check(
-  "Trade button reuses the Verify CTA accent gradient",
+  "Login CTA reuses the Verify CTA accent gradient",
   stylesText.includes(".topbar-trade") &&
+    stylesText.includes(".topbar-nav-group") &&
+    stylesText.includes(".topbar-account-group") &&
+    /border:\s*1px solid rgb\(236 242 248/.test(stylesText) &&
     stylesText.includes("linear-gradient(135deg, var(--accent-bright), var(--accent))"),
 );
 check(
@@ -1000,19 +1009,35 @@ check(
     /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".session-menu[hidden]"))),
 );
 check(
-  "top bar has a Sign in chip that reuses WalletConnect and Xaman",
+  "top bar Login goes to /trade/; signed-in label is Launch",
   indexHtml.includes("data-session-chip") &&
     /\/session\.[a-f0-9]{10}\.js/.test(indexHtml) &&
+    indexHtml.includes('href="/trade/"') &&
+    indexHtml.includes("data-topbar-cta") &&
+    indexHtml.includes(">Login<") &&
+    sessionJsText.includes('"Launch"') &&
+    sessionJsText.includes('"Login"') &&
+    sessionJsText.includes("/api/session") &&
+    sessionJsText.includes("walletconnect") &&
+    sessionJsText.includes("PondTrade?.connectWallet") &&
     indexHtml.includes("data-session-wc") &&
     indexHtml.includes("data-xaman-compact") &&
     indexHtml.includes("XUMM_API_KEY") &&
     indexHtml.includes("XUMM_API_SECRET") &&
-    sessionJsText.includes("/api/session") &&
-    sessionJsText.includes("walletconnect") &&
-    sessionJsText.includes("PondTrade?.connectWallet") &&
     indexHtml.includes("data-xaman-autostart") &&
     xamanJsText.includes("startSignIn") &&
     xamanJsText.includes("/api/xaman/signin"),
+);
+check(
+  "logged-out profile icon cycles a tadpole identicon every 5 seconds",
+  indexHtml.includes("data-guest-avatar") &&
+    indexHtml.includes("/identicon/") &&
+    !indexHtml.includes('data-guest-avatar" src="/greenhead-duck.png') &&
+    sessionJsText.includes("data-guest-avatar") &&
+    sessionJsText.includes("GUEST_CYCLE_MS = 5000") &&
+    sessionJsText.includes("/identicon/") &&
+    sessionJsText.includes("getRandomValues") &&
+    !sessionJsText.includes("/greenhead-duck.png"),
 );
 check(
   "Sign in menu auto-starts official Xaman QR without a second click",
@@ -1192,7 +1217,7 @@ check(
     /Sign out/.test(profileJsText) &&
     !sessionJsText.includes("data-session-signout") &&
     headerHtml.includes("topbar-trade") &&
-    /<a class="topbar-trade" href="\/trade\/">Trade<\/a>/.test(headerHtml),
+    /<a class="topbar-trade" href="\/trade\/"[^>]*>Login<\/a>/.test(headerHtml),
 );
 check(
   "tadpole handles are assigned on login and persisted in a JSON file store",

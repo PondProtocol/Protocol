@@ -41,8 +41,8 @@ data. We do not run ads. We never ask for a seed, mnemonic, private key, or
 password in a form, pop-up, email, or chat. If a page that says Pond asks
 for one, close it.
 
-Official wallet connect is [Trade](/trade/) or the Sign in chip (same
-WalletConnect and Xaman paths). That is a wallet you already control. It is
+Official wallet connect is [Trade](/trade/) from the Login or Launch
+button (same WalletConnect and Xaman paths). That is a wallet you already control. It is
 not a seed prompt and not a claim. Xaman stays unavailable until the owner
 sets `XUMM_API_KEY` and `XUMM_API_SECRET` on Replit Autoscale.
 

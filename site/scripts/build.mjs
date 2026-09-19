@@ -687,7 +687,8 @@ const iconScan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 function sessionChipHtml() {
   return `<div class="session-chip" data-session-chip>
   <div class="session-guest" data-session-guest>
-    <button type="button" class="session-toggle" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
+    <img class="session-avatar" data-guest-avatar width="30" height="30" alt="" src="/identicon/0000000000000000.svg">
+    <button type="button" class="session-toggle visually-hidden" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
     <div class="session-menu" id="session-menu" data-session-menu hidden>
       <p class="session-menu-kicker">Sign in</p>
       <p class="session-menu-copy">Official WalletConnect or Xaman. Pond never asks for a seed.</p>
@@ -889,10 +890,14 @@ ${canonical}
     </p>
   </div>
   <div class="topbar-end">
-    ${topnavHtml(page.url)}
-    ${searchHtml(page.url)}
-    <a class="topbar-trade" href="/trade/">Trade</a>
-    ${sessionChipHtml()}
+    <div class="topbar-nav-group">
+      ${topnavHtml(page.url)}
+      ${searchHtml(page.url)}
+    </div>
+    <div class="topbar-account-group">
+      <a class="topbar-trade" href="/trade/" data-topbar-cta>Login</a>
+      ${sessionChipHtml()}
+    </div>
   </div>
 </header>
 ${banner}

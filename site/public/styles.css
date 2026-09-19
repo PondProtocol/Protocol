@@ -220,11 +220,29 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.35rem;
+  gap: 0.55rem;
   flex: 0 1 auto;
   min-width: 0;
   margin-left: auto;
   overflow: visible;
+}
+
+.topbar-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+  padding: 0.16rem 0.28rem 0.16rem 0.2rem;
+  border: 1px solid rgb(236 242 248 / 0.78);
+  border-radius: 0.75rem;
+  background: rgb(8 12 16 / 0.28);
+}
+
+.topbar-account-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
 }
 
 .site-search {
@@ -446,6 +464,11 @@ a:hover {
   color: var(--text);
   font: 650 0.78rem var(--font);
   cursor: pointer;
+}
+
+.session-guest {
+  display: inline-flex;
+  align-items: center;
 }
 
 .session-guest[hidden],
@@ -4145,7 +4168,12 @@ code.addr {
     flex-wrap: wrap;
     order: 3;
     margin-left: 0;
-    gap: 0.35rem 0.2rem;
+    gap: 0.4rem;
+  }
+
+  .topbar-nav-group {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .site-search {
@@ -4155,6 +4183,7 @@ code.addr {
     margin-left: 0;
   }
 
+  .topbar-account-group,
   .topbar-trade,
   .session-chip {
     flex: none;
