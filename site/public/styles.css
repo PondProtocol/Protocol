@@ -6011,6 +6011,31 @@ body:has([data-pond-profile]) .profile-card {
   z-index: 1;
   flex: 1 1 auto;
   min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.prose .trade-chart-board table,
+.trade-chart-board table {
+  display: table !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100%;
+  margin: 0 !important;
+  border-collapse: separate !important;
+  overflow: hidden;
+}
+
+.prose .trade-chart-board th,
+.prose .trade-chart-board td,
+.trade-chart-board th,
+.trade-chart-board td {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  vertical-align: middle;
+  text-align: inherit;
+  white-space: normal;
 }
 
 .trade-chart-source {
