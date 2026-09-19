@@ -860,7 +860,6 @@ function pageScripts(page) {
   }
   if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
   if (page.url === "/trade/") {
-    tags.push(`<script src="${pageSrc("disclaimer.js")}" defer></script>`);
     // WalletConnect / xrpl load on demand from /vendor. Hashed page scripts
     // sit in this list so a Publish cannot leave /trade/ on a one-hour stale file.
     tags.push(`<script src="${pageSrc("trade.js")}" defer></script>`);

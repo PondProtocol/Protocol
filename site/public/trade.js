@@ -59,13 +59,13 @@
         <span class="trade-token-mark">P</span>
         <div>
           <div class="trade-pair-title"><strong>$PND / XRP</strong><span class="trade-live-dot"></span><em>PND</em></div>
-          <div class="trade-pair-sub">Issued currency · XRPL · <span data-network-label>XRPL Testnet</span></div>
+          <div class="trade-pair-sub">Issued currency · <span data-network-label>XRPL Testnet</span></div>
         </div>
       </div>
       <div class="trade-network" role="group" aria-label="Trading network">
         <span class="trade-network-label">Network</span>
-        <button type="button" class="trade-network-button" data-network="testnet" aria-pressed="false">Testnet</button>
-        <button type="button" class="trade-network-button is-active" data-network="production" aria-pressed="true">Production</button>
+        <button type="button" class="trade-network-button is-active" data-network="testnet" aria-pressed="true">Testnet</button>
+        <button type="button" class="trade-network-button" data-network="production" aria-pressed="false">Mainnet</button>
       </div>
       <div class="trade-terminal-actions">
         <button type="button" class="trade-icon-button" aria-label="Refresh ledger" data-refresh>↻</button>
@@ -82,12 +82,14 @@
 
     <xrpl-wallet-connector id="pond-wallet-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
 
+    <p class="trade-honesty" data-honesty>XRPL Testnet · $PND issued · 100B at treasury · faucet XRP is worthless · Mainnet not issued</p>
+
     <div class="trade-stat-strip">
-      <div><span>Price</span><strong data-price>—</strong><em>Awaiting pool</em></div>
-      <div><span>24h volume</span><strong>—</strong><em>Not configured</em></div>
-      <div><span>Liquidity</span><strong>—</strong><em>AMM gated</em></div>
-      <div><span>Network</span><strong data-network-label>XRPL Production</strong><em data-ledger-status>Checking ledger…</em></div>
-      <div><span>Issuer</span><strong data-issuer-short>Verified pending</strong><em>PND identity</em></div>
+      <div><span>Price</span><strong data-price>—</strong><em data-price-note>No AMM or DEX book</em></div>
+      <div><span>24h volume</span><strong data-volume>—</strong><em data-volume-note>No trades to count</em></div>
+      <div><span>Liquidity</span><strong data-liquidity>—</strong><em data-liquidity-note>No AMM pool</em></div>
+      <div><span>Network</span><strong data-network-label>XRPL Testnet</strong><em data-ledger-status>Reading Testnet…</em></div>
+      <div><span>Treasury</span><strong data-treasury-balance>—</strong><em>100B PND issued here</em></div>
     </div>
 
       <nav class="trade-mode-tabs" aria-label="Trading mode" data-tab-group="mode">
@@ -95,7 +97,7 @@
        <button type="button" data-tab="dex" aria-selected="false">DEX</button>
        <button type="button" data-tab="amm" aria-selected="false">AMM</button>
        <button type="button" data-tab="data" aria-selected="false">Data</button>
-        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>Chart route gated</span></span>
+        <span class="trade-mode-note"><span class="trade-pulse" data-network-dot></span> <span data-mode-note>PND / XRP · Testnet ledger</span></span>
     </nav>
 
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
@@ -114,15 +116,15 @@
             <div class="trade-chart-empty">
               <div class="trade-chart-grid"></div>
               <span class="trade-chart-mark">P</span>
-              <strong>Chart activates after pool verification</strong>
-              <span>Price candles and volume will be read from the selected XRPL market.</span>
+              <strong>No PND/XRP AMM or DEX book yet</strong>
+              <span>Candles stay blank until Testnet has a validated pool or order book. This page will not invent a last price.</span>
             </div>
           </div>
           <div class="trade-panel" data-panel="pools" hidden>
-            <div class="trade-liquidity-preview"><div><strong>$PND / XRP AMM</strong><span>Pool reserves</span><b>Not configured</b></div><div><strong>$rPND / XRP AMM</strong><span>MPT market</span><b>Not issued</b></div></div>
+            <div class="trade-liquidity-preview"><div><strong>$PND / XRP AMM</strong><span>Testnet pool</span><b data-amm-status>Reading ledger…</b></div><div><strong>$rPND</strong><span>MPT</span><b>Not issued</b></div></div>
           </div>
           <div class="trade-panel" data-panel="activity" hidden>
-            <div class="trade-empty-panel"><strong>Pool activity will appear here</strong><span>Only verified ledger transactions will be shown.</span></div>
+            <div class="trade-empty-panel"><strong>No AMM activity on Testnet</strong><span>Validated AMM transactions will list here if a PND/XRP pool is created.</span></div>
           </div>
         </div>
         <div class="trade-market-footer"><span>Data source: XRPL validated ledger</span><span data-issuer-status>Checking issuer account</span></div>
@@ -140,7 +142,7 @@
               <button type="button" class="trade-flip" aria-label="Flip assets">↕</button>
               <div class="trade-action-field"><span>Buy</span><div><strong>0.00</strong><b>$PND⌄</b></div><small>—</small></div>
               <div class="trade-summary-row"><span>Rate</span><strong>—</strong></div>
-              <button type="button" class="trade-connect-button" disabled>Connect wallet to review</button>
+              <button type="button" class="trade-connect-button" disabled>Unsigned preview — this terminal does not sign or submit</button>
             </div>
             <div class="trade-panel" data-panel="liquidity" hidden>
               <div class="trade-inline-tabs" aria-label="Liquidity action" data-tab-group="amm-liquidity">
@@ -148,8 +150,8 @@
                 <button type="button" data-tab="remove" aria-selected="false">Remove</button>
               </div>
               <div data-tab-panels="amm-liquidity">
-                <div class="trade-panel is-active" data-panel="add"><div class="trade-empty-panel"><strong>Add liquidity</strong><span>Pool creation and deposits unlock after a verified AMM exists.</span></div></div>
-                <div class="trade-panel" data-panel="remove" hidden><div class="trade-empty-panel"><strong>Remove liquidity</strong><span>Connect a wallet after an LP position can be verified.</span></div></div>
+                <div class="trade-panel is-active" data-panel="add"><div class="trade-empty-panel"><strong>Add liquidity</strong><span>No Testnet AMM to deposit into. This terminal does not sign or submit.</span></div></div>
+                <div class="trade-panel" data-panel="remove" hidden><div class="trade-empty-panel"><strong>Remove liquidity</strong><span>No LP position to read. This terminal does not sign or submit.</span></div></div>
               </div>
             </div>
           </div>
@@ -168,12 +170,12 @@
             <div class="trade-chart-empty trade-dex-chart-empty">
               <div class="trade-chart-grid"></div>
               <span class="trade-chart-mark">P</span>
-              <strong>$PND / XRP chart activates after market verification</strong>
-              <span>Validated XRPL DEX prices and volume will appear here after $PND is issued and the market is verified.</span>
+              <strong>PND / XRP DEX book is empty</strong>
+              <span>No validated Testnet offers. The chart stays blank until the ledger has a book or AMM.</span>
             </div>
           </div>
         </div>
-        <div class="trade-market-footer"><span>Data source: XRPL validated ledger</span><span>PND market verification required</span></div>
+        <div class="trade-market-footer"><span>Data source: XRPL Testnet validated ledger</span><span>Unsigned display only</span></div>
       </section>
 
       <aside class="trade-action-pane" aria-label="DEX order actions">
@@ -190,10 +192,13 @@
                  <label class="trade-action-field trade-input-field"><span>Amount</span><div><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><b>PND</b></div></label>
                </div>
                <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Price × amount · Time in force · GTC</small></div>
-               <p class="trade-order-status" data-dex-order-status role="status">Connect a WalletConnect wallet to review this order.</p>
-               <button type="button" class="trade-connect-button" data-wallet-connect data-dex-submit>Connect wallet to review order</button>
+               <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. This terminal does not sign or submit OfferCreate.</p>
+               <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — no submit</button>
             </div>
-            <div class="trade-panel" data-panel="sell" hidden><div class="trade-empty-panel"><strong>Sell order ticket</strong><span>Signing stays disabled until a verified $PND or $rPND market exists.</span></div></div>
+            <div class="trade-panel" data-panel="sell" hidden>
+               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
+               <div class="trade-empty-panel"><strong>Sell ticket</strong><span>Display only. No signing. The Testnet PND/XRP book is empty.</span></div>
+            </div>
           </div>
         </div>
       </aside>
@@ -210,7 +215,7 @@
           <button type="button" class="trade-chart-overlay" data-chart-overlay aria-pressed="false">Overlay charts</button>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>Verification gated</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1H</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
         </div>
         <div class="trade-chart-ohlc" aria-label="Chart price details">
@@ -221,7 +226,7 @@
           <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
         </div>
         <div class="trade-overview-toolbar">
-          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Verification required</strong></div>
+          <div><p class="trade-kicker">Market chart</p><strong data-chart-pair-label>PND / XRP · Testnet ledger</strong></div>
           <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="1w">1W</button><button type="button" data-chart-range="all">All</button></div>
         </div>
         <div class="trade-overview-tools">
@@ -236,16 +241,16 @@
           <div class="trade-chart-empty-state" data-chart-empty-state>
             <div class="trade-chart-grid"></div>
             <span class="trade-chart-mark">P</span>
-            <strong data-chart-empty-title>PND / XRP chart activates after verification</strong>
-            <span data-chart-empty-copy>Verified $PND market data will appear after the issuer and market are confirmed.</span>
+            <strong data-chart-empty-title>No PND/XRP candles on Testnet</strong>
+            <span data-chart-empty-copy>There is no AMM or DEX book to plot. Last price, volume, and candles stay blank.</span>
           </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>Bollinger Bands</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>Verification gated</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>Bollinger Bands</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
       <aside class="trade-overview-sidebar">
-          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Market cap</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong class="is-gated" data-chart-stat-status>Not verified</strong></div></div>
-          <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators will appear after verified $PND market data is available.</span></div>
-        <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Data integrity</p><strong>Verification-first view</strong><span>Issuer, asset identity, market, liquidity, and ledger reads must agree before analytics or trading can activate.</span></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Treasury PND</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>No AMM or DEX book</strong></div></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators need a live PND/XRP book or AMM. None on Testnet yet.</span></div>
+        <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Honesty</p><strong>Testnet faucet XRP is worthless.</strong><span>100B PND sits at the Testnet treasury. Mainnet still has no $PND issued. This terminal does not sign or submit.</span></div>
       </aside>
     </section>
 
@@ -253,8 +258,8 @@
       <header class="trade-data-header">
         <div>
           <p class="trade-kicker">Data explorer</p>
-          <h2>Everything about the selected asset.</h2>
-          <p>Market, supply, holder, and ledger statistics will be read from verified XRPL data. No pre-launch values are estimated.</p>
+          <h2>Testnet $PND ledger read.</h2>
+          <p>Issuer, treasury, AMM, and DEX book come from the validated XRPL Testnet. Blank fields mean the ledger has no market yet — not a guessed price.</p>
         </div>
         <div class="trade-data-assets" data-control-group="data-asset" aria-label="Asset">
           <button type="button" class="is-active">PND</button>
@@ -273,40 +278,40 @@
         <button type="button">All time</button>
       </div>
       <div class="trade-data-stats">
-        <div class="trade-data-stat"><span>Market cap</span><strong>—</strong><em>Awaiting verified price</em></div>
-        <div class="trade-data-stat"><span>Price</span><strong>—</strong><em>Pool not verified</em></div>
-        <div class="trade-data-stat"><span>Volume</span><strong>—</strong><em>No market history</em></div>
-        <div class="trade-data-stat"><span>Liquidity</span><strong>—</strong><em>AMM not configured</em></div>
-        <div class="trade-data-stat"><span>Holders</span><strong>—</strong><em>Ledger read gated</em></div>
-        <div class="trade-data-stat"><span>Transactions</span><strong>—</strong><em>Validated history required</em></div>
-        <div class="trade-data-stat"><span>Trust lines</span><strong>—</strong><em>Ledger read gated</em></div>
-        <div class="trade-data-stat"><span>Supply</span><strong>—</strong><em>Issued supply not live</em></div>
+        <div class="trade-data-stat"><span>Treasury PND</span><strong data-data-treasury>—</strong><em data-data-treasury-note>Reading Testnet…</em></div>
+        <div class="trade-data-stat"><span>Price</span><strong data-data-price>—</strong><em data-data-price-note>No AMM or DEX book</em></div>
+        <div class="trade-data-stat"><span>DEX offers</span><strong data-data-offers>—</strong><em data-data-offers-note>book_offers</em></div>
+        <div class="trade-data-stat"><span>AMM</span><strong data-data-amm>—</strong><em data-data-amm-note>amm_info</em></div>
+        <div class="trade-data-stat"><span>Issuer lines</span><strong data-data-holders>—</strong><em data-data-holders-note>account_lines</em></div>
+        <div class="trade-data-stat"><span>Ledger</span><strong data-data-ledger>—</strong><em data-data-ledger-note>validated</em></div>
+        <div class="trade-data-stat"><span>Network</span><strong data-data-network>XRPL Testnet</strong><em>Default for this page</em></div>
+        <div class="trade-data-stat"><span>Mainnet $PND</span><strong>Not issued</strong><em>Same issuer r-address</em></div>
       </div>
       <div class="trade-data-columns">
         <section class="trade-data-card">
-          <div class="trade-data-card-head"><div><p class="trade-kicker">Asset facts</p><h3>Identity and supply</h3></div><span>Verified ledger only</span></div>
+          <div class="trade-data-card-head"><div><p class="trade-kicker">Asset facts</p><h3>Identity and supply</h3></div><span>Validated Testnet</span></div>
           <dl class="trade-data-list">
-            <div><dt>Currency</dt><dd>PND / rPND</dd></div>
-            <div><dt>Issuer / asset id</dt><dd>Verification required</dd></div>
+            <div><dt>Currency</dt><dd>PND</dd></div>
+            <div><dt>Issuer</dt><dd class="trade-address" data-issuer-value>rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc</dd></div>
+            <div><dt>Treasury</dt><dd class="trade-address" data-treasury-value>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</dd></div>
             <div><dt>Network</dt><dd data-network-label>XRPL Testnet</dd></div>
-            <div><dt>Total supply</dt><dd>Not issued</dd></div>
-            <div><dt>Circulating supply</dt><dd>Not issued</dd></div>
-            <div><dt>Owner reserve impact</dt><dd>Calculated after launch</dd></div>
+            <div><dt>Treasury balance</dt><dd data-data-treasury-detail>Reading…</dd></div>
+            <div><dt>Mainnet</dt><dd>No $PND issued</dd></div>
           </dl>
         </section>
         <section class="trade-data-card">
-          <div class="trade-data-card-head"><div><p class="trade-kicker">Activity</p><h3>Participation and flow</h3></div><span>Awaiting data</span></div>
+          <div class="trade-data-card-head"><div><p class="trade-kicker">Markets</p><h3>AMM and DEX</h3></div><span>Live ledger</span></div>
           <dl class="trade-data-list">
-            <div><dt>Holder count</dt><dd>—</dd></div>
-            <div><dt>Trust line count</dt><dd>—</dd></div>
-            <div><dt>Transaction count</dt><dd>—</dd></div>
-            <div><dt>AMM pools</dt><dd>Not configured</dd></div>
-            <div><dt>DEX offers</dt><dd>Not verified</dd></div>
-            <div><dt>Last validated ledger</dt><dd>—</dd></div>
+            <div><dt>PND holders (issuer lines)</dt><dd data-data-holders-detail>—</dd></div>
+            <div><dt>AMM PND/XRP</dt><dd data-data-amm-detail>—</dd></div>
+            <div><dt>DEX offers</dt><dd data-data-offers-detail>—</dd></div>
+            <div><dt>$rPND</dt><dd>MPT not issued</dd></div>
+            <div><dt>Signing</dt><dd>Off — display only</dd></div>
+            <div><dt>Last validated ledger</dt><dd data-data-ledger-detail>—</dd></div>
           </dl>
         </section>
       </div>
-      <div class="trade-data-integrity"><span class="trade-check-icon" data-state="error">!</span><div><strong>Data is gated until the asset and market are verified.</strong><span>When live, this view will combine XRPL ledger state, verified AMM data, DEX offers, holder counts, and time-based market statistics.</span></div></div>
+      <div class="trade-data-integrity"><span class="trade-check-icon" data-state="ok">✓</span><div><strong data-data-integrity-title>Reading the XRPL Testnet validated ledger.</strong><span data-data-integrity-copy>Faucet XRP is worthless. 100B PND is at the Testnet treasury. Mainnet is not issued.</span></div></div>
     </section>
 
     <section class="trade-detail-window">
@@ -319,25 +324,25 @@
       <div class="trade-detail-panels" data-tab-panels="detail">
         <div class="trade-panel is-active" data-panel="transactions">
           <div class="trade-table-head"><span>Type</span><span>Amount</span><span>Market</span><span>Time</span></div>
-          <div class="trade-empty-row">Verified pool transactions will appear here after liquidity is live.</div>
+          <div class="trade-empty-row">No AMM or DEX fills on Testnet yet.</div>
         </div>
-        <div class="trade-panel" data-panel="history" hidden><div class="trade-empty-panel"><strong>No trade history yet</strong><span>Wallet activity will be shown only after a verified market is enabled.</span></div></div>
+        <div class="trade-panel" data-panel="history" hidden><div class="trade-empty-panel"><strong>No trade history</strong><span>The Testnet PND/XRP book is empty. Nothing to list.</span></div></div>
         <div class="trade-panel" data-panel="token" hidden>
           <div class="trade-token-grid">
             <div><span>Asset</span><strong>$PND · issued currency</strong></div>
             <div><span>Currency code</span><strong>PND</strong></div>
             <div><span>Issuer</span><strong class="trade-address" data-issuer-value>Loading issuer…</strong></div>
-            <div><span>Launch</span><strong>Target 01 Oct 2026</strong></div>
-            <div><span>Policy supply</span><strong>100B $PND</strong></div>
+            <div><span>Testnet treasury</span><strong class="trade-address" data-treasury-value>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</strong></div>
+            <div><span>Testnet issued</span><strong>100,000,000,000 PND</strong></div>
             <div><span>$rPND</span><strong>MPT not issued</strong></div>
           </div>
         </div>
         <div class="trade-panel" data-panel="risk" hidden>
           <div class="trade-verification-grid">
-            <div><span>Issuer identity</span><strong>Exact code + address required</strong></div>
-            <div><span>Market state</span><strong>Verified pool required</strong></div>
-            <div><span>Signing</span><strong>Self-custody only</strong></div>
             <div><span>Network</span><strong data-network-label>XRPL Testnet</strong></div>
+            <div><span>Testnet XRP</span><strong>Faucet-issued, worthless</strong></div>
+            <div><span>Mainnet $PND</span><strong>Not issued</strong></div>
+            <div><span>Signing</span><strong>Off — this page does not submit</strong></div>
           </div>
         </div>
       </div>
@@ -470,8 +475,11 @@
     const issuer = root.dataset.issuer && !root.dataset.issuer.includes("{{")
       ? root.dataset.issuer
       : "";
+    const treasury = root.dataset.treasury && !root.dataset.treasury.includes("{{")
+      ? root.dataset.treasury
+      : "";
     const state = {
-      network: "production",
+      network: "testnet",
       wallet: null,
       walletNetwork: null,
       requestGeneration: 0,
@@ -487,6 +495,8 @@
         pndLines: [],
         offers: [],
         ammInfo: null,
+        treasuryPnd: null,
+        treasuryAccount: null,
       },
     };
     let refreshController = null;
@@ -519,25 +529,26 @@
     }
 
     function setMarketState(verification) {
-      const verified = Boolean(verification.market);
-      root.dataset.marketVerified = String(verified);
+      const liveMarket = Boolean(verification.market);
+      const onTestnet = state.network === "testnet";
+      root.dataset.marketVerified = String(liveMarket);
       root.dataset.issuerVerified = String(Boolean(verification.issuer));
-      root.dataset.marketState = verified ? "verified" : "gated";
-      setText("[data-issuer-short]", verification.issuer ? `${issuer.slice(0, 6)}…${issuer.slice(-4)}` : "Not verified");
-      setText("[data-issuer-status]", verified ? "Market verified" : verification.issued ? "Issuer verified · market pending" : "PND not issued");
-      setText("[data-issuer-detail]", verified
-        ? "Validated XRPL market data passed issuer, order-book, and liquidity checks."
-        : "Signing and analytics remain disabled until a validated $PND market is found.");
-      setText("[data-mode-note]", verified ? "Verified market live" : "Verification gated");
-      setText("[data-chart-source-label]", verified ? "XRPL validated ledger" : "Verification gated");
-      setText("[data-chart-symbol-source]", verified ? "XRPL validated ledger" : "Verification gated");
+      root.dataset.marketState = liveMarket ? "live" : "empty";
+      const price = liveMarket ? getMarketPrice(verification) : "—";
+      setText("[data-issuer-short]", issuer ? shortAccount(issuer) : "Not configured");
       setText("[data-issuer-value]", issuer || "Issuer address not configured");
-      setText("[data-price]", verified ? getMarketPrice(verification) : "—");
-      setText("[data-chart-stat-status]", verified ? "Verified XRPL market" : "Not verified");
+      setText("[data-treasury-value]", treasury || "Treasury address not configured");
+      setText("[data-price]", price);
+      setText("[data-price-note]", liveMarket ? "Validated book or AMM" : "No AMM or DEX book");
+      setText("[data-volume]", "—");
+      setText("[data-volume-note]", liveMarket ? "No 24h tape yet" : "No trades to count");
+      setText("[data-chart-source-label]", onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
+      setText("[data-chart-symbol-source]", liveMarket ? "XRPL validated ledger" : onTestnet ? "XRPL Testnet" : "XRPL Mainnet");
+      setText("[data-chart-stat-status]", liveMarket ? "Live PND/XRP market" : "No AMM or DEX book");
       const status = $("[data-chart-stat-status]");
       if (status) {
-        status.classList.toggle("is-gated", !verified);
-        status.classList.toggle("is-live", verified);
+        status.classList.toggle("is-gated", !liveMarket);
+        status.classList.toggle("is-live", liveMarket);
       }
       updateMarketPanels();
     }
@@ -554,43 +565,57 @@
     }
 
     function updateMarketPanels() {
-      const { ammInfo, offers, market, pndLines = [] } = state.verification;
-      const pool = root.querySelector(".trade-liquidity-preview");
-      if (pool && ammInfo) {
-        const reserves = ammInfo.amm ?? ammInfo;
-        pool.innerHTML = `<div><strong>$PND / XRP AMM</strong><span>Validated reserves</span><b>${formatAssetAmount(reserves.amount)} XRP · ${formatAssetAmount(reserves.amount2)} PND</b></div><div><strong>Market</strong><span>Validated ledger</span><b>${market ? "Verified" : "Pending"}</b></div>`;
-      }
+      const { ammInfo, offers, market, pndLines = [], issued, treasuryPnd, ledger } = state.verification;
+      const onTestnet = state.network === "testnet";
+      const treasuryText = treasuryPnd != null ? `${formatIou(treasuryPnd)} PND` : issued ? "Issued" : "Not issued";
+      const reserves = ammInfo?.amm ?? ammInfo;
+      const ammLabel = reserves
+        ? `${formatAssetAmount(reserves.amount)} XRP · ${formatAssetAmount(reserves.amount2)} PND`
+        : "No AMM pool";
+      setText("[data-treasury-balance]", treasuryText);
+      setText("[data-liquidity]", reserves ? formatAssetAmount(reserves.amount) : "—");
+      setText("[data-liquidity-note]", reserves ? "Validated AMM reserves" : "No AMM pool");
+      setText("[data-amm-status]", ammLabel);
+      setText("[data-chart-stat-market-cap]", treasuryText);
+      setText("[data-data-treasury]", treasuryText);
+      setText("[data-data-treasury-note]", onTestnet ? "gateway_balances / treasury line" : "Mainnet has no $PND issued");
+      setText("[data-data-treasury-detail]", treasury ? `${treasuryText} at ${treasury}` : treasuryText);
+      setText("[data-data-price]", market ? getMarketPrice(state.verification) : "—");
+      setText("[data-data-price-note]", market ? "Validated book or AMM" : "No AMM or DEX book");
+      setText("[data-data-offers]", String(offers.length));
+      setText("[data-data-offers-note]", "book_offers");
+      setText("[data-data-offers-detail]", offers.length ? `${offers.length} validated offer${offers.length === 1 ? "" : "s"}` : "Empty book");
+      setText("[data-data-amm]", reserves ? "Pool found" : "None");
+      setText("[data-data-amm-note]", "amm_info");
+      setText("[data-data-amm-detail]", ammLabel);
+      setText("[data-data-holders]", String(pndLines.length));
+      setText("[data-data-holders-note]", "issuer account_lines");
+      setText("[data-data-holders-detail]", `${pndLines.length} PND line${pndLines.length === 1 ? "" : "s"}`);
+      const ledgerIndex = ledger?.seq ? String(ledger.seq) : "—";
+      setText("[data-data-ledger]", ledgerIndex);
+      setText("[data-data-ledger-detail]", ledgerIndex);
+      setText("[data-data-network]", networks[state.network].label);
+      setText("[data-honesty]", onTestnet
+        ? "XRPL Testnet · $PND issued · 100B at treasury · faucet XRP is worthless · Mainnet not issued"
+        : "XRPL Mainnet · $PND is not issued · switch to Testnet to see the issued treasury balance");
+      setText("[data-data-integrity-title]", onTestnet
+        ? "Reading the XRPL Testnet validated ledger."
+        : "Reading XRPL Mainnet. $PND is not issued here.");
+      setText("[data-data-integrity-copy]", onTestnet
+        ? "Faucet XRP is worthless. 100B PND is at the Testnet treasury. Mainnet is not issued."
+        : "Same issuer r-address. No mainnet obligations. Testnet holds the issued 100B.");
       const emptyRows = root.querySelectorAll(".trade-empty-row");
       emptyRows.forEach((row) => {
-        if (market && offers.length) {
-          row.textContent = `${offers.length} validated XRPL offer${offers.length === 1 ? "" : "s"} found for the selected market.`;
-        }
+        row.textContent = offers.length
+          ? `${offers.length} validated XRPL offer${offers.length === 1 ? "" : "s"} on ${networks[state.network].label}.`
+          : "No AMM or DEX fills on this network yet.";
       });
-      setText("[data-issuer-detail]", market
-        ? "Validated order-book or AMM liquidity is available for the selected network."
-        : state.verification.issued
-          ? "The issuer is reachable, but no validated PND/XRP market is available."
-          : "The issuer account is reachable, but PND has not been issued on this network.");
-      const stats = root.querySelectorAll(".trade-data-stat");
-      const reserves = ammInfo?.amm ?? ammInfo;
-      const price = getMarketPrice(state.verification);
-      const values = [
-        [market ? "—" : "—", market ? "Validated supply and price required" : "Awaiting verified price"],
-        [price, market ? "Validated XRPL market" : "Pool not verified"],
-        [offers.length ? `${offers.length}` : "—", offers.length ? "Validated book offers" : "No validated market history"],
-        [reserves ? `${formatAssetAmount(reserves.amount)} XRP` : "—", reserves ? "Validated AMM reserves" : "AMM not configured"],
-        [pndLines.filter((line) => Number(line.balance || 0) !== 0).length || "—", pndLines.length ? "Issuer trust lines" : "Ledger read gated"],
-        [offers.length ? `${offers.length}` : "—", offers.length ? "Validated offers read" : "Validated history required"],
-        [pndLines.length || "—", pndLines.length ? "Validated PND trust lines" : "Ledger read gated"],
-        [state.verification.issued ? "Issued" : "Not issued", state.verification.issued ? "Issuer lines found" : "Issued supply not live"],
-      ];
-      stats.forEach((stat, index) => {
-        const [value, note] = values[index] || ["—", "Verification required"];
-        const strong = stat.querySelector("strong");
-        const em = stat.querySelector("em");
-        if (strong) strong.textContent = value;
-        if (em) em.textContent = note;
-      });
+    }
+
+    function formatIou(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return String(value ?? "—");
+      return new Intl.NumberFormat("en-US", { maximumFractionDigits: 6 }).format(n);
     }
 
     function formatAssetAmount(value) {
@@ -611,10 +636,10 @@
 
     function setMode(mode) {
       const labels = {
-        amm: "AMM route gated",
-        dex: "Offers route gated",
-        chart: "Chart route gated",
-        data: "Data route gated",
+        amm: "AMM · Testnet ledger",
+        dex: "DEX · empty book",
+        chart: "PND / XRP · Testnet ledger",
+        data: "Data · live Testnet read",
       };
       $$("[data-tab-group='mode'] [data-tab]").forEach((button) => {
         const active = button.dataset.tab === mode;
@@ -651,14 +676,16 @@
       const setDataSelection = (asset, period) => {
         root.dataset.dataAsset = asset;
         root.dataset.dataPeriod = period;
-        const suffix = state.verification.market
-          ? `Validated ${asset} ledger snapshot · ${period}`
-          : `${asset} data remains gated · ${period}`;
-        const integrity = dataView?.querySelector(".trade-data-integrity strong");
-        const detail = dataView?.querySelector(".trade-data-integrity span:not(.trade-check-icon)");
-        if (integrity) integrity.textContent = state.verification.market
-          ? "Data is sourced from the validated XRPL ledger."
-          : "Data is gated until the asset and market are verified.";
+        const suffix = asset === "rPND"
+          ? `rPND is not issued. Period ${period} has no MPT tape.`
+          : `${asset} snapshot from the validated ${networks[state.network].label} · ${period}`;
+        const integrity = dataView?.querySelector("[data-data-integrity-title]");
+        const detail = dataView?.querySelector("[data-data-integrity-copy]");
+        if (integrity) {
+          integrity.textContent = state.network === "testnet"
+            ? "Reading the XRPL Testnet validated ledger."
+            : "Reading XRPL Mainnet. $PND is not issued here.";
+        }
         if (detail) detail.textContent = suffix;
       };
       assetButtons.forEach((button, index) => {
@@ -738,14 +765,10 @@
         window.PondSession?.login?.({ method: "walletconnect", address: account.address });
       }
       syncConnectLabel();
-      $$("[data-wallet-connect][data-dex-submit]").forEach((button) => {
-        button.textContent = connected ? "Review buy order" : "Connect wallet to review order";
-        button.classList.toggle("is-connected", connected);
-      });
       if (connected) {
-        setOrderStatus("Wallet connected. Enter a price and amount to review the order.", "ready");
+        setOrderStatus("Wallet connected for display. This terminal still does not sign or submit.", "ready");
       } else {
-        setOrderStatus("Connect a WalletConnect wallet to review this order.");
+        setOrderStatus("Unsigned preview. This terminal does not sign or submit OfferCreate.");
       }
     }
 
@@ -898,122 +921,16 @@
           updateTotal();
           setOrderStatus(
             orderKind === "market"
-              ? "Market orders use the verified best ask and remain unavailable until the order book is live."
-              : state.wallet
-                ? "Wallet connected. Enter a price and amount to review the order."
-                : "Connect a WalletConnect wallet to review this order.",
+              ? "No Testnet book to take. Market preview stays blank. This terminal does not sign or submit."
+              : "Unsigned preview. Enter numbers to size a ticket. Nothing is signed or submitted.",
           );
         });
       });
 
-      submit.addEventListener("click", async () => {
-        if (!state.wallet) {
-          walletController?.connect();
-          return;
-        }
-        if (orderKind === "market") {
-          setOrderStatus("Market orders stay disabled until a verified XRPL order book is available.", "gated");
-          return;
-        }
-        let amountValue;
-        let totalDrops;
-        try {
-          const parsedAmount = parseDecimal(amount.value, "PND amount");
-          if (parsedAmount.value <= 0n) throw new Error("PND amount must be greater than zero.");
-          totalDrops = decimalToDrops(formatDrops(decimalMultiply(price.value, amount.value, 6)));
-          amountValue = parsedAmount.text;
-        } catch (error) {
-          setOrderStatus(error.message || "Enter valid price and amount values.", "error");
-          return;
-        }
-        if (!issuer || state.network !== "production" || !state.verification.market) {
-          setOrderStatus("PND/XRP is still pre-launch or unverified. No order was signed or submitted.", "gated");
-          return;
-        }
-        if (!state.walletNetwork || state.walletNetwork !== "mainnet") {
-          setOrderStatus("Reconnect the wallet to XRPL Production before reviewing an order.", "gated");
-          return;
-        }
-        setOrderStatus("Checking your account, reserve, fee, and PND trust line before wallet review.", "loading");
-        try {
-          const controller = new AbortController();
-          const preflight = await readOrderPreflight(totalDrops, amountValue, controller.signal);
-          if (decimalCompare(amountValue, preflight.trustLineCapacity) > 0) {
-            throw new Error("Your PND trust line does not have enough remaining capacity for this order.");
-          }
-          if (BigInt(preflight.balanceDrops) <= BigInt(totalDrops) + BigInt(preflight.feeDrops)) {
-            throw new Error("Your XRP balance does not cover the order total and transaction fee.");
-          }
-          const transaction = {
-            TransactionType: "OfferCreate",
-            Account: state.wallet.address,
-            TakerGets: totalDrops,
-            TakerPays: {
-              currency: "PND",
-              issuer,
-              value: amountValue,
-            },
-            Flags: 0,
-            Sequence: preflight.sequence,
-            Fee: preflight.feeDrops,
-            LastLedgerSequence: preflight.lastLedgerSequence,
-            Expiration: Math.floor(Date.now() / 1000) + 900,
-          };
-          setOrderStatus("Review the OfferCreate transaction in your wallet.", "loading");
-          const result = await walletController.manager.signAndSubmit(transaction);
-          setOrderStatus(`Buy submitted to XRPL · ${result.hash}`, "success");
-        } catch (error) {
-          if (isAbortError(error)) return;
-          setOrderStatus(error.message || "The wallet rejected or could not submit the order.", "error");
-        }
+      submit.addEventListener("click", () => {
+        setOrderStatus("Unsigned preview. This terminal does not sign or submit.", "gated");
       });
       updateTotal();
-    }
-
-    async function readOrderPreflight(totalDrops, pndAmount, signal) {
-      const endpoint = networks[state.network].endpoint;
-      const [server, account, lines] = await Promise.all([
-        wsRpc(endpoint, "server_info", {}, signal),
-        wsRpc(endpoint, "account_info", {
-          account: state.wallet.address,
-          ledger_index: "validated",
-        }, signal),
-        wsRpc(endpoint, "account_lines", {
-            account: state.wallet.address,
-            peer: issuer,
-            ledger_index: "validated",
-        }, signal),
-      ]);
-      const info = server.result?.info || server.info;
-      const accountInfo = account.result?.account_data;
-      const trustLine = lines.result?.lines?.find((line) => line.account === issuer || line.peer === issuer);
-      if (!accountInfo) throw new Error("Your wallet account is not available on the validated ledger.");
-      if (!trustLine || Number(trustLine.limit || trustLine.limit_peer || 0) <= 0) {
-        throw new Error("Add a PND trust line before placing a buy order.");
-      }
-      const feeDrops = String(info?.validated_ledger?.base_fee_xrp
-        ? decimalToDrops(String(info.validated_ledger.base_fee_xrp))
-        : info?.validated_ledger?.base_fee_drops || info?.fee_base || "12");
-      const reserveBase = Number(info?.validated_ledger?.reserve_base_xrp ?? 1);
-      const reserveIncrement = Number(info?.validated_ledger?.reserve_inc_xrp ?? 0.2);
-      const ownerCount = Number(accountInfo.OwnerCount || 0);
-      const reserveDrops = decimalToDrops(String(reserveBase + reserveIncrement * (ownerCount + 1)));
-      const balanceDrops = String(accountInfo.Balance || "0");
-      const limit = String(trustLine.limit || trustLine.limit_peer || "0");
-      const balance = String(trustLine.balance || "0");
-      const trustLineCapacity = decimalSubtract(limit, balance);
-      if (decimalCompare(pndAmount, "0") <= 0) throw new Error("PND amount must be greater than zero.");
-      if (BigInt(balanceDrops) <= BigInt(reserveDrops) + BigInt(totalDrops) + BigInt(feeDrops)) {
-        throw new Error("This order would leave the account below its XRPL reserve.");
-      }
-      return {
-        sequence: accountInfo.Sequence,
-        feeDrops,
-        balanceDrops,
-        reserveDrops,
-        trustLineCapacity,
-        lastLedgerSequence: Number(info?.validated_ledger?.seq || 0) + 4,
-      };
     }
 
     function setupChartControls() {
@@ -1064,7 +981,7 @@
         if (!status) return;
         status.classList.toggle("is-gated", !live);
         status.classList.toggle("is-live", live);
-        status.textContent = live ? "Live XRP market" : "Not verified";
+        status.textContent = live ? "Live XRP / USD (CoinGecko)" : "No AMM or DEX book";
       };
       const resetChartStats = () => {
         setText("[data-chart-stat-price]", "—");
@@ -1131,17 +1048,20 @@
           const label = pairLabels[button.dataset.chartPair] || "XRP / USD";
           chartState.pair = button.dataset.chartPair;
           if (symbolMark) symbolMark.textContent = chartState.pair === "xrp-usd" ? "X" : "P";
-          setText("[data-chart-symbol-source]", chartState.pair === "xrp-usd" ? "CoinGecko" : "Verification gated");
+          setText("[data-chart-symbol-source]", chartState.pair === "xrp-usd" ? "CoinGecko · XRP only" : "XRPL Testnet");
           setText("[data-chart-symbol]", label);
           setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
-          setText("[data-chart-pair-label]", chartState.pair === "xrp-usd" ? `${label} · Live market` : `${label} · Validated ledger`);
+          setText("[data-chart-pair-label]", chartState.pair === "xrp-usd" ? `${label} · CoinGecko (not PND)` : `${label} · Testnet ledger`);
           setText("[data-chart-legend-primary]", label);
           if (chartState.pair === "xrp-usd") {
             loadXrpData();
           } else {
             chartState.data = null;
             resetChartStats();
-            setChartEmpty(`${label} chart activates after verification`, "PND market data will appear after the issuer and market are verified.");
+            setChartEmpty(
+              `No ${label} candles`,
+              "There is no PND/XRP AMM or DEX book to plot. Last price, volume, and candles stay blank.",
+            );
           }
         });
       });
@@ -1170,8 +1090,8 @@
         setText(
           "[data-chart-empty-copy]",
           active
-            ? "The selected pair and its comparison series will overlay after verified market data is available."
-            : "Candles, volume, indicators, and crosshair data will come from the selected XRPL market.",
+            ? "Overlay stays off for PND until Testnet has a book or AMM. XRP/USD can still overlay CoinGecko."
+            : "PND candles stay blank without an AMM or DEX book.",
         );
         if (chartState.data) renderChart();
       });
@@ -1395,27 +1315,9 @@
       });
     }
 
-    function setupDisclaimer() {
-      window.PondTrade = {
-        ...(window.PondTrade || {}),
-        showDisclaimer: () => window.PondDisclaimer?.open?.(),
-      };
-      if (window.PondDisclaimer?.init) {
-        window.PondDisclaimer.init();
-        return;
-      }
-      const modal = $("[data-disclaimer]");
-      const confirm = $("[data-disclaimer-confirm]");
-      const known = $("[data-disclaimer-known]");
-      const newcomer = $("[data-disclaimer-new]");
-      if (!modal || !confirm || !known || !newcomer) return;
-      modal.hidden = false;
-      document.body.classList.add("trade-disclaimer-open");
-    }
-
     async function readMarketState(signal) {
       const endpoint = networks[state.network].endpoint;
-      const [serverResponse, accountResponse, issuerLinesResponse] = await Promise.all([
+      const [serverResponse, accountResponse, issuerLinesResponse, treasuryLinesResponse, gatewayResponse] = await Promise.all([
         wsRpc(endpoint, "server_info", {}, signal),
         wsRpc(endpoint, "account_info", {
           account: issuer,
@@ -1426,12 +1328,30 @@
           ledger_index: "validated",
           limit: 400,
         }, signal),
+        treasury
+          ? wsRpc(endpoint, "account_lines", {
+              account: treasury,
+              peer: issuer,
+              ledger_index: "validated",
+            }, signal).catch(() => null)
+          : Promise.resolve(null),
+        wsRpc(endpoint, "gateway_balances", {
+          account: issuer,
+          ledger_index: "validated",
+          ...(treasury ? { hotwallet: [treasury] } : {}),
+        }, signal).catch(() => null),
       ]);
       const server = serverResponse.result?.info || serverResponse.info || {};
       const account = accountResponse.result?.account_data;
       const issuerLines = issuerLinesResponse.result?.lines || [];
       const pndLines = issuerLines.filter((line) => line.currency === "PND");
-      const issued = Boolean(account && pndLines.some((line) => Number(line.balance || 0) !== 0 || Number(line.limit || 0) !== 0));
+      const treasuryLine = (treasuryLinesResponse?.result?.lines || []).find((line) => line.currency === "PND");
+      const gatewayHeld = gatewayResponse?.result?.balances?.[treasury]?.find((row) => row.currency === "PND");
+      const treasuryPnd = treasuryLine?.balance ?? gatewayHeld?.value ?? null;
+      const issued = Boolean(
+        treasuryPnd != null && Number(treasuryPnd) !== 0
+        || pndLines.some((line) => Number(line.balance || 0) !== 0),
+      );
       const marketParams = {
         ledger_index: "validated",
         taker_gets: { currency: "XRP" },
@@ -1463,13 +1383,15 @@
         issued,
         orderBook: offers.length > 0,
         amm: Boolean(amm),
-        market: state.network === "production" && issued && (offers.length > 0 || Boolean(amm)),
+        market: issued && (offers.length > 0 || Boolean(amm)),
         ledger: server.validated_ledger || null,
         server,
         account,
         offers,
         pndLines,
         ammInfo: ammInfo?.result || null,
+        treasuryPnd,
+        treasuryAccount: treasuryLinesResponse?.result?.account || null,
       };
     }
 
@@ -1506,10 +1428,12 @@
         setMarketState(verification);
         if (icon) icon.dataset.state = verification.issuer ? "ready" : "error";
         setText("[data-issuer-status]", verification.market
-          ? "Market verified"
+          ? "PND/XRP market on this network"
           : verification.issued
-            ? "Issuer verified · market pending"
-            : "PND not issued");
+            ? "Issued · no AMM or DEX book"
+            : state.network === "testnet"
+              ? "Testnet issuer check"
+              : "Mainnet $PND not issued");
       } catch (error) {
         if (isAbortError(error) || !isCurrent(generation)) return;
         setStatus("offline", "Ledger unavailable");
@@ -1545,7 +1469,6 @@
     };
     setupDexOrder();
     chartController = setupChartControls();
-    setupDisclaimer();
     const initialMode = window.location.hash === "#data"
         ? "data"
         : "chart";

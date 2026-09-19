@@ -5785,6 +5785,16 @@ body.page-trade .trade-pair-sub {
   font-size: 0.62rem;
 }
 
+body.page-trade .trade-honesty {
+  margin: 0 0 0.55rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--bg-code) 78%, var(--accent));
+  color: var(--text-muted);
+  font: 600 0.72rem/1.4 var(--font);
+}
+
 body.page-trade .trade-stat-strip {
   border-color: color-mix(in srgb, var(--accent) 18%, var(--border));
   background: color-mix(in srgb, var(--accent) 12%, var(--border));
