@@ -301,7 +301,7 @@
         </div>
         <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>Bollinger Bands</span><span data-chart-legend-overlay>Overlay off</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
-      <aside class="trade-overview-sidebar">
+      <aside class="trade-overview-sidebar trade-overview-rail">
           <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Treasury PND</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>No AMM or DEX book</strong></div></div>
           <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators need a live PND/XRP book or AMM. None on Testnet yet.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Honesty</p><strong>Testnet faucet XRP is worthless.</strong><span>100B PND sits at the Testnet treasury. Mainnet still has no $PND issued. This terminal does not sign or submit.</span></div>
@@ -1826,8 +1826,8 @@
         const volumes = points.map((point) => point.volume || 0);
         const width = 1000;
         const height = 480;
-        const left = 58;
-        const right = 18;
+        const left = 72;
+        const right = 12;
         const top = 14;
         const plotRight = width - right;
         const volumeTop = 408;
@@ -1851,7 +1851,7 @@
           const gridY = top + (index / 4) * (priceBottom - top);
           const gridValue = high - (index / 4) * (high - low);
           grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
-          grid.push(svgText(plotRight + 8, gridY + 3, formatAxis(gridValue), "trade-chart-axis-label"));
+          grid.push(svgText(4, gridY + 3, formatAxis(gridValue), "trade-chart-axis-label", "start"));
         }
         for (let index = 0; index <= 6; index += 1) {
           const gridX = left + (index / 6) * (plotRight - left);
