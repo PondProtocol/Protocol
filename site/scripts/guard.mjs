@@ -1072,7 +1072,8 @@ check(
     indexHtml.includes("hero-kicker") &&
     indexHtml.includes('<p class="hero-kicker">Pond</p>') &&
     !indexHtml.includes('<p class="hero-kicker">Pond Protocol</p>') &&
-    /<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>The Pond<\/h1>/.test(indexHtml) &&
+    /<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>the Pond<\/h1>/.test(indexHtml) &&
+    !/<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>The Pond<\/h1>/.test(indexHtml) &&
     indexHtml.includes("Testnet phase.") &&
     indexHtml.includes("100B $PND is issued to the Testnet treasury") &&
     indexHtml.includes("Faucet XRP is worthless") &&
@@ -1082,6 +1083,7 @@ check(
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
     /<link rel="stylesheet" href="\/styles\.[a-f0-9]{10}\.css">/.test(indexHtml) &&
     /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&
+    /\.hero-tagline[\s\S]*?text-transform:\s*none/.test(stylesText) &&
     /\.hero \.hero-kicker[\s\S]*?font-size:\s*clamp\(8\.75rem/.test(stylesText) &&
     /\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 - 0\.4rem\)/.test(stylesText) &&
     !/\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 \+ 3\.3rem\)/.test(stylesText) &&
@@ -1295,8 +1297,10 @@ check(
   "Pond and Protocol pages reuse the home hero chrome",
   pondHtml.includes('class="hero-kicker">Pond') &&
     protocolLandingHtml.includes('class="hero-kicker">Pond') &&
-    pondHtml.includes("Join the Flock at") &&
-    protocolLandingHtml.includes("Join the Flock at") &&
+    pondHtml.includes("Join the Flock at<br>the Pond") &&
+    protocolLandingHtml.includes("Join the Flock at<br>the Pond") &&
+    !pondHtml.includes("Join the Flock at<br>The Pond") &&
+    !protocolLandingHtml.includes("Join the Flock at<br>The Pond") &&
     pondHtml.includes("hero-topo") &&
     protocolLandingHtml.includes("hero-topo") &&
     pondHtml.includes(config.site.issuerAddress) &&
