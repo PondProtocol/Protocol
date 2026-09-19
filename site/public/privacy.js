@@ -23,6 +23,13 @@
     return "fab";
   }
 
+  function syncHomePrivacyReserve() {
+    if (!document.body?.classList.contains("page-index")) return;
+    const card = notice();
+    const height = card && !card.hidden ? Math.ceil(card.getBoundingClientRect().height) : 0;
+    document.body.style.setProperty("--privacy-reserve-h", `${height}px`);
+  }
+
   function setMode(next) {
     const root = dock();
     if (!root) return;
@@ -30,6 +37,8 @@
     if (notice()) notice().hidden = next !== "notice";
     if (vault()) vault().hidden = next !== "vault";
     root.dataset.privacyMode = next;
+    syncHomePrivacyReserve();
+    requestAnimationFrame(syncHomePrivacyReserve);
   }
 
   function applyGpc() {
@@ -114,6 +123,8 @@
 
     if (isHome(window.location.pathname)) setMode("notice");
     else setMode("fab");
+    syncHomePrivacyReserve();
+    window.addEventListener("resize", syncHomePrivacyReserve);
   }
 
   const pushState = history.pushState.bind(history);
