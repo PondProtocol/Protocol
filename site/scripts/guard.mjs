@@ -893,6 +893,16 @@ check(
     tradeJsText.includes("tapeVwap") &&
     tradeJsText.includes("ammSpotNumber") &&
     tradeJsText.includes("ticketPanelMarkup") &&
+    tradeJsText.includes("data-amount-slider") &&
+    tradeJsText.includes("data-price-offset") &&
+    tradeJsText.includes("data-tif") &&
+    tradeJsText.includes("data-post-only") &&
+    tradeJsText.includes("data-follow-last") &&
+    tradeJsText.includes("data-ticket-reset") &&
+    tradeJsText.includes("data-copy-last") &&
+    tradeJsText.includes("data-snapshot-prints") &&
+    stylesText.includes("trade-ticket-slider") &&
+    stylesText.includes("trade-snapshot-prints") &&
     stylesText.includes("trade-snapshot-hero") &&
     stylesText.includes("trade-ticket-quote") &&
     stylesText.includes("trade-ticket-sides") &&
