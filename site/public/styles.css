@@ -5588,7 +5588,30 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-market-controls .trade-overview-controls {
+  margin-left: 0;
+}
+
+.trade-chart-market-controls .trade-chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
   margin-left: auto;
+}
+
+.trade-chart-tools button {
+  padding: 0.18rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.58rem;
+}
+
+.trade-chart-tools button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  color: var(--accent-bright);
 }
 
 .trade-chart-pair-tabs {
@@ -5860,6 +5883,19 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-axis-label {
   fill: #747b84;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-chart-last-line {
+  stroke: #3d9a6a;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+.trade-chart-last-label {
+  fill: #7dcaa0;
   font-family: var(--mono);
   font-size: 9px;
   font-variant-numeric: tabular-nums;
@@ -8733,8 +8769,9 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-chart-symbol-bar {
-    display: grid;
-    grid-template-columns: minmax(11rem, auto) minmax(0, 1fr) auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.55rem;
   }
 
@@ -8761,9 +8798,14 @@ body.page-trade .trade-detail-window {
     overflow: hidden;
   }
 
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-live {
+    display: flex;
+    flex-direction: column;
+  }
+
   body.page-trade .trade-app[data-mode="chart"] .trade-chart-svg {
     display: block;
-    flex: none;
+    flex: 1 1 auto;
     width: 100%;
     height: 100%;
     min-height: 0 !important;
@@ -8778,7 +8820,7 @@ body.page-trade .trade-detail-window {
     position: relative;
     z-index: 4;
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     align-content: stretch;
     gap: 0.28rem;
     width: 20rem;

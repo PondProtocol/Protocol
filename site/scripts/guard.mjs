@@ -818,11 +818,17 @@ check(
     tradeJsText.includes("paintLedgerChart") &&
     tradeJsText.includes("printsToCandles") &&
     tradeJsText.includes("recentPriceDomain") &&
-    tradeJsText.includes("visibleSeries") &&
+    tradeJsText.includes("trade-chart-last-line") &&
     tradeJsText.includes("trade-chart-price-clip") &&
     tradeJsText.includes('data-chart-range="1m"') &&
+    !tradeJsText.includes('data-chart-pair="xrp-usd"') &&
+    !tradeJsText.includes('data-chart-range="1h"') &&
+    !tradeJsText.includes("print candles") &&
+    tradeJsText.includes("data-chart-volume") &&
+    tradeJsText.includes('preserveAspectRatio="none"') &&
     tradeJsText.includes("trade-overview-ticket") &&
     stylesText.includes("trade-chart-candle") &&
+    stylesText.includes("trade-chart-last-line") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
