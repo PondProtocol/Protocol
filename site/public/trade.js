@@ -279,7 +279,7 @@
             <span><b>H</b><strong data-chart-ohlc-high>—</strong></span>
             <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
             <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
-            <span class="trade-chart-ohlc-change"><b>24H</b><strong data-chart-ohlc-change>—</strong></span>
+            <span class="trade-chart-ohlc-change"><b>Chg</b><strong data-chart-ohlc-change>—</strong></span>
           </div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
         </div>
@@ -303,7 +303,7 @@
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
           <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>24h change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Treasury PND</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>No AMM or DEX book</strong></div></div>
-          <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators need a live PND/XRP book or AMM. None on Testnet yet.</span></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Indicators</p><div class="trade-overview-stat"><span data-chart-sma-label>SMA 20</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI 14</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><span class="trade-overview-note" data-chart-indicator-note>Indicators need a live PND/XRP book or AMM. None on Testnet yet.</span></div>
         <div class="trade-overview-card trade-overview-risk"><p class="trade-kicker">Honesty</p><strong>Testnet faucet XRP is worthless.</strong><span>100B PND sits at the Testnet treasury. Mainnet still has no $PND issued. This terminal does not sign or submit.</span></div>
         <div class="trade-action-card trade-overview-ticket" data-order-ticket>
           <nav class="trade-action-tabs" aria-label="Chart order type" data-tab-group="chart-order">
@@ -1758,7 +1758,10 @@
         let started = false;
         return series
           .map((value, index) => {
-            if (value == null) return "";
+            if (value == null) {
+              started = false;
+              return "";
+            }
             const command = started ? "L" : "M";
             started = true;
             return `${command} ${x(index)} ${y(value)}`;
@@ -1818,32 +1821,62 @@
         if (chartState.data) renderChart();
       });
 
+      function indicatorPeriod(count) {
+        if (CANDLE_MS[chartState.range]) return Math.min(9, Math.max(5, Math.floor(Math.max(count, 5) / 4) || 5));
+        return 20;
+      }
+
+      function recentPriceDomain(points) {
+        const last = points[points.length - 1];
+        const lastPrice = last.close ?? last.value;
+        const lookback = CANDLE_MS[chartState.range] ? Math.min(points.length, 12) : points.length;
+        const window = points.slice(-lookback);
+        const lows = window.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
+        const highs = window.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
+        let minValue = Math.min(...lows, lastPrice);
+        let maxValue = Math.max(...highs, lastPrice);
+        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.85 || minValue < lastPrice * 0.55)) {
+          const closes = window.slice(-6).map((point) => point.close ?? point.value);
+          const pad = Math.max(lastPrice * 0.08, ...closes.map((value) => Math.abs(value - lastPrice)));
+          minValue = lastPrice - pad;
+          maxValue = lastPrice + pad;
+        }
+        return { minValue, maxValue };
+      }
+
       function renderChart() {
-        const candles = chartState.data?.candles || [];
-        const points = candles.length ? candles : (chartState.data?.points || []);
-        if (!points.length) return;
+        const allCandles = chartState.data?.candles || [];
+        const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
+        if (!allPoints.length) return;
+        const focusCount = CANDLE_MS[chartState.range] ? Math.min(allPoints.length, 12) : allPoints.length;
+        const points = allPoints.slice(-focusCount);
+        const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
         const values = points.map((point) => point.value);
         const volumes = points.map((point) => point.volume || 0);
         const width = 1000;
         const height = 480;
-        const left = 72;
+        const left = 52;
         const right = 12;
         const top = 14;
         const plotRight = width - right;
         const volumeTop = 408;
         const volumeBottom = 458;
         const priceBottom = 392;
-        const lows = points.map((point) => Number.isFinite(point.low) ? point.low : point.value);
-        const highs = points.map((point) => Number.isFinite(point.high) ? point.high : point.value);
-        const minValue = Math.min(...lows, ...values);
-        const maxValue = Math.max(...highs, ...values);
-        const padding = Math.max((maxValue - minValue) * 0.08, maxValue * 0.002, 0.000001);
+        const { minValue, maxValue } = recentPriceDomain(points);
+        const padding = Math.max((maxValue - minValue) * 0.12, Math.abs(maxValue) * 0.004, 0.000001);
         const low = minValue - padding;
         const high = maxValue + padding;
-        const count = Math.max(points.length, 1);
-        const slot = (plotRight - left) / count;
-        const x = (index) => left + slot * index + slot / 2;
-        const y = (value) => priceBottom - ((value - low) / Math.max(high - low, 0.000001)) * (priceBottom - top);
+        const times = points.map((point) => point.time);
+        const firstTime = times[0];
+        const lastTime = times[times.length - 1];
+        const intervalMs = chartState.data?.intervalMs || CANDLE_MS[chartState.range] || Math.max(60_000, (lastTime - firstTime) / Math.max(points.length - 1, 1));
+        const spanMs = Math.max(lastTime - firstTime, intervalMs, 1);
+        const slot = Math.max(3, Math.min(16, ((intervalMs / spanMs) * (plotRight - left)) * 0.72));
+        const x = (index) => left + ((points[index].time - firstTime) / spanMs) * (plotRight - left);
+        const y = (value) => {
+          const clamped = Math.min(high, Math.max(low, value));
+          return priceBottom - ((clamped - low) / Math.max(high - low, 0.000001)) * (priceBottom - top);
+        };
         const pricePath = values.length > 1 ? pathFor(values, x, y) : "";
         const areaPath = values.length > 1 ? `${pricePath} L ${x(values.length - 1)} ${priceBottom} L ${x(0)} ${priceBottom} Z` : "";
         const grid = [];
@@ -1851,30 +1884,37 @@
           const gridY = top + (index / 4) * (priceBottom - top);
           const gridValue = high - (index / 4) * (high - low);
           grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
-          grid.push(svgText(4, gridY + 3, formatAxis(gridValue), "trade-chart-axis-label", "start"));
+          grid.push(svgText(4, gridY + 3, formatTick(gridValue), "trade-chart-axis-label", "start"));
         }
         for (let index = 0; index <= 6; index += 1) {
           const gridX = left + (index / 6) * (plotRight - left);
           grid.push(`<line class="trade-chart-vertical-grid" x1="${gridX}" x2="${gridX}" y1="${top}" y2="${volumeBottom}"/>`);
         }
-        const labelIndexes = points.length === 1 ? [0] : [0, Math.floor((points.length - 1) / 2), points.length - 1];
-        const labels = labelIndexes
-          .map((index) => svgText(x(index), height - 3, new Date(points[index].time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }), "trade-chart-axis-label", index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"))
+        const labelTimes = points.length === 1 ? [firstTime] : [firstTime, firstTime + spanMs / 2, lastTime];
+        const labels = labelTimes
+          .map((time, index) => {
+            const labelX = left + ((time - firstTime) / spanMs) * (plotRight - left);
+            const text = new Date(time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+            return svgText(labelX, height - 3, text, "trade-chart-axis-label", index === 0 ? "start" : index === labelTimes.length - 1 ? "end" : "middle");
+          })
           .join("");
         const indicator = chartState.indicator;
-        const sma = movingAverage(values, 20);
-        const ema = exponentialAverage(values, 20);
+        const maPeriod = indicatorPeriod(values.length);
+        const sma = movingAverage(values, maPeriod);
+        const ema = exponentialAverage(values, maPeriod);
         const macdFast = exponentialAverage(values, 12);
         const macdSlow = exponentialAverage(values, 26);
         const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
         const rsi = relativeStrength(values, 14);
-        const mean = movingAverage(values, 20);
+        const mean = movingAverage(values, maPeriod);
         const standardDeviation = values.map((_, index) => {
-          if (index < 19) return null;
-          const slice = values.slice(index - 19, index + 1);
+          if (index < maPeriod - 1) return null;
+          const slice = values.slice(index - maPeriod + 1, index + 1);
           const average = mean[index];
-          return Math.sqrt(slice.reduce((sum, value) => sum + (value - average) ** 2, 0) / 20);
+          return Math.sqrt(slice.reduce((sum, value) => sum + (value - average) ** 2, 0) / maPeriod);
         });
+        const inDomain = (value) => value != null && value >= low && value <= high;
+        const visibleSeries = (series) => series.map((value) => (inDomain(value) ? value : null));
         const upper = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value + standardDeviation[index] * 2));
         const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
         const maxVolume = Math.max(...volumes, 1);
@@ -1888,32 +1928,47 @@
           .join("");
         let indicatorPaths = "";
         if (values.length > 1) {
-          if (indicator === "sma") indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(sma, x, y)}"/>`;
-          if (indicator === "ema") indicatorPaths = `<path class="trade-chart-indicator is-secondary" d="${pathFor(ema, x, y)}"/>`;
+          if (indicator === "sma") indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(visibleSeries(sma), x, y)}"/>`;
+          if (indicator === "ema") indicatorPaths = `<path class="trade-chart-indicator is-secondary" d="${pathFor(visibleSeries(ema), x, y)}"/>`;
           if (indicator === "bollinger") {
-            indicatorPaths = `<path class="trade-chart-indicator" d="${pathFor(upper, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lower, x, y)}"/>`;
+            const mid = visibleSeries(mean);
+            const highBand = visibleSeries(upper);
+            const lowBand = visibleSeries(lower);
+            const bandCount = highBand.filter((value) => value != null).length + lowBand.filter((value) => value != null).length;
+            indicatorPaths = bandCount >= 4
+              ? `<path class="trade-chart-indicator" d="${pathFor(highBand, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lowBand, x, y)}"/>`
+              : `<path class="trade-chart-indicator" d="${pathFor(mid, x, y)}"/>`;
           }
         }
         const candleBodies = candles.map((candle, index) => {
           const cx = x(index);
-          const barWidth = Math.max(3, slot * 0.58);
+          const barWidth = Math.max(4, slot * 0.58);
+          const hi = Number.isFinite(candle.high) ? candle.high : candle.value;
+          const lo = Number.isFinite(candle.low) ? candle.low : candle.value;
+          if (hi < low || lo > high) {
+            const edge = hi < low ? priceBottom : top;
+            return `<rect class="trade-chart-candle ${candle.close >= candle.open ? "is-up" : "is-down"}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="4" rx="0.7"/>`;
+          }
           const up = candle.close >= candle.open;
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
           const direction = up ? "is-up" : "is-down";
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(candle.high)}" y2="${y(candle.low)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(1.2, bodyBot - bodyTop)}" rx="0.7"/>`;
+          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(candle.high)}" y2="${y(candle.low)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(3.2, bodyBot - bodyTop)}" rx="0.7"/>`;
         }).join("");
         const overlayPath = overlay.getAttribute("aria-pressed") === "true" && values.length > 1
-          ? `<path class="trade-chart-overlay-line" d="${pathFor(sma, x, y)}"/>`
+          ? `<path class="trade-chart-overlay-line" d="${pathFor(visibleSeries(sma), x, y)}"/>`
           : "";
         const lineLayer = candles.length
           ? candleBodies
           : `${areaPath ? `<path class="trade-chart-area" d="${areaPath}"/>` : ""}${pricePath ? `<path class="trade-chart-price" d="${pricePath}"/>` : ""}`;
         const volumeLabel = svgText(left, volumeTop + 11, "VOLUME", "trade-chart-panel-label");
         const divider = `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>`;
-        svg.innerHTML = `${grid.join("")}${divider}${volumeLabel}${lineLayer}${indicatorPaths}${overlayPath}${volumeBars}${labels}`;
+        const clip = `<clipPath id="trade-chart-price-clip"><rect x="${left}" y="${top}" width="${plotRight - left}" height="${priceBottom - top}"/></clipPath>`;
+        const plotLayer = `<g clip-path="url(#trade-chart-price-clip)">${lineLayer}${indicatorPaths}${overlayPath}</g>`;
+        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${divider}${volumeLabel}${plotLayer}${volumeBars}${labels}`;
         liveChart.hidden = false;
         emptyChart.hidden = true;
+        setText("[data-chart-sma-label]", `SMA ${maPeriod}`);
         setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
         setText("[data-chart-stat-rsi]", Number.isFinite(rsi[rsi.length - 1]) ? rsi[rsi.length - 1].toFixed(1) : "—");
         setText("[data-chart-stat-macd]", Number.isFinite(macd[macd.length - 1]) ? macd[macd.length - 1].toFixed(4) : "—");
@@ -1921,6 +1976,15 @@
         setText("[data-chart-symbol-change]", formatPercent(chartState.data.change));
       }
 
+      const formatTick = (value) => {
+        if (!Number.isFinite(value)) return "—";
+        if (chartState.data?.quote === "XRP") {
+          if (value >= 10) return value.toFixed(2);
+          if (value >= 1) return value.toFixed(3);
+          return value.toFixed(4);
+        }
+        return formatUsd(value);
+      };
       const formatAxis = (value) => {
         if (!Number.isFinite(value)) return "—";
         if (chartState.data?.quote === "XRP") {
@@ -1985,7 +2049,7 @@
         const livePrice = last.close ?? last.value;
         const change = open ? ((livePrice - open) / open) * 100 : 0;
         const volume = volume24hXrp(trades);
-        chartState.data = { points, candles, livePrice, change, volume, open, high, low, quote: "XRP" };
+        chartState.data = { points, candles, livePrice, change, volume, open, high, low, quote: "XRP", intervalMs };
         setText("[data-chart-stat-price]", formatAxis(livePrice));
         setText("[data-chart-stat-change]", formatPercent(change));
         setText("[data-chart-stat-volume]", volume > 0 ? `${formatIou(volume)} XRP` : "—");
@@ -2047,7 +2111,7 @@
            const open = candles.length ? candles[0].open : points[0].value;
            const high = candles.length ? Math.max(...candles.map((candle) => candle.high)) : Math.max(...points.map((point) => point.value));
            const low = candles.length ? Math.min(...candles.map((candle) => candle.low)) : Math.min(...points.map((point) => point.value));
-           chartState.data = { points, candles, livePrice, change, volume, marketCap, open, high, low };
+           chartState.data = { points, candles, livePrice, change, volume, marketCap, open, high, low, intervalMs };
           setText("[data-price]", formatUsd(livePrice));
           setText("[data-chart-stat-price]", formatUsd(livePrice));
           setText("[data-chart-stat-change]", formatPercent(change));

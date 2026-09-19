@@ -5861,7 +5861,8 @@ body:has([data-pond-profile]) .profile-card {
 .trade-chart-axis-label {
   fill: #747b84;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
 }
 
 .trade-chart-panel-label {
