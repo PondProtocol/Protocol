@@ -831,6 +831,14 @@ check(
     tradeJsText.includes('data-chart-indicator="sma"') &&
     tradeJsText.includes('preserveAspectRatio="none"') &&
     tradeJsText.includes("trade-overview-ticket") &&
+    tradeJsText.includes("data-chart-chrome") &&
+    tradeJsText.includes("data-chart-last-pill") &&
+    tradeJsText.includes("data-chart-y-axis") &&
+    tradeJsText.includes("data-chart-hud") &&
+    tradeJsText.includes("data-chart-print-age") &&
+    tradeJsText.includes("formatCompact") &&
+    stylesText.includes("trade-chart-last-pill") &&
+    stylesText.includes("trade-chart-y-axis") &&
     stylesText.includes("trade-chart-candle") &&
     stylesText.includes("trade-chart-last-line") &&
     stylesText.includes("trade-overview-rail") &&
