@@ -2586,7 +2586,8 @@ code.addr {
   min-height: 25rem;
 }
 
-.trade-app[data-mode="dex"] .trade-detail-window {
+.trade-app[data-mode="dex"] .trade-detail-window,
+.trade-app[data-mode="amm"] .trade-detail-window {
   display: none;
 }
 
@@ -5903,6 +5904,103 @@ body.page-trade .trade-mode-workspace {
 }
 
 @media (min-width: 781px) {
+  body.page-trade .trade-app[data-mode="amm"] {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-workspace {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0.35rem;
+    align-items: stretch;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-panels,
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-panels > .trade-panel,
+  body.page-trade .trade-app[data-mode="amm"] .trade-chart-empty,
+  body.page-trade .trade-app[data-mode="amm"] .trade-empty-panel,
+  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-chart-empty {
+    padding: 0.85rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-footer {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.58rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-pane,
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-card {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    min-height: 0;
+    height: 100%;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-panels {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.5rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create {
+    gap: 0.28rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-copy,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-balances,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-session {
+    font-size: 0.62rem;
+    line-height: 1.3;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.28rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-stat {
+    padding: 0.32rem 0.4rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-stat strong {
+    font-size: 0.72rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-input-field {
+    padding: 0.32rem 0.5rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-input-field input {
+    font-size: 0.92rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-order-status {
+    min-height: 1.4em;
+    margin-top: 0.2rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-connect-button {
+    margin-top: 0.2rem;
+    padding-top: 0.42rem;
+    padding-bottom: 0.42rem;
+  }
+
   body.page-trade .trade-app[data-mode="dex"] {
     display: flex;
     flex-direction: column;
@@ -7855,5 +7953,165 @@ body.page-trade .trade-detail-window {
 
   .privacy-fab-tip {
     display: none;
+  }
+}
+
+/* AMM tab only: lock the desktop page to one viewport. Later trade-fit
+ * rules turn /trade/ into a scrolling document so the shared chart
+ * min-heights and Liquidity Add form push past the window. Keep Chart /
+ * DEX / Data on the document flow. */
+@media (min-width: 781px) {
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    max-height: 100svh;
+    overflow: hidden;
+  }
+
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) .topbar,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) .protocol-snapshot {
+    flex: none;
+  }
+
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) .shell,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) main,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) .prose {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="amm"]) .shell {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0.28rem clamp(0.8rem, 2.4vw, 2rem) 0.28rem;
+  }
+
+  body.page-trade:has(#trade-app[data-mode="amm"]) .trade-footnote,
+  body.page-trade:has(#trade-app[data-mode="amm"]) .footer,
+  body.page-trade:has(#trade-app[data-mode="amm"]) .provenance {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-height: 100%;
+    margin: 0;
+    padding: 0.4rem 0.55rem 0.32rem;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-terminal-head {
+    padding-bottom: 0.4rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-honesty {
+    margin: 0 0 0.32rem;
+    padding: 0.28rem 0.55rem;
+    font-size: 0.64rem;
+    line-height: 1.25;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-stat-strip {
+    margin-bottom: 0.32rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-workspace {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0.28rem;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-pane {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-panels,
+  body.page-trade .trade-app[data-mode="amm"] .trade-market-panels > .trade-panel,
+  body.page-trade .trade-app[data-mode="amm"] .trade-chart-empty,
+  body.page-trade .trade-app[data-mode="amm"] .trade-empty-panel,
+  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-pane,
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-card {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-panels {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.45rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create {
+    gap: 0.24rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-copy,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-balances,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create-session {
+    font-size: 0.6rem;
+    line-height: 1.25;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.24rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-stat {
+    padding: 0.28rem 0.36rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-stat strong {
+    font-size: 0.7rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-input-field {
+    padding: 0.28rem 0.45rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-input-field input {
+    font-size: 0.88rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-input-field small {
+    font-size: 0.55rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-order-status {
+    min-height: 1.2em;
+    margin-top: 0.12rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-connect-button {
+    margin-top: 0.12rem;
+    padding-top: 0.38rem;
+    padding-bottom: 0.38rem;
   }
 }
