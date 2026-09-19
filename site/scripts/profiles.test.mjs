@@ -197,3 +197,27 @@ test("profile API persists disclaimerAccepted for the signed-in Xaman account", 
     assert.equal(data.disclaimerAccepted, true);
     assert.equal(getProfileByHandle("tadpole01").disclaimerAccepted, true);
   }));
+
+test("profile icon is stored on the JSON profile and rejects secrets", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    const blank = await updateOwnProfile(ADMIN_ADDRESS, {});
+    assert.equal(blank.icon, "");
+    const saved = await updateOwnProfile(ADMIN_ADDRESS, { icon: "/greenhead-duck.png" });
+    assert.equal(saved.icon, "/greenhead-duck.png");
+    const remote = await updateOwnProfile(ADMIN_ADDRESS, {
+      icon: "https://pond.greenhead.io/greenhead-duck.png",
+    });
+    assert.equal(remote.icon, "https://pond.greenhead.io/greenhead-duck.png");
+    const tiny = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    const uploaded = await updateOwnProfile(ADMIN_ADDRESS, { icon: tiny });
+    assert.equal(uploaded.icon, tiny);
+    const cleared = await updateOwnProfile(ADMIN_ADDRESS, { icon: "" });
+    assert.equal(cleared.icon, "");
+    const bad = await updateOwnProfile(ADMIN_ADDRESS, { icon: "javascript:alert(1)" });
+    assert.equal(bad.error, "bad_profile");
+    const seed = await updateOwnProfile(ADMIN_ADDRESS, {
+      icon: "sEdVabcdeFGHIJKLmnopqrstuvwxy1",
+    });
+    assert.equal(seed.error, "bad_profile");
+  }));

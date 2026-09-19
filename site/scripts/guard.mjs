@@ -920,11 +920,27 @@ check(
     startHereLabels.join(" | ") === startHereOrder.join(" | "),
 );
 check(
-  "logged-in chip links to /profile/<handle>/",
+  "logged-in chip is a profile icon that links to /profile/<handle>/",
   indexHtml.includes("data-session-profile") &&
+    indexHtml.includes("data-session-avatar") &&
+    indexHtml.includes("/greenhead-duck.png") &&
     indexHtml.includes('href="/profile/"') &&
     sessionJsText.includes("/profile/") &&
-    sessionJsText.includes("handle"),
+    sessionJsText.includes("handle") &&
+    sessionJsText.includes("data-session-avatar") &&
+    !sessionJsText.includes("data-session-addr") &&
+    !headerHtml.includes("data-session-signout") &&
+    !headerHtml.includes("data-session-addr") &&
+    !headerHtml.includes("Sign out") &&
+    !headerHtml.includes("session-addr"),
+);
+check(
+  "Sign out lives on the profile page, not the top bar",
+  profileJsText.includes("data-profile-signout") &&
+    /Sign out/.test(profileJsText) &&
+    !sessionJsText.includes("data-session-signout") &&
+    headerHtml.includes("topbar-trade") &&
+    /<a class="topbar-trade" href="\/trade\/">Trade<\/a>/.test(headerHtml),
 );
 check(
   "tadpole handles are assigned on login and persisted in a JSON file store",
@@ -946,7 +962,9 @@ check(
     !/<input\b[^>]*(seed|secret|mnemonic|password)/i.test(profileJsText) &&
     !profileJsText.includes('type="password"') &&
     profileJsText.includes("displayName") &&
-    profileJsText.includes("bio"),
+    profileJsText.includes("bio") &&
+    profileJsText.includes("icon") &&
+    profilesSrc.includes("asIcon"),
 );
 
 const startJs = join(DIST_DIR, "start.js");

@@ -106,6 +106,7 @@ test("GET /api/session refreshes a live Xaman session", () =>
     assert.equal(data.address, ADMIN_ADDRESS);
     assert.equal(data.handle, "tadpole01");
     assert.equal(data.disclaimerAccepted, false);
+    assert.equal(data.icon, "");
     assert.match(String(res.headers["Set-Cookie"] || ""), /pond_session=/);
     assert.doesNotMatch(String(res.headers["Set-Cookie"] || ""), /Max-Age=0/);
   }));
@@ -126,6 +127,9 @@ test("Xaman session reports persisted disclaimer acceptance", () =>
     const second = await sessionApi({ cookie });
     assert.equal(second.data.disclaimerAccepted, true);
     assert.equal(second.data.handle, "tadpole01");
+    await updateOwnProfile(ADMIN_ADDRESS, { icon: "/greenhead-duck.png" });
+    const third = await sessionApi({ cookie });
+    assert.equal(third.data.icon, "/greenhead-duck.png");
   }));
 
 test("WalletConnect session does not return a handle", async () => {

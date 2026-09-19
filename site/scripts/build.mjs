@@ -531,8 +531,9 @@ function sessionChipHtml() {
     </div>
   </div>
   <div class="session-authed" data-session-authed hidden>
-    <a class="session-addr" data-session-addr data-session-profile href="/profile/"></a>
-    <button type="button" class="session-out" data-session-signout>Sign out</button>
+    <a class="session-profile" data-session-profile href="/profile/" aria-label="Open your profile">
+      <img class="session-avatar" data-session-avatar src="/greenhead-duck.png" width="30" height="30" alt="">
+    </a>
   </div>
   <xrpl-wallet-connector id="pond-session-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
 </div>`;
