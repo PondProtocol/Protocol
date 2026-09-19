@@ -34,25 +34,16 @@
 
   function syncHomeScale() {
     if (!document.body?.classList.contains("page-index")) return;
-    const stage = document.querySelector(".page-index .hero-inner");
     const board = document.querySelector(".page-index .hero-main");
-    if (!stage || !board) return;
+    if (!board) return;
+    // First paint is CSS-only. Do not measure or transform the hero.
+    void board.offsetHeight;
     document.body.style.setProperty("--home-scale", "1");
-    board.style.transform = "none";
-    const scale = Math.min(
-      1,
-      stage.clientWidth / Math.max(board.scrollWidth, board.offsetWidth, 1),
-      stage.clientHeight / Math.max(board.scrollHeight, board.offsetHeight, 1),
-    );
-    board.style.transform = "";
-    document.body.style.setProperty("--home-scale", String(Math.max(0.5, scale)));
   }
 
   function syncHomeFrame() {
     syncHomePrivacyReserve();
-    requestAnimationFrame(() => {
-      requestAnimationFrame(syncHomeScale);
-    });
+    syncHomeScale();
   }
 
   function setMode(next) {
@@ -145,15 +136,13 @@
       }
     });
 
-    if (isHome(window.location.pathname)) setMode("notice");
-    else setMode("fab");
+    if (isHome(window.location.pathname)) {
+      if (mode() !== "notice") setMode("notice");
+    } else if (mode() !== "fab") {
+      setMode("fab");
+    }
     syncHomeFrame();
     window.addEventListener("resize", syncHomeFrame);
-    if (typeof ResizeObserver === "function") {
-      if (notice()) new ResizeObserver(syncHomeFrame).observe(notice());
-      const stage = document.querySelector(".page-index .hero-inner");
-      if (stage) new ResizeObserver(syncHomeFrame).observe(stage);
-    }
   }
 
   const pushState = history.pushState.bind(history);
