@@ -56,13 +56,15 @@ put them in the repo, in `site/dist`, or in browser JavaScript.
 | `XUMM_API_SECRET` | Autoscale env only | Xaman app API secret |
 | `POND_PROFILE_STORE` | Autoscale env optional | Absolute path to the profile JSON file. Defaults to `site/data/profiles.json`. |
 
-After official WalletConnect or Xaman SignIn, `POST /api/session` assigns a
-public handle and writes it to that JSON file. `tadpole01` is reserved for
-the owner classic address. Later accounts get sequential numbers with a
-leading 0: `tadpole02`, `tadpole03`, … `tadpole010`. Profiles are public at
-`/profile/<handle>/`. The file stores handle, XRPL address, display name,
-bio, and Start Here progress — never a seed. Autoscale disk can be
-ephemeral; this process does not talk to `database.greenhead.io`.
+After official Xaman SignIn, `POST /api/session` assigns a handle and
+writes it to that JSON file. `tadpole01` is reserved for the owner
+classic address. Later accounts get sequential numbers with a leading 0:
+`tadpole02`, `tadpole03`, … `tadpole010`. Account pages are **not
+public**: they require that Xaman session and expire after 24 hours of
+no activity. WalletConnect still connects for `/trade/` and does not
+open a profile. The file stores handle, XRPL address, display name, bio,
+and Start Here progress — never a seed. Autoscale disk can be ephemeral;
+this process does not talk to `database.greenhead.io`.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
 **not** already have keys. Until both variables are set, `GET /health` reports

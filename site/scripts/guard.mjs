@@ -884,6 +884,7 @@ check(
   existsSync(join(SITE_ROOT, "scripts", "session.mjs")) &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("pond_session") &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("HttpOnly") &&
+    readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("IDLE_MS") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleSession"),
 );
 
@@ -920,6 +921,7 @@ check(
     profilesSrc.includes("profiles.json") &&
     profilesSrc.includes("Never stores seeds") &&
     !profilesSrc.includes("database.greenhead.io") &&
+    profilesSrc.includes("xaman_required") &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("ensureProfile") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleProfiles") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage"),
