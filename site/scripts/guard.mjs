@@ -831,6 +831,18 @@ check(
     tradeJsText.includes('data-chart-indicator="sma"') &&
     tradeJsText.includes('preserveAspectRatio="none"') &&
     tradeJsText.includes("trade-overview-ticket") &&
+    tradeJsText.includes("data-chart-hud") &&
+    tradeJsText.includes("data-chart-print-list") &&
+    tradeJsText.includes("data-chart-stat-vwap") &&
+    tradeJsText.includes("data-chart-stat-basis") &&
+    tradeJsText.includes("quoteChartPrice") &&
+    tradeJsText.includes("trade-chart-vwap") &&
+    tradeJsText.includes("trade-chart-vap") &&
+    tradeJsText.includes("is-current") &&
+    tradeJsText.includes("data-chart-hotkeys") &&
+    tradeJsText.includes("data-chart-print-age") &&
+    stylesText.includes("trade-chart-hud") &&
+    stylesText.includes("trade-chart-prints") &&
     stylesText.includes("trade-chart-candle") &&
     stylesText.includes("trade-chart-last-line") &&
     stylesText.includes("trade-overview-rail") &&

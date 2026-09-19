@@ -279,11 +279,17 @@
         </div>
         <div class="trade-chart-symbol-bar">
           <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1m</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
-          <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span></div>
+          <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span><span class="trade-chart-print-age" data-chart-print-age>—</span></div>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
             <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 480" preserveAspectRatio="none" role="img" aria-label="PND / XRP Testnet chart"></svg>
+            <div class="trade-chart-cross" data-chart-cross hidden><i data-chart-cross-v></i><i data-chart-cross-h></i></div>
+            <div class="trade-chart-hud" data-chart-hud hidden>
+              <strong data-chart-hud-time>—</strong>
+              <span data-chart-hud-ohlc>—</span>
+              <span data-chart-hud-vol>—</span>
+            </div>
             <span class="trade-chart-source" data-chart-source>Source: XRPL Testnet</span>
           </div>
           <div class="trade-chart-empty-state is-loading" data-chart-empty-state>
@@ -293,10 +299,14 @@
             <span data-chart-empty-copy>Reading the validated PND/XRP pool. Candles stay blank until prints arrive.</span>
           </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-source-label>XRPL Testnet</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-source-label>XRPL Testnet</span><span data-chart-hotkeys>1/5/Q/W · click candle to quote</span></div>
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
-          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>SMA</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>VWAP</span><strong data-chart-stat-vwap>—</strong></div><div class="trade-overview-stat"><span>AMM spot</span><strong data-chart-stat-spot>—</strong></div><div class="trade-overview-stat"><span>Basis</span><strong data-chart-stat-basis>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
+        <div class="trade-overview-card trade-chart-prints" data-chart-prints>
+          <p class="trade-kicker">Last prints</p>
+          <ol data-chart-print-list></ol>
+        </div>
         <div class="trade-action-card trade-overview-ticket" data-order-ticket>
           <nav class="trade-action-tabs" aria-label="Chart order type" data-tab-group="chart-order">
             <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
@@ -309,7 +319,7 @@
                  <label class="trade-action-field trade-input-field"><span>Price</span><div><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="Last print" aria-label="Price in XRP per PND"><b>XRP</b></div></label>
                  <label class="trade-action-field trade-input-field"><span>Amount</span><div><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><b>PND</b></div></label>
                </div>
-               <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Price × amount · Time in force · GTC</small></div>
+               <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Click a candle to quote · Time in force · GTC</small></div>
                <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. This terminal does not sign or submit OfferCreate.</p>
                <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — no submit</button>
             </div>
@@ -1677,7 +1687,7 @@
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null, hoverIndex: null, lastPrintTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -1709,6 +1719,7 @@
         emptyChart.classList.toggle("is-loading", loading);
         liveChart.hidden = true;
         emptyChart.hidden = false;
+        hideChartHud();
       };
       const setChartLoading = (title = "Loading Testnet tape…", copy = "Reading validated PND/XRP prints. This is not an empty market.") => {
         setChartEmpty(title, copy, true);
@@ -1732,10 +1743,17 @@
         setText("[data-chart-stat-volume]", "—");
        setText("[data-chart-stat-market-cap]", "—");
         setText("[data-chart-stat-sma]", "—");
+        setText("[data-chart-stat-vwap]", "—");
+        setText("[data-chart-stat-spot]", "—");
+        setText("[data-chart-stat-basis]", "—");
         setText("[data-chart-stat-rsi]", "—");
         setText("[data-chart-stat-macd]", "—");
         setText("[data-chart-symbol-price]", "—");
         setText("[data-chart-symbol-change]", "—");
+        setText("[data-chart-print-age]", "—");
+        const printList = $("[data-chart-print-list]");
+        if (printList) printList.innerHTML = "";
+        hideChartHud();
        setText("[data-chart-ohlc-open]", "—");
        setText("[data-chart-ohlc-high]", "—");
        setText("[data-chart-ohlc-low]", "—");
@@ -1788,6 +1806,59 @@
       };
       const svgText = (x, y, text, className, anchor = "start") =>
         `<text x="${x}" y="${y}" class="${className}" text-anchor="${anchor}">${text}</text>`;
+      const hud = $("[data-chart-hud]");
+      const cross = $("[data-chart-cross]");
+      const crossV = $("[data-chart-cross-v]");
+      const crossH = $("[data-chart-cross-h]");
+      const formatPrintAge = (ms) => {
+        if (!Number.isFinite(ms) || ms < 0) return "—";
+        const sec = Math.floor(ms / 1000);
+        if (sec < 60) return `${sec}s ago`;
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min}m ago`;
+        return `${Math.floor(min / 60)}h ago`;
+      };
+      const hideChartHud = () => {
+        chartState.hoverIndex = null;
+        if (hud) hud.hidden = true;
+        if (cross) cross.hidden = true;
+      };
+      const quoteChartPrice = (spot) => {
+        const input = document.querySelector('[data-mode-view="chart"] [data-dex-price]');
+        if (!input || !Number.isFinite(spot) || spot <= 0) return;
+        input.value = spot >= 1 ? spot.toFixed(4) : spot.toFixed(6);
+        input.dispatchEvent(new Event("input"));
+        setOrderStatus("Quoted from a validated candle. Unsigned preview — nothing is signed or submitted.");
+      };
+      const paintPrintList = (trades = []) => {
+        const list = $("[data-chart-print-list]");
+        if (!list) return;
+        const rows = [...trades].filter((trade) => trade.time && trade.price > 0).sort((a, b) => b.time - a.time).slice(0, 8);
+        list.innerHTML = rows.length
+          ? rows.map((trade) => {
+            const time = new Date(trade.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+            const side = trade.side === "sell" ? "Sell" : "Buy";
+            return `<li class="is-${trade.side === "sell" ? "down" : "up"}"><time>${escText(time)}</time><b>${escText(side)}</b><strong>${escText(trade.price >= 1 ? trade.price.toFixed(4) : trade.price.toFixed(6))}</strong><span>${escText(formatIou(trade.xrp))} XRP</span></li>`;
+          }).join("")
+          : "<li class=\"is-empty\">No validated prints yet.</li>";
+      };
+      const updatePrintAge = () => {
+        const stamp = chartState.lastPrintTime;
+        if (!stamp) {
+          setText("[data-chart-print-age]", "—");
+          return;
+        }
+        const clock = new Date(stamp).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+        setText("[data-chart-print-age]", `${clock} · ${formatPrintAge(Date.now() - stamp)}`);
+      };
+      const activateRange = (range) => {
+        const button = [...rangeButtons].find((item) => item.dataset.chartRange === range);
+        button?.click();
+      };
+      const activateIndicator = (name) => {
+        const button = [...indicatorButtons].find((item) => item.dataset.chartIndicator === name);
+        button?.click();
+      };
 
       rangeButtons.forEach((button) => {
         button.addEventListener("click", () => {
@@ -1930,16 +2001,17 @@
           const hi = Number.isFinite(candle.high) ? candle.high : candle.value;
           const lo = Number.isFinite(candle.low) ? candle.low : candle.value;
           const up = candle.close >= candle.open;
-          const direction = up ? "is-up" : "is-down";
+          const current = index === candles.length - 1 ? " is-current" : "";
+          const direction = `${up ? "is-up" : "is-down"}${current}`;
           if (hi < low || lo > high) {
             const edge = hi < low ? priceBottom : top;
-            return `<rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="3"/>`;
+            return `<rect class="trade-chart-candle ${direction}" data-chart-candle="${index}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="3"/>`;
           }
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
           const bodyHeight = Math.max(12, bodyBot - bodyTop);
           const bodyY = bodyTop - (bodyHeight - Math.max(1, bodyBot - bodyTop)) / 2;
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyY}" width="${barWidth}" height="${bodyHeight}"/>`;
+          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" data-chart-candle="${index}" x="${cx - barWidth / 2}" y="${bodyY}" width="${barWidth}" height="${bodyHeight}"/>`;
         }).join("");
         let indicatorPaths = "";
         if (values.length > 1 && (indicator === "sma" || indicator === "bollinger")) {
@@ -1970,20 +2042,65 @@
         const lastLine = Number.isFinite(lastPrice)
           ? `<line class="trade-chart-last-line" x1="${left}" x2="${plotRight}" y1="${y(lastPrice)}" y2="${y(lastPrice)}"/><rect class="trade-chart-last-tag" x="${width - 58}" y="${lastTagY - 7}" width="54" height="13" rx="2"/>${svgText(width - 6, lastTagY + 3, formatTick(lastPrice), "trade-chart-last-label", "end")}`
           : "";
+        let pv = 0;
+        let vv = 0;
+        const vwapSeries = points.map((point, index) => {
+          const typical = ((Number.isFinite(point.high) ? point.high : values[index]) + (Number.isFinite(point.low) ? point.low : values[index]) + values[index]) / 3;
+          const vol = volumes[index] || 0;
+          pv += typical * vol;
+          vv += vol;
+          return vv > 0 ? pv / vv : null;
+        });
+        const vwapValue = vwapSeries[vwapSeries.length - 1];
+        const vwapLine = Number.isFinite(vwapValue) && vwapValue >= low && vwapValue <= high
+          ? `<line class="trade-chart-vwap" x1="${left}" x2="${plotRight}" y1="${y(vwapValue)}" y2="${y(vwapValue)}"/>${svgText(left + 4, y(vwapValue) - 4, "VWAP", "trade-chart-panel-label")}`
+          : "";
+        const windowHigh = candles.length ? Math.max(...candles.map((candle) => candle.high)) : Math.max(...values);
+        const windowLow = candles.length ? Math.min(...candles.map((candle) => candle.low)) : Math.min(...values);
+        const highLine = Number.isFinite(windowHigh) && windowHigh >= low && windowHigh <= high
+          ? `<line class="trade-chart-window-high" x1="${left}" x2="${plotRight}" y1="${y(windowHigh)}" y2="${y(windowHigh)}"/>${svgText(plotRight - 4, y(windowHigh) - 3, "H", "trade-chart-panel-label", "end")}`
+          : "";
+        const lowLine = Number.isFinite(windowLow) && windowLow >= low && windowLow <= high
+          ? `<line class="trade-chart-window-low" x1="${left}" x2="${plotRight}" y1="${y(windowLow)}" y2="${y(windowLow)}"/>${svgText(plotRight - 4, y(windowLow) + 10, "L", "trade-chart-panel-label", "end")}`
+          : "";
+        const spot = liveAmmReservePair()?.xrpPerPnd;
+        const spotLine = Number.isFinite(spot) && spot >= low && spot <= high
+          ? `<line class="trade-chart-spot-line" x1="${left}" x2="${plotRight}" y1="${y(spot)}" y2="${y(spot)}"/>`
+          : "";
+        const bins = 7;
+        const vap = Array(bins).fill(0);
+        points.forEach((point, index) => {
+          const mid = ((Number.isFinite(point.high) ? point.high : values[index]) + (Number.isFinite(point.low) ? point.low : values[index])) / 2;
+          const t = (mid - low) / Math.max(high - low, 0.000001);
+          const bin = Math.min(bins - 1, Math.max(0, Math.floor(t * bins)));
+          vap[bin] += volumes[index] || 0;
+        });
+        const vapMax = Math.max(...vap, 1);
+        const binH = (priceBottom - top) / bins;
+        const vapBars = vap.map((vol, bin) => {
+          if (!(vol > 0)) return "";
+          const w = Math.max(4, (vol / vapMax) * 40);
+          return `<rect class="trade-chart-vap" x="${plotRight - w}" y="${priceBottom - (bin + 1) * binH + 1}" width="${w}" height="${Math.max(2, binH - 2)}"/>`;
+        }).join("");
         const volumeLabel = showVolume ? svgText(left, volumeTop + 11, "VOLUME", "trade-chart-panel-label") : "";
         const divider = showVolume || showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>` : "";
         const oscDivider = showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${oscTop - 6}" y2="${oscTop - 6}"/>` : "";
         const clip = `<clipPath id="trade-chart-price-clip"><rect x="${left}" y="${top}" width="${plotRight - left}" height="${priceBottom - top}"/></clipPath>`;
         const plotLayer = `<g clip-path="url(#trade-chart-price-clip)">${lineLayer}${indicatorPaths}</g>`;
-        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${lastLine}${divider}${volumeLabel}${plotLayer}${volumeBars}${oscDivider}${oscLayer}${labels}`;
+        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${highLine}${lowLine}${vwapLine}${spotLine}${lastLine}${divider}${volumeLabel}${plotLayer}${volumeBars}${vapBars}${oscDivider}${oscLayer}${labels}`;
         liveChart.hidden = false;
         emptyChart.hidden = true;
         emptyChart.classList.remove("is-loading");
+        chartState.layout = { left, plotRight, top, priceBottom, slot, count, low, high, points, candles };
+        chartState.data.vwap = vwapValue;
+        chartState.data.spot = spot;
         setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
+        setText("[data-chart-stat-vwap]", formatAxis(vwapValue));
         setText("[data-chart-stat-rsi]", Number.isFinite(rsi[rsi.length - 1]) ? rsi[rsi.length - 1].toFixed(1) : "—");
         setText("[data-chart-stat-macd]", Number.isFinite(macd[macd.length - 1]) ? macd[macd.length - 1].toFixed(4) : "—");
         setText("[data-chart-symbol-price]", formatAxis(chartState.data.livePrice));
         setText("[data-chart-symbol-change]", formatPercent(chartState.data.change));
+        if (chartState.hoverIndex != null) showChartHover(chartState.hoverIndex);
       }
 
       const formatTick = (value) => {
@@ -2065,10 +2182,20 @@
         const livePrice = last.close ?? last.value;
         const change = open ? ((livePrice - open) / open) * 100 : 0;
         const volume = volume24hXrp(trades);
-        chartState.data = { points, candles, livePrice, change, volume, open, high, low, quote: "XRP", intervalMs };
+        const lastPrint = [...used].sort((a, b) => b.time - a.time)[0];
+        const spot = liveAmmReservePair()?.xrpPerPnd;
+        const basis = Number.isFinite(spot) && spot > 0 && Number.isFinite(livePrice)
+          ? ((livePrice - spot) / spot) * 100
+          : null;
+        chartState.data = { points, candles, livePrice, change, volume, open, high, low, quote: "XRP", intervalMs, spot, vwap: null };
+        chartState.lastPrintTime = lastPrint?.time || null;
         setText("[data-chart-stat-price]", formatAxis(livePrice));
         setText("[data-chart-stat-change]", formatPercent(change));
         setText("[data-chart-stat-volume]", volume > 0 ? `${formatIou(volume)} XRP` : "—");
+        setText("[data-chart-stat-spot]", formatAxis(spot));
+        setText("[data-chart-stat-basis]", Number.isFinite(basis) ? formatPercent(basis) : "—");
+        paintPrintList(used);
+        updatePrintAge();
         setText("[data-chart-stat-market-cap]", state.verification.treasuryPnd != null ? `${formatIou(state.verification.treasuryPnd)} PND` : "—");
         setText("[data-chart-ohlc-open]", formatAxis(open));
         setText("[data-chart-ohlc-high]", formatAxis(high));
@@ -2156,7 +2283,73 @@
       const load = () => {
         paintLedgerChart();
       };
+      const showChartHover = (index) => {
+        const layout = chartState.layout;
+        if (!layout || !hud || !cross) return;
+        const point = layout.points[index];
+        if (!point) {
+          hideChartHud();
+          return;
+        }
+        chartState.hoverIndex = index;
+        const candle = layout.candles[index] || point;
+        const time = new Date(point.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+        const open = candle.open ?? point.value;
+        const high = candle.high ?? point.value;
+        const low = candle.low ?? point.value;
+        const close = candle.close ?? point.value;
+        const prints = candle.prints ? ` · ${candle.prints} print${candle.prints === 1 ? "" : "s"}` : "";
+        setText("[data-chart-hud-time]", time);
+        setText("[data-chart-hud-ohlc]", `O ${formatTick(open)}  H ${formatTick(high)}  L ${formatTick(low)}  C ${formatTick(close)}`);
+        setText("[data-chart-hud-vol]", `${formatIou(point.volume || 0)} XRP${prints}`);
+        const cx = layout.left + layout.slot * index + layout.slot / 2;
+        const cy = layout.priceBottom - ((Math.min(layout.high, Math.max(layout.low, close)) - layout.low) / Math.max(layout.high - layout.low, 0.000001)) * (layout.priceBottom - layout.top);
+        hud.hidden = false;
+        cross.hidden = false;
+        if (crossV) crossV.style.left = `${(cx / 1000) * 100}%`;
+        if (crossH) crossH.style.top = `${(cy / 480) * 100}%`;
+      };
+      const pointerIndex = (event) => {
+        const layout = chartState.layout;
+        if (!layout) return -1;
+        const rect = svg.getBoundingClientRect();
+        if (!rect.width) return -1;
+        const vx = ((event.clientX - rect.left) / rect.width) * 1000;
+        const index = Math.floor((vx - layout.left) / layout.slot);
+        if (index < 0 || index >= layout.count) return -1;
+        return index;
+      };
+      svg.addEventListener("pointermove", (event) => {
+        const index = pointerIndex(event);
+        if (index < 0) hideChartHud();
+        else showChartHover(index);
+      });
+      svg.addEventListener("pointerleave", hideChartHud);
+      svg.addEventListener("click", (event) => {
+        const index = pointerIndex(event);
+        const candle = index >= 0 ? chartState.layout?.candles[index] || chartState.layout?.points[index] : null;
+        const price = candle?.close ?? candle?.value;
+        if (Number.isFinite(price)) quoteChartPrice(price);
+      });
+      window.addEventListener("keydown", (event) => {
+        if (document.getElementById("trade-app")?.dataset.mode !== "chart") return;
+        const tag = event.target?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || event.target?.isContentEditable) return;
+        const key = event.key.toLowerCase();
+        if (key === "1") activateRange("1m");
+        else if (key === "5") activateRange("5m");
+        else if (key === "q") activateRange("15m");
+        else if (key === "w") activateRange("30m");
+        else if (key === "v") volumeToggle?.click();
+        else if (key === "s") activateIndicator("sma");
+        else if (key === "e") activateIndicator("ema");
+        else if (key === "r") activateIndicator("rsi");
+        else if (key === "m") activateIndicator("macd");
+        else if (key === "b") activateIndicator("bollinger");
+        else if (key === "escape") hideChartHud();
+      });
       window.setInterval(load, 60000);
+      window.setInterval(updatePrintAge, 4000);
       return { load, paintLedger: paintLedgerChart };
     }
 
