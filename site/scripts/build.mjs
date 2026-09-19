@@ -460,7 +460,7 @@ function simplifyPolyline(pts, epsilon) {
 }
 
 function polylinePath(pts, closed) {
-  const ring = simplifyPolyline(pts, 4.5);
+  const ring = simplifyPolyline(pts, 3.2);
   if (ring.length < 2) return "";
   let d = `M${Math.round(ring[0][0])} ${Math.round(ring[0][1])}`;
   for (let i = 1; i < ring.length; i++) d += `L${Math.round(ring[i][0])} ${Math.round(ring[i][1])}`;
@@ -668,8 +668,8 @@ function buildHeroTopoMarkup() {
     `Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
     `TransactionType Payment Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
   ];
-  const cols = 56;
-  const rows = 32;
+  const cols = 64;
+  const rows = 36;
   const grid = heightGrid(cols, rows);
   let zMin = Infinity;
   let zMax = -Infinity;
@@ -679,7 +679,7 @@ function buildHeroTopoMarkup() {
       if (z > zMax) zMax = z;
     }
   }
-  const steps = 14;
+  const steps = 16;
   const levels = Array.from(
     { length: steps },
     (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
