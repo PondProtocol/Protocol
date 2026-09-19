@@ -54,50 +54,42 @@
     </nav>`;
   }
 
-  function guestHtml() {
-    return `<div class="profile-card">
+  function lockedHtml(kind) {
+    const copy =
+      kind === "walletconnect"
+        ? "WalletConnect can stay connected for Trade. Account pages need official Xaman SignIn."
+        : "Sign in with official Xaman to open your account page. Logged-out visitors do not see handles or profile fields.";
+    return `<div class="profile-card" data-profile-locked>
       <p class="profile-kicker">Pond Protocol Profile</p>
       <h2>Complete your Pond Protocol Profile</h2>
-      <p>Sign in with official WalletConnect or Xaman. Pond assigns a tadpole handle and never asks for a seed.</p>
+      <p>${copy} Pond never asks for a seed.</p>
     </div>`;
   }
 
-  function missingHtml(handle) {
-    return `<div class="profile-card">
-      <p class="profile-kicker">Pond Protocol Profile</p>
-      <h2>No profile for ${esc(handle)}</h2>
-      <p>That handle is not in the public registry yet. Sign in with WalletConnect or Xaman to get the next tadpole handle. Pond never asks for a seed.</p>
-    </div>`;
-  }
-
-  function cardHtml(profile, { mine }) {
+  function cardHtml(profile) {
     const name = profile.displayName || profile.handle;
-    const admin = profile.admin
-      ? `<span class="profile-admin">Admin</span>`
-      : "";
-    const form = `<form class="profile-form" data-profile-form>
-          <label>
-            <span>Display name</span>
-            <input type="text" name="displayName" maxlength="40" value="${esc(profile.displayName || "")}" autocomplete="nickname">
-          </label>
-          <label>
-            <span>Short bio</span>
-            <textarea name="bio" maxlength="160" rows="3">${esc(profile.bio || "")}</textarea>
-          </label>
-          <p class="profile-form-note">Public, and short. Never a seed, password, or private key.</p>
-          <p class="profile-form-status" data-profile-status hidden></p>
-          <button type="submit" class="button">Save profile</button>
-        </form>`;
-    const bio = `<p class="profile-bio">${esc(profile.bio || "This tadpole has not written a bio yet.")}</p>`;
+    const admin = profile.admin ? `<span class="profile-admin">Admin</span>` : "";
     return `<div class="profile-card" data-profile-card>
       <p class="profile-kicker">Complete your Pond Protocol Profile</p>
       <div class="profile-id">
         <h2>${esc(name)}</h2>
         ${admin}
       </div>
-      <p class="profile-handle"><a href="/profile/${esc(profile.handle)}/">/profile/${esc(profile.handle)}/</a></p>
+      <p class="profile-handle">/profile/${esc(profile.handle)}/</p>
       <p class="profile-address" title="${esc(profile.address)}">${esc(shortAddr(profile.address))}</p>
-      ${mine ? form : bio}
+      <form class="profile-form" data-profile-form>
+        <label>
+          <span>Display name</span>
+          <input type="text" name="displayName" maxlength="40" value="${esc(profile.displayName || "")}" autocomplete="nickname">
+        </label>
+        <label>
+          <span>Short bio</span>
+          <textarea name="bio" maxlength="160" rows="3">${esc(profile.bio || "")}</textarea>
+        </label>
+        <p class="profile-form-note">Visible only while this Xaman session is signed in. Never a seed, password, or private key.</p>
+        <p class="profile-form-status" data-profile-status hidden></p>
+        <button type="submit" class="button">Save profile</button>
+      </form>
       ${progressHtml(profile.progress)}
     </div>`;
   }
@@ -118,10 +110,6 @@
     return data;
   }
 
-  async function loadProfile(handle) {
-    return fetchJson(`/api/profile/${encodeURIComponent(handle)}`);
-  }
-
   async function loadOwn() {
     return fetchJson("/api/profile");
   }
@@ -135,7 +123,8 @@
   }
 
   async function syncProgress(progress) {
-    if (!window.PondSession?.current?.()?.address) return null;
+    const session = window.PondSession?.current?.();
+    if (session?.method !== "xaman" || !session.address) return null;
     try {
       return await saveOwn({ progress });
     } catch {
@@ -148,72 +137,61 @@
     if (!form) return;
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const status = form.querySelector("[data-profile-status]");
       const body = {
         displayName: form.displayName.value,
         bio: form.bio.value,
         progress: window.PondStart?.flags?.() || profile.progress || {},
       };
+      const setStatus = (message) => {
+        const status = document.querySelector("[data-profile-status]");
+        if (!status) return;
+        status.hidden = false;
+        status.textContent = message;
+      };
       try {
         const saved = await saveOwn(body);
-        render(saved, { mine: true });
-        if (status) {
-          status.hidden = false;
-          status.textContent = "Saved.";
-        }
+        render(saved);
+        setStatus("Saved.");
       } catch (error) {
-        if (status) {
-          status.hidden = false;
-          status.textContent = error.message || "Could not save.";
-        }
+        setStatus(error.message || "Could not save.");
       }
     });
   }
 
-  function render(profile, options) {
+  function render(profile) {
     const mount = root();
     if (!mount) return;
     if (!profile) {
-      mount.innerHTML = pathHandle() ? missingHtml(pathHandle()) : guestHtml();
+      const session = window.PondSession?.current?.();
+      mount.innerHTML = lockedHtml(session?.method === "walletconnect" ? "walletconnect" : "guest");
+      document.title = "Complete your Pond Protocol Profile — Pond Protocol";
       return;
     }
-    mount.innerHTML = cardHtml(profile, options);
-    if (options.mine) bindForm(profile);
-    const titleName = profile.displayName || profile.handle;
-    document.title = `${titleName} — Pond Protocol`;
+    mount.innerHTML = cardHtml(profile);
+    bindForm(profile);
+    document.title = `${profile.displayName || profile.handle} — Pond Protocol`;
   }
 
   async function show() {
     const mount = root();
     if (!mount || !isProfilePath()) return;
     const session = window.PondSession?.current?.() || null;
-    const handle = pathHandle();
+    if (session?.method !== "xaman" || !session.address) {
+      render(null);
+      return;
+    }
     try {
-      if (!handle) {
-        if (!session?.address) {
-          render(null, { mine: false });
-          return;
-        }
-        const own = await loadOwn();
-        if (own.handle && window.location.pathname !== `/profile/${own.handle}/`) {
-          history.replaceState({}, "", `/profile/${own.handle}/`);
-        }
-        render(own, { mine: true });
-        return;
+      const own = await loadOwn();
+      if (own.handle && window.location.pathname !== `/profile/${own.handle}/`) {
+        history.replaceState({}, "", `/profile/${own.handle}/`);
       }
-      const profile = await loadProfile(handle);
-      const mine = Boolean(session?.address && session.address === profile.address);
-      render(profile, { mine });
+      render(own);
     } catch (error) {
-      if (error.status === 401) {
-        render(null, { mine: false });
+      if (error.status === 401 || error.status === 403) {
+        render(null);
         return;
       }
-      if (error.status === 404) {
-        render(null, { mine: false });
-        return;
-      }
-      mount.innerHTML = `<div class="profile-card"><p class="profile-kicker">Pond Protocol Profile</p><p>${esc(error.message)}</p></div>`;
+      mount.innerHTML = `<div class="profile-card" data-profile-locked><p class="profile-kicker">Pond Protocol Profile</p><p>${esc(error.message)}</p></div>`;
     }
   }
 

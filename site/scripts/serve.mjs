@@ -10,14 +10,15 @@
  * Also answers /health, /api/session, /api/profile/*, and /api/xaman/* .
  * Those routes need this process (Autoscale). The Xaman API secret stays
  * here — it is never written into site/dist. Session cookies are signed
- * here. Public tadpole profiles are a JSON file this process can persist.
+ * here. Tadpole profiles are a JSON file this process can persist and
+ * are visible only to an active Xaman session.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { DIST_DIR } from "./lib.mjs";
 import { handleProfiles, isProfilePage } from "./profiles.mjs";
-import { handleSession, readSession } from "./session.mjs";
+import { handleSession, touchSession } from "./session.mjs";
 import { handleApi } from "./xaman.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
@@ -46,7 +47,7 @@ createServer(async (req, res) => {
 
   try {
     if (await handleSession(req, res, url)) return;
-    if (await handleProfiles(req, res, url, { readSession })) return;
+    if (await handleProfiles(req, res, url, { readSession: touchSession })) return;
     if (await handleApi(req, res, url)) return;
   } catch (error) {
     res.statusCode = 500;

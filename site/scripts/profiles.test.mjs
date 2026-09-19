@@ -12,6 +12,7 @@ import {
   ensureProfile,
   getProfileByHandle,
   handleForN,
+  handleProfiles,
   nextHandle,
   updateOwnProfile,
 } from "./profiles.mjs";
@@ -77,6 +78,61 @@ test("login assigns reserved admin then tadpole02", () =>
     const stored = JSON.parse(readFileSync(process.env.POND_PROFILE_STORE, "utf8"));
     assert.equal(stored.profiles.some((row) => "seed" in row || "secret" in row || "privateKey" in row), false);
     assert.ok(getProfileByHandle("tadpole01"));
+  }));
+
+function mockRes() {
+  const res = {
+    statusCode: 0,
+    headers: {},
+    body: "",
+    setHeader(key, value) {
+      this.headers[key] = value;
+    },
+    end(payload) {
+      this.body = payload || "";
+    },
+  };
+  return res;
+}
+
+async function profileApi(url, { session } = {}) {
+  const res = mockRes();
+  const handled = await handleProfiles({ method: "GET", headers: {}, socket: {} }, res, url, {
+    readSession: () => session || null,
+  });
+  return { handled, res, data: res.body ? JSON.parse(res.body) : {} };
+}
+
+test("profile API hides accounts without an active Xaman session", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    const loggedOut = await profileApi("/api/profile/tadpole01");
+    assert.equal(loggedOut.res.statusCode, 401);
+    assert.equal(loggedOut.data.handle, undefined);
+    assert.equal(loggedOut.data.address, undefined);
+    assert.equal(loggedOut.data.displayName, undefined);
+
+    const wallet = await profileApi("/api/profile/tadpole01", {
+      session: { address: ADMIN_ADDRESS, method: "walletconnect" },
+    });
+    assert.equal(wallet.res.statusCode, 403);
+    assert.equal(wallet.data.handle, undefined);
+    assert.equal(wallet.data.address, undefined);
+    assert.match(wallet.data.message, /WalletConnect/);
+
+    const other = await profileApi("/api/profile/tadpole02", {
+      session: { address: ADMIN_ADDRESS, method: "xaman" },
+    });
+    assert.equal(other.res.statusCode, 404);
+    assert.equal(other.data.handle, undefined);
+    assert.equal(other.data.address, undefined);
+
+    const own = await profileApi("/api/profile/tadpole01", {
+      session: { address: ADMIN_ADDRESS, method: "xaman" },
+    });
+    assert.equal(own.res.statusCode, 200);
+    assert.equal(own.data.handle, "tadpole01");
+    assert.equal(own.data.address, ADMIN_ADDRESS);
   }));
 
 test("profile fields stay small and reject seeds", () =>

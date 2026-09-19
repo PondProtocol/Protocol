@@ -17,18 +17,22 @@ We use cookies. That is intentional.
 
 - **Login session.** After official **WalletConnect** or **Xaman SignIn**, we
   set a session cookie with the XRPL address you signed in with and the
-  connect method. You stay logged in until you Sign out. The cookie is
-  `httpOnly` and `SameSite=Lax` when the site process can set it.
+  connect method. Activity on this host refreshes that cookie. After 24
+  hours with no activity, the session ends and the next visit is signed
+  out. You can also Sign out. The cookie is `httpOnly` and `SameSite=Lax`
+  when the site process can set it.
 - **Start Here progress.** `/start/` stores checklist progress in a cookie
   (with a `localStorage` backup). Anonymous users keep progress in that
   cookie. After you sign in, progress is merged and keyed to that XRPL
   address.
-- **Public profile.** After you sign in, this host assigns a tadpole
-  handle and stores handle, XRPL address, optional display name / bio,
-  and a Start Here progress pointer in a JSON file the site process can
-  write. Other visitors can open `/profile/<handle>/`. We do not store
-  seeds or private keys. Autoscale disk may be ephemeral, so that file
-  can reset on a new deploy.
+- **Account profile.** After official **Xaman SignIn**, this host assigns
+  a tadpole handle and stores handle, XRPL address, optional display
+  name / bio, and a Start Here progress pointer in a JSON file the site
+  process can write. That page is visible only while that Xaman session
+  is logged in. WalletConnect on Trade does not open it. Logged-out
+  visitors do not see handles or profile fields. We do not store seeds
+  or private keys. Autoscale disk may be ephemeral, so that file can
+  reset on a new deploy.
 
 We remember the XRPL address you signed in with. We do not sell personal
 data. We do not run ads. We never ask for a seed, mnemonic, private key, or

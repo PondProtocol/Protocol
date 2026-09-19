@@ -5,13 +5,18 @@
  * we set an httpOnly SameSite cookie with the XRPL address + method.
  * Xaman logins are checked against the Platform payload. WalletConnect
  * logins send the address the wallet already returned on /trade/.
+ *
+ * WalletConnect may stay connected for /trade/. Account / profile pages
+ * need an active Xaman session. Idle timeout is 24 hours from last
+ * authenticated use, not from login.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { ensureProfile, publicProfile } from "./profiles.mjs";
 import { signedXamanAccount } from "./xaman.mjs";
 
-const COOKIE = "pond_session";
-const MAX_AGE = 60 * 60 * 24 * 30;
+export const SESSION_COOKIE = "pond_session";
+export const IDLE_MS = 60 * 60 * 24 * 1000;
+const MAX_AGE = 60 * 60 * 24;
 const MAX_BODY = 16 * 1024;
 const ADDR_RE = /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/;
 
@@ -96,7 +101,12 @@ function verify(token) {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (!ADDR_RE.test(payload.address || "")) return null;
     if (payload.method !== "walletconnect" && payload.method !== "xaman") return null;
-    return { address: payload.address, method: payload.method };
+    return {
+      address: payload.address,
+      method: payload.method,
+      t: payload.t,
+      active: payload.active,
+    };
   } catch {
     return null;
   }
@@ -112,7 +122,7 @@ function isSecure(req) {
 
 function cookieHeader(value, req, { clear = false } = {}) {
   const parts = [
-    `${COOKIE}=${clear ? "" : encodeURIComponent(value)}`,
+    `${SESSION_COOKIE}=${clear ? "" : encodeURIComponent(value)}`,
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
@@ -124,6 +134,9 @@ function cookieHeader(value, req, { clear = false } = {}) {
 
 function publicSession(session, profile = null) {
   if (!session) return { address: null, method: null, handle: null, admin: false };
+  if (session.method !== "xaman") {
+    return { address: session.address, method: session.method, handle: null, admin: false };
+  }
   return {
     address: session.address,
     method: session.method,
@@ -131,8 +144,40 @@ function publicSession(session, profile = null) {
   };
 }
 
+export function activityFresh(session, now = Date.now()) {
+  const at = Number(session?.active ?? session?.t ?? 0);
+  return Boolean(session?.address) && Number.isFinite(at) && at > 0 && now - at < IDLE_MS;
+}
+
+export function isXamanSession(session) {
+  return session?.method === "xaman" && ADDR_RE.test(session.address || "");
+}
+
+export function signSession(session) {
+  return sign({
+    address: session.address,
+    method: session.method,
+    t: session.t,
+    active: session.active,
+  });
+}
+
 export function readSession(req) {
-  return verify(parseCookies(req)[COOKIE]);
+  const session = verify(parseCookies(req)[SESSION_COOKIE]);
+  if (!session || !activityFresh(session)) return null;
+  return session;
+}
+
+export function touchSession(req, res) {
+  const session = verify(parseCookies(req)[SESSION_COOKIE]);
+  if (!session) return null;
+  if (!activityFresh(session)) {
+    res.setHeader("Set-Cookie", cookieHeader("", req, { clear: true }));
+    return null;
+  }
+  const next = { ...session, active: Date.now() };
+  res.setHeader("Set-Cookie", cookieHeader(signSession(next), req));
+  return next;
 }
 
 /**
@@ -147,8 +192,8 @@ export async function handleSession(req, res, url) {
   }
 
   if (req.method === "GET") {
-    const session = readSession(req);
-    const profile = session ? await ensureProfile(session.address) : null;
+    const session = touchSession(req, res);
+    const profile = isXamanSession(session) ? await ensureProfile(session.address) : null;
     json(res, 200, publicSession(session, profile));
     return true;
   }
@@ -196,8 +241,11 @@ export async function handleSession(req, res, url) {
     }
   }
 
-  const session = { address, method, t: Date.now() };
-  const profile = await ensureProfile(address);
-  json(res, 200, publicSession(session, profile), { "Set-Cookie": cookieHeader(sign(session), req) });
+  const now = Date.now();
+  const session = { address, method, t: now, active: now };
+  const profile = method === "xaman" ? await ensureProfile(address) : null;
+  json(res, 200, publicSession(session, profile), {
+    "Set-Cookie": cookieHeader(signSession(session), req),
+  });
   return true;
 }

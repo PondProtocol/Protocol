@@ -1,8 +1,10 @@
 /**
  * Public Pond Protocol profiles. JSON file store, no database.
  *
- * After official WalletConnect or Xaman SignIn, serve.mjs assigns a handle
- * and writes it here so other visitors can load /profile/<handle>/.
+ * After official Xaman SignIn, serve.mjs assigns a handle and writes it
+ * here. Account pages and profile JSON are visible only to that Xaman
+ * session. WalletConnect does not unlock them. Logged-out visitors do
+ * not see handles or profile fields.
  *
  * Handle rules: sequential integer 1 through 99999999999, always with a
  * leading 0 in front of that number.
@@ -317,6 +319,27 @@ export function isProfilePage(url) {
   return url === "/profile" || url === "/profile/" || /^\/profile\/[A-Za-z0-9_-]+\/?$/.test(url);
 }
 
+function denyProfile(res, status, error, message) {
+  json(res, status, { error, message });
+  return false;
+}
+
+function requireXaman(req, res, loadSession) {
+  const session = loadSession.length > 1 ? loadSession(req, res) : loadSession(req);
+  if (!session?.address) {
+    return denyProfile(res, 401, "signed_out", "Sign in with official Xaman.");
+  }
+  if (session.method !== "xaman") {
+    return denyProfile(
+      res,
+      403,
+      "xaman_required",
+      "Account pages need official Xaman SignIn. WalletConnect on Trade does not open a profile.",
+    );
+  }
+  return session;
+}
+
 /**
  * @returns {Promise<boolean>} whether the request was a profile API route
  */
@@ -331,15 +354,14 @@ export async function handleProfiles(req, res, url, { readSession }) {
     return true;
   }
 
+  const session = requireXaman(req, res, readSession);
+  if (session === false) return true;
+
   if (req.method === "GET" && handleMatch) {
+    const row = await ensureProfile(session.address);
     const handle = decodeURIComponent(handleMatch[1]);
-    if (!HANDLE_RE.test(handle)) {
-      json(res, 404, { error: "not_found", message: "No Pond profile uses that handle." });
-      return true;
-    }
-    const row = getProfileByHandle(handle);
-    if (!row) {
-      json(res, 404, { error: "not_found", message: "No Pond profile uses that handle." });
+    if (!row || row.handle !== handle) {
+      json(res, 404, { error: "not_found", message: "That account page is not available." });
       return true;
     }
     json(res, 200, row);
@@ -347,11 +369,6 @@ export async function handleProfiles(req, res, url, { readSession }) {
   }
 
   if (req.method === "GET" && collection) {
-    const session = readSession(req);
-    if (!session) {
-      json(res, 401, { error: "signed_out", message: "Sign in with WalletConnect or Xaman." });
-      return true;
-    }
     const row = await ensureProfile(session.address);
     json(res, 200, row);
     return true;
@@ -360,11 +377,6 @@ export async function handleProfiles(req, res, url, { readSession }) {
   if (req.method === "POST" || req.method === "PATCH") {
     if (!collection) {
       json(res, 405, { error: "method_not_allowed", message: "Update your own profile at /api/profile." });
-      return true;
-    }
-    const session = readSession(req);
-    if (!session) {
-      json(res, 401, { error: "signed_out", message: "Sign in with WalletConnect or Xaman." });
       return true;
     }
     let body;
