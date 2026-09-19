@@ -17,6 +17,8 @@ import {
   signSession,
 } from "./session.mjs";
 
+process.env.POND_SESSION_SECRET ??= "pond-test-session-secret";
+
 function withStore(run) {
   const dir = mkdtempSync(join(tmpdir(), "pond-session-"));
   const prev = process.env.POND_PROFILE_STORE;
@@ -131,6 +133,31 @@ test("Xaman session reports persisted disclaimer acceptance", () =>
     const third = await sessionApi({ cookie });
     assert.equal(third.data.icon, "/greenhead-duck.png");
   }));
+
+test("POST /api/session is 503 without POND_SESSION_SECRET", async () => {
+  const prev = process.env.POND_SESSION_SECRET;
+  delete process.env.POND_SESSION_SECRET;
+  try {
+    const { res, data } = await sessionApi({
+      method: "POST",
+      body: { method: "walletconnect", address: "rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpADk" },
+    });
+    assert.equal(res.statusCode, 503);
+    assert.equal(data.error, "session_unconfigured");
+    assert.equal(data.address, undefined);
+  } finally {
+    if (prev === undefined) delete process.env.POND_SESSION_SECRET;
+    else process.env.POND_SESSION_SECRET = prev;
+  }
+});
+
+test("GET /api/session includes cached Xaman status and a server WalletConnect id", async () => {
+  const { data } = await sessionApi();
+  assert.equal(data.address, null);
+  assert.equal(typeof data.xaman.configured, "boolean");
+  assert.equal(typeof data.walletconnect.projectId, "string");
+  assert.ok(data.walletconnect.projectId.length > 8);
+});
 
 test("WalletConnect session does not return a handle", async () => {
   const { data } = await sessionApi({

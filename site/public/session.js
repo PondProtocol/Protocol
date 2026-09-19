@@ -1,19 +1,11 @@
 (() => {
-  const WALLETCONNECT_PROJECT_ID = "89408e9bcaa385da1a1867c446cfb7b2";
-  const WC_SCRIPTS = [
-    {
-      src: "https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js",
-      integrity: "sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js",
-      integrity: "sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM",
-    },
-  ];
+  const WC_SCRIPTS = [{ src: "/vendor/xrpl-latest-min.js" }, { src: "/vendor/xrpl-connect.umd.js" }];
 
   let current = null;
   let wcManager = null;
   let scriptsPromise = null;
+  let wcProjectId = "";
+  let xamanStatus = { configured: false, reason: "" };
 
   const DEFAULT_ICON = "/greenhead-duck.png";
   const root = () => document.querySelector("[data-session-chip]");
@@ -33,7 +25,13 @@
     return DEFAULT_ICON;
   }
 
+  function rememberExtras(data) {
+    if (data?.walletconnect?.projectId) wcProjectId = data.walletconnect.projectId;
+    if (data?.xaman) xamanStatus = data.xaman;
+  }
+
   function fromSession(data) {
+    rememberExtras(data);
     if (!data?.address) return null;
     return {
       address: data.address,
@@ -104,12 +102,14 @@
         credentials: "same-origin",
       });
       const data = await response.json().catch(() => ({}));
+      rememberExtras(data);
       current = fromSession(data);
     } catch {
       current = null;
     }
     paint();
     notify();
+    refreshXamanNote();
     window.PondStart?.init?.();
     return current;
   }
@@ -151,6 +151,7 @@
     }
     try {
       sessionStorage.removeItem("pond-xaman-session");
+      sessionStorage.removeItem("pond-xaman-qr");
     } catch {
       /* private mode */
     }
@@ -181,8 +182,10 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = entry.src;
-      script.integrity = entry.integrity;
-      script.crossOrigin = "anonymous";
+      if (entry.integrity) {
+        script.integrity = entry.integrity;
+        script.crossOrigin = "anonymous";
+      }
       script.defer = true;
       script.addEventListener(
         "load",
@@ -211,6 +214,8 @@
       window.PondTrade.connectWallet();
       return;
     }
+    if (!wcProjectId) await refresh();
+    if (!wcProjectId) throw new Error("WalletConnect is not configured.");
     await ensureScripts();
     const api = window.XRPLConnect;
     const connector = document.getElementById("pond-session-connector");
@@ -219,7 +224,7 @@
     }
     if (!wcManager) {
       const adapter = new api.WalletConnectAdapter({
-        projectId: WALLETCONNECT_PROJECT_ID,
+        projectId: wcProjectId,
         metadata: {
           name: "Pond Protocol",
           description: "Non-custodial XRPL login for Pond Protocol.",
@@ -248,28 +253,21 @@
     await connector.open();
   }
 
-  async function refreshXamanNote() {
+  function refreshXamanNote() {
     const note = document.querySelector("[data-session-xaman-note]");
     if (!note) return;
     if (document.querySelector("[data-xaman-autostart]")) {
       note.hidden = true;
       return;
     }
-    try {
-      const response = await fetch("/health", { headers: { Accept: "application/json" } });
-      const data = await response.json().catch(() => ({}));
-      if (data.xaman?.configured) {
-        note.hidden = true;
-        return;
-      }
-      note.hidden = false;
-      note.textContent =
-        data.xaman?.reason ||
-        "Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.";
-    } catch {
-      note.hidden = false;
-      note.textContent = "Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.";
+    if (xamanStatus.configured) {
+      note.hidden = true;
+      return;
     }
+    note.hidden = false;
+    note.textContent =
+      xamanStatus.reason ||
+      "Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.";
   }
 
   function setup() {
@@ -309,7 +307,6 @@
     });
 
     refresh();
-    refreshXamanNote();
   }
 
   function patch(fields = {}) {
@@ -328,6 +325,8 @@
     patch,
     current: () => current,
     connectWalletConnect,
+    walletConnectProjectId: () => wcProjectId,
+    xaman: () => xamanStatus,
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setup, { once: true });

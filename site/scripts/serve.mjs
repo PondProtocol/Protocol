@@ -21,7 +21,7 @@ import { createGzip } from "node:zlib";
 import { DIST_DIR } from "./lib.mjs";
 import { handleProfiles, isCardPage, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
-import { handleApi } from "./xaman.mjs";
+import { allowedOrigin, handleApi } from "./xaman.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
 const host = process.env.HOST ?? "0.0.0.0";
@@ -50,11 +50,12 @@ createServer(async (req, res) => {
   try {
     if (await handleSession(req, res, url)) return;
     if (await handleProfiles(req, res, url, { readSession: touchSession })) return;
-    if (await handleApi(req, res, url)) return;
+    if (await handleApi(req, res, url, { readSession: touchSession })) return;
   } catch (error) {
     res.statusCode = 500;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    const origin = allowedOrigin(req);
+    if (origin) res.setHeader("Access-Control-Allow-Origin", origin);
     res.end(JSON.stringify({ error: "server_error", message: "Request failed." }));
     process.stderr.write(`serve.mjs: ${error instanceof Error ? error.stack : error}\n`);
     return;
@@ -71,10 +72,13 @@ createServer(async (req, res) => {
   res.setHeader("Content-Type", types[ext] ?? "application/octet-stream");
   // Mirrors public/_headers so `curl -I` locally matches what the host is asked to send.
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const hashedCss = /\/styles\.[a-f0-9]{8,}\.css$/.test(path.replace(/\\/g, "/"));
-  if (ext === ".css" && !hashedCss) {
+  const posixPath = path.replace(/\\/g, "/");
+  const hashedCss = /\/styles\.[a-f0-9]{8,}\.css$/.test(posixPath);
+  const hashedJs = /\/(xaman|session|profile|trade|disclaimer)\.[a-f0-9]{8,}\.js$/.test(posixPath);
+  const barePageJs = /\/(xaman|session|profile|trade|disclaimer)\.js$/.test(posixPath);
+  if ((ext === ".css" && !hashedCss) || (ext === ".js" && barePageJs)) {
     res.setHeader("Cache-Control", "no-cache, must-revalidate");
-  } else if (hashedCss) {
+  } else if (hashedCss || hashedJs) {
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
   } else if ([".js", ".svg", ".png"].includes(ext)) {
     res.setHeader("Cache-Control", "public, max-age=3600");

@@ -1,5 +1,5 @@
 (() => {
-  const SESSION_KEY = "pond-xaman-session";
+  const QR_KEY = "pond-xaman-qr";
   const issuer = () => window.POND?.issuer || "";
   const mounts = () => [...document.querySelectorAll("[data-xaman-app]")];
   const isCompact = (root) => root?.hasAttribute("data-xaman-compact");
@@ -11,21 +11,27 @@
     return "/connect/";
   };
 
-  function session() {
+  function qrState() {
     try {
-      return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+      return JSON.parse(sessionStorage.getItem(QR_KEY) || "null");
     } catch {
       return null;
     }
   }
 
-  function saveSession(next) {
+  function saveQr(next) {
     try {
-      if (next) sessionStorage.setItem(SESSION_KEY, JSON.stringify(next));
-      else sessionStorage.removeItem(SESSION_KEY);
+      if (next) sessionStorage.setItem(QR_KEY, JSON.stringify(next));
+      else sessionStorage.removeItem(QR_KEY);
     } catch {
       /* private mode */
     }
+  }
+
+  function pondAccount() {
+    const current = window.PondSession?.current?.();
+    if (current?.method !== "xaman" || !current.address) return null;
+    return { account: current.address };
   }
 
   function esc(value) {
@@ -67,7 +73,7 @@
   }
 
   function notifyChange() {
-    window.dispatchEvent(new CustomEvent("pond:xaman-change", { detail: session() }));
+    window.dispatchEvent(new CustomEvent("pond:xaman-change", { detail: pondAccount() }));
   }
 
   function sessionWaitHtml(payload, heading) {
@@ -177,16 +183,25 @@
     });
   }
 
-  async function fetchHealth() {
-    const response = await fetch("/health", { headers: { Accept: "application/json" } });
-    if (!response.ok) throw new Error("health failed");
-    return response.json();
+  async function fetchSessionStatus() {
+    const fromChip = window.PondSession?.xaman?.();
+    if (fromChip && (fromChip.configured || fromChip.reason)) {
+      return { xaman: fromChip };
+    }
+    const response = await fetch("/api/session", {
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+    if (!response.ok) throw new Error("session failed");
+    const data = await response.json();
+    return { xaman: data.xaman || { configured: false, reason: "Xaman status unavailable." } };
   }
 
   async function post(path, body = {}) {
     const response = await fetch(path, {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(body),
     });
     const data = await response.json().catch(() => ({}));
@@ -202,6 +217,7 @@
   async function getPayload(uuid) {
     const response = await fetch(`/api/xaman/payload/${encodeURIComponent(uuid)}`, {
       headers: { Accept: "application/json" },
+      credentials: "same-origin",
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -249,20 +265,34 @@
   }
 
   function pollUntilResolved(root, health, payload, heading) {
+    const expiresAt = Number(payload.expiresAt) || Date.now() + 10 * 60 * 1000;
+    saveQr({
+      uuid: payload.uuid,
+      qr: payload.qr || "",
+      next: payload.next || "",
+      expiresAt,
+      heading,
+    });
     render(root, waitingHtml(payload, heading, isCompact(root), isAutostart(root)));
     if (isCompact(root)) revealCompactMenu(root);
     bind(root, health);
     stopPoll();
     pollTimer = window.setInterval(async () => {
+      if (Date.now() > expiresAt) {
+        stopPoll();
+        inflightSignIn = null;
+        saveQr(null);
+        showError(root, health, "Sign request expired. Start again.");
+        return;
+      }
       try {
         const status = await getPayload(payload.uuid);
         if (status.signed && status.account) {
           stopPoll();
           inflightSignIn = null;
-          saveSession({ account: status.account, uuid: payload.uuid });
-          window.PondSession?.login?.({
+          saveQr(null);
+          await window.PondSession?.login?.({
             method: "xaman",
-            address: status.account,
             uuid: payload.uuid,
           });
           paint(root, health);
@@ -271,6 +301,7 @@
         if (status.cancelled || status.expired) {
           stopPoll();
           inflightSignIn = null;
+          saveQr(null);
           showError(root, health, status.cancelled ? "Sign request cancelled." : "Sign request expired. Start again.");
         }
       } catch {
@@ -314,7 +345,7 @@
     });
     root.querySelector("[data-xaman-disconnect]")?.addEventListener("click", () => {
       stopPoll();
-      saveSession(null);
+      saveQr(null);
       window.PondSession?.logoutIf?.({ method: "xaman" });
       paint(root, health);
     });
@@ -331,23 +362,35 @@
     try {
       const status = await getPayload(uuid);
       if (status.signed && status.account) {
-        saveSession({ account: status.account, uuid });
-        window.PondSession?.login?.({ method: "xaman", address: status.account, uuid });
+        saveQr(null);
+        await window.PondSession?.login?.({ method: "xaman", uuid });
         paint(root, health);
         return;
       }
       if (status.cancelled || status.expired) {
+        saveQr(null);
         showError(root, health, status.cancelled ? "Sign request cancelled." : "Sign request expired. Start again.");
         return;
       }
-      pollUntilResolved(root, health, { uuid, next: `https://xumm.app/sign/${uuid}` }, "Finish signing in Xaman");
+      const pending = qrState();
+      pollUntilResolved(
+        root,
+        health,
+        {
+          uuid,
+          next: pending?.next || `https://xumm.app/sign/${uuid}`,
+          qr: pending?.qr || "",
+          expiresAt: pending?.expiresAt || status.expiresAt,
+        },
+        "Finish signing in Xaman",
+      );
     } catch (error) {
       showError(root, health, error.message);
     }
   }
 
   function paint(root, health) {
-    const current = session();
+    const current = pondAccount();
     const compact = isCompact(root);
     setNav(current, health);
     notifyChange();
@@ -374,10 +417,10 @@
 
   async function startSignIn(root, options = {}) {
     if (!root || !isAutostart(root)) return;
-    if (session()?.account) return;
+    if (pondAccount()?.account) return;
     if (!lastHealth) {
       try {
-        lastHealth = await fetchHealth();
+        lastHealth = await fetchSessionStatus();
       } catch {
         return;
       }
@@ -416,22 +459,26 @@
     const roots = mounts();
     let health;
     try {
-      health = await fetchHealth();
+      health = await fetchSessionStatus();
     } catch {
       health = {
         xaman: {
           configured: false,
-          reason: "Connect unavailable until the site process answers /health. Publish on Autoscale with serve.mjs.",
+          reason: "Connect unavailable until Autoscale answers /api/session. Set POND_SESSION_SECRET and the Xaman app keys, then Publish.",
         },
       };
     }
     lastHealth = health;
-    setNav(session(), health);
+    setNav(pondAccount(), health);
     notifyChange();
     roots.forEach((root) => paint(root, health));
   }
 
-  window.PondXaman = { init, session, startSignIn };
+  window.PondXaman = { init, startSignIn, qrState };
+  window.addEventListener("pond:session-change", () => {
+    if (!lastHealth || inflightSignIn || pollTimer) return;
+    mounts().forEach((root) => paint(root, lastHealth));
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
 })();
