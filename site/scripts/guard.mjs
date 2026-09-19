@@ -843,9 +843,21 @@ check(
     !tradeHtml.includes("s.tradingview.com") &&
     tradeJsText.includes('data-chart-range="1m"') &&
     tradeJsText.includes('data-chart-range="1h"') &&
+    tradeJsText.includes('data-chart-range="4h"') &&
     tradeJsText.includes('data-chart-range="1d"') &&
     tradeJsText.includes('"1h": 60 * 60_000') &&
+    tradeJsText.includes('"4h": 4 * 60 * 60_000') &&
     tradeJsText.includes('"1d": 24 * 60 * 60_000') &&
+    tradeJsText.includes('data-chart-style="candles"') &&
+    tradeJsText.includes("data-chart-magnet") &&
+    tradeJsText.includes("data-chart-log") &&
+    tradeJsText.includes("data-chart-grid") &&
+    tradeJsText.includes("data-chart-fit") &&
+    tradeJsText.includes("data-chart-period") &&
+    tradeJsText.includes("data-chart-bar-left") &&
+    tradeJsText.includes("CrosshairMode.Magnet") &&
+    stylesText.includes("trade-chart-tf-groups") &&
+    stylesText.includes("trade-ind-swatch") &&
     !tradeJsText.includes('data-chart-pair="xrp-usd"') &&
     !tradeJsText.includes("print candles") &&
     tradeJsText.includes("data-chart-volume") &&

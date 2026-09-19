@@ -286,17 +286,33 @@ ${ticketPanelMarkup("sell")}
     <section class="trade-mode-view trade-mode-workspace trade-overview-view" data-mode-view="chart" aria-label="Market chart" hidden>
       <section class="trade-overview-chart">
         <div class="trade-chart-market-controls">
-          <div class="trade-overview-controls" data-control-group="overview-range"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="1d">1D</button></div>
+          <div class="trade-chart-tf-groups" data-control-group="overview-range">
+            <div class="trade-overview-controls trade-chart-tf-intraday" role="group" aria-label="Intraday"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button></div>
+            <div class="trade-overview-controls trade-chart-tf-higher" role="group" aria-label="Higher timeframes"><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button></div>
+          </div>
           <div class="trade-chart-tools">
-            <span class="is-active">Candles</span>
+            <button type="button" class="is-active" data-chart-style="candles" aria-pressed="true">Candles</button>
+            <button type="button" data-chart-style="line" aria-pressed="false">Line</button>
             <button type="button" class="is-active" data-chart-volume aria-pressed="true">Volume</button>
           </div>
+          <div class="trade-chart-plot-tools">
+            <button type="button" data-chart-magnet aria-pressed="false">Magnet</button>
+            <button type="button" data-chart-log aria-pressed="false">Log</button>
+            <button type="button" class="is-active" data-chart-grid aria-pressed="true">Grid</button>
+            <button type="button" data-chart-fit>Fit</button>
+          </div>
           <div class="trade-indicator-tools" data-indicator-tools>
-            <button type="button" class="is-active" data-chart-indicator="sma" aria-pressed="true">SMA</button>
-            <button type="button" class="is-active" data-chart-indicator="ema" aria-pressed="true">EMA</button>
-            <button type="button" class="is-active" data-chart-indicator="rsi" aria-pressed="true">RSI</button>
-            <button type="button" class="is-active" data-chart-indicator="macd" aria-pressed="true">MACD</button>
-            <button type="button" class="is-active" data-chart-indicator="bollinger" aria-pressed="true">BB</button>
+            <button type="button" class="is-active" data-chart-indicator="sma" aria-pressed="true"><i class="trade-ind-swatch is-sma"></i>SMA</button>
+            <button type="button" class="is-active" data-chart-indicator="ema" aria-pressed="true"><i class="trade-ind-swatch is-ema"></i>EMA</button>
+            <button type="button" class="is-active" data-chart-indicator="rsi" aria-pressed="true"><i class="trade-ind-swatch is-rsi"></i>RSI</button>
+            <button type="button" class="is-active" data-chart-indicator="macd" aria-pressed="true"><i class="trade-ind-swatch is-macd"></i>MACD</button>
+            <button type="button" class="is-active" data-chart-indicator="bollinger" aria-pressed="true"><i class="trade-ind-swatch is-bb"></i>BB</button>
+            <span class="trade-indicator-periods" role="group" aria-label="Indicator period">
+              <button type="button" data-chart-period="5">5</button>
+              <button type="button" class="is-active" data-chart-period="8">8</button>
+              <button type="button" data-chart-period="14">14</button>
+              <button type="button" data-chart-period="21">21</button>
+            </span>
           </div>
         </div>
         <div class="trade-chart-symbol-bar">
@@ -309,6 +325,8 @@ ${ticketPanelMarkup("sell")}
           <span><b>L</b><strong data-chart-ohlc-low>—</strong></span>
           <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
           <span class="trade-chart-ohlc-change"><strong data-chart-ohlc-change>—</strong></span>
+          <span class="trade-chart-bar-left"><b>Bar</b><strong data-chart-bar-left>—</strong></span>
+          <span class="trade-chart-keys" data-chart-keys>1 5 Q W H 4 D · V S E R M B · L G F · Esc</span>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
@@ -1069,7 +1087,7 @@ ${ticketPanelMarkup("sell")}
       });
     }
 
-    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "1d": 24 * 60 * 60_000 };
+    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "4h": 4 * 60 * 60_000, "1d": 24 * 60 * 60_000 };
 
     function printsToCandles(prints = [], intervalMs) {
       if (!intervalMs || !prints.length) return [];
@@ -1927,10 +1945,10 @@ ${ticketPanelMarkup("sell")}
         "pnd-xrp": "PND / XRP",
         "pnd-usd": "PND / USD",
       };
-      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "1d": 90 };
-      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "1d": 90 };
-      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "1d": "1D" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, layout: null };
+      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90 };
+      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90 };
+      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D" };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -2004,6 +2022,7 @@ ${ticketPanelMarkup("sell")}
        setText("[data-chart-ohlc-low]", "—");
        setText("[data-chart-ohlc-close]", "—");
        setSignedText("[data-chart-ohlc-change]", "—", NaN);
+        setText("[data-chart-bar-left]", "—");
         paintRangeMeter(NaN, NaN, NaN);
         ticketQuotes.last = ticketQuotes.high = ticketQuotes.low = ticketQuotes.vwap = ticketQuotes.spot = NaN;
         syncTicketQuotes();
@@ -2085,6 +2104,19 @@ ${ticketPanelMarkup("sell")}
         setText("[data-chart-print-age]", `${clock} · ${age}`);
         setText("[data-chart-stat-print]", age);
       };
+      const updateBarLeft = () => {
+        const interval = CANDLE_MS[chartState.range];
+        const last = chartState.data?.candles?.[chartState.data.candles.length - 1];
+        if (!interval || !last?.time) {
+          setText("[data-chart-bar-left]", "—");
+          return;
+        }
+        const remain = Math.max(0, interval - (Date.now() - last.time));
+        const sec = Math.ceil(remain / 1000);
+        if (sec >= 3600) setText("[data-chart-bar-left]", `${Math.floor(sec / 3600)}h ${Math.floor((sec % 3600) / 60)}m`);
+        else if (sec >= 60) setText("[data-chart-bar-left]", `${Math.floor(sec / 60)}m ${sec % 60}s`);
+        else setText("[data-chart-bar-left]", `${sec}s`);
+      };
       const seriesPoints = (times, values) =>
         values
           .map((value, index) => (value == null || !Number.isFinite(value) ? null : { time: times[index], value }))
@@ -2113,11 +2145,7 @@ ${ticketPanelMarkup("sell")}
       };
 
       rangeButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          chartState.range = button.dataset.chartRange || "1m";
-          setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
-          paintLedgerChart();
-        });
+        button.addEventListener("click", () => setRange(button.dataset.chartRange || "1m"));
       });
 
       volumeToggle?.addEventListener("click", () => {
@@ -2127,6 +2155,84 @@ ${ticketPanelMarkup("sell")}
         const legendVolume = $("[data-chart-legend-volume]");
         if (legendVolume) legendVolume.hidden = !chartState.volume;
         if (chartState.data) renderChart();
+      });
+
+      const applyPlotChrome = () => {
+        const tv = chartState.tv;
+        const LC = window.LightweightCharts;
+        if (!tv || !LC) return;
+        tv.chart.applyOptions({
+          crosshair: { mode: chartState.magnet ? LC.CrosshairMode.Magnet : LC.CrosshairMode.Normal },
+          grid: {
+            vertLines: { color: "#1d2024", visible: chartState.grid !== false },
+            horzLines: { color: "#25292e", visible: chartState.grid !== false },
+          },
+        });
+        const logMode = chartState.log && LC.PriceScaleMode ? LC.PriceScaleMode.Logarithmic : LC.PriceScaleMode?.Normal;
+        if (logMode != null) tv.candles.priceScale().applyOptions({ mode: logMode });
+        const showLine = chartState.style === "line";
+        tv.candles.applyOptions({ visible: !showLine });
+        tv.closeLine?.applyOptions({ visible: showLine });
+      };
+
+      const setRange = (range) => {
+        if (!rangeLabels[range]) return;
+        chartState.range = range;
+        rangeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.chartRange === range));
+        setText("[data-chart-timeframe]", rangeLabels[range]);
+        paintLedgerChart();
+      };
+
+      $$("[data-chart-style]").forEach((button) => {
+        button.addEventListener("click", () => {
+          chartState.style = button.dataset.chartStyle || "candles";
+          $$("[data-chart-style]").forEach((item) => {
+            const active = item === button;
+            item.classList.toggle("is-active", active);
+            item.setAttribute("aria-pressed", String(active));
+          });
+          applyPlotChrome();
+          if (chartState.data) renderChart();
+        });
+      });
+      const magnetToggle = $("[data-chart-magnet]");
+      magnetToggle?.addEventListener("click", () => {
+        chartState.magnet = !chartState.magnet;
+        magnetToggle.classList.toggle("is-active", chartState.magnet);
+        magnetToggle.setAttribute("aria-pressed", String(chartState.magnet));
+        applyPlotChrome();
+      });
+      const logToggle = $("[data-chart-log]");
+      logToggle?.addEventListener("click", () => {
+        chartState.log = !chartState.log;
+        logToggle.classList.toggle("is-active", chartState.log);
+        logToggle.setAttribute("aria-pressed", String(chartState.log));
+        applyPlotChrome();
+        if (chartState.data) renderChart();
+      });
+      const gridToggle = $("[data-chart-grid]");
+      gridToggle?.addEventListener("click", () => {
+        chartState.grid = !chartState.grid;
+        gridToggle.classList.toggle("is-active", chartState.grid);
+        gridToggle.setAttribute("aria-pressed", String(chartState.grid));
+        applyPlotChrome();
+      });
+      $("[data-chart-fit]")?.addEventListener("click", () => {
+        if (!chartState.tv || !chartState.data) return;
+        const rows = (chartState.data.candles || chartState.data.points || []).map((point) => ({
+          ...point,
+          close: point.close ?? point.value,
+          high: point.high ?? point.value,
+          low: point.low ?? point.value,
+        }));
+        if (rows.length) fitTvViewport(chartState.tv, rows, chartState.data.livePrice ?? rows[rows.length - 1].close);
+      });
+      $$("[data-chart-period]").forEach((button) => {
+        button.addEventListener("click", () => {
+          chartState.period = Number(button.dataset.chartPeriod) || 8;
+          $$("[data-chart-period]").forEach((item) => item.classList.toggle("is-active", item === button));
+          if (chartState.data) renderChart();
+        });
       });
 
       const indicatorOn = (name) => chartState.indicators?.[name] !== false;
@@ -2199,8 +2305,12 @@ ${ticketPanelMarkup("sell")}
         tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         const scale = tv.candles.priceScale();
-        scale.applyOptions({ autoScale: false, scaleMargins: { top: 0.08, bottom: 0.06 } });
-        if (scale.setVisibleRange) scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
+        if (chartState.log) {
+          scale.applyOptions({ autoScale: true, scaleMargins: { top: 0.08, bottom: 0.06 } });
+        } else {
+          scale.applyOptions({ autoScale: false, scaleMargins: { top: 0.08, bottom: 0.06 } });
+          if (scale.setVisibleRange) scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
+        }
       }
 
       function renderChart() {
@@ -2272,6 +2382,8 @@ ${ticketPanelMarkup("sell")}
             lastValueVisible: false,
           });
           const overlay = chart.addSeries(LC.LineSeries, lineOpts("#f7c66a"));
+          const closeLine = chart.addSeries(LC.LineSeries, { ...lineOpts("#4a90d9", 2), lastValueVisible: true, priceLineVisible: true });
+          closeLine.applyOptions({ visible: false });
           const emaLine = chart.addSeries(LC.LineSeries, lineOpts("#ff8a4c"));
           const bandHigh = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
           const bandLow = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
@@ -2315,8 +2427,9 @@ ${ticketPanelMarkup("sell")}
             setText("[data-chart-ohlc-close]", formatAxis(candle.close));
             if (hud) hud.hidden = false;
           });
-          chartState.tv = { chart, candles, volume, overlay, emaLine, bandHigh, bandLow, volumeSma, rsi, osc, macdLine, macdSignal, macdHist, highLine, lowLine };
+          chartState.tv = { chart, candles, volume, overlay, closeLine, emaLine, bandHigh, bandLow, volumeSma, rsi, osc, macdLine, macdSignal, macdHist, highLine, lowLine };
           sizeTvPanes();
+          applyPlotChrome();
           const refit = () => {
             if (!chartState.tv || !chartState.data) return;
             const rows = (chartState.data.candles || chartState.data.points || []).map((point) => ({
@@ -2356,7 +2469,10 @@ ${ticketPanelMarkup("sell")}
         if (!rows.length) return;
         const values = rows.map((row) => row.close);
         const times = rows.map((row) => row.time);
-        const maPeriod = Math.min(8, Math.max(5, Math.floor(values.length / 5) || 5));
+        const maPeriod = Math.min(Math.max(chartState.period || 8, 2), Math.max(2, values.length));
+        tv.closeLine?.setData(rows.map((row) => ({ time: row.time, value: row.close })));
+        tv.closeLine?.applyOptions({ visible: chartState.style === "line" });
+        tv.candles.applyOptions({ visible: chartState.style !== "line" });
         const sma = movingAverage(values, maPeriod);
         const ema = exponentialAverage(values, maPeriod);
         const mean = movingAverage(values, maPeriod);
@@ -2410,9 +2526,11 @@ ${ticketPanelMarkup("sell")}
         tv.lowLine?.applyOptions({ price: windowLow });
         tv.candles.applyOptions({
           priceLineColor: lastUp ? "#26a69a" : "#ef5350",
-          lastValueVisible: true,
-          priceLineVisible: true,
+          lastValueVisible: chartState.style !== "line",
+          priceLineVisible: chartState.style !== "line",
+          visible: chartState.style !== "line",
         });
+        applyPlotChrome();
         sizeTvPanes();
         syncIndicatorLegend();
         liveChart.hidden = false;
@@ -2470,7 +2588,7 @@ ${ticketPanelMarkup("sell")}
           );
           return;
         }
-        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 14 * 24 * 60 * 60 * 1000, "1d": 90 * 24 * 60 * 60 * 1000 };
+        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 14 * 24 * 60 * 60 * 1000, "4h": 30 * 24 * 60 * 60 * 1000, "1d": 90 * 24 * 60 * 60 * 1000 };
         const windowMs = windows[chartState.range];
         const cutoff = windowMs ? Date.now() - windowMs : 0;
         let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);
@@ -2546,6 +2664,7 @@ ${ticketPanelMarkup("sell")}
             : `${used.length} trade${used.length === 1 ? "" : "s"}`;
         }
         prefillDexPrices(livePrice);
+        updateBarLeft();
         renderChart();
       }
 
@@ -2618,7 +2737,36 @@ ${ticketPanelMarkup("sell")}
       const load = () => {
         paintLedgerChart();
       };
-      window.setInterval(updatePrintAge, 4000);
+      window.setInterval(() => {
+        updatePrintAge();
+        updateBarLeft();
+      }, 1000);
+      const toggleIndicator = (name) => {
+        [...indicatorButtons].find((item) => item.dataset.chartIndicator === name)?.click();
+      };
+      window.addEventListener("keydown", (event) => {
+        if (root.dataset.mode !== "chart") return;
+        if (event.target.closest("input, textarea, select, [contenteditable]")) return;
+        const key = event.key.toLowerCase();
+        const ranges = { 1: "1m", 5: "5m", q: "15m", w: "30m", h: "1h", 4: "4h", d: "1d" };
+        if (ranges[key]) {
+          event.preventDefault();
+          setRange(ranges[key]);
+          return;
+        }
+        if (key === "v") {
+          event.preventDefault();
+          volumeToggle?.click();
+        } else if (key === "s") toggleIndicator("sma");
+        else if (key === "e") toggleIndicator("ema");
+        else if (key === "r") toggleIndicator("rsi");
+        else if (key === "m") toggleIndicator("macd");
+        else if (key === "b") toggleIndicator("bollinger");
+        else if (key === "l") $("[data-chart-log]")?.click();
+        else if (key === "g") $("[data-chart-grid]")?.click();
+        else if (key === "f") $("[data-chart-fit]")?.click();
+        else if (key === "escape") hideChartHud();
+      });
       return { load, paintLedger: paintLedgerChart };
     }
 
