@@ -9,6 +9,7 @@ import { SESSION_COOKIE, handleSession, readSession, signSession } from "./sessi
 import {
   PAYLOAD_COOKIE,
   SIGNIN_EXPIRE_MIN,
+  DEFAULT_AMM_PND,
   allowedOrigin,
   handleApi,
   readBoundPayload,
@@ -20,6 +21,8 @@ process.env.XUMM_API_SECRET ??= "test-xumm-secret";
 
 const SIGNIN_UUID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const TRUST_UUID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+const AMM_UUID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const TREASURY = "rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b";
 
 function withStore(run) {
   const dir = mkdtempSync(join(tmpdir(), "pond-xaman-"));
@@ -99,7 +102,12 @@ function installXummMock({ signed = true, account = ADMIN_ADDRESS, txType = "Sig
     if (path.endsWith("/payload") && opts.method === "POST") {
       const body = JSON.parse(opts.body);
       created.push(body);
-      const uuid = body.txjson.TransactionType === "TrustSet" ? TRUST_UUID : SIGNIN_UUID;
+      const uuid =
+        body.txjson.TransactionType === "TrustSet"
+          ? TRUST_UUID
+          : body.txjson.TransactionType === "AMMCreate"
+            ? AMM_UUID
+            : SIGNIN_UUID;
       return {
         ok: true,
         status: 200,
@@ -211,6 +219,78 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
 
       const open = await xamanApi(`/api/xaman/payload/${SIGNIN_UUID}`);
       assert.equal(open.res.statusCode, 403);
+
+      const guestAmm = await xamanApi("/api/xaman/ammcreate", { method: "POST", body: { returnTo: "/trade/" } });
+      assert.equal(guestAmm.res.statusCode, 401);
+
+      const wcSession = signSession({
+        address: ADMIN_ADDRESS,
+        method: "walletconnect",
+        t: now,
+        active: now,
+      });
+      const wcAmm = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { returnTo: "/trade/" },
+        cookie: wcSession,
+      });
+      assert.equal(wcAmm.res.statusCode, 401);
+
+      const mainnetAmm = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { network: "mainnet", pnd: DEFAULT_AMM_PND, xrp: "5000" },
+        cookie: sessionCookie,
+      });
+      assert.equal(mainnetAmm.res.statusCode, 400);
+      assert.equal(mainnetAmm.data.error, "testnet_only");
+
+      const treasurySession = signSession({
+        address: TREASURY,
+        method: "xaman",
+        t: now,
+        active: now,
+      });
+      const amm = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { pnd: "500000000000", xrp: "5000", tradingFee: 500, returnTo: "/trade/" },
+        cookie: treasurySession,
+      });
+      assert.equal(amm.res.statusCode, 200);
+      assert.equal(amm.data.submit, false);
+      assert.equal(amm.data.network, "testnet");
+      assert.equal(amm.data.uuid, AMM_UUID);
+      const ammCookies = cookieMap(amm.res.headers["Set-Cookie"]);
+      const ammBound = readBoundPayload({
+        headers: { cookie: `${PAYLOAD_COOKIE}=${encodeURIComponent(ammCookies[PAYLOAD_COOKIE])}` },
+      });
+      assert.equal(ammBound.uuid, AMM_UUID);
+      assert.equal(ammBound.kind, "ammcreate");
+      const ammBody = xumm.created.find((item) => item.txjson.TransactionType === "AMMCreate");
+      assert.equal(ammBody.options.submit, false);
+      assert.equal(ammBody.options.force_network, "TESTNET");
+      assert.notEqual(ammBody.options.force_network, "MAINNET");
+      assert.equal(ammBody.txjson.Account, TREASURY);
+      assert.equal(ammBody.txjson.Amount.currency, "PND");
+      assert.equal(ammBody.txjson.Amount.value, "500000000000");
+      assert.equal(ammBody.txjson.Amount2, "5000000000");
+      assert.equal(ammBody.txjson.TradingFee, 500);
+      assert.equal(ammBody.txjson.TransactionType, "AMMCreate");
+      assert.ok(!JSON.stringify(ammBody).includes("AMMDeposit"));
+      assert.ok(!JSON.stringify(ammBody).includes("mnemonic"));
+      assert.ok(!JSON.stringify(ammBody).includes("family seed"));
+
+      const edited = await xamanApi("/api/xaman/ammcreate", {
+        method: "POST",
+        body: { pnd: "100000000000", xrp: "200", tradingFee: 250 },
+        cookie: sessionCookie,
+      });
+      assert.equal(edited.res.statusCode, 200);
+      const editedBody = xumm.created.filter((item) => item.txjson.TransactionType === "AMMCreate").at(-1);
+      assert.equal(editedBody.txjson.Account, ADMIN_ADDRESS);
+      assert.equal(editedBody.txjson.Amount.value, "100000000000");
+      assert.equal(editedBody.txjson.Amount2, "200000000");
+      assert.equal(editedBody.txjson.TradingFee, 250);
+      assert.equal(editedBody.options.force_network, "TESTNET");
     } finally {
       xumm.restore();
     }
