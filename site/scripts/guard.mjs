@@ -669,10 +669,15 @@ check(
     tradeJsText.includes("gateway_balances") &&
     tradeJsText.includes("amm_info") &&
     tradeJsText.includes("book_offers") &&
-    tradeJsText.includes("/api/xaman/ammcreate") &&
+    tradeJsText.includes("/api/xaman/ammdeposit") &&
     tradeJsText.includes("AMMCreate") &&
     tradeJsText.includes("tesSUCCESS") &&
-    !tradeJsText.includes("AMMDeposit") &&
+    tradeJsText.includes("AMMDeposit") &&
+    tradeJsText.includes("/api/xaman/ammdeposit") &&
+    tradeJsText.includes("data-amm-pnd-range") &&
+    tradeJsText.includes("Even-sided") &&
+    tradeJsText.includes("tfTwoAsset") &&
+    tradeJsText.includes("tfSingleAsset") &&
     !tradeJsText.includes("mnemonic"),
 );
 check(
@@ -771,7 +776,10 @@ check(
     xamanSrc.includes("kind: \"ammcreate\"") &&
     /createAmmCreate[\s\S]*submit: true/.test(xamanSrc) &&
     !/createAmmCreate[\s\S]*submit: false/.test(xamanSrc.split("export async function signedXamanAccount")[0]) &&
-    !xamanSrc.includes("AMMDeposit") &&
+    xamanSrc.includes('TransactionType: "AMMDeposit"') &&
+    /createAmmDeposit[\s\S]*submit: true/.test(xamanSrc) &&
+    !/createAmmDeposit[\s\S]*TradingFee/.test(xamanSrc.split("export async function signedXamanAccount")[0]) &&
+    /createAmmDeposit[\s\S]*force_network: "TESTNET"/.test(xamanSrc) &&
     !xamanSrc.includes("mnemonic") &&
     !xamanSrc.includes("family seed") &&
     /createAmmCreate[\s\S]*force_network: "TESTNET"/.test(xamanSrc) &&

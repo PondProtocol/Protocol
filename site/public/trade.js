@@ -142,9 +142,9 @@
               </div>
               <div data-tab-panels="amm-liquidity">
                 <div class="trade-panel is-active" data-panel="add">
-                  <div class="trade-amm-create" data-amm-create>
-                    <p class="trade-amm-create-kicker">Testnet AMMCreate</p>
-                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate. If a PND/XRP pool already exists, another create for this pair will not succeed. This server never signs. Xaman submits after you sign.</p>
+                  <div class="trade-amm-create" data-amm-create data-amm-deposit>
+                    <p class="trade-amm-create-kicker">Testnet AMMDeposit</p>
+                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMDeposit into the live PND/XRP pool — not a second AMMCreate. This server never signs. Xaman submits after you sign.</p>
                     <div class="trade-amm-pool-stats" data-amm-pool-stats>
                       <div class="trade-amm-stat"><span>Pool</span><strong data-amm-stat-pool>No AMM pool</strong><em data-amm-stat-pool-note>amm_info</em></div>
                       <div class="trade-amm-stat"><span>DEX</span><strong data-amm-stat-dex>—</strong><em>book_offers</em></div>
@@ -153,13 +153,39 @@
                       <div class="trade-amm-stat"><span>Price</span><strong data-amm-stat-price>—</strong><em data-amm-stat-price-note>No AMM or DEX book</em></div>
                       <div class="trade-amm-stat"><span>Ledger</span><strong data-amm-stat-ledger>—</strong><em>validated</em></div>
                     </div>
-                    <p class="trade-amm-create-balances">Treasury <code data-amm-treasury>rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b</code></p>
-                    <p class="trade-amm-create-session" data-amm-session>Sign in with Xaman as the treasury, then send.</p>
-                    <label class="trade-action-field trade-input-field"><span>PND amount</span><div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="500000000000" aria-label="PND amount for AMMCreate"><b>PND</b></div></label>
-                    <label class="trade-action-field trade-input-field"><span>XRP amount</span><div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="5000" aria-label="XRP amount for AMMCreate"><b>XRP</b></div></label>
-                    <label class="trade-action-field trade-input-field"><span>TradingFee</span><div><input data-amm-fee inputmode="numeric" autocomplete="off" value="500" aria-label="AMMCreate TradingFee"><b>0.5%</b></div><small>Units of 1/100,000. 500 = 0.5%. Max 1000.</small></label>
-                    <p class="trade-order-status" data-amm-create-status>Testnet only. Mainnet AMMCreate is disabled.</p>
-                    <button type="button" class="trade-connect-button" data-amm-send>Send AMMCreate to Xaman</button>
+                    <p class="trade-amm-create-balances">Pool <code data-amm-pool-account>—</code></p>
+                    <p class="trade-amm-create-session" data-amm-session>Sign in with Xaman to deposit from that wallet.</p>
+                    <div class="trade-amm-wallet" data-amm-wallet>
+                      <div><span>Your PND</span><strong data-amm-wallet-pnd>—</strong><em>signed-in line</em></div>
+                      <div><span>Your XRP</span><strong data-amm-wallet-xrp>—</strong><em>account_info</em></div>
+                    </div>
+                    <div class="trade-amm-sides" role="group" aria-label="Deposit shape">
+                      <button type="button" class="is-active" data-amm-side="two">Even-sided</button>
+                      <button type="button" data-amm-side="single">Single-sided</button>
+                    </div>
+                    <p class="trade-amm-side-note" data-amm-side-note>tfTwoAsset · both assets</p>
+                    <div class="trade-amm-single" data-amm-single hidden>
+                      <button type="button" class="is-active" data-amm-single-asset="PND">PND</button>
+                      <button type="button" data-amm-single-asset="XRP">XRP</button>
+                    </div>
+                    <label class="trade-amm-slider" data-amm-pnd-row>
+                      <span>PND amount</span>
+                      <input type="range" data-amm-pnd-range min="0" max="0" step="any" value="0" aria-label="PND amount slider">
+                      <div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="0" aria-label="PND amount for AMMDeposit"><b>PND</b></div>
+                    </label>
+                    <label class="trade-amm-slider" data-amm-xrp-row>
+                      <span>XRP amount</span>
+                      <input type="range" data-amm-xrp-range min="0" max="0" step="any" value="0" aria-label="XRP amount slider">
+                      <div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="0" aria-label="XRP amount for AMMDeposit"><b>XRP</b></div>
+                    </label>
+                    <label class="trade-amm-slider">
+                      <span>Trading fee</span>
+                      <input type="range" data-amm-fee-range min="0" max="1000" step="1" value="0" aria-label="Trading fee slider">
+                      <div><input data-amm-fee inputmode="numeric" autocomplete="off" value="0" aria-label="Trading fee units"><b data-amm-fee-label>0%</b></div>
+                      <small>Starts at 0. Pool fee is live on the ledger. AMMDeposit does not send TradingFee.</small>
+                    </label>
+                    <p class="trade-order-status" data-amm-create-status>Testnet only. Mainnet AMMDeposit is disabled.</p>
+                    <button type="button" class="trade-connect-button" data-amm-send>Send AMMDeposit to Xaman</button>
                     <div data-amm-xaman></div>
                   </div>
                 </div>
@@ -512,6 +538,9 @@
         treasuryPnd: null,
         treasuryXrpDrops: null,
         treasuryAccount: null,
+        walletPnd: null,
+        walletXrpDrops: null,
+        walletAccount: "",
       },
     };
     let refreshController = null;
@@ -1030,21 +1059,22 @@
       const xrpDrops = state.verification.treasuryXrpDrops;
       setText("[data-amm-live-pnd]", pnd != null ? `${formatIou(pnd)} PND` : "Reading…");
       setText("[data-amm-live-xrp]", xrpDrops != null ? `${formatDrops(xrpDrops)} XRP` : "Reading…");
-      if (treasury) setText("[data-amm-treasury]", treasury);
       const session = window.PondSession?.current?.();
       const signed = session?.method === "xaman" ? session.address || "" : "";
       const sessionEl = $("[data-amm-session]");
       if (sessionEl) {
         if (!onTestnet) {
-          sessionEl.textContent = "AMMCreate is Testnet only. Switch back to Testnet.";
+          sessionEl.textContent = "AMMDeposit is Testnet only. Switch back to Testnet.";
         } else if (!signed) {
-          sessionEl.textContent = "Sign in with Xaman as the treasury, then send.";
-        } else if (treasury && signed === treasury) {
-          sessionEl.textContent = `Signed in as treasury ${shortAccount(signed)}. Account on AMMCreate will be this address.`;
+          sessionEl.textContent = "Sign in with Xaman to deposit from that wallet.";
         } else {
-          sessionEl.textContent = `Signed in as ${shortAccount(signed)}. AMMCreate.Account will be this address, not treasury, unless you Sign in as ${shortAccount(treasury)}.`;
+          sessionEl.textContent = `Signed in as ${shortAccount(signed)}. AMMDeposit.Account will be this address.`;
         }
       }
+      const walletPnd = state.verification.walletPnd;
+      const walletXrp = state.verification.walletXrpDrops;
+      setText("[data-amm-wallet-pnd]", !signed ? "Sign in to read" : walletPnd != null ? `${formatIou(walletPnd)} PND` : "Reading…");
+      setText("[data-amm-wallet-xrp]", !signed ? "Sign in to read" : walletXrp != null ? `${formatDrops(walletXrp)} XRP` : "Reading…");
       const send = $("[data-amm-send]");
       if (send) send.disabled = !onTestnet;
       const { ammInfo, offers = [], market, ledger } = state.verification;
@@ -1056,10 +1086,31 @@
           ? `${formatAssetAmount(reserves.amount)} · ${formatAssetAmount(reserves.amount2)}`
           : "amm_info · no pool yet",
       );
+      setText("[data-amm-pool-account]", reserves?.account || "—");
       setText("[data-amm-stat-dex]", String(offers.length));
       setText("[data-amm-stat-price]", market ? getMarketPrice(state.verification) : "—");
       setText("[data-amm-stat-price-note]", market ? "Validated book or AMM" : "No AMM or DEX book");
       setText("[data-amm-stat-ledger]", ledger?.seq ? String(ledger.seq) : "—");
+      syncAmmSliders();
+    }
+
+    function syncAmmSliders() {
+      const pndRange = $("[data-amm-pnd-range]");
+      const xrpRange = $("[data-amm-xrp-range]");
+      const pndInput = $("[data-amm-pnd]");
+      const xrpInput = $("[data-amm-xrp]");
+      const pndMax = Number(state.verification.walletPnd);
+      const xrpMax = state.verification.walletXrpDrops != null ? Number(formatDrops(state.verification.walletXrpDrops)) : 0;
+      if (pndRange) pndRange.max = Number.isFinite(pndMax) && pndMax > 0 ? String(pndMax) : "0";
+      if (xrpRange) xrpRange.max = Number.isFinite(xrpMax) && xrpMax > 0 ? String(xrpMax) : "0";
+      const cap = (input, range, max) => {
+        if (!input) return;
+        const n = Number(input.value);
+        if (Number.isFinite(n) && Number.isFinite(max) && max >= 0 && n > max) input.value = String(max);
+        if (range) range.value = input.value || "0";
+      };
+      cap(pndInput, pndRange, Number(pndRange?.max || 0));
+      cap(xrpInput, xrpRange, Number(xrpRange?.max || 0));
     }
 
     function setupAmmCreate() {
@@ -1068,6 +1119,8 @@
       const status = $("[data-amm-create-status]");
       if (!send || !mount) return;
       let pollTimer = 0;
+      let side = "two";
+      let singleAsset = "PND";
       const esc = (value) =>
         String(value)
           .replace(/&/g, "&amp;")
@@ -1083,15 +1136,83 @@
         if (pollTimer) window.clearInterval(pollTimer);
         pollTimer = 0;
       };
+      const paintSide = () => {
+        $$("[data-amm-side]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.ammSide === side);
+        });
+        const single = $("[data-amm-single]");
+        if (single) single.hidden = side !== "single";
+        $$("[data-amm-single-asset]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.ammSingleAsset === singleAsset);
+        });
+        const note = $("[data-amm-side-note]");
+        if (note) {
+          note.textContent = side === "two"
+            ? "tfTwoAsset · both assets"
+            : `tfSingleAsset · ${singleAsset} only`;
+        }
+        const pndRow = $("[data-amm-pnd-row]");
+        const xrpRow = $("[data-amm-xrp-row]");
+        const pndOn = side === "two" || singleAsset === "PND";
+        const xrpOn = side === "two" || singleAsset === "XRP";
+        if (pndRow) pndRow.classList.toggle("is-off", !pndOn);
+        if (xrpRow) xrpRow.classList.toggle("is-off", !xrpOn);
+        ["data-amm-pnd", "data-amm-pnd-range"].forEach((key) => {
+          const node = $(`[${key}]`);
+          if (node) node.disabled = !pndOn;
+        });
+        ["data-amm-xrp", "data-amm-xrp-range"].forEach((key) => {
+          const node = $(`[${key}]`);
+          if (node) node.disabled = !xrpOn;
+        });
+        if (!pndOn) {
+          if ($("[data-amm-pnd]")) $("[data-amm-pnd]").value = "0";
+          if ($("[data-amm-pnd-range]")) $("[data-amm-pnd-range]").value = "0";
+        }
+        if (!xrpOn) {
+          if ($("[data-amm-xrp]")) $("[data-amm-xrp]").value = "0";
+          if ($("[data-amm-xrp-range]")) $("[data-amm-xrp-range]").value = "0";
+        }
+      };
+      const bindSlider = (rangeSel, inputSel, labelSel, format) => {
+        const range = $(rangeSel);
+        const input = $(inputSel);
+        if (!range || !input) return;
+        const paint = (fromRange) => {
+          if (fromRange) input.value = range.value;
+          else range.value = input.value || "0";
+          if (labelSel) setText(labelSel, format(input.value));
+        };
+        range.addEventListener("input", () => paint(true));
+        input.addEventListener("input", () => paint(false));
+      };
+      bindSlider("[data-amm-pnd-range]", "[data-amm-pnd]");
+      bindSlider("[data-amm-xrp-range]", "[data-amm-xrp]");
+      bindSlider("[data-amm-fee-range]", "[data-amm-fee]", "[data-amm-fee-label]", (value) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? `${(n / 1000).toFixed(n % 10 ? 3 : 1)}%` : "0%";
+      });
+      $$("[data-amm-side]").forEach((button) => {
+        button.addEventListener("click", () => {
+          side = button.dataset.ammSide === "single" ? "single" : "two";
+          paintSide();
+        });
+      });
+      $$("[data-amm-single-asset]").forEach((button) => {
+        button.addEventListener("click", () => {
+          singleAsset = button.dataset.ammSingleAsset === "XRP" ? "XRP" : "PND";
+          paintSide();
+        });
+      });
       const paintPayload = (payload) => {
         const form = mount.closest(".trade-amm-create");
         if (form) form.dataset.ammWait = "1";
         mount.innerHTML = `
           <div class="session-xaman-panel" data-amm-wait>
-            <p class="session-xaman-heading">Sign Testnet AMMCreate in Xaman</p>
+            <p class="session-xaman-heading">Sign Testnet AMMDeposit in Xaman</p>
             ${
               payload.qr
-                ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="148" height="148" alt="Xaman official AMMCreate QR">`
+                ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="148" height="148" alt="Xaman official AMMDeposit QR">`
                 : `<p class="session-xaman-pending">Preparing official Xaman payload…</p>`
             }
             <p class="session-xaman-actions">
@@ -1107,7 +1228,7 @@
         pollTimer = window.setInterval(async () => {
           if (Date.now() > expiresAt) {
             stopPoll();
-            setAmmStatus("AMMCreate request expired. Start again.", "error");
+            setAmmStatus("AMMDeposit request expired. Start again.", "error");
             return;
           }
           try {
@@ -1136,56 +1257,62 @@
             }
             if (data.cancelled || data.expired) {
               stopPoll();
-              setAmmStatus(data.cancelled ? "AMMCreate cancelled in Xaman." : "AMMCreate expired.", "error");
+              setAmmStatus(data.cancelled ? "AMMDeposit cancelled in Xaman." : "AMMDeposit expired.", "error");
             }
           } catch {
             /* keep QR; next tick retries */
           }
         }, 2500);
       };
-      ["data-amm-pnd", "data-amm-xrp", "data-amm-fee"].forEach((key) => {
-        $(`[${key}]`)?.addEventListener("input", paintAmmCreateBalances);
-      });
       send.addEventListener("click", async () => {
         if (state.network !== "testnet") {
-          setAmmStatus("AMMCreate is Testnet only. No mainnet AMMCreate.", "error");
+          setAmmStatus("AMMDeposit is Testnet only. No mainnet AMMDeposit.", "error");
           return;
         }
         if (xamanAccount() === "") {
-          setAmmStatus("Sign in with official Xaman first. WalletConnect cannot send AMMCreate.", "error");
+          setAmmStatus("Sign in with official Xaman first. WalletConnect cannot send AMMDeposit.", "error");
+          return;
+        }
+        if (!state.verification.amm) {
+          setAmmStatus("No PND/XRP pool to deposit into. This Add form does not AMMCreate.", "error");
           return;
         }
         send.disabled = true;
-        setAmmStatus("Creating official Xaman AMMCreate payload…", "loading");
+        setAmmStatus("Creating official Xaman AMMDeposit payload…", "loading");
         try {
-          const response = await fetch("/api/xaman/ammcreate", {
+          const response = await fetch("/api/xaman/ammdeposit", {
             method: "POST",
             headers: { Accept: "application/json", "Content-Type": "application/json" },
             credentials: "same-origin",
             body: JSON.stringify({
               network: "testnet",
               returnTo: "/trade/",
-              pnd: $("[data-amm-pnd]")?.value || "500000000000",
-              xrp: $("[data-amm-xrp]")?.value || "5000",
-              tradingFee: Number($("[data-amm-fee]")?.value || 500),
+              side,
+              asset: singleAsset,
+              pnd: $("[data-amm-pnd]")?.value || "0",
+              xrp: $("[data-amm-xrp]")?.value || "0",
             }),
           });
           const data = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(data.message || "Xaman did not create AMMCreate.");
+          if (!response.ok) throw new Error(data.message || "Xaman did not create AMMDeposit.");
           paintPayload(data);
-          setAmmStatus("Scan the QR or Open in Xaman. Unsigned AMMCreate. Xaman submits after you sign.", "ready");
+          setAmmStatus("Scan the QR or Open in Xaman. Unsigned AMMDeposit. Xaman submits after you sign.", "ready");
           pollPayload(data);
         } catch (error) {
           mount.innerHTML = "";
           mount.closest(".trade-amm-create")?.removeAttribute("data-amm-wait");
-          setAmmStatus(error.message || "Could not start AMMCreate.", "error");
+          setAmmStatus(error.message || "Could not start AMMDeposit.", "error");
         } finally {
           send.disabled = state.network !== "testnet";
         }
       });
       window.addEventListener("pond:session-change", () => {
-        if (document.body.contains(root)) paintAmmCreateBalances();
+        if (document.body.contains(root)) {
+          paintAmmCreateBalances();
+          refresh();
+        }
       });
+      paintSide();
       paintAmmCreateBalances();
     }
 
@@ -1699,6 +1826,27 @@
         poolTxs = history?.result?.transactions || [];
         poolTxComplete = !history?.result?.marker;
       }
+      let walletPnd = null;
+      let walletXrpDrops = null;
+      const walletAccount = xamanAccount();
+      if (walletAccount) {
+        const [walletInfo, walletLines] = await Promise.all([
+          wsRpc(endpoint, "account_info", {
+            account: walletAccount,
+            ledger_index: "validated",
+          }, signal).catch(() => null),
+          issuer
+            ? wsRpc(endpoint, "account_lines", {
+                account: walletAccount,
+                peer: issuer,
+                ledger_index: "validated",
+              }, signal).catch(() => null)
+            : Promise.resolve(null),
+        ]);
+        walletXrpDrops = walletInfo?.result?.account_data?.Balance ?? null;
+        const walletLine = (walletLines?.result?.lines || []).find((line) => line.currency === "PND");
+        walletPnd = walletLine?.balance ?? (walletInfo?.result?.account_data ? "0" : null);
+      }
       return {
         issuer: Boolean(account),
         issued,
@@ -1716,6 +1864,9 @@
         treasuryPnd,
         treasuryXrpDrops,
         treasuryAccount: treasuryLinesResponse?.result?.account || null,
+        walletPnd,
+        walletXrpDrops,
+        walletAccount,
       };
     }
 
