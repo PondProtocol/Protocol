@@ -611,7 +611,7 @@ function heroHtml() {
   <div class="hero-inner">
     <div class="hero-heading">
       <p class="hero-kicker">Pond</p>
-      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>The Pond</h1>
+      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>the Pond</h1>
     </div>
     <p class="hero-lede"><strong>Testnet phase.</strong> 100B $PND is issued to the Testnet treasury.
     Faucet XRP is worthless. Mainnet has not issued $PND.

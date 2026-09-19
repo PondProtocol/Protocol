@@ -3665,6 +3665,7 @@ code.addr {
   font-weight: 720;
   line-height: 0.98;
   letter-spacing: -0.045em;
+  text-transform: none;
   color: var(--text);
   text-shadow: 0 1px 16px rgb(21 27 33 / 0.9);
 }
