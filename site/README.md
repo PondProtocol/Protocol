@@ -4,7 +4,7 @@ Static site that aggregates the documentation from `protocol`, `pnd` and `rpnd`,
 XLS-26 metadata file at `/.well-known/xrp-ledger.toml`.
 
 The **website host** is `pond.greenhead.io` (Replit Autoscale, custom domain). As of 2026-09-16
-the issuer's on-ledger `Domain` is that same host. Live flags belong on `/wallets/`, not in
+the issuer's on-ledger `Domain` is that same host. Live flags belong on `/links/`, not in
 `xrp-ledger.toml` comments. See [`docs/hosting-decision.md`](../docs/hosting-decision.md) for
 the CORS evidence and the Replit Git Pull / Push / Sync and Republish clicks.
 
@@ -42,10 +42,9 @@ curl -sS -I -H 'Origin: https://xrplmeta.org' \
 Official Xaman / Xumm **payload SignIn** lives in `serve.mjs` and is offered
 from Trade's **Connect wallet** control (WalletConnect or Xaman). The frontend
 never receives the API secret. There is no airdrop claim, no DEX trade, and no
-seed field. The top bar is Start here · $PND · $rPND · Protocol, then docs
-search, then a Trade button to `/trade/`. Start here is the seven-step
-onboarding path (Begin through Ready to Use DEX). Clicking Start here opens
-`/start/`.
+seed field. The top bar is Pond · Protocol, then docs
+search, then a Trade button to `/trade/`. Pond opens `/Pond/`. Protocol
+opens `/Protocol/` and keeps the Protocol docs menu.
 
 Set these on the **Replit Autoscale** app (Secrets / env), then Publish. Do not
 put them in the repo, in `site/dist`, or in browser JavaScript.
@@ -342,4 +341,4 @@ In order.
    the issuer can still sign, and $rPND is not created yet.
 6. **Leave `launchStatus` at `pre-launch`** until $PND has actually been issued. That flag
    controls the "$PND has not launched" warning, and it is the one edit on this site that
-   could mislead a buyer. Live flags are on `/wallets/`.
+   could mislead a buyer. Live flags are on `/links/`.

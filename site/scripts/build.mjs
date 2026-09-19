@@ -313,7 +313,7 @@ function navItemsHtml(pages, currentUrl) {
   let out = "";
   for (const p of pages) {
     const active = p.url === currentUrl ? ' class="active" aria-current="page"' : "";
-    const flag = p.url === "/verify/" ? ' <span class="nav-badge">important</span>' : "";
+    const flag = p.url === "/links/" ? ' <span class="nav-badge">important</span>' : "";
     out += `<li><a href="${p.url}"${active}>${esc(p.title)}${flag}</a></li>`;
   }
   return out;
@@ -334,78 +334,26 @@ function navHtml(currentUrl) {
   return out;
 }
 
-const TOP_BAR_SECTIONS = ["Start here", "$PND", "$rPND", "Protocol"];
-
-const START_STEPS = [
-  { id: "begin", url: "/start/", title: "Begin", blurb: "The path. No buy button." },
-  { id: "what-is-pnd", url: "/start/pnd/", title: "What is $PND", blurb: "IOU. Not issued. Issuer, not ticker." },
-  { id: "what-is-rpnd", url: "/start/rpnd/", title: "What is $rPND", blurb: "Planned MPT. Not this launch." },
-  { id: "verify-issuer", url: "/verify/", title: "Verify Issuer", blurb: "Check the address on ledger." },
-  { id: "connect-wallet", url: "/start/wallet/", title: "Connect Wallet", blurb: "WalletConnect or Xaman only." },
-  { id: "set-trust-lines", url: "/start/trust-lines/", title: "Set Trust Lines", blurb: "In your wallet. Nothing issued." },
-  { id: "ready-dex", url: "/start/dex/", title: "Ready to Use DEX", blurb: "Then Trade — not a live DEX." },
-];
-
-function isStartFlow(url) {
-  return START_STEPS.some((step) => step.url === url);
-}
-
-function startProgressHtml(currentUrl) {
-  const compact = currentUrl !== "/start/";
-  const items = START_STEPS.map((step, i) => {
-    const n = String(i + 1).padStart(2, "0");
-    const current = step.url === currentUrl ? " is-current" : "";
-    return `<li class="start-progress-step${current}" data-start-step="${esc(step.id)}">
-      <a href="${step.url}"><b>${n}</b><strong>${esc(step.title)}</strong><span>${esc(step.blurb)}</span></a>
-    </li>`;
-  }).join("");
-  return `<nav class="start-progress${compact ? " is-compact" : ""}" data-start-progress aria-label="Start here progress">
-    <div class="start-progress-head">
-      <p class="start-eyebrow">Start here · 7 steps</p>
-      <p class="start-progress-title">Complete every step before you buy.</p>
-      <p class="start-progress-count"><strong data-start-progress-count>0 / 7</strong> saved in a cookie</p>
-      <p class="start-progress-note">Progress is a cookie (localStorage backup). After Sign in, it is keyed to your XRPL address. No live buy button. $PND is not issued. Last step opens Trade — a preview, not a live DEX.</p>
-    </div>
-    <ol class="start-progress-list">${items}</ol>
-  </nav>`;
-}
-
-function startNextHtml(currentUrl) {
-  const index = START_STEPS.findIndex((step) => step.url === currentUrl);
-  if (index < 0) return "";
-  const prev = START_STEPS[index - 1];
-  const next = START_STEPS[index + 1];
-  const nextHref = next?.url ?? "/trade/";
-  const nextLabel = next ? `Next · ${next.title}` : "Open Trade";
-  return `<nav class="start-next" aria-label="Start here next step">
-    ${prev ? `<a class="start-next-prev" href="${prev.url}">Back · ${esc(prev.title)}</a>` : `<span class="start-next-prev is-disabled">Begin</span>`}
-    <a class="start-next-go" href="${nextHref}">${esc(nextLabel)} <span aria-hidden="true">↗</span></a>
-  </nav>`;
+function isLanding(url) {
+  return url === "/" || url === "/Pond/" || url === "/Protocol/";
 }
 
 function topnavHtml(currentUrl) {
+  const pondActive = currentUrl === "/Pond/" ? ' class="active" aria-current="page"' : "";
+  const protocolActive = currentUrl === "/Protocol/" ? ' class="active" aria-current="page"' : "";
+  const group = config.nav.find((g) => g.section === "Protocol");
+  const visible = group ? publishedPages(group) : [];
   let out = `<nav class="topnav" aria-label="Primary">`;
-  for (const section of TOP_BAR_SECTIONS) {
-    const group = config.nav.find((g) => g.section === section);
-    if (!group) continue;
-    const visible = publishedPages(group);
-    if (!visible.length) continue;
-    const id = navGroupId(section);
-    if (section === "Start here") {
-      out += `<div class="topnav-start">`;
-      out += `<a class="topnav-start-link" href="/start/">Start here</a>`;
-      out += `<details class="topnav-menu" data-topnav-menu="${esc(id)}">`;
-      out += `<summary aria-label="Open Start here menu"><span class="visually-hidden">Start here menu</span></summary>`;
-      out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
-      out += `</details></div>`;
-      continue;
-    }
-    out += `<details class="topnav-menu" data-topnav-menu="${esc(id)}">`;
-    out += `<summary>${esc(section)}</summary>`;
+  out += `<a class="topnav-page-link"${pondActive} href="/Pond/">Pond</a>`;
+  out += `<div class="topnav-start">`;
+  out += `<a class="topnav-start-link"${protocolActive} href="/Protocol/">Protocol</a>`;
+  if (visible.length) {
+    out += `<details class="topnav-menu" data-topnav-menu="protocol">`;
+    out += `<summary aria-label="Open Protocol menu"><span class="visually-hidden">Protocol menu</span></summary>`;
     out += `<div class="topnav-panel"><ul>${navItemsHtml(visible, currentUrl)}</ul></div>`;
     out += `</details>`;
   }
-  out += `</nav>`;
+  out += `</div></nav>`;
   return out;
 }
 
@@ -672,8 +620,8 @@ function heroHtml() {
       <code class="addr">${esc(site.issuerAddress)}</code>
     </div>
     <p class="hero-actions">
-      <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
-      <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
+      <a class="button" href="/Pond/">Pond <span aria-hidden="true">↗</span></a>
+      <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
     </p>
   </div>
 </section>`;
@@ -855,7 +803,6 @@ function pageScripts(page) {
     '<script src="/privacy.js" defer></script>',
     `<script src="${pageSrc("xaman.js")}" defer></script>`,
   ];
-  if (isStartFlow(page.url)) tags.push('<script src="/start.js" defer></script>');
   if (page.url.startsWith("/profile/")) {
     tags.push(`<script src="${pageSrc("profile.js")}" defer></script>`);
     tags.push(`<script src="${pageSrc("disclaimer.js")}" defer></script>`);
@@ -871,6 +818,7 @@ function pageScripts(page) {
 
 function layout(page, html) {
   const isHome = page.url === "/";
+  const landing = isLanding(page.url);
   const title = isHome ? site.title : `${page.title} — ${site.title}`;
   // Emitted only once a real domain exists. See content.config.json "$comment_domain".
   const canonical = domainConfigured
@@ -902,7 +850,7 @@ function layout(page, html) {
 public, 10 billion team, 80 billion to holders at 10 billion per month from
 2027-01-01 through 2027-08-01, proportional to $PND held. Snapshot plus
 treasury payments, not TokenEscrow, not a claim.
-<a href="/vesting/">Supply split</a>.</p>
+<a href="/protocol/two-tokens/">$PND and $rPND compared</a>.</p>
 </div>`
     : "";
 
@@ -935,7 +883,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : page.url === "/card/" ? "page-card page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
+<body class="${landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
@@ -957,13 +905,11 @@ ${canonical}
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
-${isHome ? heroHtml() : ""}
+${landing ? heroHtml() : ""}
 <div class="shell">
   <main id="main">
-    ${isHome ? "" : tocHtml(html)}
-    ${isStartFlow(page.url) ? startProgressHtml(page.url) : ""}
+    ${landing ? "" : tocHtml(html)}
     <article class="prose">${supplyRevision}${html}</article>
-    ${isStartFlow(page.url) ? startNextHtml(page.url) : ""}
     ${provenance}
   </main>
 </div>
@@ -977,32 +923,30 @@ ${isHome ? heroHtml() : ""}
       </div>
       <nav class="footer-column" aria-label="Protocol links">
         <h2>Protocol</h2>
-        <a href="/protocol/">Overview</a>
+        <a href="/Protocol/">Protocol</a>
+        <a href="/protocol/">Docs</a>
         <a href="/protocol/architecture/">Architecture</a>
         <a href="/protocol/two-tokens/">Two tokens</a>
         <a href="/discovery/">Discovery</a>
-        <a href="/verify/">Verify the issuer</a>
       </nav>
       <nav class="footer-column" aria-label="Markets and assets">
         <h2>Markets &amp; assets</h2>
         <a href="/trade/">Trade terminal</a>
-        <a href="/start/">Start here</a>
-        <a href="/pnd/">$PND</a>
-        <a href="/rpnd/">$rPND</a>
-        <a href="/hold/">Holding safely</a>
+        <a href="/Pond/">Pond</a>
+        <a href="/links/">Official links</a>
+        <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
+        <a href="/spec/">Specification</a>
       </nav>
       <nav class="footer-column footer-column-stacked" aria-label="Resources and company">
         <div>
           <h2>Resources</h2>
-          <a href="/wallets/">Wallets</a>
-          <a href="/connect/">Connect Xaman</a>
-          <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
           <a href="/links/">Official links</a>
-          <a href="/open-questions/">Open questions</a>
+          <a href="/xrp-ledger-toml/">xrp-ledger.toml</a>
+          <a href="/profile/">Profile</a>
         </div>
         <div>
           <h2>Company</h2>
-          <a href="/team/">Meet the team</a>
+          <a href="/Pond/">Pond</a>
           <a href="/legal/">Legal &amp; privacy</a>
           <a href="/links/">Contact &amp; official links</a>
         </div>
@@ -1014,25 +958,23 @@ ${isHome ? heroHtml() : ""}
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.51c.47.09.64-.2.64-.45v-1.68c-2.6.57-3.15-1.1-3.15-1.1-.43-1.09-1.05-1.38-1.05-1.38-.85-.58.06-.57.06-.57.94.07 1.44.97 1.44.97.84 1.43 2.21 1.02 2.75.78.09-.61.33-1.02.6-1.26-2.08-.24-4.27-1.04-4.27-4.65 0-1.03.37-1.87.97-2.53-.1-.24-.42-1.2.09-2.5 0 0 .79-.25 2.6.97A9 9 0 0 1 12 7.31c.8 0 1.61.11 2.36.33 1.8-1.22 2.59-.97 2.59-.97.51 1.3.19 2.26.1 2.5.6.66.96 1.5.96 2.53 0 3.62-2.2 4.4-4.29 4.64.34.3.64.87.64 1.76v2.61c0 .25.17.54.65.45A9.5 9.5 0 0 0 12 2.5Z"/></svg>
           <span>GitHub</span>
         </a>
-        <a class="footer-social-link" href="/verify/" aria-label="Verify the Pond issuer">
+        <a class="footer-social-link" href="/links/" aria-label="Official Pond links">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 7 3v5.25c0 4.4-2.94 8.3-7 9.75-4.06-1.45-7-5.35-7-9.75V6l7-3Zm3.35 6.4-4.08 4.08-2.1-2.1-1.06 1.06 3.16 3.16 5.14-5.14-1.06-1.06Z"/></svg>
-          <span>Verify</span>
+          <span>Links</span>
         </a>
       </div>
       <div class="footer-legal">
         <div class="footer-legal-links">
-          <a href="/protocol/">Protocol</a>
+          <a href="/Protocol/">Protocol</a>
           <span aria-hidden="true">|</span>
           <a href="/links/">Official links</a>
           <span aria-hidden="true">|</span>
-          <a href="/verify/">Issuer verification</a>
-          <span aria-hidden="true">|</span>
-          <a href="/protocol/security/">Security</a>
+          <a href="/spec/security/">Security</a>
           <span aria-hidden="true">|</span>
           <a href="/legal/">Legal</a>
         </div>
         <p>© 2026 ${esc(site.title)}. Documentation licensed Apache-2.0.</p>
-        <p class="footer-integrity">The issuer address is the source of truth for $PND identity. <a href="/verify/">Check it before you trust a balance or link.</a></p>
+        <p class="footer-integrity">The issuer address is the source of truth for $PND identity. <a href="/links/">Check it before you trust a balance or link.</a></p>
       </div>
     </div>
   </div>
@@ -1074,8 +1016,8 @@ writeFileSync(
   join(DIST_DIR, "404.html"),
   layout(
     { url: "/404", title: "Not found", description: "Page not found." },
-    `<h1>Not found</h1><p>That page does not exist. Start at the <a href="/">documentation index</a>,
-     or go straight to <a href="/verify/">verifying the real $PND</a>.</p>`,
+    `<h1>Not found</h1><p>That page does not exist. Start at the <a href="/">home page</a>,
+     or go straight to <a href="/links/">official links</a>.</p>`,
   ),
 );
 

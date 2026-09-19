@@ -25,5 +25,5 @@ and numbered specification together.
 ## Current state
 
 The protocol is still pre-issuance. The $PND launch is targeted for
-**1 October 2026**; $rPND has not been created. Open decisions remain visible
-in [Status](/open-questions/) rather than being presented as settled behavior.
+**1 October 2026**; $rPND has not been created. How the protocol is run is
+on [Protocol](/Protocol/). Pond the company is on [Pond](/Pond/).

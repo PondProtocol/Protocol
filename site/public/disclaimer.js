@@ -8,7 +8,7 @@
         <a class="trade-disclaimer-legal" href="/legal/">Read the disclaimer</a>
         <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
         <div class="trade-disclaimer-actions">
-          <a href="/start/" class="trade-disclaimer-new" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
+          <a href="/Pond/" class="trade-disclaimer-new" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
           <button type="button" class="trade-disclaimer-known" data-disclaimer-known disabled>I Understand Pond Protocol</button>
         </div>
       </section>

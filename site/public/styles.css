@@ -683,7 +683,8 @@ a:hover {
   color: var(--text);
 }
 
-.topnav-panel a.active {
+.topnav-panel a.active,
+.topnav a.active {
   color: var(--accent-text);
   font-weight: 600;
   background: color-mix(in srgb, var(--accent) 12%, transparent);

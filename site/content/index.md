@@ -1,18 +1,17 @@
 ## Start here
 
-Seven steps. Finish them before you buy. $PND has not been issued. There is
-no buy button on this site.
+Pond is the company. Pond Protocol is the decentralized, Agent-AI-run
+layer. Official Xaman is unchanged. Copy the issuer. Do not search the
+ticker.
 
 <div class="join">
-<a class="join-card" href="/start/"><strong>1. Begin</strong><span>The path, the checklist, and why every step comes before a market.</span></a>
-<a class="join-card" href="/start/pnd/"><strong>2. What is $PND</strong><span>Issued currency. Identity is the issuer, not the ticker.</span></a>
-<a class="join-card" href="/start/rpnd/"><strong>3. What is $rPND</strong><span>Planned MPT. Not created. Not the 1 October 2026 launch.</span></a>
-<a class="join-card" href="/verify/"><strong>4. Verify Issuer</strong><span>Issuer address, impostor board, ledger checks. Do not search the ticker.</span></a>
+<a class="join-card" href="/Pond/"><strong>Pond</strong><span>How the company operates. Supported by Greenhead Labs. Run by Agent Tadpole.</span></a>
+<a class="join-card" href="/Protocol/"><strong>Protocol</strong><span>How Pond Protocol is decentralized and Agent-AI-run.</span></a>
+<a class="join-card" href="/trade/"><strong>Trade</strong><span>Testnet terminal. Not a live mainnet DEX.</span></a>
+<a class="join-card" href="/links/"><strong>Official links</strong><span>Issuer, treasury, TOML, explorers. Nothing else is official.</span></a>
 </div>
 
-Then [Connect Wallet](/start/wallet/), [Set Trust Lines](/start/trust-lines/),
-and [Ready to Use DEX](/start/dex/) → [Trade](/trade/). The Trade button in
-the top bar is the same terminal. It is not a live $PND DEX.
+The Trade button in the top bar is the same terminal.
 
 ## Identity
 
@@ -35,4 +34,4 @@ Policy supply is 100 billion $PND (issuer policy, not a ledger cap). High-level 
 
 Holder months are a **snapshot of $PND held**, then **treasury payments**, proportional. They are **not TokenEscrow**. This site will never show a claim button.
 
-**$rPND is not launching on 1 October 2026.** That date is for $PND. Details: [supply split](/vesting/) and [$PND and $rPND](/pnd-and-rpnd/).
+**$rPND is not launching on 1 October 2026.** That date is for $PND. Details: [two tokens](/protocol/two-tokens/).

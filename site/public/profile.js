@@ -1,12 +1,9 @@
 (() => {
   const STEPS = [
-    { id: "begin", title: "Begin", url: "/start/" },
-    { id: "what-is-pnd", title: "What is $PND", url: "/start/pnd/" },
-    { id: "what-is-rpnd", title: "What is $rPND", url: "/start/rpnd/" },
-    { id: "verify-issuer", title: "Verify Issuer", url: "/verify/" },
-    { id: "connect-wallet", title: "Connect Wallet", url: "/start/wallet/" },
-    { id: "set-trust-lines", title: "Set Trust Lines", url: "/start/trust-lines/" },
-    { id: "ready-dex", title: "Ready to Use DEX", url: "/start/dex/" },
+    { id: "pond", title: "Pond", url: "/Pond/" },
+    { id: "protocol", title: "Protocol", url: "/Protocol/" },
+    { id: "trade", title: "Trade", url: "/trade/" },
+    { id: "links", title: "Official links", url: "/links/" },
   ];
 
   const root = () => document.querySelector("[data-pond-profile]");
@@ -56,8 +53,8 @@
         <a href="${esc(step.url)}"><b>${n}</b><strong>${esc(step.title)}</strong></a>
       </li>`;
     }).join("");
-    return `<nav class="profile-checklist" aria-label="Start here progress">
-      <p class="profile-kicker">Start here</p>
+    return `<nav class="profile-checklist" aria-label="Pond pages">
+      <p class="profile-kicker">Pond pages</p>
       <p class="profile-checklist-count"><strong data-start-progress-count>${done} / ${STEPS.length}</strong> saved</p>
       <ol class="profile-check-list">${items}</ol>
     </nav>`;
@@ -120,7 +117,7 @@
           <em>${esc(rpnd.note || "")}</em>
         </div>
       </div>
-      <p class="profile-form-note"><a href="/start/trust-lines/">Set trust lines</a> when you are ready. $PND is set when a line to this issuer exists, even at 0.</p>
+      <p class="profile-form-note">Set trust lines in your wallet when you are ready. $PND is set when a line to this issuer exists, even at 0. Official connect is on <a href="/trade/">Trade</a>.</p>
     </section>`;
   }
 
