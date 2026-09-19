@@ -4059,7 +4059,10 @@ code.addr {
   }
 
   .page-index .hero .hero-kicker {
-    font-size: clamp(2.2rem, 18cqi, 3.4rem);
+    position: static;
+    font-size: clamp(2.1rem, 16cqi, 2.8rem);
+    line-height: 0.82;
+    letter-spacing: -0.07em;
   }
 
   .page-index .hero-heading {
