@@ -424,14 +424,31 @@ function searchHtml(currentUrl) {
 </form>`;
 }
 
-function smoothClosed(pts) {
-  const n = pts.length;
+function smoothPolyline(pts, closed) {
+  const ring = closed ? pts : pts;
+  if (ring.length < 2) return "";
+  if (!closed) {
+    let d = `M${ring[0][0].toFixed(1)} ${ring[0][1].toFixed(1)}`;
+    for (let i = 0; i < ring.length - 1; i++) {
+      const p0 = ring[Math.max(0, i - 1)];
+      const p1 = ring[i];
+      const p2 = ring[i + 1];
+      const p3 = ring[Math.min(ring.length - 1, i + 2)];
+      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  const n = ring.length;
   let d = "";
   for (let i = 0; i < n; i++) {
-    const p0 = pts[(i - 1 + n) % n];
-    const p1 = pts[i];
-    const p2 = pts[(i + 1) % n];
-    const p3 = pts[(i + 2) % n];
+    const p0 = ring[(i - 1 + n) % n];
+    const p1 = ring[i];
+    const p2 = ring[(i + 1) % n];
+    const p3 = ring[(i + 2) % n];
     const c1x = p1[0] + (p2[0] - p0[0]) / 6;
     const c1y = p1[1] + (p2[1] - p0[1]) / 6;
     const c2x = p2[0] - (p3[0] - p1[0]) / 6;
@@ -442,47 +459,181 @@ function smoothClosed(pts) {
   return `${d}Z`;
 }
 
-function smoothOpen(pts) {
-  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(0, i - 1)];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[Math.min(pts.length - 1, i + 2)];
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
-  }
-  return d;
+function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
+  const dx = x - cx;
+  const dy = y - cy;
+  const c = Math.cos(th);
+  const s = Math.sin(th);
+  const u = (dx * c + dy * s) / rx;
+  const v = (-dx * s + dy * c) / ry;
+  return a * Math.exp(-0.5 * (u * u + v * v));
 }
 
-function closedContour(cx, cy, rx, ry, { lobes = 3, phase = 0, wobble = 0.14, n = 40 } = {}) {
-  const pts = [];
-  for (let i = 0; i < n; i++) {
-    const t = (i / n) * Math.PI * 2;
-    const w =
-      1 +
-      wobble * Math.sin(t * lobes + phase) +
-      wobble * 0.48 * Math.cos(t * (lobes + 1) - phase * 1.25) +
-      wobble * 0.2 * Math.sin(t * (lobes + 3) + phase * 0.55);
-    pts.push([cx + Math.cos(t) * rx * w, cy + Math.sin(t) * ry * w]);
-  }
-  return smoothClosed(pts);
+function terrainHeight(x, y) {
+  const features = [
+    { x: 0.8, y: 0.3, a: 1.18, rx: 0.12, ry: 0.08, th: 0.62 },
+    { x: 0.85, y: 0.23, a: 0.46, rx: 0.055, ry: 0.07, th: 1.05 },
+    { x: 0.69, y: 0.44, a: 0.58, rx: 0.09, ry: 0.2, th: -0.92 },
+    { x: 0.93, y: 0.55, a: 0.78, rx: 0.07, ry: 0.13, th: 0.2 },
+    { x: 0.24, y: 0.72, a: 0.92, rx: 0.11, ry: 0.09, th: 0.75 },
+    { x: 0.11, y: 0.26, a: 0.64, rx: 0.08, ry: 0.07, th: -0.45 },
+    { x: 0.56, y: 0.14, a: 0.52, rx: 0.3, ry: 0.05, th: 0.12 },
+    { x: 0.78, y: 0.86, a: 0.56, rx: 0.2, ry: 0.055, th: -0.28 },
+    { x: 0.4, y: 0.4, a: 0.36, rx: 0.07, ry: 0.16, th: 0.35 },
+    { x: 0.5, y: 0.58, a: -0.5, rx: 0.15, ry: 0.08, th: 0.4 },
+  ];
+  let z = 0;
+  for (const feature of features) z += blobHeight(x, y, feature);
+  z += 0.06 * Math.sin(x * 6.4 + y * 2.5) * Math.cos(y * 5.1 - x * 1.9);
+  z += 0.035 * Math.sin((x * 1.7 + y) * 7.1);
+  return z;
 }
 
-function ridgePath(y, amp, freq, x0, x1, phase) {
-  const pts = [];
-  for (let x = x0; x <= x1; x += 24) {
-    const t = (x - x0) / Math.max(1, x1 - x0);
-    const yy =
-      y +
-      amp * Math.sin(t * Math.PI * freq + phase) +
-      amp * 0.38 * Math.cos(t * Math.PI * (freq + 1.35) - phase);
-    pts.push([x, yy]);
+function contourBounds(pts) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const [x, y] of pts) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
   }
-  return smoothOpen(pts);
+  return { w: maxX - minX, h: maxY - minY };
+}
+
+function keyPoint(p) {
+  return `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+}
+
+function stitchSegments(segments) {
+  const unused = segments.map((seg) => [...seg]);
+  const polylines = [];
+  const take = (i) => unused.splice(i, 1)[0];
+  while (unused.length) {
+    const line = take(0);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      const start = keyPoint(line[0]);
+      const end = keyPoint(line[line.length - 1]);
+      for (let i = 0; i < unused.length; i++) {
+        const [a, b] = unused[i];
+        const ka = keyPoint(a);
+        const kb = keyPoint(b);
+        if (ka === end) {
+          line.push(b);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (kb === end) {
+          line.push(a);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (kb === start) {
+          line.unshift(a);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (ka === start) {
+          line.unshift(b);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+      }
+    }
+    polylines.push(line);
+  }
+  return polylines;
+}
+
+function isolines(width, height, cols, rows, level) {
+  const dx = width / cols;
+  const dy = height / rows;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const row = [];
+    for (let i = 0; i <= cols; i++) row.push(terrainHeight(i / cols, j / rows));
+    grid.push(row);
+  }
+  const lerp = (p1, p2, v1, v2) => {
+    const t = (level - v1) / ((v2 - v1) || 1e-9);
+    return [p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t];
+  };
+  const segments = [];
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const x0 = i * dx;
+      const y0 = j * dy;
+      const x1 = x0 + dx;
+      const y1 = y0 + dy;
+      const tl = grid[j][i];
+      const tr = grid[j][i + 1];
+      const br = grid[j + 1][i + 1];
+      const bl = grid[j + 1][i];
+      const code =
+        (tl >= level ? 8 : 0) | (tr >= level ? 4 : 0) | (br >= level ? 2 : 0) | (bl >= level ? 1 : 0);
+      if (code === 0 || code === 15) continue;
+      const top = () => lerp([x0, y0], [x1, y0], tl, tr);
+      const right = () => lerp([x1, y0], [x1, y1], tr, br);
+      const bottom = () => lerp([x0, y1], [x1, y1], bl, br);
+      const left = () => lerp([x0, y0], [x0, y1], tl, bl);
+      const add = (a, b) => segments.push([a, b]);
+      switch (code) {
+        case 1:
+        case 14:
+          add(left(), bottom());
+          break;
+        case 2:
+        case 13:
+          add(bottom(), right());
+          break;
+        case 3:
+        case 12:
+          add(left(), right());
+          break;
+        case 4:
+        case 11:
+          add(top(), right());
+          break;
+        case 6:
+        case 9:
+          add(top(), bottom());
+          break;
+        case 7:
+        case 8:
+          add(left(), top());
+          break;
+        case 5:
+          add(left(), top());
+          add(bottom(), right());
+          break;
+        case 10:
+          add(top(), right());
+          add(left(), bottom());
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return stitchSegments(segments);
+}
+
+function pathLength(pts) {
+  let n = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i][0] - pts[i - 1][0];
+    const dy = pts[i][1] - pts[i - 1][1];
+    n += Math.hypot(dx, dy);
+  }
+  return n;
 }
 
 function heroTopoSvg() {
@@ -496,33 +647,32 @@ function heroTopoSvg() {
     `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
     `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
   ];
-  const paths = [];
-  const hill = (cx, cy, r0, r1, step, lobes, phase0) => {
-    for (let r = r0; r <= r1; r += step) {
-      const t = (r - r0) / Math.max(1, r1 - r0);
-      paths.push(
-        closedContour(cx, cy, r, r * (0.62 + t * 0.12), {
-          lobes,
-          phase: phase0 + t * 0.7,
-          wobble: 0.11 + t * 0.05,
-          n: 42,
-        }),
-      );
+  const levels = [0.2, 0.28, 0.34, 0.4, 0.46, 0.52, 0.58, 0.64, 0.7, 0.76, 0.82, 0.9, 0.98];
+  const contours = [];
+  levels.forEach((level, levelIndex) => {
+    const index = levelIndex % 4 === 0;
+    for (const pts of isolines(1600, 900, 96, 54, level)) {
+      if (pts.length < 8 || pathLength(pts) < 80) continue;
+      const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
+      const body = closed ? pts.slice(0, -1) : pts;
+      if (body.length < 6) continue;
+      const box = contourBounds(body);
+      const fat = Math.max(box.w, box.h);
+      const thin = Math.min(box.w, box.h);
+      if (box.w > 1380 || box.h > 780) continue;
+      if (fat > 720 && thin / fat > 0.8) continue;
+      contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
     }
-  };
-  hill(1185, 355, 56, 430, 34, 3, 0.35);
-  hill(1488, 730, 48, 210, 36, 4, 1.1);
-  hill(620, 790, 42, 168, 36, 3, 2.2);
-  for (let i = 0; i < 5; i++) {
-    paths.push(ridgePath(118 + i * 148, 38 + (i % 3) * 10, 2.2 + i * 0.18, -40, 1680, i * 0.7));
-  }
-  const defs = paths
-    .map((d, i) => `<path id="hero-topo-p${i}" d="${d}" fill="none"/>`)
+  });
+  const defs = contours
+    .map((c, i) => `<path id="hero-topo-p${i}" d="${c.d}" fill="none"/>`)
     .join("");
-  const texts = paths
-    .map((_, i) => {
-      const payload = esc(Array.from({ length: 10 }, () => lines[i % lines.length]).join("  ·  "));
-      return `<text><textPath href="#hero-topo-p${i}" startOffset="${(i * 7) % 23}%">${payload}</textPath></text>`;
+  const texts = contours
+    .map((c, i) => {
+      const repeats = Math.max(6, Math.min(16, Math.round(c.len / 140)));
+      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join("  ·  "));
+      const cls = c.index ? ' class="hero-topo-index"' : "";
+      return `<text${cls}><textPath href="#hero-topo-p${i}" startOffset="${(i * 5) % 19}%">${payload}</textPath></text>`;
     })
     .join("");
   return `<div class="hero-topo" aria-hidden="true">
