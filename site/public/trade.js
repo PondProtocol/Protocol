@@ -1794,7 +1794,7 @@
         const closes = points.map((point) => point.close ?? point.value);
         let minValue = Math.min(...lows, lastPrice);
         let maxValue = Math.max(...highs, lastPrice);
-        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.65 || minValue < lastPrice * 0.6)) {
+        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.4 || minValue < lastPrice * 0.72)) {
           const near = closes.filter((value) => value >= lastPrice * 0.7 && value <= lastPrice * 1.35);
           const pad = Math.max(lastPrice * 0.06, ...(near.length ? near : closes).map((value) => Math.abs(value - lastPrice)));
           minValue = Math.min(lastPrice - pad, ...near);
