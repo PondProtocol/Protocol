@@ -41,7 +41,8 @@ const STEP_IDS = [
 ];
 const NAME_MAX = 40;
 const BIO_MAX = 160;
-const MAX_BODY = 16 * 1024;
+const ICON_MAX = 48 * 1024;
+const MAX_BODY = 64 * 1024;
 
 export function storePath() {
   return process.env.POND_PROFILE_STORE?.trim() || join(SITE_ROOT, "data", "profiles.json");
@@ -81,6 +82,7 @@ function publicFields(row) {
     bio: row.bio || "",
     progress: { ...(row.progress || {}) },
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
+    icon: row.icon || "",
     admin: row.handle === ADMIN_HANDLE || isAdminAddress(row.address),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -251,12 +253,35 @@ function asProgress(value) {
   return out;
 }
 
+function asIcon(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (looksLikeSecret(text)) {
+    return { error: "bad_profile", message: "Do not paste a seed, mnemonic, or private key." };
+  }
+  if (text.length > ICON_MAX) {
+    return { error: "bad_profile", message: "That icon is too large. Use a small image." };
+  }
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(text)) {
+    return text.replace(/\s+/g, "");
+  }
+  if (/^https:\/\/[^\s<>"']+$/i.test(text) && text.length <= 500) return text;
+  if (/^\/(?!\/)[A-Za-z0-9._/-]+$/.test(text) && !text.includes("..") && text.length <= 200) {
+    return text;
+  }
+  return {
+    error: "bad_profile",
+    message: "Use an https image URL, a small image upload, or leave the icon blank.",
+  };
+}
+
 export function publicProfile(row) {
   if (!row) return { handle: null, admin: false };
   return {
     handle: row.handle,
     admin: Boolean(row.admin),
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
+    icon: row.icon || "",
   };
 }
 
@@ -264,19 +289,22 @@ export async function updateOwnProfile(address, patch = {}) {
   if (!ADDR_RE.test(address || "")) {
     return { error: "bad_address", message: "That is not a classic XRPL address." };
   }
-  if (looksLikeSecret(patch.displayName) || looksLikeSecret(patch.bio)) {
+  if (looksLikeSecret(patch.displayName) || looksLikeSecret(patch.bio) || looksLikeSecret(patch.icon)) {
     return { error: "bad_profile", message: "Do not paste a seed, mnemonic, or private key." };
   }
   const displayName =
     patch.displayName === undefined ? undefined : stripText(patch.displayName, NAME_MAX);
   const bio = patch.bio === undefined ? undefined : stripText(patch.bio, BIO_MAX);
   const progress = patch.progress === undefined ? undefined : asProgress(patch.progress);
+  const icon = patch.icon === undefined ? undefined : asIcon(patch.icon);
+  if (icon && icon.error) return icon;
   return withStore((store) => {
     const row = store.profiles.find((item) => item.address === address);
     if (!row) return { error: "not_found", message: "Sign in first to create a profile." };
     if (displayName !== undefined) row.displayName = displayName;
     if (bio !== undefined) row.bio = bio;
     if (progress !== undefined) row.progress = { ...(row.progress || {}), ...progress };
+    if (icon !== undefined) row.icon = icon;
     if (patch.disclaimerAccepted === true) {
       row.disclaimerAccepted = true;
       row.disclaimerAcceptedAt = now();

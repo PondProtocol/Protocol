@@ -1,4 +1,5 @@
 (() => {
+  const DEFAULT_ICON = "/greenhead-duck.png";
   const STEPS = [
     { id: "begin", title: "Begin", url: "/start/" },
     { id: "what-is-pnd", title: "What is $PND", url: "/start/pnd/" },
@@ -54,24 +55,43 @@
     </nav>`;
   }
 
+  function iconSrc(value) {
+    const text = String(value || "").trim();
+    if (/^https:\/\//i.test(text) || /^data:image\//i.test(text) || /^\/(?!\/)/.test(text)) {
+      return text;
+    }
+    return DEFAULT_ICON;
+  }
+
+  function signOutHtml() {
+    return `<p class="profile-session-actions">
+      <button type="button" class="button button-quiet" data-profile-signout>Sign out</button>
+    </p>`;
+  }
+
   function lockedHtml(kind) {
     const copy =
       kind === "walletconnect"
         ? "WalletConnect can stay connected for Trade. Account pages need official Xaman SignIn."
         : "Sign in with official Xaman to open your account page. Logged-out visitors do not see handles or profile fields.";
+    const session = window.PondSession?.current?.();
     return `<div class="profile-card" data-profile-locked>
       <p class="profile-kicker">Pond Protocol Profile</p>
       <h2>Complete your Pond Protocol Profile</h2>
       <p>${copy} Pond never asks for a seed.</p>
+      ${session?.address ? signOutHtml() : ""}
     </div>`;
   }
 
   function cardHtml(profile) {
     const name = profile.displayName || profile.handle;
     const admin = profile.admin ? `<span class="profile-admin">Admin</span>` : "";
+    const icon = iconSrc(profile.icon);
+    const iconUrl = /^https:\/\//i.test(profile.icon || "") ? profile.icon : "";
     return `<div class="profile-card" data-profile-card>
       <p class="profile-kicker">Complete your Pond Protocol Profile</p>
       <div class="profile-id">
+        <img class="profile-icon" data-profile-icon src="${esc(icon)}" width="48" height="48" alt="">
         <h2>${esc(name)}</h2>
         ${admin}
       </div>
@@ -86,6 +106,14 @@
           <span>Short bio</span>
           <textarea name="bio" maxlength="160" rows="3">${esc(profile.bio || "")}</textarea>
         </label>
+        <label>
+          <span>Profile icon URL</span>
+          <input type="url" name="icon" maxlength="500" value="${esc(iconUrl)}" placeholder="https://… or leave blank for the duck" autocomplete="off">
+        </label>
+        <label>
+          <span>Or upload a small image</span>
+          <input type="file" name="iconFile" accept="image/png,image/jpeg,image/webp,image/gif">
+        </label>
         <p class="profile-form-note">Visible only while this Xaman session is signed in. Never a seed, password, or private key.</p>
         <p class="profile-form-status" data-profile-status hidden></p>
         <div class="profile-form-actions">
@@ -93,6 +121,7 @@
           <button type="button" class="button button-quiet" data-review-disclaimer>Review disclaimer</button>
         </div>
       </form>
+      ${signOutHtml()}
       ${progressHtml(profile.progress)}
     </div>`;
   }
@@ -135,29 +164,80 @@
     }
   }
 
+  function readIconFile(file) {
+    return new Promise((resolve, reject) => {
+      if (!file || !/^image\/(png|jpeg|webp|gif)$/i.test(file.type)) {
+        reject(new Error("Choose a PNG, JPEG, WebP, or GIF."));
+        return;
+      }
+      if (file.size > 800 * 1024) {
+        reject(new Error("Choose a smaller image."));
+        return;
+      }
+      const image = new Image();
+      const url = URL.createObjectURL(file);
+      image.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        canvas.width = 96;
+        canvas.height = 96;
+        const ctx = canvas.getContext("2d");
+        const side = Math.min(image.width, image.height);
+        ctx.drawImage(image, (image.width - side) / 2, (image.height - side) / 2, side, side, 0, 0, 96, 96);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("That image could not be read."));
+      };
+      image.src = url;
+    });
+  }
+
   function bindForm(profile) {
     const form = document.querySelector("[data-profile-form]");
     if (!form) return;
+    const setStatus = (message) => {
+      const status = document.querySelector("[data-profile-status]");
+      if (!status) return;
+      status.hidden = false;
+      status.textContent = message;
+    };
+    form.iconFile?.addEventListener("change", async () => {
+      const file = form.iconFile.files?.[0];
+      if (!file) return;
+      try {
+        const data = await readIconFile(file);
+        form.dataset.iconData = data;
+        form.icon.value = "";
+        const preview = document.querySelector("[data-profile-icon]");
+        if (preview) preview.src = data;
+      } catch (error) {
+        setStatus(error.message || "Could not read that image.");
+      }
+    });
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const body = {
         displayName: form.displayName.value,
         bio: form.bio.value,
+        icon: form.dataset.iconData || form.icon.value.trim(),
         progress: window.PondStart?.flags?.() || profile.progress || {},
-      };
-      const setStatus = (message) => {
-        const status = document.querySelector("[data-profile-status]");
-        if (!status) return;
-        status.hidden = false;
-        status.textContent = message;
       };
       try {
         const saved = await saveOwn(body);
+        window.PondSession?.patch?.({ icon: saved.icon || "", handle: saved.handle || "" });
         render(saved);
         setStatus("Saved.");
       } catch (error) {
         setStatus(error.message || "Could not save.");
       }
+    });
+  }
+
+  function bindSignOut(mount) {
+    mount.querySelector("[data-profile-signout]")?.addEventListener("click", () => {
+      window.PondSession?.logout?.();
     });
   }
 
@@ -167,11 +247,13 @@
     if (!profile) {
       const session = window.PondSession?.current?.();
       mount.innerHTML = lockedHtml(session?.method === "walletconnect" ? "walletconnect" : "guest");
+      bindSignOut(mount);
       document.title = "Complete your Pond Protocol Profile — Pond Protocol";
       return;
     }
     mount.innerHTML = cardHtml(profile);
     bindForm(profile);
+    bindSignOut(mount);
     mount.querySelector("[data-review-disclaimer]")?.addEventListener("click", () => {
       window.PondDisclaimer?.open?.();
     });
