@@ -5846,8 +5846,98 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-live {
+  position: relative;
   flex: 1 1 auto;
   overflow: hidden;
+}
+
+.trade-chart-cross,
+.trade-chart-hud {
+  pointer-events: none;
+}
+
+.trade-chart-cross {
+  position: absolute;
+  inset: 0;
+}
+
+.trade-chart-cross i {
+  position: absolute;
+  background: rgb(200 206 214 / 0.35);
+}
+
+.trade-chart-cross [data-chart-cross-v] {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.trade-chart-cross [data-chart-cross-h] {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+.trade-chart-hud {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  padding: 0.22rem 0.4rem;
+  border: 1px solid #2a3036;
+  border-radius: 4px;
+  background: rgb(16 18 20 / 0.86);
+  color: #d5dbe2;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+}
+
+.trade-chart-hud[hidden],
+.trade-chart-cross[hidden] {
+  display: none !important;
+}
+
+.trade-chart-print-age {
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+}
+
+.trade-chart-prints ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-chart-prints li {
+  display: grid;
+  grid-template-columns: 4.6rem 2rem 1fr auto;
+  gap: 0.3rem;
+  align-items: baseline;
+  padding: 0.12rem 0;
+  border-bottom: 1px solid #1d2227;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+}
+
+.trade-chart-prints li.is-empty {
+  display: block;
+  border: 0;
+}
+
+.trade-chart-prints li strong {
+  color: var(--text);
+  font-family: var(--mono);
+}
+
+.trade-chart-prints li.is-up b {
+  color: #26a69a;
+}
+
+.trade-chart-prints li.is-down b {
+  color: #ef5350;
 }
 
 .trade-chart-svg {
@@ -5969,6 +6059,38 @@ body:has([data-pond-profile]) .profile-card {
 .trade-chart-candle {
   stroke-width: 1.15;
   vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-candle.is-current {
+  stroke-width: 2;
+}
+
+.trade-chart-vwap {
+  fill: none;
+  stroke: #4aa3ff;
+  stroke-width: 1.15;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-window-high,
+.trade-chart-window-low {
+  stroke: #8b93a0;
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-spot-line {
+  stroke: #d7a04a;
+  stroke-width: 1;
+  stroke-dasharray: 1 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-vap {
+  fill: #5b6b7a;
+  opacity: 0.28;
 }
 
 .trade-chart-wick.is-up,
@@ -8845,7 +8967,7 @@ body.page-trade .trade-detail-window {
     position: relative;
     z-index: 4;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 8rem) minmax(0, 1fr);
     align-content: stretch;
     gap: 0.28rem;
     width: 20rem;
@@ -8871,6 +8993,20 @@ body.page-trade .trade-detail-window {
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-risk {
     display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-prints {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 0.22rem 0.4rem;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-prints ol {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-ticket {
