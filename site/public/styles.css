@@ -5894,15 +5894,21 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-last-line {
-  stroke: #3d9a6a;
+  stroke: #26a69a;
   stroke-width: 1;
-  stroke-dasharray: 4 3;
+  stroke-dasharray: 5 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-last-tag {
+  fill: #26a69a;
 }
 
 .trade-chart-last-label {
-  fill: #7dcaa0;
+  fill: #0c1114;
   font-family: var(--mono);
   font-size: 9px;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5948,7 +5954,7 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-volume {
   fill: #26a69a;
-  opacity: 0.45;
+  opacity: 0.55;
 }
 
 .trade-chart-volume.is-down {
@@ -5956,13 +5962,19 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-wick {
-  stroke-width: 1;
+  stroke-width: 1.35;
+  vector-effect: non-scaling-stroke;
+}
+
+.trade-chart-candle {
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
 }
 
 .trade-chart-wick.is-up,
 .trade-chart-candle.is-up {
   stroke: #26a69a;
-  fill: #26a69a;
+  fill: #101214;
 }
 
 .trade-chart-wick.is-down,

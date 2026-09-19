@@ -1818,16 +1818,20 @@
       function recentPriceDomain(points, livePrice) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
-        const lows = points.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
-        const highs = points.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
-        const closes = points.map((point) => point.close ?? point.value);
-        let minValue = Math.min(...lows, lastPrice);
-        let maxValue = Math.max(...highs, lastPrice);
-        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.4 || minValue < lastPrice * 0.72)) {
-          const near = closes.filter((value) => value >= lastPrice * 0.7 && value <= lastPrice * 1.35);
-          const pad = Math.max(lastPrice * 0.06, ...(near.length ? near : closes).map((value) => Math.abs(value - lastPrice)));
-          minValue = Math.min(lastPrice - pad, ...near);
-          maxValue = Math.max(lastPrice + pad, ...near);
+        const recent = points.slice(-Math.min(12, points.length));
+        const lows = recent.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
+        const highs = recent.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
+        const closes = recent.map((point) => point.close ?? point.value);
+        let minValue = Math.min(lastPrice, ...lows, ...closes);
+        let maxValue = Math.max(lastPrice, ...highs, ...closes);
+        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > lastPrice * 1.12 || minValue < lastPrice * 0.9)) {
+          const near = closes.filter((value) => value >= lastPrice * 0.88 && value <= lastPrice * 1.12);
+          const pad = Math.max(
+            lastPrice * 0.045,
+            ...(near.length ? near : [lastPrice]).map((value) => Math.abs(value - lastPrice)),
+          );
+          minValue = Math.min(lastPrice - pad, ...(near.length ? near : [lastPrice]));
+          maxValue = Math.max(lastPrice + pad, ...(near.length ? near : [lastPrice]));
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
@@ -1838,7 +1842,7 @@
         const allCandles = chartState.data?.candles || [];
         const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
         if (!allPoints.length) return;
-        const focusCount = Math.min(allPoints.length, 48);
+        const focusCount = Math.min(allPoints.length, 32);
         const points = allPoints.slice(-focusCount);
         const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
         const values = points.map((point) => point.close ?? point.value);
@@ -1846,7 +1850,7 @@
         const width = 1000;
         const height = 480;
         const left = 50;
-        const right = 58;
+        const right = 62;
         const top = 12;
         const plotRight = width - right;
         const indicator = chartState.indicator || "sma";
@@ -1855,9 +1859,9 @@
         const oscBottom = 458;
         const oscTop = showOsc ? 424 : 458;
         const volumeBottom = showOsc ? 414 : 458;
-        const volumeTop = showVolume ? (showOsc ? 372 : 400) : volumeBottom;
-        const priceBottom = (showVolume || showOsc) ? volumeTop - 14 : 440;
-        const maPeriod = Math.min(9, Math.max(5, Math.floor(values.length / 4) || 5));
+        const volumeTop = showVolume ? (showOsc ? 360 : 386) : volumeBottom;
+        const priceBottom = (showVolume || showOsc) ? volumeTop - 12 : 440;
+        const maPeriod = Math.min(8, Math.max(5, Math.floor(values.length / 5) || 5));
         const sma = movingAverage(values, maPeriod);
         const ema = exponentialAverage(values, maPeriod);
         const macdFast = exponentialAverage(values, Math.min(12, values.length));
@@ -1875,7 +1879,7 @@
         const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
         let { minValue, maxValue, lastPrice } = recentPriceDomain(points, chartState.data?.livePrice);
         const tapeBands = [...sma, ...ema, ...upper, ...lower].filter((value) => (
-          value != null && Number.isFinite(lastPrice) && value >= lastPrice * 0.72 && value <= lastPrice * 1.4
+          value != null && Number.isFinite(lastPrice) && value >= lastPrice * 0.88 && value <= lastPrice * 1.12
         ));
         if (tapeBands.length) {
           minValue = Math.min(minValue, ...tapeBands);
@@ -1883,7 +1887,7 @@
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
-        const padding = Math.max((maxValue - minValue) * 0.1, Math.abs(lastPrice || maxValue) * 0.008, 0.000001);
+        const padding = Math.max((maxValue - minValue) * 0.08, Math.abs(lastPrice || maxValue) * 0.012, 0.000001);
         const low = Math.min(minValue - padding, lastPrice);
         const high = Math.max(maxValue + padding, lastPrice);
         const count = Math.max(points.length, 1);
@@ -1915,7 +1919,7 @@
           })
           .join("");
         const maxVolume = Math.max(...volumes, 1);
-        const barWidth = Math.max(3, slot * 0.72);
+        const barWidth = Math.max(6, slot * 0.78);
         const volumeBars = showVolume
           ? volumes
             .map((volume, index) => {
@@ -1937,7 +1941,9 @@
           }
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(1.5, bodyBot - bodyTop)}"/>`;
+          const bodyHeight = Math.max(8, bodyBot - bodyTop);
+          const bodyY = bodyTop - (bodyHeight - Math.max(1, bodyBot - bodyTop)) / 2;
+          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyY}" width="${barWidth}" height="${bodyHeight}"/>`;
         }).join("");
         let indicatorPaths = "";
         if (values.length > 1 && (indicator === "sma" || indicator === "bollinger")) {
@@ -1964,8 +1970,9 @@
         const lineLayer = candles.length
           ? candleBodies
           : `${areaPath ? `<path class="trade-chart-area" d="${areaPath}"/>` : ""}${pricePath ? `<path class="trade-chart-price" d="${pricePath}"/>` : ""}`;
+        const lastTagY = Number.isFinite(lastPrice) ? Math.min(priceBottom - 8, Math.max(top + 8, y(lastPrice))) : 0;
         const lastLine = Number.isFinite(lastPrice)
-          ? `<line class="trade-chart-last-line" x1="${left}" x2="${plotRight}" y1="${y(lastPrice)}" y2="${y(lastPrice)}"/>${svgText(width - 4, y(lastPrice) + 3, formatTick(lastPrice), "trade-chart-last-label", "end")}`
+          ? `<line class="trade-chart-last-line" x1="${left}" x2="${plotRight}" y1="${y(lastPrice)}" y2="${y(lastPrice)}"/><rect class="trade-chart-last-tag" x="${width - 58}" y="${lastTagY - 7}" width="54" height="13" rx="2"/>${svgText(width - 6, lastTagY + 3, formatTick(lastPrice), "trade-chart-last-label", "end")}`
           : "";
         const volumeLabel = showVolume ? svgText(left, volumeTop + 11, "VOLUME", "trade-chart-panel-label") : "";
         const divider = showVolume || showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>` : "";
