@@ -6097,10 +6097,79 @@ body:has([data-pond-profile]) .profile-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.45rem;
-  padding: 0.45rem 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.45rem;
+  padding: 0.38rem 0.65rem;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg-code) 72%, transparent);
+}
+
+.trade-chart-tf-groups {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 0.4rem;
+}
+
+.trade-chart-tf-higher {
+  padding-left: 0.4rem;
+  border-left: 1px solid var(--border);
+}
+
+.trade-chart-plot-tools,
+.trade-indicator-periods {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.trade-chart-plot-tools button,
+.trade-indicator-periods button {
+  padding: 0.18rem 0.38rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.58rem;
+}
+
+.trade-chart-plot-tools button.is-active,
+.trade-chart-plot-tools button:hover,
+.trade-indicator-periods button.is-active,
+.trade-indicator-periods button:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.trade-ind-swatch {
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-right: 0.22rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.trade-ind-swatch.is-sma { background: #f7c66a; }
+.trade-ind-swatch.is-ema { background: #ff8a4c; }
+.trade-ind-swatch.is-rsi { background: #b687f0; }
+.trade-ind-swatch.is-macd { background: #26a69a; }
+.trade-ind-swatch.is-bb { background: #d78cff; }
+
+.trade-chart-bar-left,
+.trade-chart-keys {
+  color: #89939d;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+}
+
+.trade-chart-keys {
+  margin-left: auto;
+  letter-spacing: 0.02em;
 }
 
 .trade-chart-market-controls .trade-overview-controls {
