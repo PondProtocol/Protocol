@@ -923,12 +923,21 @@ check(
 check(
   "profile page is the account surface and not a Start here step",
   profileHtml.includes("data-pond-profile") &&
+    profileHtml.includes("page-profile") &&
     !/Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
     !/Account pages open after official/i.test(asText(profileHtml)) &&
     profileHtml.includes("/profile.js") &&
     !startHereLabels.includes("Profile") &&
     !startHereOrder.includes("Profile") &&
     startHereLabels.join(" | ") === startHereOrder.join(" | "),
+);
+check(
+  "profile card is centered on the viewport",
+  /body\.page-profile \.shell[\s\S]*?display:\s*flex[\s\S]*?justify-content:\s*center[\s\S]*?margin-inline:\s*auto/.test(
+    stylesText,
+  ) &&
+    /body\.page-profile main[\s\S]*?margin-inline:\s*auto/.test(stylesText) &&
+    /body\.page-profile \.profile-card[\s\S]*?margin-inline:\s*auto/.test(stylesText),
 );
 check(
   "landing hero is a solid color with Start Here below the fold",
