@@ -9,6 +9,7 @@
  *   node scripts/build.mjs            build
  *   node scripts/build.mjs --strict   also fail on unresolved internal links (used by CI)
  */
+import { createHash } from "node:crypto";
 import {
   cpSync,
   existsSync,
@@ -660,7 +661,7 @@ function heroHtml() {
   <div class="hero-inner">
     <div class="hero-heading">
       <p class="hero-kicker">Pond</p>
-      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at the<br>Pond</h1>
+      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at the<br>The Pond</h1>
     </div>
     <p class="hero-lede"><strong>$PND has not launched.</strong> Target 1 October 2026.
     Identity is the pair <strong>(PND, issuer address)</strong>, never the ticker.
@@ -925,7 +926,7 @@ ${canonical}
     root.classList.add("has-nav-js");
   })();
 </script>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="${stylesHref}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
@@ -1043,6 +1044,10 @@ ${pageScripts(page)}
 
 /* -------------------------------------------------------------------- write */
 
+const stylesSource = compactCss(readFileSync(join(PUBLIC_DIR, "styles.css"), "utf8"));
+const stylesHash = createHash("sha256").update(stylesSource).digest("hex").slice(0, 10);
+const stylesHref = `/styles.${stylesHash}.css`;
+
 rmSync(DIST_DIR, { recursive: true, force: true });
 mkdirSync(DIST_DIR, { recursive: true });
 
@@ -1070,8 +1075,8 @@ writeFileSync(
  * exactly that path, and the assertion below refuses to produce output where it did not.
  */
 if (existsSync(PUBLIC_DIR)) cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true, dereference: true });
-const builtCss = join(DIST_DIR, "styles.css");
-if (existsSync(builtCss)) writeFileSync(builtCss, compactCss(readFileSync(builtCss, "utf8")));
+writeFileSync(join(DIST_DIR, "styles.css"), stylesSource);
+writeFileSync(join(DIST_DIR, `styles.${stylesHash}.css`), stylesSource);
 writeFileSync(join(DIST_DIR, "hero-topo.svg"), buildHeroTopoMarkup());
 
 const wellKnown = join(DIST_DIR, WELL_KNOWN_PATH);

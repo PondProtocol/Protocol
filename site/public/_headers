@@ -50,4 +50,7 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
 
 /styles.css
-  Cache-Control: public, max-age=3600
+  Cache-Control: no-cache, must-revalidate
+
+/styles.*.css
+  Cache-Control: public, max-age=31536000, immutable

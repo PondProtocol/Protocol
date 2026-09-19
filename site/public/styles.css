@@ -3119,17 +3119,17 @@ code.addr {
 .hero .hero-kicker {
   position: absolute;
   left: 0;
-  bottom: calc(100% - 0.78rem * 1.7 + 1.4rem);
+  bottom: calc(100% - 0.78rem * 1.7 + 3.3rem);
   margin: 0;
   height: auto;
   overflow: visible;
-  font-size: clamp(5.25rem, 10.5vw, 7.25rem);
+  font-size: clamp(8.75rem, 17vw, 13rem);
   font-weight: 720;
-  line-height: 0.86;
-  letter-spacing: -0.055em;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
   text-transform: none;
   color: var(--accent-bright);
-  text-shadow: 0 1px 18px rgb(21 27 33 / 0.92);
+  text-shadow: 0 1px 22px rgb(21 27 33 / 0.92);
   width: max-content;
 }
 

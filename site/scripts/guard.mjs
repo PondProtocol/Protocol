@@ -950,10 +950,11 @@ check(
     indexHtml.includes("hero-kicker") &&
     indexHtml.includes('<p class="hero-kicker">Pond</p>') &&
     !indexHtml.includes('<p class="hero-kicker">Pond Protocol</p>') &&
-    /<h1[^>]*hero-tagline[^>]*>Join the Flock at the<br>Pond<\/h1>/.test(indexHtml) &&
+    /<h1[^>]*hero-tagline[^>]*>Join the Flock at the<br>The Pond<\/h1>/.test(indexHtml) &&
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
+    /<link rel="stylesheet" href="\/styles\.[a-f0-9]{10}\.css">/.test(indexHtml) &&
     /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&
-    /\.hero \.hero-kicker[\s\S]*?font-size:\s*clamp\(5\.25rem/.test(stylesText) &&
+    /\.hero \.hero-kicker[\s\S]*?font-size:\s*clamp\(8\.75rem/.test(stylesText) &&
     !/\.hero \.hero-kicker[\s\S]*?height:\s*1\.326rem/.test(stylesText) &&
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
     indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),

@@ -71,7 +71,12 @@ createServer(async (req, res) => {
   res.setHeader("Content-Type", types[ext] ?? "application/octet-stream");
   // Mirrors public/_headers so `curl -I` locally matches what the host is asked to send.
   res.setHeader("Access-Control-Allow-Origin", "*");
-  if ([".css", ".js", ".svg", ".png"].includes(ext)) {
+  const hashedCss = /\/styles\.[a-f0-9]{8,}\.css$/.test(path.replace(/\\/g, "/"));
+  if (ext === ".css" && !hashedCss) {
+    res.setHeader("Cache-Control", "no-cache, must-revalidate");
+  } else if (hashedCss) {
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+  } else if ([".js", ".svg", ".png"].includes(ext)) {
     res.setHeader("Cache-Control", "public, max-age=3600");
   }
   res.statusCode = path.endsWith("404.html") ? 404 : 200;
