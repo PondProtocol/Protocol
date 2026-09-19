@@ -1,5 +1,4 @@
 (() => {
-  const DEFAULT_ICON = "/greenhead-duck.png";
   const STEPS = [
     { id: "begin", title: "Begin", url: "/start/" },
     { id: "what-is-pnd", title: "What is $PND", url: "/start/pnd/" },
@@ -64,12 +63,17 @@
     </nav>`;
   }
 
-  function iconSrc(value) {
+  function identiconSrc(address) {
+    const addr = String(address || "").trim();
+    return /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(addr) ? `/identicon/${addr}.svg` : "";
+  }
+
+  function iconSrc(value, address) {
     const text = String(value || "").trim();
     if (/^https:\/\//i.test(text) || /^data:image\//i.test(text) || /^\/(?!\/)/.test(text)) {
       return text;
     }
-    return DEFAULT_ICON;
+    return identiconSrc(address);
   }
 
   function balancesHtml(snapshot) {
@@ -183,11 +187,15 @@
   function cardHtml(profile) {
     const name = profile.displayName || profile.handle;
     const admin = profile.admin ? `<span class="profile-admin">Admin</span>` : "";
-    const icon = iconSrc(profile.icon);
+    const icon = iconSrc(profile.icon, profile.address);
     const iconUrl = /^https:\/\//i.test(profile.icon || "") ? profile.icon : "";
     return `<div class="profile-card" data-profile-card>
       <div class="profile-id">
-        <img class="profile-icon" data-profile-icon src="${esc(icon)}" width="48" height="48" alt="">
+        <div class="profile-icon-wrap">
+          <img class="profile-icon" data-profile-icon src="${esc(icon)}" width="72" height="72" alt="">
+          <button type="button" class="profile-icon-edit" data-profile-icon-edit aria-label="Edit profile photo">Edit</button>
+          <input class="profile-icon-file" type="file" name="iconFile" data-profile-icon-file accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        </div>
         <h2>${esc(name)}</h2>
         ${admin}
       </div>
@@ -212,12 +220,8 @@
           <textarea name="bio" maxlength="160" rows="3">${esc(profile.bio || "")}</textarea>
         </label>
         <label>
-          <span>Profile icon URL</span>
-          <input type="url" name="icon" maxlength="500" value="${esc(iconUrl)}" placeholder="https://… or leave blank for the duck" autocomplete="off">
-        </label>
-        <label>
-          <span>Or upload a small image</span>
-          <input type="file" name="iconFile" accept="image/png,image/jpeg,image/webp,image/gif">
+          <span>Profile photo URL</span>
+          <input type="url" name="icon" maxlength="500" value="${esc(iconUrl)}" placeholder="https://… or leave blank for the generated photo" autocomplete="off">
         </label>
         <label class="profile-public-card">
           <input type="checkbox" name="publicCard" ${profile.publicCard ? "checked" : ""}>
@@ -316,13 +320,20 @@
       status.hidden = false;
       status.textContent = message;
     };
-    form.iconFile?.addEventListener("change", async () => {
-      const file = form.iconFile.files?.[0];
+    const fileInput = document.querySelector("[data-profile-icon-file]");
+    const openPicker = () => fileInput?.click();
+    document.querySelector("[data-profile-icon-edit]")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      openPicker();
+    });
+    document.querySelector("[data-profile-icon]")?.addEventListener("click", openPicker);
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
       if (!file) return;
       try {
         const data = await readIconFile(file);
         form.dataset.iconData = data;
-        form.icon.value = "";
+        if (form.icon) form.icon.value = "";
         const preview = document.querySelector("[data-profile-icon]");
         if (preview) preview.src = data;
       } catch (error) {

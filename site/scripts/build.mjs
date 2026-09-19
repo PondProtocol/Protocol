@@ -767,7 +767,7 @@ function sessionChipHtml() {
   </div>
   <div class="session-authed" data-session-authed hidden>
     <a class="session-profile" data-session-profile href="/profile/" aria-label="Open your profile">
-      <img class="session-avatar" data-session-avatar src="/greenhead-duck.png" width="30" height="30" alt="">
+      <img class="session-avatar" data-session-avatar src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Ccircle cx='15' cy='15' r='15' fill='%230c151e'/%3E%3C/svg%3E" width="30" height="30" alt="">
       <span class="session-profile-name" data-session-name></span>
     </a>
   </div>

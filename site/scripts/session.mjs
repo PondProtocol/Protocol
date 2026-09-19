@@ -11,6 +11,7 @@
  * authenticated use, not from login.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { identiconPath } from "./identicon.mjs";
 import { ensureProfile, markLastSignIn, publicProfile } from "./profiles.mjs";
 import { healthBody, signedXamanAccount } from "./xaman.mjs";
 
@@ -190,6 +191,7 @@ function publicSession(session, profile = null) {
       handle: null,
       admin: false,
       displayName: "",
+      icon: identiconPath(session.address),
       ...sessionMeta(session),
     };
   }

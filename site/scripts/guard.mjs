@@ -1305,6 +1305,31 @@ check(
     !startHereLabels.includes("Public card") &&
     !startHereOrder.includes("Public card"),
 );
+const identiconSrc = existsSync(join(SITE_ROOT, "scripts", "identicon.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "identicon.mjs"), "utf8")
+  : "";
+const serveSrc = readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8");
+check(
+  "new tadpole accounts get an address-derived identicon, not the duck",
+  identiconSrc.includes("identiconHash") &&
+    identiconSrc.includes("identiconPath") &&
+    identiconSrc.includes("Generated tadpole avatar") &&
+    !identiconSrc.includes("greenhead-duck") &&
+    profilesSrc.includes("identiconPath") &&
+    serveSrc.includes("handleIdenticon") &&
+    profileJsText.includes("data-profile-icon-edit") &&
+    /Edit/.test(profileJsText) &&
+    profileJsText.includes("identicon") &&
+    !profileJsText.includes("/greenhead-duck.png") &&
+    !sessionJsText.includes("/greenhead-duck.png") &&
+    !cardJsText.includes("/greenhead-duck.png") &&
+    sessionSrc.includes("identiconPath") &&
+    xamanSrc.includes('txjson: { TransactionType: "SignIn" }') &&
+    !xamanSrc.includes("XUMM_API_SECRET=") &&
+    profilesSrc.includes("r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B") &&
+    readFileSync(join(SITE_ROOT, "public", "trade.js"), "utf8").includes("rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc") &&
+    readFileSync(join(SITE_ROOT, "public", "trade.js"), "utf8").includes("rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b"),
+);
 check(
   "expired Xaman QR can be replaced without a full page reload",
   xamanJsText.includes("data-xaman-retry") &&

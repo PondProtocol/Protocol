@@ -1,5 +1,4 @@
 (() => {
-  const DEFAULT_ICON = "/greenhead-duck.png";
   const root = () => document.querySelector("[data-pond-card]");
 
   function esc(value) {
@@ -20,7 +19,7 @@
     if (/^https:\/\//i.test(text) || /^data:image\//i.test(text) || /^\/(?!\/)/.test(text)) {
       return text;
     }
-    return DEFAULT_ICON;
+    return "";
   }
 
   function emptyHtml(message) {
