@@ -700,7 +700,7 @@ check(
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /background:\s*rgb\(201 214 224 \/ 0\.03\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
+    /background:\s*rgb\(236 242 248 \/ 0\.58\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
 );
