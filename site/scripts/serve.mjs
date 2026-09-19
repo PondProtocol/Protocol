@@ -16,6 +16,8 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
+import { pipeline } from "node:stream";
+import { createGzip } from "node:zlib";
 import { DIST_DIR } from "./lib.mjs";
 import { handleProfiles, isCardPage, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
@@ -69,7 +71,20 @@ createServer(async (req, res) => {
   res.setHeader("Content-Type", types[ext] ?? "application/octet-stream");
   // Mirrors public/_headers so `curl -I` locally matches what the host is asked to send.
   res.setHeader("Access-Control-Allow-Origin", "*");
+  if ([".css", ".js", ".svg", ".png"].includes(ext)) {
+    res.setHeader("Cache-Control", "public, max-age=3600");
+  }
   res.statusCode = path.endsWith("404.html") ? 404 : 200;
+  const wantsGzip = String(req.headers["accept-encoding"] || "").includes("gzip");
+  const compressible = [".html", ".css", ".js", ".svg", ".json", ".txt", ".toml"].includes(ext);
+  if (wantsGzip && compressible) {
+    res.setHeader("Content-Encoding", "gzip");
+    res.setHeader("Vary", "Accept-Encoding");
+    pipeline(createReadStream(path), createGzip({ level: 6 }), res, (error) => {
+      if (error) res.destroy(error);
+    });
+    return;
+  }
   createReadStream(path).pipe(res);
 }).listen(port, host, () => {
   process.stdout.write(

@@ -424,83 +424,56 @@ function searchHtml(currentUrl) {
 </form>`;
 }
 
-function smoothPolyline(pts, closed) {
-  const ring = closed ? pts : pts;
-  if (ring.length < 2) return "";
-  if (!closed) {
-    let d = `M${ring[0][0].toFixed(1)} ${ring[0][1].toFixed(1)}`;
-    for (let i = 0; i < ring.length - 1; i++) {
-      const p0 = ring[Math.max(0, i - 1)];
-      const p1 = ring[i];
-      const p2 = ring[i + 1];
-      const p3 = ring[Math.min(ring.length - 1, i + 2)];
-      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-      const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-      const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-      d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+function simplifyPolyline(pts, epsilon) {
+  if (pts.length <= 2) return pts;
+  const limit = epsilon * epsilon;
+  const keep = new Uint8Array(pts.length);
+  keep[0] = 1;
+  keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [start, end] = stack.pop();
+    const a = pts[start];
+    const b = pts[end];
+    const dx = b[0] - a[0];
+    const dy = b[1] - a[1];
+    const len2 = dx * dx + dy * dy || 1;
+    let max = 0;
+    let idx = -1;
+    for (let i = start + 1; i < end; i++) {
+      const p = pts[i];
+      const t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2;
+      const x = a[0] + dx * t;
+      const y = a[1] + dy * t;
+      const d = (p[0] - x) * (p[0] - x) + (p[1] - y) * (p[1] - y);
+      if (d > max) {
+        max = d;
+        idx = i;
+      }
     }
-    return d;
+    if (max > limit && idx > 0) {
+      keep[idx] = 1;
+      stack.push([start, idx], [idx, end]);
+    }
   }
-  const n = ring.length;
-  let d = "";
-  for (let i = 0; i < n; i++) {
-    const p0 = ring[(i - 1 + n) % n];
-    const p1 = ring[i];
-    const p2 = ring[(i + 1) % n];
-    const p3 = ring[(i + 2) % n];
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    if (i === 0) d += `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`;
-    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
-  }
-  return `${d}Z`;
+  return pts.filter((_, i) => keep[i]);
 }
 
-function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
-  const dx = x - cx;
-  const dy = y - cy;
-  const c = Math.cos(th);
-  const s = Math.sin(th);
-  const u = (dx * c + dy * s) / rx;
-  const v = (-dx * s + dy * c) / ry;
-  return a * Math.exp(-0.5 * (u * u + v * v));
+function polylinePath(pts, closed) {
+  const ring = simplifyPolyline(pts, 3.6);
+  if (ring.length < 2) return "";
+  let d = `M${Math.round(ring[0][0])} ${Math.round(ring[0][1])}`;
+  for (let i = 1; i < ring.length; i++) d += `L${Math.round(ring[i][0])} ${Math.round(ring[i][1])}`;
+  return closed ? `${d}Z` : d;
 }
 
-function terrainHeight(x, y) {
-  const features = [
-    { x: 0.08, y: 0.1, a: 0.72, rx: 0.1, ry: 0.08, th: 0.4 },
-    { x: 0.24, y: 0.07, a: 0.48, rx: 0.16, ry: 0.05, th: 0.08 },
-    { x: 0.46, y: 0.11, a: 0.58, rx: 0.14, ry: 0.06, th: -0.22 },
-    { x: 0.7, y: 0.13, a: 0.82, rx: 0.1, ry: 0.08, th: 0.55 },
-    { x: 0.92, y: 0.16, a: 0.5, rx: 0.08, ry: 0.1, th: -0.48 },
-    { x: 0.07, y: 0.38, a: 0.64, rx: 0.09, ry: 0.14, th: 0.88 },
-    { x: 0.2, y: 0.52, a: -0.42, rx: 0.11, ry: 0.07, th: 0.18 },
-    { x: 0.34, y: 0.3, a: 0.52, rx: 0.1, ry: 0.09, th: -0.62 },
-    { x: 0.5, y: 0.4, a: 0.44, rx: 0.12, ry: 0.08, th: 0.28 },
-    { x: 0.62, y: 0.5, a: -0.5, rx: 0.13, ry: 0.09, th: 0.35 },
-    { x: 0.4, y: 0.62, a: 0.46, rx: 0.08, ry: 0.13, th: 0.12 },
-    { x: 0.78, y: 0.34, a: 0.96, rx: 0.11, ry: 0.08, th: 0.48 },
-    { x: 0.88, y: 0.46, a: 0.56, rx: 0.07, ry: 0.13, th: 0.1 },
-    { x: 0.7, y: 0.6, a: 0.42, rx: 0.09, ry: 0.16, th: -0.82 },
-    { x: 0.12, y: 0.76, a: 0.74, rx: 0.12, ry: 0.09, th: 0.68 },
-    { x: 0.3, y: 0.88, a: 0.5, rx: 0.15, ry: 0.06, th: 0.04 },
-    { x: 0.52, y: 0.84, a: 0.4, rx: 0.18, ry: 0.06, th: -0.16 },
-    { x: 0.68, y: 0.9, a: -0.36, rx: 0.1, ry: 0.07, th: 0.42 },
-    { x: 0.86, y: 0.78, a: 0.74, rx: 0.1, ry: 0.09, th: -0.28 },
-    { x: 0.94, y: 0.92, a: 0.42, rx: 0.08, ry: 0.06, th: 0.78 },
-    { x: 0.58, y: 0.22, a: 0.36, rx: 0.2, ry: 0.05, th: 0.14 },
-  ];
-  let z =
-    0.38 +
-    0.2 * Math.sin(x * 3.05 + 0.35) * Math.cos(y * 2.35) +
-    0.14 * Math.sin((x * 0.85 + y) * 4.15) +
-    0.09 * Math.cos(x * 5.4 - y * 3.2);
-  for (const feature of features) z += blobHeight(x, y, feature);
-  z += 0.05 * Math.sin(x * 7.2 + y * 3.1) * Math.cos(y * 6.4 - x * 2.2);
-  return z;
+function compactCss(css) {
+  return css
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\s*\n\s*/g, "\n")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
 }
 
 function keyPoint(p) {
@@ -551,16 +524,6 @@ function stitchSegments(segments) {
     polylines.push(line);
   }
   return polylines;
-}
-
-function heightGrid(cols, rows) {
-  const grid = [];
-  for (let j = 0; j <= rows; j++) {
-    const row = [];
-    for (let i = 0; i <= cols; i++) row.push(terrainHeight(i / cols, j / rows));
-    grid.push(row);
-  }
-  return grid;
 }
 
 function isolines(width, height, cols, rows, level, grid) {
@@ -640,20 +603,15 @@ function pathLength(pts) {
   return n;
 }
 
+function wyomingElevationGrid() {
+  const elev = JSON.parse(readFileSync(join(SITE_ROOT, "scripts", "wyoming-elev.json"), "utf8"));
+  const grid = [];
+  for (let j = 0; j < elev.rows; j++) grid.push(elev.z.slice(j * elev.cols, (j + 1) * elev.cols));
+  return { cols: elev.cols, rows: elev.rows, grid };
+}
+
 function buildHeroTopoMarkup() {
-  const issuer = site.issuerAddress;
-  const treasury = site.treasuryAddress;
-  const operations = site.operationsAddress;
-  const lines = [
-    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${treasury}","Amount":"0","Flags":0}`,
-    `{"TransactionType":"AccountSet","Account":"${issuer}","Flags":0}`,
-    `{"TransactionType":"TrustSet","Account":"${operations}","Flags":131072,"LimitAmount":{"currency":"PND","issuer":"${issuer}","value":"0"}}`,
-    `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
-    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
-  ];
-  const cols = 80;
-  const rows = 46;
-  const grid = heightGrid(cols, rows);
+  const { cols, rows, grid } = wyomingElevationGrid();
   let zMin = Infinity;
   let zMax = -Infinity;
   for (const row of grid) {
@@ -662,50 +620,28 @@ function buildHeroTopoMarkup() {
       if (z > zMax) zMax = z;
     }
   }
-  const steps = 20;
+  const steps = 24;
   const levels = Array.from(
     { length: steps },
-    (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
+    (_, i) => zMin + (zMax - zMin) * (0.05 + 0.9 * (i / (steps - 1))),
   );
   const contours = [];
   levels.forEach((level, levelIndex) => {
     const index = levelIndex % 5 === 0;
-    for (const pts of isolines(1600, 900, cols, rows, level, grid)) {
-      if (pts.length < 6 || pathLength(pts) < 48) continue;
+    for (const pts of isolines(1600, 1260, cols - 1, rows - 1, level, grid)) {
+      if (pts.length < 5 || pathLength(pts) < 48) continue;
       const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
       const body = closed ? pts.slice(0, -1) : pts;
-      if (body.length < 5) continue;
-      contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
+      if (body.length < 4) continue;
+      const d = polylinePath(body, closed);
+      if (!d) continue;
+      contours.push({ d, index });
     }
   });
   const strokes = contours
-    .map(
-      (c, i) =>
-        `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}" id="hero-topo-p${i}"/>`,
-    )
+    .map((c) => `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}"/>`)
     .join("");
-  const texts = contours
-    .filter((c, i) => c.index || i % 2 === 0)
-    .map((c, i) => {
-      const repeats = Math.max(2, Math.min(4, Math.round(c.len / 260)));
-      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join(" · "));
-      const cls = c.index ? ' class="index"' : "";
-      const href = contours.indexOf(c);
-      return `<text${cls}><textPath href="#hero-topo-p${href}" startOffset="${(i * 5) % 17}%">${payload}</textPath></text>`;
-    })
-    .join("");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-  <style>
-    .iso { fill: none; stroke: #c9d6e0; stroke-width: 0.55; opacity: 0.3; }
-    .iso-index { stroke-width: 1.05; opacity: 0.46; }
-    text { fill: #c9d6e0; stroke: #c9d6e0; stroke-width: 0.12; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 5.8px; font-weight: 540; opacity: 0.55; }
-    text.index { font-size: 7.2px; font-weight: 700; stroke-width: 0.26; opacity: 0.78; }
-  </style>
-  ${strokes}
-  ${texts}
-</svg>
-`;
+  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1260" preserveAspectRatio="xMidYMid slice"><!-- Wyoming contour strokes from USGS GMTED2010 (public domain). --><style>.iso{fill:none;stroke:#c9d6e0;stroke-width:.55;opacity:.28}.iso-index{stroke-width:1.05;opacity:.44}</style>${strokes}</svg>`;
 }
 
 function heroTopoSvg() {
@@ -900,6 +836,32 @@ function privacyDockHtml() {
 </div>`;
 }
 
+function pageScripts(page) {
+  const tags = [
+    '<script src="/nav.js" defer></script>',
+    '<script src="/session.js" defer></script>',
+    '<script src="/privacy.js" defer></script>',
+    '<script src="/xaman.js" defer></script>',
+  ];
+  if (isStartFlow(page.url)) tags.push('<script src="/start.js" defer></script>');
+  if (page.url.startsWith("/profile/")) {
+    tags.push('<script src="/profile.js" defer></script>');
+    tags.push('<script src="/disclaimer.js" defer></script>');
+  }
+  if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
+  if (page.url === "/trade/") {
+    tags.push('<script src="/disclaimer.js" defer></script>');
+    tags.push(
+      '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script>',
+    );
+    tags.push(
+      '<script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>',
+    );
+    tags.push('<script src="/trade.js" defer></script>');
+  }
+  return tags.join("\n");
+}
+
 function layout(page, html) {
   const isHome = page.url === "/";
   const title = isHome ? site.title : `${page.title} — ${site.title}`;
@@ -1071,16 +1033,7 @@ ${isHome ? heroHtml() : ""}
 </div>
 ${privacyDockHtml()}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
-<script src="/nav.js" defer></script>
-<script src="/session.js" defer></script>
-<script src="/start.js" defer></script>
-<script src="/profile.js" defer></script>
-<script src="/card.js" defer></script>
-<script src="/disclaimer.js" defer></script>
-<script src="/privacy.js" defer></script>
-<script src="/xaman.js" defer></script>
-${page.url === "/trade/" ? '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script><script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>' : ""}
-<script src="/trade.js" defer></script>
+${pageScripts(page)}
 </body>
 </html>
 `;
@@ -1115,6 +1068,8 @@ writeFileSync(
  * exactly that path, and the assertion below refuses to produce output where it did not.
  */
 if (existsSync(PUBLIC_DIR)) cpSync(PUBLIC_DIR, DIST_DIR, { recursive: true, dereference: true });
+const builtCss = join(DIST_DIR, "styles.css");
+if (existsSync(builtCss)) writeFileSync(builtCss, compactCss(readFileSync(builtCss, "utf8")));
 writeFileSync(join(DIST_DIR, "hero-topo.svg"), buildHeroTopoMarkup());
 
 const wellKnown = join(DIST_DIR, WELL_KNOWN_PATH);

@@ -956,22 +956,39 @@ const heroTopoSvg = existsSync(join(DIST_DIR, "hero-topo.svg"))
   ? readFileSync(join(DIST_DIR, "hero-topo.svg"), "utf8")
   : "";
 check(
-  "landing hero contours are original XRPL textPaths",
+  "landing hero is a Wyoming contour map without XRPL lettering",
   indexHtml.includes('class="hero-topo"') &&
     indexHtml.includes('src="/hero-topo.svg"') &&
     !indexHtml.includes("<textPath") &&
-    heroTopoSvg.includes("<textPath") &&
-    heroTopoSvg.includes("TransactionType") &&
-    heroTopoSvg.includes(config.site.issuerAddress) &&
-    heroTopoSvg.includes("Destination") &&
-    heroTopoSvg.includes("Flags") &&
+    !heroTopoSvg.includes("<textPath") &&
+    !heroTopoSvg.includes("<text") &&
+    !heroTopoSvg.includes("TransactionType") &&
+    !heroTopoSvg.includes(config.site.issuerAddress) &&
+    /Wyoming/.test(heroTopoSvg) &&
+    /GMTED2010/.test(heroTopoSvg) &&
+    (heroTopoSvg.match(/<path /g) || []).length >= 80 &&
     /#c9d6e0/.test(stylesText) &&
     /#c9d6e0/.test(heroTopoSvg) &&
     /hero-inner::before/.test(stylesText) &&
-    !/pixers|shutterstock|istock/i.test(indexHtml) &&
+    !/pixers|shutterstock|istock/i.test(indexHtml + heroTopoSvg) &&
     !indexHtml.includes('src="/hero.png"') &&
     !tradeHtml.includes("hero-topo") &&
     !profileHtml.includes("hero-topo"),
+);
+check(
+  "homepage first paint stays light",
+  heroTopoSvg.length < 80000 &&
+    !heroTopoSvg.includes("<textPath") &&
+    !indexHtml.includes("/trade.js") &&
+    !indexHtml.includes("/profile.js") &&
+    !indexHtml.includes("/card.js") &&
+    !indexHtml.includes("/disclaimer.js") &&
+    indexHtml.includes("/nav.js") &&
+    indexHtml.includes("/session.js") &&
+    indexHtml.includes("/privacy.js") &&
+    indexHtml.includes("/xaman.js") &&
+    tradeHtml.includes("/trade.js") &&
+    profileHtml.includes("/profile.js"),
 );
 check(
   "logged-in chip is a profile icon that links to /profile/<handle>/",
