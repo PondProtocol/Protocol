@@ -3053,8 +3053,8 @@ code.addr {
 /* ------------------------------------------------------------------ hero */
 
 .hero {
-  /* Owner swatch: same hex as --accent / greenhead.io .text-[#4A90D9]. */
-  --hero-solid: #4a90d9;
+  /* Owner swatch / live footer field: .footer backgroundColor #151b21. */
+  --hero-solid: #151b21;
   position: relative;
   box-sizing: border-box;
   min-height: 100svh;
