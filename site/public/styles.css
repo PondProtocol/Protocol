@@ -6013,6 +6013,28 @@ body:has([data-pond-profile]) .profile-card {
   min-width: 0;
 }
 
+.prose .trade-chart-board table,
+.trade-chart-board table {
+  display: table;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-collapse: separate;
+  overflow: visible;
+}
+
+.prose .trade-chart-board th,
+.prose .trade-chart-board td,
+.trade-chart-board th,
+.trade-chart-board td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  vertical-align: middle;
+  text-align: inherit;
+  white-space: normal;
+}
+
 .trade-chart-source {
   position: absolute;
   right: 0.35rem;

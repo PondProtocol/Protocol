@@ -2013,6 +2013,11 @@
           });
           chartState.tv = { chart, candles, volume, overlay, bandHigh, bandLow, osc };
           sizeTvPanes(true, false);
+          window.addEventListener("resize", () => {
+            const width = Math.floor(board.clientWidth);
+            const height = Math.floor(board.clientHeight);
+            if (width > 0 && height > 0) chart.resize(width, height);
+          });
           return chartState.tv;
         });
         return chartState.tvReady;
@@ -2075,12 +2080,19 @@
         tv.osc.applyOptions({ visible: showOsc });
         const last = rows[rows.length - 1];
         const lastUp = last.close >= last.open;
+        const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), last.close);
         tv.candles.applyOptions({
           priceLineColor: lastUp ? "#26a69a" : "#ef5350",
           lastValueVisible: true,
           priceLineVisible: true,
+          autoscaleInfoProvider: () => ({
+            priceRange: { minValue: domain.minValue, maxValue: domain.maxValue },
+          }),
         });
         sizeTvPanes(showVolume, showOsc);
+        const width = Math.floor(board.clientWidth);
+        const height = Math.floor(board.clientHeight);
+        if (width > 0 && height > 0) tv.chart.resize(width, height);
         tv.chart.timeScale().fitContent();
         liveChart.hidden = false;
         emptyChart.hidden = true;

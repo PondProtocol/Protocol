@@ -843,6 +843,7 @@ check(
     tradeJsText.includes("data-chart-ohlc") &&
     tradeJsText.includes("formatCompact") &&
     stylesText.includes("trade-chart-board") &&
+    stylesText.includes(".trade-chart-board table") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
