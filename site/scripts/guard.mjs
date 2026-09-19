@@ -816,6 +816,10 @@ check(
     tradeJsText.includes("ledgerTrades") &&
     tradeJsText.includes("volume24hXrp") &&
     tradeJsText.includes("paintLedgerChart") &&
+    tradeJsText.includes("printsToCandles") &&
+    tradeJsText.includes('data-chart-range="1m"') &&
+    tradeJsText.includes("trade-overview-ticket") &&
+    stylesText.includes("trade-chart-candle") &&
     tradeJsText.includes("data-dex-tape") &&
     tradeJsText.includes("24h AMM/DEX tape") &&
     stylesText.includes("trade-dex-live") &&
