@@ -682,14 +682,14 @@ check(
     stylesText.includes("--home-frame: 1rem") &&
     stylesText.includes("--privacy-reserve-h") &&
     stylesText.includes(".page-index .hero-inner") &&
-    /padding:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
-    /padding-bottom:\s*calc\(\s*var\(--home-frame\) \+ var\(--privacy-reserve-h\)/.test(stylesText) &&
+    /inset:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
+    /bottom:\s*calc\(\s*var\(--home-frame\) \+ var\(--privacy-reserve-h\)/.test(stylesText) &&
     /right:\s*1rem/.test(stylesText.slice(stylesText.indexOf(".privacy-dock"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /background:\s*rgb\(201 214 224 \/ 0\.05\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
+    /background:\s*rgb\(201 214 224 \/ 0\.03\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
 );

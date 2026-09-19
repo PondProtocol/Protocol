@@ -3867,30 +3867,39 @@ code.addr {
 }
 
 .page-index .home-screen {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   box-sizing: border-box;
-  min-height: 100svh;
-  min-height: 100dvh;
+  height: 100svh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .page-index .home-screen .hero {
-  flex: 1 1 auto;
+  position: relative;
   min-height: 0;
+  height: auto;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .page-index .hero-inner {
+  position: absolute;
+  inset: var(--home-frame);
+  bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
   display: flex;
   align-items: stretch;
   justify-content: stretch;
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   max-width: none;
-  height: 100%;
+  height: auto;
   margin: 0;
-  padding: var(--home-frame);
-  padding-bottom: calc(var(--home-frame) + var(--privacy-reserve-h));
+  padding: 0;
+}
+
+.page-index .hero-inner::before {
+  width: min(34rem, 48%);
 }
 
 .page-index .hero-main {
@@ -3913,23 +3922,23 @@ code.addr {
   height: 100%;
   max-width: 100%;
   min-height: 0;
-  padding: 0.85rem;
+  padding: 0.75rem;
   background: transparent;
-  border-color: rgb(236 242 248 / 0.2);
+  border-color: rgb(236 242 248 / 0.18);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .page-index .hero-page {
   min-height: 0;
-  background: rgb(201 214 224 / 0.05);
+  background: rgb(201 214 224 / 0.03);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .page-index .hero-page:hover,
 .page-index .hero-page:focus-visible {
-  background: rgb(201 214 224 / 0.1);
+  background: rgb(201 214 224 / 0.07);
 }
 
 @media (max-width: 480px) {
