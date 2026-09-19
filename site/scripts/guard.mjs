@@ -643,15 +643,24 @@ check(
     !tradeHtml.includes("Connect unavailable until Xaman app keys are set"),
 );
 check(
-  "trade disclaimer gates actions, links /legal/, and states WalletConnect or Xaman only",
-  tradeHtml.includes("data-disclaimer-confirm") &&
-    tradeHtml.includes('href="/start/"') &&
-    tradeHtml.includes('href="/legal/"') &&
-    /Read the disclaimer/i.test(tradeHtml) &&
-    /WalletConnect or Xaman/i.test(tradeHtml) &&
-    /never stores keys/i.test(tradeHtml) &&
-    /never needs your seed/i.test(tradeHtml) &&
-    /\$PND has not been issued/i.test(tradeHtml),
+  "trade is a public Testnet terminal with no disclaimer gate",
+  !tradeHtml.includes("data-disclaimer") &&
+    !tradeHtml.includes("Before you continue") &&
+    !tradeHtml.includes("I Understand Pond Protocol") &&
+    !tradeHtml.includes("I'm new to Pond Protocol") &&
+    !tradeJsText.includes("setupDisclaimer") &&
+    !tradeJsText.includes("signAndSubmit") &&
+    !tradeJsText.includes("trade-disclaimer-open") &&
+    tradeHtml.includes("rPNDRmfNNrUZstkA23haCUkCp7qLEPnaYc") &&
+    tradeHtml.includes("rPNDcL2UrGtSoGwruWx6ocMQ6ey8uPZm2b") &&
+    tradeHtml.includes("100,000,000,000") &&
+    /XRPL Testnet/.test(tradeHtml) &&
+    /Mainnet still has no \$PND issued/.test(tradeHtml) &&
+    /does not sign or submit/.test(tradeHtml) &&
+    tradeJsText.includes('network: "testnet"') &&
+    tradeJsText.includes("gateway_balances") &&
+    tradeJsText.includes("amm_info") &&
+    tradeJsText.includes("book_offers"),
 );
 check(
   "xaman.js keeps an honest /connect/ unavailable card and a short disabled Trade option",
@@ -664,9 +673,8 @@ check(
 const stylesCss = join(DIST_DIR, "styles.css");
 const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
 check(
-  "trade disclaimer actions are one primary and one secondary, not traffic-light colors",
-  stylesText.includes(".trade-disclaimer-new") &&
-    stylesText.includes(".trade-disclaimer-known") &&
+  "trade page does not use traffic-light disclaimer colors",
+  !tradeHtml.includes("trade-disclaimer-new") &&
     !stylesText.includes("linear-gradient(135deg, #fb7185") &&
     !stylesText.includes("linear-gradient(135deg, #4ade80") &&
     !stylesText.includes("linear-gradient(135deg, #6aa8e6"),
@@ -1041,8 +1049,9 @@ check(
     !tradeJsText.includes("89408e9bcaa385da1a1867c446cfb7b2") &&
     existsSync(join(DIST_DIR, "vendor", "xrpl-latest-min.js")) &&
     existsSync(join(DIST_DIR, "vendor", "xrpl-connect.umd.js")) &&
-    tradeHtml.includes("data-disclaimer") &&
-    tradeHtml.includes("Before you continue") &&
+    !tradeHtml.includes("data-disclaimer") &&
+    !tradeHtml.includes("Before you continue") &&
+    !tradeHtml.includes("/disclaimer.") &&
     /\/profile\.[a-f0-9]{10}\.js/.test(profileHtml),
 );
 check(
