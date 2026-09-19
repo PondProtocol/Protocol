@@ -752,6 +752,8 @@ function sessionChipHtml() {
       <p class="session-menu-copy">Official WalletConnect or Xaman. Pond never asks for a seed.</p>
       <div class="session-menu-block">
         <p class="session-menu-label">WalletConnect</p>
+        <p class="session-menu-hint">Official WalletConnect. The QR appears when this menu opens.</p>
+        <div class="session-wc-qr" data-session-wc-qr></div>
         <button type="button" class="session-wc" data-session-wc>Continue with WalletConnect</button>
         <p class="session-wc-error" data-session-wc-error hidden></p>
       </div>
