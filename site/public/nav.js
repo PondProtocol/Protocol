@@ -172,13 +172,68 @@
     }
   }
 
+  function pathnameOf(url) {
+    try {
+      return new URL(url, window.location.href).pathname;
+    } catch {
+      return String(url || "").split("?")[0] || "/";
+    }
+  }
+
+  // /trade/ and /profile/ ship hashed page scripts the homepage never loads.
+  // SPA-swapping #site-view left PondTrade / PondProfile undefined, so Trade
+  // and the profile icon painted an empty shell while address-bar Enter worked.
+  // A real document load runs those scripts and sends the existing httpOnly
+  // pond_session cookie. No client token.
+  function needsDocumentLoad(url) {
+    const path = pathnameOf(url);
+    return (
+      path === "/trade" ||
+      path === "/trade/" ||
+      path.startsWith("/profile/") ||
+      path === "/card" ||
+      path === "/card/" ||
+      path === "/connect" ||
+      path === "/connect/" ||
+      path === "/start" ||
+      path.startsWith("/start/")
+    );
+  }
+
+  function scriptPath(el) {
+    const href = el.getAttribute("src") || el.src || "";
+    try {
+      return new URL(href, window.location.href).pathname;
+    } catch {
+      return href;
+    }
+  }
+
+  function missingPageScripts(nextDocument) {
+    const loaded = new Set([...document.querySelectorAll("script[src]")].map(scriptPath));
+    return [...nextDocument.querySelectorAll("script[src]")].some((el) => !loaded.has(scriptPath(el)));
+  }
+
+  function loadDocument(url, replace = false) {
+    if (replace) window.location.replace(url);
+    else window.location.assign(url);
+  }
+
   async function navigate(url, pushState = true) {
+    if (needsDocumentLoad(url)) {
+      loadDocument(url, !pushState);
+      return;
+    }
     if (html.classList.contains("is-navigating")) return;
     html.classList.add("is-navigating");
     try {
       const response = await fetch(url, { headers: { Accept: "text/html" } });
       if (!response.ok) throw new Error(`Navigation failed: ${response.status}`);
       const nextDocument = new DOMParser().parseFromString(await response.text(), "text/html");
+      if (missingPageScripts(nextDocument)) {
+        loadDocument(url, !pushState);
+        return;
+      }
       const nextView = nextDocument.querySelector("#site-view");
       const currentView = document.querySelector("#site-view");
       if (!nextView || !currentView) throw new Error("Navigation view missing");
@@ -225,8 +280,10 @@
     if (url.origin !== window.location.origin || url.hash) return;
     if (link.closest("#docs-nav")) setIndexOpen(false);
     if (link.closest("[data-topnav-menu]")) closeTopnavMenus();
+    const next = `${url.pathname}${url.search}`;
+    if (needsDocumentLoad(next)) return;
     event.preventDefault();
-    navigate(`${url.pathname}${url.search}`);
+    navigate(next);
   });
 
   document.addEventListener("pointerdown", (event) => {

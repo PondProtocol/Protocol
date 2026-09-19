@@ -600,6 +600,19 @@ check(
     !navJsText.includes("pond-docs-nav-collapsed") &&
     navJsText.includes("closeTopnavMenus"),
 );
+check(
+  "Trade and profile clicks full-load so hashed page scripts run",
+  navJsText.includes("needsDocumentLoad") &&
+    navJsText.includes('"/trade/"') &&
+    navJsText.includes('"/profile/"') &&
+    navJsText.includes("missingPageScripts") &&
+    navJsText.includes("location.assign") &&
+    navJsText.includes("if (needsDocumentLoad(next)) return") &&
+    !/\bJWT\b/.test(navJsText) &&
+    !navJsText.includes("localStorage") &&
+    !navJsText.includes("sessionStorage") &&
+    navJsText.includes("pond_session"),
+);
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "landing hero does not use a Connect Xaman CTA",
