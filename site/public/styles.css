@@ -9217,6 +9217,7 @@ body.page-trade .trade-detail-window {
   }
 
   html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]),
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) #site-view,
   html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) .shell,
   html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) main,
   html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) .prose,
