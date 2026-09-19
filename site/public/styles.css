@@ -3864,7 +3864,7 @@ code.addr {
 .page-index {
   --home-frame: clamp(1rem, 2.2vw, 1.5rem);
   --home-scale: 1;
-  --privacy-reserve-h: 13rem;
+  --privacy-reserve-h: 0px;
 }
 
 .page-index .privacy-dock {
@@ -3929,23 +3929,32 @@ code.addr {
 
 .page-index .hero-copy {
   align-self: start;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  max-height: 100%;
+  overflow: visible;
 }
 
 .page-index .hero-heading {
-  padding-top: 0;
+  flex-shrink: 0;
+  padding-top: 0.18em;
 }
 
 .page-index .hero .hero-kicker {
   position: static;
   width: auto;
   max-width: 100%;
+  overflow: visible;
   font-size: clamp(3.2rem, 9cqi, 5.4rem);
-  line-height: 0.82;
+  line-height: 0.88;
   letter-spacing: -0.06em;
   margin: 0 0 0.12rem;
+}
+
+.page-index .hero-actions {
+  flex-shrink: 0;
 }
 
 .page-index .hero-tagline {
@@ -3958,8 +3967,8 @@ code.addr {
 
 .page-index .hero-pages {
   aspect-ratio: 1 / 1;
-  justify-self: stretch;
-  align-self: stretch;
+  justify-self: end;
+  align-self: end;
   width: 100%;
   height: 100%;
   max-width: none;
@@ -3990,7 +3999,7 @@ code.addr {
 @media (max-width: 480px) {
   .page-index {
     --home-frame: clamp(0.75rem, 4vw, 1rem);
-    --privacy-reserve-h: 11.5rem;
+    --privacy-reserve-h: 0px;
   }
 
   .page-index .privacy-notice {
@@ -4019,7 +4028,7 @@ code.addr {
 
 @media (max-width: 780px) {
   .page-index {
-    --privacy-reserve-h: 12.25rem;
+    --privacy-reserve-h: 0px;
   }
 
   .page-index .home-screen .topbar-end {
@@ -4030,7 +4039,8 @@ code.addr {
 
   .page-index .privacy-notice {
     padding: 0.55rem 0.65rem 0.6rem;
-    width: 100%;
+    width: calc((100% - 0.45rem) / 2);
+    max-width: 24rem;
   }
 
   .page-index .privacy-notice-copy {
@@ -4072,11 +4082,13 @@ code.addr {
   .page-index .hero-copy {
     align-self: start;
     min-height: 0;
-    overflow: hidden;
+    max-height: 100%;
+    overflow: visible;
   }
 
   .page-index .hero .hero-kicker {
     font-size: clamp(1.85rem, 12cqi, 2.4rem);
+    line-height: 0.88;
   }
 
   .page-index .hero-tagline {
@@ -4103,8 +4115,8 @@ code.addr {
     min-height: 0;
     max-height: none;
     aspect-ratio: auto;
-    justify-self: stretch;
-    align-self: stretch;
+    justify-self: end;
+    align-self: end;
     padding: 0.35rem;
     gap: 0.35rem;
   }
