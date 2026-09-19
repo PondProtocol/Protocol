@@ -3749,13 +3749,28 @@ code.addr {
 
 .hero-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(16.5rem, 22rem);
-  gap: 1.4rem 1.8rem;
-  align-items: center;
+  grid-template-columns: minmax(22rem, 1fr) minmax(26rem, 1.1fr);
+  gap: 1.6rem 2rem;
+  align-items: stretch;
 }
 
 .hero-copy {
   min-width: 0;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.9rem 0 0;
+}
+
+.hero-actions .button {
+  margin: 0;
+}
+
+.hero-actions .button-quiet {
+  margin-left: 0;
 }
 
 .hero-wallets {
@@ -3800,23 +3815,27 @@ code.addr {
 .hero-pages {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.7rem;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
   margin: 0;
-  padding: 0.7rem;
+  padding: 1.05rem;
+  min-height: 32rem;
+  height: 100%;
   background: color-mix(in srgb, var(--bg) 68%, transparent);
   border: 1px solid rgb(236 242 248 / 0.55);
-  border-radius: 16px;
+  border-radius: 20px;
   backdrop-filter: blur(16px);
 }
 
 .hero-page {
   display: flex;
   flex-direction: column;
-  gap: 0.32rem;
-  min-height: 6.4rem;
-  padding: 0.85rem 0.9rem;
+  justify-content: flex-start;
+  gap: 0.55rem;
+  min-height: 13.5rem;
+  padding: 1.45rem 1.4rem;
   border: 1px solid color-mix(in srgb, var(--accent-bright) 22%, var(--border));
-  border-radius: 12px;
+  border-radius: 16px;
   background: rgb(10 16 22 / 0.55);
   text-decoration: none;
   color: var(--text);
@@ -3830,14 +3849,31 @@ code.addr {
 
 .hero-page strong {
   color: var(--accent-text);
-  font-size: 1rem;
+  font-size: clamp(1.35rem, 2.1vw, 1.85rem);
+  letter-spacing: -0.03em;
 }
 
 .hero-page span {
   color: #c8c8cc;
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) and (min-width: 781px) {
+  .hero-main {
+    grid-template-columns: minmax(18rem, 0.9fr) minmax(22rem, 1.15fr);
+    gap: 1.3rem 1.5rem;
+  }
+
+  .hero-pages {
+    min-height: 26rem;
+  }
+
+  .hero-page {
+    min-height: 11rem;
+    padding: 1.2rem 1.15rem;
+  }
 }
 
 .hero-readout {
@@ -4357,7 +4393,12 @@ code.addr {
   }
 
   .hero-pages {
-    max-width: 28rem;
+    max-width: none;
+    min-height: 22rem;
+  }
+
+  .hero-page {
+    min-height: 9.5rem;
   }
 
   .supply {

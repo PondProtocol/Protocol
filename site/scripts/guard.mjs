@@ -570,11 +570,21 @@ check(
 );
 const heroPages = indexHtml.match(/class="hero-pages"[\s\S]*?<\/nav>/)?.[0] ?? "";
 const heroWallets = indexHtml.match(/class="hero-wallets"[\s\S]*?<\/div>/)?.[0] ?? "";
+const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "landing hero does not use a Connect Xaman CTA",
   heroPages.includes("/Pond/") &&
     heroPages.includes("/Protocol/") &&
-    !/Connect Xaman/i.test(heroPages),
+    !/Connect Xaman/i.test(heroPages) &&
+    !/Connect Xaman/i.test(heroActions),
+);
+check(
+  "hero keeps Pond and Protocol buttons under the wallet chips",
+  heroActions.includes('href="/Pond/"') &&
+    heroActions.includes('href="/Protocol/"') &&
+    heroActions.includes("button-quiet") &&
+    indexHtml.indexOf('class="hero-wallets"') < indexHtml.indexOf('class="hero-actions"') &&
+    indexHtml.indexOf('class="hero-actions"') < indexHtml.indexOf('class="hero-pages"'),
 );
 check(
   "hero lists issuer, treasury, and operations on Bithomp",
@@ -661,7 +671,9 @@ const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
 check(
   "hero page grid is a 2x2 box",
   stylesText.includes(".hero-pages") &&
-    /grid-template-columns:\s*1fr 1fr/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))),
+    /grid-template-columns:\s*1fr 1fr/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))) &&
+    /min-height:\s*32rem/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))) &&
+    /min-height:\s*13\.5rem/.test(stylesText.slice(stylesText.indexOf(".hero-page"))),
 );
 check(
   "trade page does not use traffic-light disclaimer colors",

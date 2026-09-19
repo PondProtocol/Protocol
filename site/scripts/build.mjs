@@ -641,6 +641,10 @@ function heroHtml() {
           ${heroWalletHtml("Treasury", site.treasuryAddress)}
           ${heroWalletHtml("Operations", site.operationsAddress)}
         </div>
+        <p class="hero-actions">
+          <a class="button" href="/Pond/">Pond <span aria-hidden="true">↗</span></a>
+          <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
+        </p>
       </div>
       ${heroPagesHtml()}
     </div>
