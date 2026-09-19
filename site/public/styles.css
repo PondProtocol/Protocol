@@ -5878,6 +5878,8 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-live {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   overflow: hidden;
 }
@@ -5971,8 +5973,9 @@ body:has([data-pond-profile]) .profile-card {
 
 .trade-chart-hud {
   position: absolute;
+  z-index: 3;
   top: 0.35rem;
-  left: 4.6rem;
+  left: 0.55rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem 0.65rem;
@@ -5995,11 +5998,19 @@ body:has([data-pond-profile]) .profile-card {
   stroke-width: 2;
 }
 
-.trade-chart-svg {
+.trade-chart-svg,
+.trade-chart-board {
   display: block;
   width: 100%;
   height: 100%;
   min-height: 27rem;
+}
+
+.trade-chart-board {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .trade-chart-source {
@@ -7723,7 +7734,8 @@ body.page-trade .trade-overview-view {
 body.page-trade .trade-overview-plot,
 body.page-trade .trade-chart-live,
 body.page-trade .trade-chart-empty-state,
-body.page-trade .trade-chart-svg {
+body.page-trade .trade-chart-svg,
+body.page-trade .trade-chart-board {
   min-height: clamp(20rem, 38vw, 34rem);
 }
 
@@ -7841,7 +7853,8 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-overview-plot,
   body.page-trade .trade-chart-live,
   body.page-trade .trade-chart-empty-state,
-  body.page-trade .trade-chart-svg {
+  body.page-trade .trade-chart-svg,
+  body.page-trade .trade-chart-board {
     min-height: clamp(18rem, 72vw, 27rem);
   }
 
@@ -8946,11 +8959,11 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-chart-ohlc {
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    gap: 0.5rem;
+    min-height: 1.35rem;
+    padding: 0.12rem 0.55rem;
+    border-bottom: 1px solid var(--border);
+    background: #0d1013;
+    gap: 0.55rem;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-overview-toolbar {
@@ -8973,7 +8986,8 @@ body.page-trade .trade-detail-window {
     flex-direction: column;
   }
 
-  body.page-trade .trade-app[data-mode="chart"] .trade-chart-svg {
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-svg,
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-board {
     display: block;
     flex: 1 1 auto;
     width: 100%;

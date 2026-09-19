@@ -818,8 +818,16 @@ check(
     tradeJsText.includes("paintLedgerChart") &&
     tradeJsText.includes("printsToCandles") &&
     tradeJsText.includes("recentPriceDomain") &&
-    tradeJsText.includes("trade-chart-last-line") &&
-    tradeJsText.includes("trade-chart-price-clip") &&
+    tradeJsText.includes("LightweightCharts") &&
+    tradeJsText.includes("createChart") &&
+    tradeJsText.includes("CandlestickSeries") &&
+    tradeJsText.includes("HistogramSeries") &&
+    tradeJsText.includes("data-chart-board") &&
+    tradeJsText.includes("/vendor/lightweight-charts.standalone.production.js") &&
+    existsSync(join(DIST_DIR, "vendor", "lightweight-charts.standalone.production.js")) &&
+    !tradeJsText.includes("s.tradingview.com") &&
+    !tradeJsText.includes("tv.js") &&
+    !tradeHtml.includes("s.tradingview.com") &&
     tradeJsText.includes('data-chart-range="1m"') &&
     !tradeJsText.includes('data-chart-pair="xrp-usd"') &&
     !tradeJsText.includes('data-chart-range="1h"') &&
@@ -829,18 +837,12 @@ check(
     tradeJsText.includes("setChartLoading") &&
     tradeJsText.includes("Loading Testnet tape") &&
     tradeJsText.includes('data-chart-indicator="sma"') &&
-    tradeJsText.includes('preserveAspectRatio="none"') &&
     tradeJsText.includes("trade-overview-ticket") &&
-    tradeJsText.includes("data-chart-chrome") &&
-    tradeJsText.includes("data-chart-last-pill") &&
-    tradeJsText.includes("data-chart-y-axis") &&
     tradeJsText.includes("data-chart-hud") &&
     tradeJsText.includes("data-chart-print-age") &&
+    tradeJsText.includes("data-chart-ohlc") &&
     tradeJsText.includes("formatCompact") &&
-    stylesText.includes("trade-chart-last-pill") &&
-    stylesText.includes("trade-chart-y-axis") &&
-    stylesText.includes("trade-chart-candle") &&
-    stylesText.includes("trade-chart-last-line") &&
+    stylesText.includes("trade-chart-board") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&
@@ -1185,6 +1187,7 @@ check(
     existsSync(join(DIST_DIR, "vendor", "xrpl-latest-min.js")) &&
     existsSync(join(DIST_DIR, "vendor", "xrpl-connect.umd.js")) &&
     existsSync(join(DIST_DIR, "vendor", "pond-qr.js")) &&
+    existsSync(join(DIST_DIR, "vendor", "lightweight-charts.standalone.production.js")) &&
     !indexHtml.includes("/pond-qr") &&
     !indexHtml.includes("/vendor/xrpl") &&
     !tradeHtml.includes("data-disclaimer") &&
