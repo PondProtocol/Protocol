@@ -4,10 +4,15 @@
  * After official WalletConnect or Xaman SignIn, serve.mjs assigns a handle
  * and writes it here so other visitors can load /profile/<handle>/.
  *
- * Handle rules (literal sequence for the publication guard):
- *   tadpole01, tadpole010, tadpole0100, tadpole01000, tadpole010000,
- *   tadpole0100000, tadpole01000000, … — append one 0 per new account.
- *   tadpole01 is reserved for the owner classic address (admin).
+ * Handle rules: sequential integer 1 through 99999999999, always with a
+ * leading 0 in front of that number.
+ *   1 → tadpole01 (reserved for the owner classic address)
+ *   2 → tadpole02
+ *   9 → tadpole09
+ *   10 → tadpole010
+ *   11 → tadpole011
+ *   100 → tadpole0100
+ *   max → tadpole099999999999
  *
  * Autoscale disk can be ephemeral. This file is the whole registry. Do not
  * invent an external database connection from this process.
@@ -20,7 +25,8 @@ import { SITE_ROOT } from "./lib.mjs";
 
 export const ADMIN_ADDRESS = "r3E25CzRmwMRNmT15mD3s8tLP9fZHbmN7B";
 export const ADMIN_HANDLE = "tadpole01";
-export const HANDLE_RE = /^tadpole010*$/;
+export const MAX_HANDLE_N = 99_999_999_999;
+export const HANDLE_RE = /^tadpole0[1-9]\d{0,10}$/;
 const ADDR_RE = /^r[1-9A-HJ-NP-Za-km-z]{24,34}$/;
 const STEP_IDS = [
   "begin",
@@ -43,11 +49,18 @@ function emptyStore() {
   return { v: 1, profiles: [] };
 }
 
+export function handleForN(n) {
+  if (!Number.isInteger(n) || n < 1 || n > MAX_HANDLE_N) return "";
+  return `tadpole0${n}`;
+}
+
 export function nextHandle(used) {
   const taken = used instanceof Set ? used : new Set(used);
-  let handle = `${ADMIN_HANDLE}0`;
-  while (taken.has(handle)) handle += "0";
-  return handle;
+  for (let n = 1; n <= MAX_HANDLE_N; n += 1) {
+    const handle = handleForN(n);
+    if (!taken.has(handle)) return handle;
+  }
+  throw new Error("No tadpole handles left.");
 }
 
 export function isAdminAddress(address) {

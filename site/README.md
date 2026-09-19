@@ -58,8 +58,8 @@ put them in the repo, in `site/dist`, or in browser JavaScript.
 
 After official WalletConnect or Xaman SignIn, `POST /api/session` assigns a
 public handle and writes it to that JSON file. `tadpole01` is reserved for
-the owner classic address. Later accounts get `tadpole010`, `tadpole0100`,
-`tadpole01000`, … (one extra `0` each time). Profiles are public at
+the owner classic address. Later accounts get sequential numbers with a
+leading 0: `tadpole02`, `tadpole03`, … `tadpole010`. Profiles are public at
 `/profile/<handle>/`. The file stores handle, XRPL address, display name,
 bio, and Start Here progress — never a seed. Autoscale disk can be
 ephemeral; this process does not talk to `database.greenhead.io`.
