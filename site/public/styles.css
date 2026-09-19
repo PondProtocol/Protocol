@@ -3928,9 +3928,10 @@ code.addr {
 }
 
 .page-index .hero-copy {
-  align-self: center;
+  align-self: start;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .page-index .hero-heading {
@@ -3939,7 +3940,9 @@ code.addr {
 
 .page-index .hero .hero-kicker {
   position: static;
-  font-size: clamp(3.6rem, 11cqi, 7rem);
+  width: auto;
+  max-width: 100%;
+  font-size: clamp(3.2rem, 9cqi, 5.4rem);
   line-height: 0.82;
   letter-spacing: -0.06em;
   margin: 0 0 0.12rem;
@@ -4067,13 +4070,13 @@ code.addr {
   }
 
   .page-index .hero-copy {
-    align-self: center;
+    align-self: start;
     min-height: 0;
     overflow: hidden;
   }
 
   .page-index .hero .hero-kicker {
-    font-size: clamp(2.2rem, 14cqi, 3rem);
+    font-size: clamp(1.85rem, 12cqi, 2.4rem);
   }
 
   .page-index .hero-tagline {
