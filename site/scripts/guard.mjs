@@ -688,7 +688,7 @@ check(
     /bottom:\s*var\(--privacy-reserve-h\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
     /padding-bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(stylesText) &&
-    /flex:\s*0 0 10rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
