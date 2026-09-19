@@ -754,7 +754,8 @@ check(
     xamanSrc.includes("pond_xaman_payload") &&
     xamanSrc.includes("payload_unbound") &&
     xamanSrc.includes("submit: false") &&
-    !/submit:\s*true/.test(xamanSrc) &&
+    !/async function createSignIn[\s\S]*?submit: true/.test(xamanSrc.split("async function createTrustSet")[0]) &&
+    /createAmmCreate[\s\S]*submit: true/.test(xamanSrc) &&
     !xamanSrc.includes('Access-Control-Allow-Origin", "*"') &&
     !xamanSrc.includes("Access-Control-Allow-Origin: *") &&
     readFileSync(join(DIST_DIR, "xaman.js"), "utf8").includes("pond-xaman-qr") &&
@@ -768,7 +769,8 @@ check(
     xamanSrc.includes('TransactionType: "AMMCreate"') &&
     xamanSrc.includes('force_network: "TESTNET"') &&
     xamanSrc.includes("kind: \"ammcreate\"") &&
-    xamanSrc.includes("submit: false") &&
+    /createAmmCreate[\s\S]*submit: true/.test(xamanSrc) &&
+    !/createAmmCreate[\s\S]*submit: false/.test(xamanSrc.split("export async function signedXamanAccount")[0]) &&
     !xamanSrc.includes("AMMDeposit") &&
     !xamanSrc.includes("mnemonic") &&
     !xamanSrc.includes("family seed") &&
