@@ -3709,10 +3709,15 @@ code.addr {
   .hero::after {
     background: linear-gradient(
       180deg,
-      rgb(21 27 33 / 0.84) 0%,
-      rgb(21 27 33 / 0.5) 48%,
-      rgb(21 27 33 / 0.22) 100%
+      rgb(21 27 33 / 0.7) 0%,
+      rgb(21 27 33 / 0.32) 46%,
+      rgb(21 27 33 / 0.08) 100%
     );
+  }
+
+  .hero-topo-svg text {
+    font-size: 13px;
+    stroke-width: 0.45;
   }
 
   .hero-readout {
