@@ -424,6 +424,262 @@ function searchHtml(currentUrl) {
 </form>`;
 }
 
+function smoothPolyline(pts, closed) {
+  const ring = closed ? pts : pts;
+  if (ring.length < 2) return "";
+  if (!closed) {
+    let d = `M${ring[0][0].toFixed(1)} ${ring[0][1].toFixed(1)}`;
+    for (let i = 0; i < ring.length - 1; i++) {
+      const p0 = ring[Math.max(0, i - 1)];
+      const p1 = ring[i];
+      const p2 = ring[i + 1];
+      const p3 = ring[Math.min(ring.length - 1, i + 2)];
+      const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  }
+  const n = ring.length;
+  let d = "";
+  for (let i = 0; i < n; i++) {
+    const p0 = ring[(i - 1 + n) % n];
+    const p1 = ring[i];
+    const p2 = ring[(i + 1) % n];
+    const p3 = ring[(i + 2) % n];
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    if (i === 0) d += `M${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`;
+    d += `C${c1x.toFixed(1)} ${c1y.toFixed(1)},${c2x.toFixed(1)} ${c2y.toFixed(1)},${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return `${d}Z`;
+}
+
+function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
+  const dx = x - cx;
+  const dy = y - cy;
+  const c = Math.cos(th);
+  const s = Math.sin(th);
+  const u = (dx * c + dy * s) / rx;
+  const v = (-dx * s + dy * c) / ry;
+  return a * Math.exp(-0.5 * (u * u + v * v));
+}
+
+function terrainHeight(x, y) {
+  const features = [
+    { x: 0.8, y: 0.3, a: 1.18, rx: 0.12, ry: 0.08, th: 0.62 },
+    { x: 0.85, y: 0.23, a: 0.46, rx: 0.055, ry: 0.07, th: 1.05 },
+    { x: 0.69, y: 0.44, a: 0.58, rx: 0.09, ry: 0.2, th: -0.92 },
+    { x: 0.93, y: 0.55, a: 0.78, rx: 0.07, ry: 0.13, th: 0.2 },
+    { x: 0.24, y: 0.72, a: 0.92, rx: 0.11, ry: 0.09, th: 0.75 },
+    { x: 0.11, y: 0.26, a: 0.64, rx: 0.08, ry: 0.07, th: -0.45 },
+    { x: 0.56, y: 0.14, a: 0.52, rx: 0.3, ry: 0.05, th: 0.12 },
+    { x: 0.78, y: 0.86, a: 0.56, rx: 0.2, ry: 0.055, th: -0.28 },
+    { x: 0.4, y: 0.4, a: 0.36, rx: 0.07, ry: 0.16, th: 0.35 },
+    { x: 0.5, y: 0.58, a: -0.5, rx: 0.15, ry: 0.08, th: 0.4 },
+  ];
+  let z = 0;
+  for (const feature of features) z += blobHeight(x, y, feature);
+  z += 0.06 * Math.sin(x * 6.4 + y * 2.5) * Math.cos(y * 5.1 - x * 1.9);
+  z += 0.035 * Math.sin((x * 1.7 + y) * 7.1);
+  return z;
+}
+
+function contourBounds(pts) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const [x, y] of pts) {
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
+  }
+  return { w: maxX - minX, h: maxY - minY };
+}
+
+function keyPoint(p) {
+  return `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+}
+
+function stitchSegments(segments) {
+  const unused = segments.map((seg) => [...seg]);
+  const polylines = [];
+  const take = (i) => unused.splice(i, 1)[0];
+  while (unused.length) {
+    const line = take(0);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      const start = keyPoint(line[0]);
+      const end = keyPoint(line[line.length - 1]);
+      for (let i = 0; i < unused.length; i++) {
+        const [a, b] = unused[i];
+        const ka = keyPoint(a);
+        const kb = keyPoint(b);
+        if (ka === end) {
+          line.push(b);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (kb === end) {
+          line.push(a);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (kb === start) {
+          line.unshift(a);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+        if (ka === start) {
+          line.unshift(b);
+          unused.splice(i, 1);
+          grew = true;
+          break;
+        }
+      }
+    }
+    polylines.push(line);
+  }
+  return polylines;
+}
+
+function isolines(width, height, cols, rows, level) {
+  const dx = width / cols;
+  const dy = height / rows;
+  const grid = [];
+  for (let j = 0; j <= rows; j++) {
+    const row = [];
+    for (let i = 0; i <= cols; i++) row.push(terrainHeight(i / cols, j / rows));
+    grid.push(row);
+  }
+  const lerp = (p1, p2, v1, v2) => {
+    const t = (level - v1) / ((v2 - v1) || 1e-9);
+    return [p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t];
+  };
+  const segments = [];
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const x0 = i * dx;
+      const y0 = j * dy;
+      const x1 = x0 + dx;
+      const y1 = y0 + dy;
+      const tl = grid[j][i];
+      const tr = grid[j][i + 1];
+      const br = grid[j + 1][i + 1];
+      const bl = grid[j + 1][i];
+      const code =
+        (tl >= level ? 8 : 0) | (tr >= level ? 4 : 0) | (br >= level ? 2 : 0) | (bl >= level ? 1 : 0);
+      if (code === 0 || code === 15) continue;
+      const top = () => lerp([x0, y0], [x1, y0], tl, tr);
+      const right = () => lerp([x1, y0], [x1, y1], tr, br);
+      const bottom = () => lerp([x0, y1], [x1, y1], bl, br);
+      const left = () => lerp([x0, y0], [x0, y1], tl, bl);
+      const add = (a, b) => segments.push([a, b]);
+      switch (code) {
+        case 1:
+        case 14:
+          add(left(), bottom());
+          break;
+        case 2:
+        case 13:
+          add(bottom(), right());
+          break;
+        case 3:
+        case 12:
+          add(left(), right());
+          break;
+        case 4:
+        case 11:
+          add(top(), right());
+          break;
+        case 6:
+        case 9:
+          add(top(), bottom());
+          break;
+        case 7:
+        case 8:
+          add(left(), top());
+          break;
+        case 5:
+          add(left(), top());
+          add(bottom(), right());
+          break;
+        case 10:
+          add(top(), right());
+          add(left(), bottom());
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  return stitchSegments(segments);
+}
+
+function pathLength(pts) {
+  let n = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i][0] - pts[i - 1][0];
+    const dy = pts[i][1] - pts[i - 1][1];
+    n += Math.hypot(dx, dy);
+  }
+  return n;
+}
+
+function heroTopoSvg() {
+  const issuer = site.issuerAddress;
+  const treasury = site.treasuryAddress;
+  const operations = site.operationsAddress;
+  const lines = [
+    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${treasury}","Amount":"0","Flags":0}`,
+    `{"TransactionType":"AccountSet","Account":"${issuer}","Flags":0}`,
+    `{"TransactionType":"TrustSet","Account":"${operations}","Flags":131072,"LimitAmount":{"currency":"PND","issuer":"${issuer}","value":"0"}}`,
+    `Account ${issuer} Destination ${operations} Amount 0 Flags 0 TransactionType Payment`,
+    `{"TransactionType":"Payment","Account":"${issuer}","Destination":"${operations}","Amount":"0","Flags":0}`,
+  ];
+  const levels = [0.2, 0.28, 0.34, 0.4, 0.46, 0.52, 0.58, 0.64, 0.7, 0.76, 0.82, 0.9, 0.98];
+  const contours = [];
+  levels.forEach((level, levelIndex) => {
+    const index = levelIndex % 4 === 0;
+    for (const pts of isolines(1600, 900, 96, 54, level)) {
+      if (pts.length < 8 || pathLength(pts) < 80) continue;
+      const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
+      const body = closed ? pts.slice(0, -1) : pts;
+      if (body.length < 6) continue;
+      const box = contourBounds(body);
+      const fat = Math.max(box.w, box.h);
+      const thin = Math.min(box.w, box.h);
+      if (box.w > 1380 || box.h > 780) continue;
+      if (fat > 720 && thin / fat > 0.8) continue;
+      contours.push({ d: smoothPolyline(body, closed), index, len: pathLength(body) });
+    }
+  });
+  const defs = contours
+    .map((c, i) => `<path id="hero-topo-p${i}" d="${c.d}" fill="none"/>`)
+    .join("");
+  const texts = contours
+    .map((c, i) => {
+      const repeats = Math.max(6, Math.min(16, Math.round(c.len / 140)));
+      const payload = esc(Array.from({ length: repeats }, () => lines[i % lines.length]).join("  ·  "));
+      const cls = c.index ? ' class="hero-topo-index"' : "";
+      return `<text${cls}><textPath href="#hero-topo-p${i}" startOffset="${(i * 5) % 19}%">${payload}</textPath></text>`;
+    })
+    .join("");
+  return `<div class="hero-topo" aria-hidden="true">
+  <svg class="hero-topo-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" focusable="false"><defs>${defs}</defs>${texts}</svg>
+</div>`;
+}
+
 function heroHtml() {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -432,6 +688,7 @@ function heroHtml() {
     </div>`
     : "";
   return `<section class="hero" aria-labelledby="hero-tagline">
+  ${heroTopoSvg()}
   <div class="hero-inner">
     <p class="hero-kicker">Pond Protocol</p>
     <h1 id="hero-tagline" class="hero-tagline">${esc(site.tagline)}</h1>
@@ -447,7 +704,7 @@ function heroHtml() {
       <a class="button" href="/verify/">Verify the real $PND <span aria-hidden="true">↗</span></a>
       <a class="button button-quiet" href="/hold/">How to hold it safely <span aria-hidden="true">↗</span></a>
     </p>
-   </div>
+  </div>
 </section>`;
 }
 
