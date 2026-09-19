@@ -251,6 +251,10 @@
   async function refreshXamanNote() {
     const note = document.querySelector("[data-session-xaman-note]");
     if (!note) return;
+    if (document.querySelector("[data-xaman-autostart]")) {
+      note.hidden = true;
+      return;
+    }
     try {
       const response = await fetch("/health", { headers: { Accept: "application/json" } });
       const data = await response.json().catch(() => ({}));
