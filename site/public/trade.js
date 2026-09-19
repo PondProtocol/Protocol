@@ -745,6 +745,84 @@
       }
     }
 
+    function liveAmmReservePair() {
+      const reserves = state.verification.ammInfo?.amm ?? state.verification.ammInfo;
+      if (!reserves) return null;
+      const { xrp, iou } = splitAmmAssets(reserves);
+      let xrpReserve = NaN;
+      try {
+        xrpReserve = xrp != null ? Number(formatDrops(xrp)) : NaN;
+      } catch {
+        xrpReserve = NaN;
+      }
+      const pndReserve = iou?.value != null ? Number(iou.value) : NaN;
+      if (!Number.isFinite(xrpReserve) || !Number.isFinite(pndReserve) || xrpReserve <= 0 || pndReserve <= 0) {
+        return null;
+      }
+      return { xrpReserve, pndReserve, xrpPerPnd: xrpReserve / pndReserve };
+    }
+
+    function isEvenDeposit() {
+      return Boolean($("[data-amm-side='two']")?.classList.contains("is-active"));
+    }
+
+    function writeAmmAmount(kind, value) {
+      const decimals = kind === "xrp" ? 6 : 6;
+      const n = Number(value);
+      const text = Number.isFinite(n) && n > 0 ? String(Number(n.toFixed(decimals))) : "0";
+      const input = $(kind === "pnd" ? "[data-amm-pnd]" : "[data-amm-xrp]");
+      const range = $(kind === "pnd" ? "[data-amm-pnd-range]" : "[data-amm-xrp-range]");
+      if (input) input.value = text;
+      if (range) range.value = text;
+    }
+
+    function ammWalletMaxes() {
+      const signedPnd = Number(state.verification.walletPnd);
+      let signedXrp = NaN;
+      try {
+        signedXrp = state.verification.walletXrpDrops != null ? Number(formatDrops(state.verification.walletXrpDrops)) : NaN;
+      } catch {
+        signedXrp = NaN;
+      }
+      const rangePnd = Number($("[data-amm-pnd-range]")?.max || 0);
+      const rangeXrp = Number($("[data-amm-xrp-range]")?.max || 0);
+      return {
+        pnd: Number.isFinite(signedPnd) && signedPnd > 0 ? signedPnd : (Number.isFinite(rangePnd) ? rangePnd : 0),
+        xrp: Number.isFinite(signedXrp) && signedXrp > 0 ? signedXrp : (Number.isFinite(rangeXrp) ? rangeXrp : 0),
+      };
+    }
+
+    function coupleEvenDeposit(driver) {
+      if (!isEvenDeposit()) return;
+      const pair = liveAmmReservePair();
+      if (!pair) return;
+      const maxes = ammWalletMaxes();
+      const clampToMax = (value, max) => {
+        const n = Math.max(0, Number(value) || 0);
+        if (Number.isFinite(max) && max > 0 && n > max) return max;
+        return n;
+      };
+      let pnd = Number($("[data-amm-pnd]")?.value) || 0;
+      let xrp = Number($("[data-amm-xrp]")?.value) || 0;
+      if (driver === "xrp") {
+        xrp = clampToMax(xrp, maxes.xrp);
+        pnd = xrp / pair.xrpPerPnd;
+        if (maxes.pnd > 0 && pnd > maxes.pnd) {
+          pnd = maxes.pnd;
+          xrp = pnd * pair.xrpPerPnd;
+        }
+      } else {
+        pnd = clampToMax(pnd, maxes.pnd);
+        xrp = pnd * pair.xrpPerPnd;
+        if (maxes.xrp > 0 && xrp > maxes.xrp) {
+          xrp = maxes.xrp;
+          pnd = xrp / pair.xrpPerPnd;
+        }
+      }
+      writeAmmAmount("pnd", pnd);
+      writeAmmAmount("xrp", xrp);
+    }
+
     function txRecord(item) {
       const tx = item?.tx || item?.tx_json || {};
       const meta = item?.meta || {};
@@ -1244,6 +1322,7 @@
       };
       cap(pndInput, pndRange, Number(pndRange?.max || 0));
       cap(xrpInput, xrpRange, Number(xrpRange?.max || 0));
+      if (isEvenDeposit()) coupleEvenDeposit(Number(pndInput?.value) > 0 ? "pnd" : "xrp");
     }
 
     function setupAmmCreate() {
@@ -1280,8 +1359,11 @@
         });
         const note = $("[data-amm-side-note]");
         if (note) {
+          const pair = liveAmmReservePair();
           note.textContent = side === "two"
-            ? "tfTwoAsset · both assets"
+            ? pair
+              ? `tfTwoAsset · paired at ${pair.xrpPerPnd.toFixed(8)} XRP / PND`
+              : "tfTwoAsset · both assets"
             : `tfSingleAsset · ${singleAsset} only`;
         }
         const pndRow = $("[data-amm-pnd-row]");
@@ -1306,6 +1388,28 @@
           if ($("[data-amm-xrp]")) $("[data-amm-xrp]").value = "0";
           if ($("[data-amm-xrp-range]")) $("[data-amm-xrp-range]").value = "0";
         }
+        if (side === "two") {
+          const pnd = Number($("[data-amm-pnd]")?.value) || 0;
+          const xrp = Number($("[data-amm-xrp]")?.value) || 0;
+          if (pnd > 0) coupleEvenDeposit("pnd");
+          else if (xrp > 0) coupleEvenDeposit("xrp");
+        }
+      };
+      let coupling = false;
+      const bindPairedSlider = (rangeSel, inputSel, driver) => {
+        const range = $(rangeSel);
+        const input = $(inputSel);
+        if (!range || !input) return;
+        const paint = (fromRange) => {
+          if (coupling) return;
+          coupling = true;
+          if (fromRange) input.value = range.value;
+          else range.value = input.value || "0";
+          coupleEvenDeposit(driver);
+          coupling = false;
+        };
+        range.addEventListener("input", () => paint(true));
+        input.addEventListener("input", () => paint(false));
       };
       const bindSlider = (rangeSel, inputSel, labelSel, format) => {
         const range = $(rangeSel);
@@ -1319,8 +1423,8 @@
         range.addEventListener("input", () => paint(true));
         input.addEventListener("input", () => paint(false));
       };
-      bindSlider("[data-amm-pnd-range]", "[data-amm-pnd]");
-      bindSlider("[data-amm-xrp-range]", "[data-amm-xrp]");
+      bindPairedSlider("[data-amm-pnd-range]", "[data-amm-pnd]", "pnd");
+      bindPairedSlider("[data-amm-xrp-range]", "[data-amm-xrp]", "xrp");
       bindSlider("[data-amm-fee-range]", "[data-amm-fee]", "[data-amm-fee-label]", (value) => {
         const n = Number(value);
         return Number.isFinite(n) ? `${(n / 1000).toFixed(n % 10 ? 3 : 1)}%` : "0%";

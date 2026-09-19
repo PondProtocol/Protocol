@@ -678,6 +678,9 @@ check(
     tradeJsText.includes("Even-sided") &&
     tradeJsText.includes("tfTwoAsset") &&
     tradeJsText.includes("tfSingleAsset") &&
+    tradeJsText.includes("coupleEvenDeposit") &&
+    tradeJsText.includes("liveAmmReservePair") &&
+    tradeJsText.includes("paired at") &&
     !tradeJsText.includes("mnemonic"),
 );
 check(
