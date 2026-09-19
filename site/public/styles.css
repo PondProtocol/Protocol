@@ -8114,4 +8114,53 @@ body.page-trade .trade-detail-window {
     padding-top: 0.38rem;
     padding-bottom: 0.38rem;
   }
+
+  /* After AMMCreate payload: keep QR + Open in Xaman in the visible rail.
+   * The one-window lock clips overflow:hidden; do not hide the sign request. */
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-pane:has([data-amm-wait]),
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-card:has([data-amm-wait]),
+  body.page-trade .trade-app[data-mode="amm"] .trade-action-panels:has([data-amm-wait]) {
+    overflow: visible;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-height: 0;
+    height: 100%;
+    overflow: visible;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] > :not([data-amm-xaman]):not(.trade-order-status) {
+    display: none;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] [data-amm-xaman] {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] .session-xaman-panel {
+    gap: 0.35rem;
+    overflow: visible;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] .session-xaman-qr {
+    width: 148px;
+    height: 148px;
+    max-width: 100%;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] .session-xaman-heading,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-create[data-amm-wait="1"] .session-xaman-fine {
+    margin: 0;
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
 }

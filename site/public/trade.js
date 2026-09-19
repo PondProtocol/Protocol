@@ -971,12 +971,14 @@
         pollTimer = 0;
       };
       const paintPayload = (payload) => {
+        const form = mount.closest(".trade-amm-create");
+        if (form) form.dataset.ammWait = "1";
         mount.innerHTML = `
           <div class="session-xaman-panel" data-amm-wait>
             <p class="session-xaman-heading">Sign Testnet AMMCreate in Xaman</p>
             ${
               payload.qr
-                ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="168" height="168" alt="Xaman official AMMCreate QR">`
+                ? `<img class="session-xaman-qr" src="${esc(payload.qr)}" width="148" height="148" alt="Xaman official AMMCreate QR">`
                 : `<p class="session-xaman-pending">Preparing official Xaman payload…</p>`
             }
             <p class="session-xaman-actions">
@@ -984,6 +986,7 @@
             </p>
             <p class="session-xaman-fine">Official Xaman. Pond never asks for a seed. Xaman submits after you sign.</p>
           </div>`;
+        mount.querySelector("[data-amm-wait]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
       };
       const pollPayload = (payload) => {
         stopPoll();
@@ -1061,6 +1064,7 @@
           pollPayload(data);
         } catch (error) {
           mount.innerHTML = "";
+          mount.closest(".trade-amm-create")?.removeAttribute("data-amm-wait");
           setAmmStatus(error.message || "Could not start AMMCreate.", "error");
         } finally {
           send.disabled = state.network !== "testnet";
