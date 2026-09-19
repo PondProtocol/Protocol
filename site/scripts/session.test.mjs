@@ -141,4 +141,26 @@ test("WalletConnect session does not return a handle", async () => {
   assert.equal(data.address, "rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpADk");
   assert.equal(data.handle, null);
   assert.equal(data.admin, false);
+  assert.equal(data.signedInWith, "WalletConnect");
+  assert.equal(data.displayName, "");
+  assert.ok(data.expiresAt > Date.now());
 });
+
+test("Xaman session includes display name and idle expiry", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    await updateOwnProfile(ADMIN_ADDRESS, { displayName: "Greenhead" });
+    const now = Date.now();
+    const cookie = signSession({
+      address: ADMIN_ADDRESS,
+      method: "xaman",
+      t: now,
+      active: now,
+    });
+    const { data } = await sessionApi({ cookie });
+    assert.equal(data.handle, "tadpole01");
+    assert.equal(data.displayName, "Greenhead");
+    assert.equal(data.signedInWith, "Xaman");
+    assert.equal(data.idleMs, IDLE_MS);
+    assert.ok(data.expiresAt > now);
+  }));

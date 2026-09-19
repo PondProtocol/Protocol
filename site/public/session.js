@@ -23,6 +23,7 @@
   const authed = () => document.querySelector("[data-session-authed]");
   const profileLink = () => document.querySelector("[data-session-profile]");
   const avatarEl = () => document.querySelector("[data-session-avatar]");
+  const nameEl = () => document.querySelector("[data-session-name]");
 
   function iconSrc(value) {
     const text = String(value || "").trim();
@@ -41,7 +42,16 @@
       admin: Boolean(data.admin),
       disclaimerAccepted: Boolean(data.disclaimerAccepted),
       icon: data.icon || "",
+      displayName: data.displayName || "",
+      signedInWith: data.signedInWith || "",
+      expiresAt: data.expiresAt || null,
+      activeAt: data.activeAt || null,
+      idleMs: data.idleMs || 0,
     };
+  }
+
+  function profileLabel(session) {
+    return session?.displayName || session?.handle || "Your profile";
   }
 
   function shortAddr(addr) {
@@ -68,12 +78,16 @@
     if (guest()) guest().hidden = signedIn;
     if (authed()) authed().hidden = !signedIn;
     const link = profileLink();
+    const label = profileLabel(current);
     if (link instanceof HTMLAnchorElement) {
       link.href = current?.handle ? `/profile/${current.handle}/` : "/profile/";
-      link.setAttribute("aria-label", current?.handle ? `Open ${current.handle}` : "Open your profile");
+      link.setAttribute("aria-label", `Open ${label}`);
+      link.title = label;
     }
     const avatar = avatarEl();
     if (avatar) avatar.src = iconSrc(current?.icon);
+    const name = nameEl();
+    if (name) name.textContent = signedIn ? label : "";
     document.querySelectorAll("[data-privacy-session]").forEach((el) => {
       el.hidden = !signedIn;
       el.textContent = signedIn

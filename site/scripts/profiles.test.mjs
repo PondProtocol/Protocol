@@ -13,6 +13,7 @@ import {
   getProfileByHandle,
   handleForN,
   handleProfiles,
+  markLastSignIn,
   nextHandle,
   updateOwnProfile,
 } from "./profiles.mjs";
@@ -210,6 +211,37 @@ test("balance API stays behind an active Xaman session", () =>
       readSession: () => ({ address: ADMIN_ADDRESS, method: "walletconnect" }),
     });
     assert.equal(wallet.statusCode, 403);
+  }));
+
+test("optional public card is handle and icon only", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    const hidden = await profileApi("/api/card/tadpole01");
+    assert.equal(hidden.res.statusCode, 404);
+    assert.equal(hidden.data.handle, undefined);
+    assert.equal(hidden.data.address, undefined);
+    assert.equal(hidden.data.displayName, undefined);
+    await updateOwnProfile(ADMIN_ADDRESS, { publicCard: true, icon: "/greenhead-duck.png" });
+    const open = await profileApi("/api/card/tadpole01");
+    assert.equal(open.res.statusCode, 200);
+    assert.equal(open.data.handle, "tadpole01");
+    assert.equal(open.data.icon, "/greenhead-duck.png");
+    assert.equal(open.data.address, undefined);
+    assert.equal(open.data.displayName, undefined);
+    assert.equal(Object.keys(open.data).sort().join(","), "handle,icon");
+  }));
+
+test("profile activity timestamps stay honest", () =>
+  withStore(async () => {
+    const row = await ensureProfile(ADMIN_ADDRESS);
+    assert.equal(row.lastSignedInAt, 0);
+    assert.equal(row.lastSavedAt, 0);
+    const signed = await markLastSignIn(ADMIN_ADDRESS);
+    assert.ok(signed.lastSignedInAt > 0);
+    const saved = await updateOwnProfile(ADMIN_ADDRESS, { displayName: "Greenhead" });
+    assert.ok(saved.lastSavedAt > 0);
+    assert.equal(saved.displayName, "Greenhead");
+    assert.equal(saved.publicCard, false);
   }));
 
 test("profile icon is stored on the JSON profile and rejects secrets", () =>

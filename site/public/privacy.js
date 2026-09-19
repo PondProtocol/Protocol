@@ -128,6 +128,12 @@
   };
   window.addEventListener("popstate", onPathChange);
 
+  window.PondPrivacy = {
+    openVault() {
+      setMode("vault");
+    },
+  };
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", setup, { once: true });
   } else {

@@ -222,7 +222,10 @@
       root,
       compact
         ? isAutostart(root)
-          ? `<p class="session-xaman-error" role="alert">${esc(message)}</p>`
+          ? `<div class="session-xaman-recover" data-xaman-recover>
+              <p class="session-xaman-error" role="alert">${esc(message)}</p>
+              <button type="button" class="session-xaman-retry" data-xaman-retry>Get a new QR</button>
+            </div>`
           : `<p class="trade-connect-xaman-error" role="alert">${esc(message)}</p>${idleHtml(true)}`
         : `<div class="xaman-card"><p class="xaman-kicker">Xaman</p><p class="xaman-error" role="alert">${esc(message)}</p>${idleHtml(false)}</div>`,
     );
@@ -277,6 +280,14 @@
   }
 
   function bind(root, health) {
+    root.querySelector("[data-xaman-retry]")?.addEventListener("click", async (event) => {
+      event.preventDefault();
+      try {
+        await startSignIn(root, { force: true });
+      } catch (error) {
+        showError(root, health, error.message || "Could not start a new sign request.");
+      }
+    });
     root.querySelector("[data-xaman-signin]")?.addEventListener("click", async (event) => {
       const button = event.currentTarget;
       button.disabled = true;
@@ -361,7 +372,7 @@
   let lastHealth = null;
   let inflightSignIn = null;
 
-  async function startSignIn(root) {
+  async function startSignIn(root, options = {}) {
     if (!root || !isAutostart(root)) return;
     if (session()?.account) return;
     if (!lastHealth) {
@@ -373,7 +384,12 @@
     }
     const health = lastHealth;
     if (!health?.xaman?.configured) return;
-    if (inflightSignIn?.uuid) {
+    if (options.force) {
+      stopPoll();
+      inflightSignIn = null;
+      root.dataset.xamanBusy = "";
+    }
+    if (inflightSignIn?.uuid && !options.force) {
       pollUntilResolved(root, health, inflightSignIn, "Sign in with Xaman");
       return;
     }

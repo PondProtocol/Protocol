@@ -33,6 +33,16 @@
     return /^\/profile\/?$/.test(window.location.pathname) || Boolean(pathHandle());
   }
 
+  function formatWhen(ms) {
+    const n = Number(ms);
+    if (!Number.isFinite(n) || n <= 0) return "Not yet";
+    try {
+      return new Date(n).toLocaleString();
+    } catch {
+      return "Not yet";
+    }
+  }
+
   function progressCount(progress) {
     return STEPS.filter((step) => progress?.[step.id]).length;
   }
@@ -41,17 +51,16 @@
     const done = progressCount(progress);
     const items = STEPS.map((step, i) => {
       const n = String(i + 1).padStart(2, "0");
-      const complete = progress?.[step.id] ? " is-complete" : "";
-      return `<li class="start-progress-step${complete}" data-start-step="${esc(step.id)}">
+      const complete = Boolean(progress?.[step.id]);
+      return `<li class="profile-check${complete ? " is-done" : ""}" data-start-step="${esc(step.id)}">
+        <span class="profile-check-state">${complete ? "Done" : "Open"}</span>
         <a href="${esc(step.url)}"><b>${n}</b><strong>${esc(step.title)}</strong></a>
       </li>`;
     }).join("");
-    return `<nav class="start-progress is-compact profile-progress" aria-label="Start here progress">
-      <div class="start-progress-head">
-        <p class="start-eyebrow">Start here</p>
-        <p class="start-progress-count"><strong data-start-progress-count>${done} / ${STEPS.length}</strong> saved</p>
-      </div>
-      <ol class="start-progress-list">${items}</ol>
+    return `<nav class="profile-checklist" aria-label="Start here progress">
+      <p class="profile-kicker">Start here</p>
+      <p class="profile-checklist-count"><strong data-start-progress-count>${done} / ${STEPS.length}</strong> saved</p>
+      <ol class="profile-check-list">${items}</ol>
     </nav>`;
   }
 
@@ -88,6 +97,69 @@
     </section>`;
   }
 
+  function trustHtml(snapshot) {
+    const pnd = snapshot?.trustLines?.pnd || { status: "loading", note: "Reading validated ledger…" };
+    const rpnd = snapshot?.trustLines?.rpnd || { status: "loading", note: "Reading validated ledger…" };
+    const pndLabel = pnd.status === "set" ? "Set" : pnd.status === "missing" ? "Missing" : "…";
+    const rpndLabel = rpnd.status === "not_issued" ? "Missing / not issued" : rpnd.status === "missing" ? "Missing" : "…";
+    return `<section class="profile-trust" aria-label="Trust lines">
+      <p class="profile-kicker">Trust lines</p>
+      <div class="profile-trust-grid">
+        <div class="profile-trust-row" data-trust="pnd" data-state="${esc(pnd.status)}">
+          <span>$PND</span>
+          <strong>${esc(pndLabel)}</strong>
+          <em>${esc(pnd.note || "")}</em>
+        </div>
+        <div class="profile-trust-row" data-trust="rpnd" data-state="${esc(rpnd.status)}">
+          <span>$rPND</span>
+          <strong>${esc(rpndLabel)}</strong>
+          <em>${esc(rpnd.note || "")}</em>
+        </div>
+      </div>
+      <p class="profile-form-note"><a href="/start/trust-lines/">Set trust lines</a> when you are ready. $PND is set when a line to this issuer exists, even at 0.</p>
+    </section>`;
+  }
+
+  function membershipHtml(snapshot) {
+    const note = snapshot?.membership?.note || "None yet. A membership or seat NFT is not minted.";
+    return `<section class="profile-membership" aria-label="Membership">
+      <p class="profile-kicker">Membership / seat NFT</p>
+      <p class="profile-form-note">${esc(note)}</p>
+    </section>`;
+  }
+
+  function airdropHtml(snapshot) {
+    const hold = snapshot?.airdrop?.hold ?? "0";
+    const note =
+      snapshot?.airdrop?.note ||
+      "Snapshot eligibility is later. Hold amount only — not an APY. $PND is not issued.";
+    return `<section class="profile-airdrop" aria-label="Airdrop snapshot">
+      <p class="profile-kicker">Airdrop snapshot</p>
+      <p class="profile-form-note">Current $PND hold: <strong>${esc(hold)}</strong>. ${esc(note)}</p>
+    </section>`;
+  }
+
+  function sessionMetaHtml() {
+    const session = window.PondSession?.current?.() || {};
+    const method = session.method === "xaman" ? "Xaman" : session.method === "walletconnect" ? "WalletConnect" : "";
+    return `<section class="profile-session-meta" aria-label="Session">
+      <p class="profile-kicker">Session</p>
+      <p>Signed in with ${esc(method || "unknown")}.</p>
+      <p class="profile-form-note">Idle timeout is 24 hours. This session expires ${esc(formatWhen(session.expiresAt))} if unused.</p>
+    </section>`;
+  }
+
+  function activityHtml(profile) {
+    return `<section class="profile-activity" aria-label="Account activity">
+      <p class="profile-kicker">Activity</p>
+      <dl class="profile-activity-list">
+        <div><dt>Last sign-in</dt><dd>${esc(formatWhen(profile.lastSignedInAt))}</dd></div>
+        <div><dt>Last disclaimer accept</dt><dd>${esc(formatWhen(profile.disclaimerAcceptedAt))}</dd></div>
+        <div><dt>Last profile save</dt><dd>${esc(formatWhen(profile.lastSavedAt))}</dd></div>
+      </dl>
+    </section>`;
+  }
+
   function signOutHtml() {
     return `<p class="profile-session-actions">
       <button type="button" class="button button-quiet" data-profile-signout>Sign out</button>
@@ -104,6 +176,7 @@
       <p class="profile-kicker">Pond Protocol Profile</p>
       <h2>Complete your Pond Protocol Profile</h2>
       <p>${copy} Pond never asks for a seed.</p>
+      ${session?.address ? sessionMetaHtml() : ""}
       ${session?.address ? signOutHtml() : ""}
     </div>`;
   }
@@ -122,7 +195,15 @@
       </div>
       <p class="profile-handle">/profile/${esc(profile.handle)}/</p>
       <p class="profile-address" title="${esc(profile.address)}">${esc(shortAddr(profile.address))}</p>
+      ${sessionMetaHtml()}
+      <div class="profile-quick-actions">
+        <button type="button" class="button button-quiet" data-review-disclaimer>Review disclaimer</button>
+        <button type="button" class="button button-quiet" data-privacy-controls>Privacy Controls</button>
+      </div>
       ${balancesHtml(profile.balances)}
+      ${trustHtml(profile.balances)}
+      ${membershipHtml(profile.balances)}
+      ${airdropHtml(profile.balances)}
       <form class="profile-form" data-profile-form>
         <label>
           <span>Display name</span>
@@ -140,13 +221,17 @@
           <span>Or upload a small image</span>
           <input type="file" name="iconFile" accept="image/png,image/jpeg,image/webp,image/gif">
         </label>
-        <p class="profile-form-note">Visible only while this Xaman session is signed in. Never a seed, password, or private key.</p>
+        <label class="profile-public-card">
+          <input type="checkbox" name="publicCard" ${profile.publicCard ? "checked" : ""}>
+          <span>Show a public card (handle + avatar only — never the address)</span>
+        </label>
+        <p class="profile-form-note">Public card URL: <a href="/card/${esc(profile.handle)}/">/card/${esc(profile.handle)}/</a>. Visible only if you turn it on. Full profile stays Xaman-only. Never a seed, password, or private key.</p>
         <p class="profile-form-status" data-profile-status hidden></p>
         <div class="profile-form-actions">
           <button type="submit" class="button">Save profile</button>
-          <button type="button" class="button button-quiet" data-review-disclaimer>Review disclaimer</button>
         </div>
       </form>
+      ${activityHtml(profile)}
       ${signOutHtml()}
       ${progressHtml(profile.progress)}
     </div>`;
@@ -253,10 +338,15 @@
         bio: form.bio.value,
         icon: form.dataset.iconData || form.icon.value.trim(),
         progress: window.PondStart?.flags?.() || profile.progress || {},
+        publicCard: Boolean(form.publicCard?.checked),
       };
       try {
         const saved = await saveOwn(body);
-        window.PondSession?.patch?.({ icon: saved.icon || "", handle: saved.handle || "" });
+        window.PondSession?.patch?.({
+          icon: saved.icon || "",
+          handle: saved.handle || "",
+          displayName: saved.displayName || "",
+        });
         render({ ...saved, balances: profile.balances });
         setStatus("Saved.");
       } catch (error) {
@@ -286,6 +376,9 @@
     bindSignOut(mount);
     mount.querySelector("[data-review-disclaimer]")?.addEventListener("click", () => {
       window.PondDisclaimer?.open?.();
+    });
+    mount.querySelector("[data-privacy-controls]")?.addEventListener("click", () => {
+      window.PondPrivacy?.openVault?.();
     });
     document.title = `${profile.displayName || profile.handle} — Pond Protocol`;
   }

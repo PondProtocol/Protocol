@@ -28,13 +28,17 @@ We use cookies. That is intentional.
   address.
 - **Account profile.** After official **Xaman SignIn**, this host assigns
   a tadpole handle and stores handle, XRPL address, optional display
-  name / bio / profile icon, and a Start Here progress pointer in a JSON
+  name / bio / profile icon, Start Here progress, trade-disclaimer
+  acceptance, an optional public-card flag, and compact activity times
+  (last sign-in, last disclaimer accept, last profile save) in a JSON
   file the site process can write. The profile also reads public XRPL
-  wallet balances. That page is visible only while that Xaman session
-  is logged in. WalletConnect on Trade does not open it. Logged-out
-  visitors do not see handles or profile fields. We do not store seeds
-  or private keys. Autoscale disk may be ephemeral, so that file can
-  reset on a new deploy.
+  wallet balances and $PND / $rPND trust-line status. That page is
+  visible only while that Xaman session is logged in. WalletConnect on
+  Trade does not open it. Logged-out visitors do not see handles or
+  profile fields. If you turn on the public card, the open web can see
+  only the handle and avatar — never the XRPL address. We do not store
+  seeds or private keys. Autoscale disk may be ephemeral, so that file
+  can reset on a new deploy.
 
 We remember the XRPL address you signed in with. We do not sell personal
 data. We do not run ads. We never ask for a seed, mnemonic, private key, or

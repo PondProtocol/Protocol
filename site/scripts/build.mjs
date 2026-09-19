@@ -541,6 +541,7 @@ function sessionChipHtml() {
   <div class="session-authed" data-session-authed hidden>
     <a class="session-profile" data-session-profile href="/profile/" aria-label="Open your profile">
       <img class="session-avatar" data-session-avatar src="/greenhead-duck.png" width="30" height="30" alt="">
+      <span class="session-profile-name" data-session-name></span>
     </a>
   </div>
   <xrpl-wallet-connector id="pond-session-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
@@ -679,7 +680,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url === "/profile/" ? "page-profile page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
+<body class="${isHome ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url === "/connect/" ? "page-connect page-docs" : page.url === "/profile/" ? "page-profile page-docs" : page.url === "/card/" ? "page-card page-docs" : isStartFlow(page.url) ? "page-start page-docs" : "page-docs"}">
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
@@ -788,6 +789,7 @@ ${privacyDockHtml()}
 <script src="/session.js" defer></script>
 <script src="/start.js" defer></script>
 <script src="/profile.js" defer></script>
+<script src="/card.js" defer></script>
 <script src="/disclaimer.js" defer></script>
 <script src="/privacy.js" defer></script>
 <script src="/xaman.js" defer></script>

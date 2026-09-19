@@ -11,7 +11,7 @@
  * authenticated use, not from login.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { ensureProfile, publicProfile } from "./profiles.mjs";
+import { ensureProfile, markLastSignIn, publicProfile } from "./profiles.mjs";
 import { signedXamanAccount } from "./xaman.mjs";
 
 export const SESSION_COOKIE = "pond_session";
@@ -132,15 +132,38 @@ function cookieHeader(value, req, { clear = false } = {}) {
   return parts.join("; ");
 }
 
+function sessionMeta(session) {
+  if (!session) {
+    return { signedInWith: null, activeAt: null, idleMs: IDLE_MS, expiresAt: null };
+  }
+  const activeAt = Number(session.active ?? session.t ?? 0);
+  return {
+    signedInWith: session.method === "xaman" ? "Xaman" : session.method === "walletconnect" ? "WalletConnect" : session.method,
+    activeAt,
+    idleMs: IDLE_MS,
+    expiresAt: Number.isFinite(activeAt) && activeAt > 0 ? activeAt + IDLE_MS : null,
+  };
+}
+
 function publicSession(session, profile = null) {
-  if (!session) return { address: null, method: null, handle: null, admin: false };
+  if (!session) {
+    return { address: null, method: null, handle: null, admin: false, displayName: "", ...sessionMeta(null) };
+  }
   if (session.method !== "xaman") {
-    return { address: session.address, method: session.method, handle: null, admin: false };
+    return {
+      address: session.address,
+      method: session.method,
+      handle: null,
+      admin: false,
+      displayName: "",
+      ...sessionMeta(session),
+    };
   }
   return {
     address: session.address,
     method: session.method,
     ...publicProfile(profile),
+    ...sessionMeta(session),
   };
 }
 
@@ -243,7 +266,11 @@ export async function handleSession(req, res, url) {
 
   const now = Date.now();
   const session = { address, method, t: now, active: now };
-  const profile = method === "xaman" ? await ensureProfile(address) : null;
+  let profile = null;
+  if (method === "xaman") {
+    await ensureProfile(address);
+    profile = await markLastSignIn(address);
+  }
   json(res, 200, publicSession(session, profile), {
     "Set-Cookie": cookieHeader(signSession(session), req),
   });

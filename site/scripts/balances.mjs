@@ -46,10 +46,18 @@ function lineAmount(lines, issuer, code) {
   return String(Math.abs(value));
 }
 
+function lineExists(lines, issuer, code) {
+  return (lines || []).some((line) => {
+    const peer = line.account || line.peer || "";
+    return peer === issuer && currencyText(line.currency) === code;
+  });
+}
+
 export function summarizeBalances({ accountFound, balanceDrops, lines }, { pndIssuer }) {
   const pnd = lineAmount(lines, pndIssuer, "PND");
   const rlusd = lineAmount(lines, RLUSD_ISSUER, RLUSD_CODE);
   const pndIssued = Number(pnd) > 0;
+  const pndLine = lineExists(lines, pndIssuer, "PND");
   return {
     source: "xrpl-validated-ledger",
     accountFound: Boolean(accountFound),
@@ -83,6 +91,31 @@ export function summarizeBalances({ accountFound, balanceDrops, lines }, { pndIs
         note: accountFound ? "Validated ledger trust line" : "No XRPL account yet",
       },
     ],
+    trustLines: {
+      pnd: {
+        id: "pnd",
+        label: "$PND",
+        status: pndLine ? "set" : "missing",
+        note: pndLine ? "Trust line set" : "Trust line missing",
+      },
+      rpnd: {
+        id: "rpnd",
+        label: "$rPND",
+        status: "not_issued",
+        note: "Missing / not issued. $rPND is an MPT and is not issued yet.",
+      },
+    },
+    membership: {
+      status: "none",
+      note: "None yet. A membership or seat NFT is not minted.",
+    },
+    airdrop: {
+      status: "later",
+      hold: pndIssued ? pnd : "0",
+      note: pndIssued
+        ? "Snapshot eligibility is later. This is the current $PND hold, not an APY."
+        : "Snapshot eligibility is later. Hold amount only — not an APY. $PND is not issued.",
+    },
   };
 }
 

@@ -83,7 +83,11 @@ function publicFields(row) {
     bio: row.bio || "",
     progress: { ...(row.progress || {}) },
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
+    disclaimerAcceptedAt: row.disclaimerAcceptedAt || 0,
     icon: row.icon || "",
+    publicCard: Boolean(row.publicCard),
+    lastSignedInAt: row.lastSignedInAt || 0,
+    lastSavedAt: row.lastSavedAt || 0,
     admin: row.handle === ADMIN_HANDLE || isAdminAddress(row.address),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -277,13 +281,31 @@ function asIcon(value) {
 }
 
 export function publicProfile(row) {
-  if (!row) return { handle: null, admin: false };
+  if (!row) return { handle: null, admin: false, displayName: "" };
   return {
     handle: row.handle,
     admin: Boolean(row.admin),
     disclaimerAccepted: Boolean(row.disclaimerAccepted),
     icon: row.icon || "",
+    displayName: row.displayName || "",
   };
+}
+
+export function getPublicCard(handle) {
+  const store = readStore();
+  const row = store.profiles.find((item) => item.handle === handle);
+  if (!row || !row.publicCard) return null;
+  return { handle: row.handle, icon: row.icon || "" };
+}
+
+export function markLastSignIn(address) {
+  if (!ADDR_RE.test(address || "")) return Promise.resolve(null);
+  return withStore((store) => {
+    const row = store.profiles.find((item) => item.address === address);
+    if (!row) return null;
+    row.lastSignedInAt = now();
+    return publicFields(row);
+  });
 }
 
 export async function updateOwnProfile(address, patch = {}) {
@@ -310,7 +332,10 @@ export async function updateOwnProfile(address, patch = {}) {
       row.disclaimerAccepted = true;
       row.disclaimerAcceptedAt = now();
     }
-    row.updatedAt = now();
+    if (patch.publicCard !== undefined) row.publicCard = Boolean(patch.publicCard);
+    const t = now();
+    row.lastSavedAt = t;
+    row.updatedAt = t;
     return publicFields(row);
   });
 }
@@ -354,6 +379,10 @@ export function isProfilePage(url) {
   return url === "/profile" || url === "/profile/" || /^\/profile\/[A-Za-z0-9_-]+\/?$/.test(url);
 }
 
+export function isCardPage(url) {
+  return url === "/card" || url === "/card/" || /^\/card\/[A-Za-z0-9_-]+\/?$/.test(url);
+}
+
 function denyProfile(res, status, error, message) {
   json(res, status, { error, message });
   return false;
@@ -379,9 +408,30 @@ function requireXaman(req, res, loadSession) {
  * @returns {Promise<boolean>} whether the request was a profile API route
  */
 export async function handleProfiles(req, res, url, { readSession }) {
+  const cardMatch = url.match(/^\/api\/card\/([^/]+)$/);
   const handleMatch = url.match(/^\/api\/profile\/([^/]+)$/);
   const collection = url === "/api/profile";
   const balances = url === "/api/profile/balances";
+
+  // GET /api/card/:handle is public: handle + icon only, never the address.
+  if (cardMatch) {
+    if (req.method === "OPTIONS") {
+      json(res, 204, {});
+      return true;
+    }
+    if (req.method !== "GET") {
+      json(res, 405, { error: "method_not_allowed", message: "Use GET." });
+      return true;
+    }
+    const handle = decodeURIComponent(cardMatch[1]);
+    const card = getPublicCard(handle);
+    if (!card) {
+      json(res, 404, { error: "not_found", message: "That card is not public." });
+      return true;
+    }
+    json(res, 200, card);
+    return true;
+  }
 
   if (!collection && !handleMatch && !balances) return false;
 

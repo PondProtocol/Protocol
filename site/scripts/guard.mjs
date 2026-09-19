@@ -963,7 +963,8 @@ check(
     profilesSrc.includes("xaman_required") &&
     readFileSync(join(SITE_ROOT, "scripts", "session.mjs"), "utf8").includes("ensureProfile") &&
     readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("handleProfiles") &&
-    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage"),
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isProfilePage") &&
+    readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8").includes("isCardPage"),
 );
 check(
   "profile forms never ask for a seed or password",
@@ -983,6 +984,70 @@ check(
     existsSync(join(SITE_ROOT, "scripts", "balances.mjs")) &&
     readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8").includes("xrplcluster.com") &&
     !profileJsText.includes("rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De"),
+);
+const cardJs = join(DIST_DIR, "card.js");
+const cardJsText = existsSync(cardJs) ? readFileSync(cardJs, "utf8") : "";
+const cardHtml = existsSync(join(DIST_DIR, "card", "index.html"))
+  ? readFileSync(join(DIST_DIR, "card", "index.html"), "utf8")
+  : "";
+const balancesSrc = existsSync(join(SITE_ROOT, "scripts", "balances.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8")
+  : "";
+check(
+  "profile shows trust lines, Start Here checklist, session expiry, and honest later fields",
+  profileJsText.includes("/start/trust-lines/") &&
+    profileJsText.includes("data-trust") &&
+    profileJsText.includes("Missing / not issued") &&
+    profileJsText.includes("profile-checklist") &&
+    profileJsText.includes("Done") &&
+    profileJsText.includes("Open") &&
+    profileJsText.includes("Signed in with") &&
+    profileJsText.includes("24 hours") &&
+    profileJsText.includes("data-privacy-controls") &&
+    /Privacy Controls/.test(profileJsText) &&
+    privacyJsText.includes("PondPrivacy") &&
+    privacyJsText.includes("openVault") &&
+    profileJsText.includes("Membership / seat NFT") &&
+    profileJsText.includes("not minted") &&
+    profileJsText.includes("not an APY") &&
+    profileJsText.includes("Last sign-in") &&
+    profileJsText.includes("Last disclaimer accept") &&
+    profileJsText.includes("Last profile save") &&
+    balancesSrc.includes("trustLines") &&
+    balancesSrc.includes("membership") &&
+    balancesSrc.includes("airdrop") &&
+    !balancesSrc.includes("account_nfts"),
+);
+check(
+  "nav icon hover uses display name or handle, never the classic address",
+  indexHtml.includes("data-session-name") &&
+    sessionJsText.includes("displayName") &&
+    sessionJsText.includes("data-session-name") &&
+    sessionJsText.includes("Your profile") &&
+    !sessionJsText.includes("link.title = shortAddr") &&
+    !sessionJsText.includes("aria-label`, current?.address"),
+);
+check(
+  "optional public card is handle and avatar only",
+  existsSync(cardJs) &&
+    cardHtml.includes("data-pond-card") &&
+    cardJsText.includes("/api/card/") &&
+    cardJsText.includes("public-card-handle") &&
+    !cardJsText.includes("shortAddr") &&
+    !cardJsText.includes(".address") &&
+    profilesSrc.includes("getPublicCard") &&
+    profilesSrc.includes("/api/card/") &&
+    profileJsText.includes("publicCard") &&
+    /never the address/.test(profileJsText) &&
+    !startHereLabels.includes("Public card") &&
+    !startHereOrder.includes("Public card"),
+);
+check(
+  "expired Xaman QR can be replaced without a full page reload",
+  xamanJsText.includes("data-xaman-retry") &&
+    /Get a new QR/.test(xamanJsText) &&
+    xamanJsText.includes("force: true") &&
+    xamanJsText.includes("options.force"),
 );
 
 const startJs = join(DIST_DIR, "start.js");

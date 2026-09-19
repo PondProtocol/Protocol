@@ -25,4 +25,29 @@ test("missing XRPL account stays honest zeros", () => {
   const xrp = snapshot.assets.find((asset) => asset.id === "xrp");
   assert.equal(xrp.value, "0");
   assert.equal(xrp.state, "no_account");
+  assert.equal(snapshot.trustLines.pnd.status, "missing");
+  assert.equal(snapshot.trustLines.rpnd.status, "not_issued");
+  assert.equal(snapshot.membership.status, "none");
+  assert.equal(snapshot.airdrop.status, "later");
+  assert.equal(snapshot.airdrop.hold, "0");
+  assert.match(snapshot.airdrop.note, /not an APY/);
+  assert.doesNotMatch(snapshot.airdrop.note, /earn|yield|% APY/i);
+});
+
+test("PND trust line is set even at zero, rPND stays not issued", () => {
+  const snapshot = summarizeBalances(
+    {
+      accountFound: true,
+      balanceDrops: "1000000",
+      lines: [{ account: PND, currency: "PND", balance: "0" }],
+    },
+    { pndIssuer: PND },
+  );
+  assert.equal(snapshot.trustLines.pnd.status, "set");
+  assert.equal(snapshot.assets.find((asset) => asset.id === "pnd").state, "not_issued");
+  assert.equal(snapshot.trustLines.rpnd.status, "not_issued");
+  assert.equal(snapshot.membership.status, "none");
+  assert.match(snapshot.membership.note, /not minted/);
+  assert.equal(snapshot.airdrop.hold, "0");
+  assert.equal(snapshot.airdrop.status, "later");
 });

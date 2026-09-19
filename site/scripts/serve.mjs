@@ -7,7 +7,7 @@
  * same Content-Type and CORS headers that public/_headers asks a static host for, so a
  * local check and a production check look the same. Node standard library only.
  *
- * Also answers /health, /api/session, /api/profile/*, and /api/xaman/* .
+ * Also answers /health, /api/session, /api/profile/*, /api/card/*, and /api/xaman/* .
  * Those routes need this process (Autoscale). The Xaman API secret stays
  * here — it is never written into site/dist. Session cookies are signed
  * here. Tadpole profiles are a JSON file this process can persist and
@@ -17,7 +17,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { DIST_DIR } from "./lib.mjs";
-import { handleProfiles, isProfilePage } from "./profiles.mjs";
+import { handleProfiles, isCardPage, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
 import { handleApi } from "./xaman.mjs";
 
@@ -60,6 +60,7 @@ createServer(async (req, res) => {
 
   let path = join(DIST_DIR, normalize(url).replace(/^(\.\.[/\\])+/, ""));
   if (isProfilePage(url)) path = join(DIST_DIR, "profile", "index.html");
+  if (isCardPage(url)) path = join(DIST_DIR, "card", "index.html");
 
   if (existsSync(path) && statSync(path).isDirectory()) path = join(path, "index.html");
   if (!existsSync(path) || !statSync(path).isFile()) path = join(DIST_DIR, "404.html");
