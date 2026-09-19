@@ -269,12 +269,12 @@
             <span class="is-active">Candles</span>
             <button type="button" class="is-active" data-chart-volume aria-pressed="true">Volume</button>
           </div>
-          <div class="trade-indicator-tools" data-control-group="overview-indicators">
-            <button type="button" class="is-active" data-chart-indicator="sma">SMA</button>
-            <button type="button" data-chart-indicator="ema">EMA</button>
-            <button type="button" data-chart-indicator="rsi">RSI</button>
-            <button type="button" data-chart-indicator="macd">MACD</button>
-            <button type="button" data-chart-indicator="bollinger">BB</button>
+          <div class="trade-indicator-tools" data-indicator-tools>
+            <button type="button" class="is-active" data-chart-indicator="sma" aria-pressed="true">SMA</button>
+            <button type="button" class="is-active" data-chart-indicator="ema" aria-pressed="true">EMA</button>
+            <button type="button" class="is-active" data-chart-indicator="rsi" aria-pressed="true">RSI</button>
+            <button type="button" class="is-active" data-chart-indicator="macd" aria-pressed="true">MACD</button>
+            <button type="button" class="is-active" data-chart-indicator="bollinger" aria-pressed="true">BB</button>
           </div>
         </div>
         <div class="trade-chart-symbol-bar">
@@ -295,6 +295,7 @@
               <strong data-chart-hud-time>—</strong>
               <span data-chart-hud-ohlc>—</span>
               <span data-chart-hud-vol>—</span>
+              <span data-chart-hud-ind>—</span>
             </div>
             <span class="trade-chart-source" data-chart-source hidden>XRPL Testnet</span>
           </div>
@@ -305,7 +306,7 @@
             <span data-chart-empty-copy>Reading the validated PND/XRP pool. Candles stay blank until prints arrive.</span>
           </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-source-label>XRPL Testnet</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA · EMA · RSI · MACD · BB</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
           <div class="trade-overview-card trade-chart-snapshot"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Window high</span><strong data-chart-stat-high>—</strong></div><div class="trade-overview-stat"><span>Window low</span><strong data-chart-stat-low>—</strong></div><div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
@@ -1689,7 +1690,7 @@
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "1d": 90 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "1d": 90 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "1d": "1D" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null, hoverIndex: null, lastPrintTime: null, layout: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", indicators: { sma: true, ema: true, rsi: true, macd: true, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
@@ -1881,11 +1882,21 @@
         if (chartState.data) renderChart();
       });
 
+      const indicatorOn = (name) => chartState.indicators?.[name] !== false;
+      const syncIndicatorLegend = () => {
+        const names = ["sma", "ema", "rsi", "macd", "bollinger"]
+          .filter(indicatorOn)
+          .map((name) => ({ sma: "SMA", ema: "EMA", rsi: "RSI", macd: "MACD", bollinger: "BB" }[name]));
+        setText("[data-chart-legend-indicator]", names.join(" · ") || "Off");
+      };
       indicatorButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          chartState.indicator = button.dataset.chartIndicator || "sma";
-          indicatorButtons.forEach((item) => item.classList.toggle("is-active", item === button));
-          setText("[data-chart-legend-indicator]", button.textContent.trim());
+          const name = button.dataset.chartIndicator || "sma";
+          chartState.indicators[name] = !indicatorOn(name);
+          chartState.indicator = name;
+          button.classList.toggle("is-active", indicatorOn(name));
+          button.setAttribute("aria-pressed", String(indicatorOn(name)));
+          syncIndicatorLegend();
           if (chartState.data) renderChart();
         });
       });
@@ -1921,10 +1932,13 @@
         const height = Math.floor(board.clientHeight);
         if (width > 40 && height > 80) tv.chart.resize(width, height);
         const showVolume = chartState.volume !== false;
-        const showOsc = chartState.indicator === "rsi" || chartState.indicator === "macd";
+        const showRsi = indicatorOn("rsi");
+        const showMacd = indicatorOn("macd");
         const panes = tv.chart.panes?.() || [];
-        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(64, Math.round(Math.min(height, 480) * 0.22)) : 0);
-        if (panes[2]?.setHeight) panes[2].setHeight(showOsc ? Math.max(52, Math.round(Math.min(height, 480) * 0.18)) : 0);
+        const paneBudget = Math.max(height, 220);
+        if (panes[1]?.setHeight) panes[1].setHeight(showVolume ? Math.max(72, Math.round(paneBudget * 0.2)) : 0);
+        if (panes[2]?.setHeight) panes[2].setHeight(showRsi ? Math.max(56, Math.round(paneBudget * 0.16)) : 0);
+        if (panes[3]?.setHeight) panes[3].setHeight(showMacd ? Math.max(64, Math.round(paneBudget * 0.18)) : 0);
         tv.chart.timeScale().fitContent();
         const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
         const range = { minValue: domain.minValue, maxValue: domain.maxValue };
@@ -1934,6 +1948,7 @@
           autoscaleInfoProvider: () => ({ priceRange: range }),
         });
         tv.overlay.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.emaLine?.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
         const scale = tv.candles.priceScale();
@@ -1950,10 +1965,11 @@
         });
       }
 
-      function sizeTvPanes(showVolume, showOsc) {
+      function sizeTvPanes() {
         const panes = chartState.tv?.chart.panes?.() || [];
-        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(showVolume ? 0.26 : 0);
-        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(showOsc ? 0.22 : 0);
+        if (panes[1]?.setStretchFactor) panes[1].setStretchFactor(chartState.volume !== false ? 0.28 : 0);
+        if (panes[2]?.setStretchFactor) panes[2].setStretchFactor(indicatorOn("rsi") ? 0.2 : 0);
+        if (panes[3]?.setStretchFactor) panes[3].setStretchFactor(indicatorOn("macd") ? 0.22 : 0);
       }
 
       function ensureTvBoard() {
@@ -2002,30 +2018,29 @@
             lastValueVisible: false,
           }, 1);
           volume.priceScale().applyOptions({ scaleMargins: { top: 0.16, bottom: 0 } });
-          const overlay = chart.addSeries(LC.LineSeries, {
-            color: "#f7c66a",
-            lineWidth: 2,
+          const lineOpts = (color, width = 2) => ({
+            color,
+            lineWidth: width,
             priceLineVisible: false,
             lastValueVisible: false,
           });
-          const bandHigh = chart.addSeries(LC.LineSeries, {
-            color: "#d78cff",
-            lineWidth: 1,
+          const overlay = chart.addSeries(LC.LineSeries, lineOpts("#f7c66a"));
+          const emaLine = chart.addSeries(LC.LineSeries, lineOpts("#ff8a4c"));
+          const bandHigh = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
+          const bandLow = chart.addSeries(LC.LineSeries, lineOpts("#d78cff", 1));
+          const volumeSma = chart.addSeries(LC.LineSeries, lineOpts("#8be9fd", 1), 1);
+          const rsi = chart.addSeries(LC.LineSeries, lineOpts("#b687f0"), 2);
+          const osc = rsi;
+          rsi.createPriceLine({ price: 70, color: "#ef5350", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "70" });
+          rsi.createPriceLine({ price: 30, color: "#26a69a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "30" });
+          const macdLine = chart.addSeries(LC.LineSeries, lineOpts("#26a69a"), 3);
+          const macdSignal = chart.addSeries(LC.LineSeries, lineOpts("#ef5350", 1), 3);
+          const macdHist = chart.addSeries(LC.HistogramSeries, {
             priceLineVisible: false,
             lastValueVisible: false,
-          });
-          const bandLow = chart.addSeries(LC.LineSeries, {
-            color: "#d78cff",
-            lineWidth: 1,
-            priceLineVisible: false,
-            lastValueVisible: false,
-          });
-          const osc = chart.addSeries(LC.LineSeries, {
-            color: "#b687f0",
-            lineWidth: 2,
-            priceLineVisible: false,
-            lastValueVisible: false,
-          }, 2);
+          }, 3);
+          const highLine = candles.createPriceLine({ price: 0, color: "#74d3a0", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "H" });
+          const lowLine = candles.createPriceLine({ price: 0, color: "#ef9a9a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "L" });
           chart.subscribeCrosshairMove((param) => {
             const candle = param.seriesData?.get(candles);
             if (!candle || param.time == null) {
@@ -2034,18 +2049,28 @@
             }
             const timeMs = typeof param.time === "number" ? param.time * 1000 : Date.parse(param.time);
             const volumePoint = param.seriesData.get(volume);
+            const smaPoint = param.seriesData.get(overlay);
+            const emaPoint = param.seriesData.get(emaLine);
+            const rsiPoint = param.seriesData.get(rsi);
+            const macdPoint = param.seriesData.get(macdLine);
+            const parts = [];
+            if (indicatorOn("sma") && smaPoint) parts.push(`SMA ${formatTick(smaPoint.value)}`);
+            if (indicatorOn("ema") && emaPoint) parts.push(`EMA ${formatTick(emaPoint.value)}`);
+            if (indicatorOn("rsi") && rsiPoint) parts.push(`RSI ${Number(rsiPoint.value).toFixed(1)}`);
+            if (indicatorOn("macd") && macdPoint) parts.push(`MACD ${formatTick(macdPoint.value)}`);
             setText("[data-chart-hud-time]", Number.isFinite(timeMs) ? new Date(timeMs).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }) : "—");
             setText("[data-chart-hud-ohlc]", `O ${formatTick(candle.open)}  H ${formatTick(candle.high)}  L ${formatTick(candle.low)}  C ${formatTick(candle.close)}`);
             setText("[data-chart-hud-vol]", `${formatIou(volumePoint?.value || 0)} XRP`);
+            setText("[data-chart-hud-ind]", parts.join("  ") || "—");
             setText("[data-chart-ohlc-open]", formatAxis(candle.open));
             setText("[data-chart-ohlc-high]", formatAxis(candle.high));
             setText("[data-chart-ohlc-low]", formatAxis(candle.low));
             setText("[data-chart-ohlc-close]", formatAxis(candle.close));
             if (hud) hud.hidden = false;
           });
-          chartState.tv = { chart, candles, volume, overlay, bandHigh, bandLow, osc };
-          sizeTvPanes(true, false);
-          window.addEventListener("resize", () => {
+          chartState.tv = { chart, candles, volume, overlay, emaLine, bandHigh, bandLow, volumeSma, rsi, osc, macdLine, macdSignal, macdHist, highLine, lowLine };
+          sizeTvPanes();
+          const refit = () => {
             if (!chartState.tv || !chartState.data) return;
             const rows = (chartState.data.candles || chartState.data.points || []).map((point) => ({
               ...point,
@@ -2054,7 +2079,9 @@
               low: point.low ?? point.value,
             }));
             if (rows.length) fitTvViewport(chartState.tv, rows, chartState.data.livePrice ?? rows[rows.length - 1].close);
-          });
+          };
+          window.addEventListener("resize", refit);
+          if (typeof ResizeObserver === "function") new ResizeObserver(refit).observe(board);
           return chartState.tv;
         });
         return chartState.tvReady;
@@ -2098,9 +2125,12 @@
         const macdFast = exponentialAverage(values, Math.min(12, values.length));
         const macdSlow = exponentialAverage(values, Math.min(26, Math.max(12, values.length)));
         const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
-        const indicator = chartState.indicator || "sma";
+        const macdFilled = macd.map((value) => (value == null ? 0 : value));
+        const macdSignal = exponentialAverage(macdFilled, Math.min(9, Math.max(3, values.length)));
+        const macdSignalSafe = macd.map((value, index) => (value == null || macdSignal[index] == null ? null : macdSignal[index]));
         const showVolume = chartState.volume !== false;
-        const showOsc = indicator === "rsi" || indicator === "macd";
+        const showSma = indicatorOn("sma") || indicatorOn("bollinger");
+        const volSma = movingAverage(rows.map((row) => row.volume), maPeriod);
         tv.candles.setData(rows.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
         tv.volume.setData(rows.map((row) => ({
           time: row.time,
@@ -2108,21 +2138,36 @@
           color: row.close >= row.open ? "rgba(38, 166, 154, 0.62)" : "rgba(239, 83, 80, 0.62)",
         })));
         tv.volume.applyOptions({ visible: showVolume });
-        if (indicator === "ema") tv.overlay.setData(seriesPoints(times, ema));
-        else if (indicator === "sma" || indicator === "bollinger") tv.overlay.setData(seriesPoints(times, sma));
-        else tv.overlay.setData([]);
-        tv.bandHigh.setData(indicator === "bollinger" ? seriesPoints(times, upper) : []);
-        tv.bandLow.setData(indicator === "bollinger" ? seriesPoints(times, lower) : []);
-        tv.osc.setData(showOsc ? seriesPoints(times, indicator === "rsi" ? rsi : macd) : []);
-        tv.osc.applyOptions({ visible: showOsc });
+        tv.volumeSma?.setData(showVolume ? seriesPoints(times, volSma) : []);
+        tv.overlay.setData(showSma ? seriesPoints(times, sma) : []);
+        tv.emaLine?.setData(indicatorOn("ema") ? seriesPoints(times, ema) : []);
+        tv.bandHigh.setData(indicatorOn("bollinger") ? seriesPoints(times, upper) : []);
+        tv.bandLow.setData(indicatorOn("bollinger") ? seriesPoints(times, lower) : []);
+        tv.rsi.setData(indicatorOn("rsi") ? seriesPoints(times, rsi) : []);
+        tv.rsi.applyOptions({ visible: indicatorOn("rsi") });
+        if (indicatorOn("rsi")) {
+          tv.rsi.priceScale().applyOptions({ autoScale: false });
+          tv.rsi.priceScale().setVisibleRange?.({ from: 0, to: 100 });
+        }
+        tv.macdLine?.setData(indicatorOn("macd") ? seriesPoints(times, macd) : []);
+        tv.macdSignal?.setData(indicatorOn("macd") ? seriesPoints(times, macdSignalSafe) : []);
+        tv.macdHist?.setData(indicatorOn("macd") ? rows.map((row, index) => {
+          const value = macd[index] == null || macdSignalSafe[index] == null ? 0 : macd[index] - macdSignalSafe[index];
+          return { time: row.time, value, color: value >= 0 ? "rgba(38, 166, 154, 0.55)" : "rgba(239, 83, 80, 0.55)" };
+        }) : []);
         const last = rows[rows.length - 1];
         const lastUp = last.close >= last.open;
+        const windowHigh = Math.max(...rows.map((row) => row.high));
+        const windowLow = Math.min(...rows.map((row) => row.low));
+        tv.highLine?.applyOptions({ price: windowHigh });
+        tv.lowLine?.applyOptions({ price: windowLow });
         tv.candles.applyOptions({
           priceLineColor: lastUp ? "#26a69a" : "#ef5350",
           lastValueVisible: true,
           priceLineVisible: true,
         });
-        sizeTvPanes(showVolume, showOsc);
+        sizeTvPanes();
+        syncIndicatorLegend();
         liveChart.hidden = false;
         emptyChart.hidden = true;
         emptyChart.classList.remove("is-loading");
