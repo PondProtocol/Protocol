@@ -685,12 +685,14 @@ check(
     stylesText.includes("container-name: home-hero") &&
     stylesText.includes(".page-index .hero-inner") &&
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
+    /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
     ) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+    /flex:\s*0 0 11rem/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
+    /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
@@ -1032,6 +1034,7 @@ check(
     privacyJsText.includes("--home-scale") &&
     privacyJsText.includes("--privacy-reserve-h") &&
     privacyJsText.includes("page-index") &&
+    privacyJsText.includes("offsetHeight") &&
     !privacyJsText.includes("0.28"),
 );
 check(
