@@ -1371,41 +1371,21 @@
     }
 
     function setupDisclaimer() {
+      window.PondTrade = {
+        ...(window.PondTrade || {}),
+        showDisclaimer: () => window.PondDisclaimer?.open?.(),
+      };
+      if (window.PondDisclaimer?.init) {
+        window.PondDisclaimer.init();
+        return;
+      }
       const modal = $("[data-disclaimer]");
       const confirm = $("[data-disclaimer-confirm]");
       const known = $("[data-disclaimer-known]");
       const newcomer = $("[data-disclaimer-new]");
       if (!modal || !confirm || !known || !newcomer) return;
-
-      const open = () => {
-        modal.hidden = false;
-        document.body.classList.add("trade-disclaimer-open");
-        confirm.focus();
-      };
-      const close = () => {
-        modal.hidden = true;
-        document.body.classList.remove("trade-disclaimer-open");
-      };
-      const setConfirmed = (confirmed) => {
-        confirm.setAttribute("aria-pressed", String(confirmed));
-        confirm.classList.toggle("is-confirmed", confirmed);
-        known.disabled = !confirmed;
-        newcomer.setAttribute("aria-disabled", String(!confirmed));
-      };
-
-      confirm.addEventListener("click", () => {
-        setConfirmed(confirm.getAttribute("aria-pressed") !== "true");
-      });
-      known.addEventListener("click", close);
-      newcomer.addEventListener("click", (event) => {
-        if (newcomer.getAttribute("aria-disabled") === "true") event.preventDefault();
-      });
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) open();
-      });
-      window.addEventListener("pond:wallet-disconnected", open);
-      window.PondTrade = { ...(window.PondTrade || {}), showDisclaimer: open };
-      open();
+      modal.hidden = false;
+      document.body.classList.add("trade-disclaimer-open");
     }
 
     async function readMarketState(signal) {

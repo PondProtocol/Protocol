@@ -66,7 +66,13 @@
       });
       const data = await response.json().catch(() => ({}));
       current = data.address
-        ? { address: data.address, method: data.method, handle: data.handle || "", admin: Boolean(data.admin) }
+        ? {
+            address: data.address,
+            method: data.method,
+            handle: data.handle || "",
+            admin: Boolean(data.admin),
+            disclaimerAccepted: Boolean(data.disclaimerAccepted),
+          }
         : null;
     } catch {
       current = null;
@@ -96,7 +102,13 @@
       throw error;
     }
     current = data.address
-      ? { address: data.address, method: data.method, handle: data.handle || "", admin: Boolean(data.admin) }
+      ? {
+          address: data.address,
+          method: data.method,
+          handle: data.handle || "",
+          admin: Boolean(data.admin),
+          disclaimerAccepted: Boolean(data.disclaimerAccepted),
+        }
       : null;
     paint();
     notify();

@@ -88,7 +88,10 @@
         </label>
         <p class="profile-form-note">Visible only while this Xaman session is signed in. Never a seed, password, or private key.</p>
         <p class="profile-form-status" data-profile-status hidden></p>
-        <button type="submit" class="button">Save profile</button>
+        <div class="profile-form-actions">
+          <button type="submit" class="button">Save profile</button>
+          <button type="button" class="button button-quiet" data-review-disclaimer>Review disclaimer</button>
+        </div>
       </form>
       ${progressHtml(profile.progress)}
     </div>`;
@@ -169,6 +172,9 @@
     }
     mount.innerHTML = cardHtml(profile);
     bindForm(profile);
+    mount.querySelector("[data-review-disclaimer]")?.addEventListener("click", () => {
+      window.PondDisclaimer?.open?.();
+    });
     document.title = `${profile.displayName || profile.handle} — Pond Protocol`;
   }
 

@@ -4292,6 +4292,13 @@ body.trade-disclaimer-open {
   margin: 0;
 }
 
+.profile-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
 .profile-form-status {
   color: var(--accent-bright);
 }

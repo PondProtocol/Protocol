@@ -80,6 +80,7 @@ function publicFields(row) {
     displayName: row.displayName || "",
     bio: row.bio || "",
     progress: { ...(row.progress || {}) },
+    disclaimerAccepted: Boolean(row.disclaimerAccepted),
     admin: row.handle === ADMIN_HANDLE || isAdminAddress(row.address),
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -255,6 +256,7 @@ export function publicProfile(row) {
   return {
     handle: row.handle,
     admin: Boolean(row.admin),
+    disclaimerAccepted: Boolean(row.disclaimerAccepted),
   };
 }
 
@@ -275,6 +277,10 @@ export async function updateOwnProfile(address, patch = {}) {
     if (displayName !== undefined) row.displayName = displayName;
     if (bio !== undefined) row.bio = bio;
     if (progress !== undefined) row.progress = { ...(row.progress || {}), ...progress };
+    if (patch.disclaimerAccepted === true) {
+      row.disclaimerAccepted = true;
+      row.disclaimerAcceptedAt = now();
+    }
     row.updatedAt = now();
     return publicFields(row);
   });

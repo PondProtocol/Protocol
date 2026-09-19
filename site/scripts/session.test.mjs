@@ -7,6 +7,7 @@ import { test } from "node:test";
 import {
   ADMIN_ADDRESS,
   ensureProfile,
+  updateOwnProfile,
 } from "./profiles.mjs";
 import {
   IDLE_MS,
@@ -104,8 +105,27 @@ test("GET /api/session refreshes a live Xaman session", () =>
     const { data, res } = await sessionApi({ cookie });
     assert.equal(data.address, ADMIN_ADDRESS);
     assert.equal(data.handle, "tadpole01");
+    assert.equal(data.disclaimerAccepted, false);
     assert.match(String(res.headers["Set-Cookie"] || ""), /pond_session=/);
     assert.doesNotMatch(String(res.headers["Set-Cookie"] || ""), /Max-Age=0/);
+  }));
+
+test("Xaman session reports persisted disclaimer acceptance", () =>
+  withStore(async () => {
+    await ensureProfile(ADMIN_ADDRESS);
+    const now = Date.now();
+    const cookie = signSession({
+      address: ADMIN_ADDRESS,
+      method: "xaman",
+      t: now,
+      active: now,
+    });
+    const first = await sessionApi({ cookie });
+    assert.equal(first.data.disclaimerAccepted, false);
+    await updateOwnProfile(ADMIN_ADDRESS, { disclaimerAccepted: true });
+    const second = await sessionApi({ cookie });
+    assert.equal(second.data.disclaimerAccepted, true);
+    assert.equal(second.data.handle, "tadpole01");
   }));
 
 test("WalletConnect session does not return a handle", async () => {

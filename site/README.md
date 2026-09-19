@@ -63,7 +63,7 @@ classic address. Later accounts get sequential numbers with a leading 0:
 public**: they require that Xaman session and expire after 24 hours of
 no activity. WalletConnect still connects for `/trade/` and does not
 open a profile. The file stores handle, XRPL address, display name, bio,
-and Start Here progress — never a seed. Autoscale disk can be ephemeral;
+Start Here progress, and trade-disclaimer acceptance — never a seed. Autoscale disk can be ephemeral;
 this process does not talk to `database.greenhead.io`.
 
 Create the app at [apps.xumm.dev](https://apps.xumm.dev). This repository does
