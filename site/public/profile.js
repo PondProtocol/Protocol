@@ -220,7 +220,7 @@
           <span>Profile photo URL</span>
           <input type="url" name="icon" maxlength="500" value="${esc(iconUrl)}" placeholder="https://… or leave blank for the generated photo" autocomplete="off">
         </label>
-        <p class="profile-form-note">Full profile stays Xaman-only. Never a seed, password, or private key.</p>
+        <p class="profile-form-note">Full profile stays Xaman-only — never the address. Never a seed, password, or private key.</p>
         <p class="profile-form-status" data-profile-status hidden></p>
         <div class="profile-form-actions">
           <button type="submit" class="button">Save profile</button>
