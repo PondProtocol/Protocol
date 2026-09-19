@@ -3930,7 +3930,7 @@ code.addr {
 }
 
 .page-index .privacy-notice {
-  width: calc((100% - var(--home-grid-gap)) / 2);
+  width: calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2);
   max-width: none;
 }
 
@@ -4061,7 +4061,7 @@ code.addr {
 
   .page-index .privacy-notice {
     padding: 0.55rem 0.65rem 0.6rem;
-    width: calc((100% - var(--home-grid-gap)) / 2);
+    width: calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2);
     max-width: none;
   }
 
