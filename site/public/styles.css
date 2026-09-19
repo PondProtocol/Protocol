@@ -3112,6 +3112,8 @@ code.addr {
 
 .hero-kicker {
   /* Keep the original small-label slot so the tagline does not move. */
+  display: flex;
+  align-items: flex-end;
   margin: 0 0 0.9rem;
   height: 1.326rem;
   font-size: clamp(5.25rem, 10.5vw, 7.25rem);
@@ -3121,8 +3123,8 @@ code.addr {
   text-transform: none;
   color: var(--accent-bright);
   text-shadow: 0 1px 18px rgb(21 27 33 / 0.92);
-  transform: translateY(calc(1.326rem - 100%));
   width: max-content;
+  transform: translateY(-1.85rem);
 }
 
 .hero-tagline {
