@@ -55,6 +55,22 @@
     },
   };
 
+  function ticketPanelMarkup(side) {
+    const isBuy = side === "buy";
+    return `
+             <div class="trade-panel${isBuy ? " is-active" : ""}" data-panel="${side}"${isBuy ? "" : " hidden"}>
+               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
+               <div class="trade-ticket-sizes" role="group" aria-label="Size presets"><button type="button" data-size-chip="25">25%</button><button type="button" data-size-chip="50">50%</button><button type="button" data-size-chip="75">75%</button><button type="button" data-size-chip="100">Max</button></div>
+               <div class="trade-order-grid">
+                 <label class="trade-action-field trade-input-field"><span>Price</span><div><button type="button" class="trade-ticket-step" data-price-step="-1" aria-label="Lower price">−</button><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="Last print" aria-label="Price in XRP per PND"><button type="button" class="trade-ticket-step" data-price-step="1" aria-label="Raise price">+</button><b>XRP</b></div></label>
+                 <label class="trade-action-field trade-input-field"><span data-ticket-amount-label>${isBuy ? "Buy" : "Sell"}</span><div><button type="button" class="trade-ticket-step" data-amount-step="-1" aria-label="Lower amount">−</button><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><button type="button" class="trade-ticket-step" data-amount-step="1" aria-label="Raise amount">+</button><b>PND</b></div></label>
+               </div>
+               <div class="trade-action-field"><span data-ticket-total-label>${isBuy ? "Pay" : "Receive"}</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small data-ticket-vs-last>Unsigned · vs last —</small></div>
+               <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. Official Xaman signs. This terminal does not submit OfferCreate.</p>
+               <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — Xaman signs</button>
+            </div>`;
+  }
+
   const terminalMarkup = `
     <header class="trade-terminal-head">
       <div class="trade-pair-lockup">
@@ -248,26 +264,20 @@
       </section>
 
       <aside class="trade-action-pane" aria-label="DEX order actions">
-        <div class="trade-action-card" data-order-ticket>
-          <nav class="trade-action-tabs" aria-label="DEX order type" data-tab-group="dex-order">
-            <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
-            <button type="button" data-tab="sell" aria-selected="false">Sell</button>
+        <div class="trade-action-card" data-order-ticket data-ticket-side="buy">
+          <nav class="trade-action-tabs trade-ticket-sides" aria-label="DEX order type" data-tab-group="dex-order">
+            <button type="button" class="is-active is-buy" data-tab="buy" aria-selected="true">Buy</button>
+            <button type="button" class="is-sell" data-tab="sell" aria-selected="false">Sell</button>
           </nav>
+          <div class="trade-ticket-quote" data-ticket-quote>
+            <button type="button" data-quote-fill="last">Last <strong data-quote-last>—</strong></button>
+            <button type="button" data-quote-fill="high">High <strong data-quote-high>—</strong></button>
+            <button type="button" data-quote-fill="low">Low <strong data-quote-low>—</strong></button>
+            <button type="button" data-quote-fill="vwap">VWAP <strong data-quote-vwap>—</strong></button>
+          </div>
           <div class="trade-action-panels" data-tab-panels="dex-order">
-             <div class="trade-panel is-active" data-panel="buy">
-               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
-               <div class="trade-order-grid">
-                 <label class="trade-action-field trade-input-field"><span>Price</span><div><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="Last print" aria-label="Price in XRP per PND"><b>XRP</b></div></label>
-                 <label class="trade-action-field trade-input-field"><span>Amount</span><div><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><b>PND</b></div></label>
-               </div>
-               <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Price × amount · Time in force · GTC</small></div>
-               <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. This terminal does not sign or submit OfferCreate.</p>
-               <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — no submit</button>
-            </div>
-            <div class="trade-panel" data-panel="sell" hidden>
-               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
-               <div class="trade-empty-panel"><strong>Sell ticket</strong><span data-dex-sell-note>Display only. No signing. The Testnet PND/XRP book is empty.</span></div>
-            </div>
+${ticketPanelMarkup("buy")}
+${ticketPanelMarkup("sell")}
           </div>
         </div>
       </aside>
@@ -321,27 +331,47 @@
         <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA · EMA · RSI · MACD · BB</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
-          <div class="trade-overview-card trade-chart-snapshot"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Window high</span><strong data-chart-stat-high>—</strong></div><div class="trade-overview-stat"><span>Window low</span><strong data-chart-stat-low>—</strong></div><div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div><div class="trade-overview-stat"><span>Ledger poll</span><strong data-chart-stat-poll>8s · waiting</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
-        <div class="trade-action-card trade-overview-ticket" data-order-ticket>
-          <nav class="trade-action-tabs" aria-label="Chart order type" data-tab-group="chart-order">
-            <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
-            <button type="button" data-tab="sell" aria-selected="false">Sell</button>
+          <div class="trade-overview-card trade-chart-snapshot">
+            <header class="trade-snapshot-head">
+              <p class="trade-kicker">Market snapshot</p>
+              <button type="button" class="trade-snapshot-use-last" data-use-last>Use last</button>
+            </header>
+            <div class="trade-snapshot-hero">
+              <span>Last print</span>
+              <strong data-chart-stat-price>—</strong>
+              <em data-chart-stat-change>—</em>
+            </div>
+            <div class="trade-snapshot-range" data-chart-range-meter>
+              <span data-chart-stat-low>—</span>
+              <div class="trade-snapshot-range-track" aria-hidden="true"><i data-chart-range-mark></i></div>
+              <span data-chart-stat-high>—</span>
+            </div>
+            <div class="trade-snapshot-cluster">
+              <p class="trade-snapshot-cluster-label">Tape</p>
+              <div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div>
+              <div class="trade-overview-stat"><span>VWAP</span><strong data-chart-stat-vwap>—</strong></div>
+              <div class="trade-overview-stat"><span>AMM spot</span><strong data-chart-stat-spot>—</strong></div>
+              <div class="trade-overview-stat"><span>Basis</span><strong data-chart-stat-basis>—</strong></div>
+              <div class="trade-overview-stat"><span>Prints</span><strong data-chart-stat-prints>—</strong></div>
+              <div class="trade-overview-stat"><span>Last print</span><strong data-chart-stat-print>—</strong></div>
+              <div class="trade-overview-stat"><span>Ledger poll</span><strong data-chart-stat-poll>8s · waiting</strong></div>
+              <div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div>
+            </div>
+          </div>
+        <div class="trade-action-card trade-overview-ticket" data-order-ticket data-ticket-side="buy">
+          <nav class="trade-action-tabs trade-ticket-sides" aria-label="Chart order type" data-tab-group="chart-order">
+            <button type="button" class="is-active is-buy" data-tab="buy" aria-selected="true">Buy</button>
+            <button type="button" class="is-sell" data-tab="sell" aria-selected="false">Sell</button>
           </nav>
+          <div class="trade-ticket-quote" data-ticket-quote>
+            <button type="button" data-quote-fill="last">Last <strong data-quote-last>—</strong></button>
+            <button type="button" data-quote-fill="high">High <strong data-quote-high>—</strong></button>
+            <button type="button" data-quote-fill="low">Low <strong data-quote-low>—</strong></button>
+            <button type="button" data-quote-fill="vwap">VWAP <strong data-quote-vwap>—</strong></button>
+          </div>
           <div class="trade-action-panels" data-tab-panels="chart-order">
-             <div class="trade-panel is-active" data-panel="buy">
-               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
-               <div class="trade-order-grid">
-                 <label class="trade-action-field trade-input-field"><span>Price</span><div><input data-dex-price inputmode="decimal" autocomplete="off" placeholder="Last print" aria-label="Price in XRP per PND"><b>XRP</b></div></label>
-                 <label class="trade-action-field trade-input-field"><span>Amount</span><div><input data-dex-amount inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="PND amount"><b>PND</b></div></label>
-               </div>
-               <div class="trade-action-field"><span>Total</span><div><strong data-dex-total>—</strong><b>XRP</b></div><small>Price × amount · Time in force · GTC</small></div>
-               <p class="trade-order-status" data-dex-order-status role="status">Unsigned preview. This terminal does not sign or submit OfferCreate.</p>
-               <button type="button" class="trade-connect-button" data-dex-submit disabled>Unsigned preview — no submit</button>
-            </div>
-            <div class="trade-panel" data-panel="sell" hidden>
-               <div class="trade-order-choice" data-order-kind-group><button type="button" class="is-active" data-order-kind="limit">Limit</button><button type="button" data-order-kind="market">Market</button></div>
-               <div class="trade-empty-panel"><strong>Sell ticket</strong><span data-dex-sell-note>Display only. No signing. The Testnet PND/XRP book is empty.</span></div>
-            </div>
+${ticketPanelMarkup("buy")}
+${ticketPanelMarkup("sell")}
           </div>
         </div>
       </aside>
@@ -606,6 +636,7 @@
     let pollTimer = 0;
     let pollInFlight = false;
     let lastPollAt = 0;
+    const ticketQuotes = { last: NaN, high: NaN, low: NaN, vwap: NaN, spot: NaN };
     let walletGeneration = 0;
     let chartController = null;
     let walletController = null;
@@ -969,6 +1000,73 @@
     function volume24hXrp(trades = []) {
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
+    }
+
+    function tapeVwap(prints = []) {
+      let notional = 0;
+      let weight = 0;
+      prints.forEach((print) => {
+        const price = Number(print.price);
+        const xrp = Number(print.xrp) || 0;
+        if (!(price > 0) || !(xrp > 0)) return;
+        notional += price * xrp;
+        weight += xrp;
+      });
+      return weight > 0 ? notional / weight : NaN;
+    }
+
+    function ammSpotNumber(verification = state.verification) {
+      const amm = verification.ammInfo?.amm;
+      const { xrp, iou } = splitAmmAssets(amm);
+      const spot = Number(formatDrops(xrp || "0")) / Number(iou?.value);
+      return Number.isFinite(spot) && spot > 0 ? spot : NaN;
+    }
+
+    function formatQuotePrice(value) {
+      if (!Number.isFinite(value) || value <= 0) return "";
+      return value >= 1 ? value.toFixed(4) : value.toFixed(6);
+    }
+
+    function setSignedText(selector, value, numeric) {
+      $$(selector).forEach((node) => {
+        node.textContent = value;
+        node.classList.toggle("is-up", Number.isFinite(numeric) && numeric > 0);
+        node.classList.toggle("is-down", Number.isFinite(numeric) && numeric < 0);
+      });
+    }
+
+    function paintRangeMeter(last, high, low) {
+      const mark = $("[data-chart-range-mark]");
+      if (!mark) return;
+      const span = high - low;
+      const pct = Number.isFinite(last) && Number.isFinite(span) && span > 0
+        ? Math.min(100, Math.max(0, ((last - low) / span) * 100))
+        : 50;
+      mark.style.left = `${pct}%`;
+    }
+
+    function syncTicketQuotes(quotes = ticketQuotes) {
+      const last = formatQuotePrice(quotes.last) || "—";
+      const high = formatQuotePrice(quotes.high) || "—";
+      const low = formatQuotePrice(quotes.low) || "—";
+      const vwap = formatQuotePrice(quotes.vwap) || "—";
+      setText("[data-quote-last]", last);
+      setText("[data-quote-high]", high);
+      setText("[data-quote-low]", low);
+      setText("[data-quote-vwap]", vwap);
+    }
+
+    function fillTicketPrices(value, force = false) {
+      const text = formatQuotePrice(value);
+      if (!text) return;
+      $$("[data-dex-price]").forEach((input) => {
+        if (!force && input.dataset.userEdited === "1") return;
+        input.dataset.autofill = "1";
+        input.dataset.userEdited = "";
+        input.value = text;
+        input.dispatchEvent(new Event("input"));
+        input.dataset.autofill = "";
+      });
     }
 
     const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "1d": 24 * 60 * 60_000 };
@@ -1691,20 +1789,47 @@
     function setupDexOrder() {
       const tickets = $$("[data-order-ticket]");
       if (!tickets.length) return;
-      tickets.forEach((root) => {
-        const price = root.querySelector("[data-dex-price]");
-        const amount = root.querySelector("[data-dex-amount]");
-        const total = root.querySelector("[data-dex-total]");
-        const submit = root.querySelector("[data-dex-submit]");
-        const orderKindButtons = [...root.querySelectorAll("[data-order-kind]")];
-        if (!price || !amount || !total || !submit) return;
-        let orderKind = "limit";
-        const updateTotal = () => {
-          if (orderKind === "market") {
-            price.disabled = true;
-            price.value = "";
-            total.textContent = "Best available";
-          } else {
+      const bumpValue = (raw, direction) => {
+        const current = Number(raw);
+        if (!Number.isFinite(current) || current <= 0) {
+          const fallback = Number.isFinite(ticketQuotes.last) && ticketQuotes.last > 0 ? ticketQuotes.last : 1;
+          return formatQuotePrice(direction > 0 ? fallback : fallback / 2) || "1";
+        }
+        const step = current >= 1 ? 0.01 : current >= 0.1 ? 0.001 : 0.0001;
+        const next = Math.max(step, current + direction * step);
+        return formatQuotePrice(next) || String(next);
+      };
+      const sizePreset = (side, pct) => {
+        const last = ticketQuotes.last;
+        if (side === "sell") {
+          const walletPnd = Number(state.verification.walletPnd);
+          if (Number.isFinite(walletPnd) && walletPnd > 0) return String(walletPnd * (pct / 100));
+        } else if (Number.isFinite(last) && last > 0) {
+          const walletXrp = Number(formatDrops(state.verification.walletXrpDrops || "0"));
+          if (Number.isFinite(walletXrp) && walletXrp > 0) return String((walletXrp * (pct / 100)) / last);
+        }
+        return String({ 25: 10, 50: 100, 75: 1000, 100: 10000 }[pct] || 10);
+      };
+      tickets.forEach((ticket) => {
+        const panels = [...ticket.querySelectorAll("[data-panel]")];
+        const bindPanel = (panel) => {
+          const side = panel.dataset.panel;
+          const price = panel.querySelector("[data-dex-price]");
+          const amount = panel.querySelector("[data-dex-amount]");
+          const total = panel.querySelector("[data-dex-total]");
+          const submit = panel.querySelector("[data-dex-submit]");
+          const vsLast = panel.querySelector("[data-ticket-vs-last]");
+          const orderKindButtons = [...panel.querySelectorAll("[data-order-kind]")];
+          if (!price || !amount || !total || !submit) return;
+          let orderKind = "limit";
+          const updateTotal = () => {
+            if (orderKind === "market") {
+              price.disabled = true;
+              price.value = "";
+              total.textContent = "Best available";
+              if (vsLast) vsLast.textContent = "No Testnet book to take · unsigned";
+              return;
+            }
             price.disabled = false;
             try {
               const drops = decimalMultiply(price.value, amount.value, 6);
@@ -1712,44 +1837,88 @@
             } catch {
               total.textContent = "—";
             }
-          }
-        };
-        price.addEventListener("input", () => {
-          if (price.dataset.autofill !== "1") price.dataset.userEdited = "1";
-          updateTotal();
-        });
-        amount.addEventListener("input", updateTotal);
-        orderKindButtons.forEach((button) => {
-          button.addEventListener("click", () => {
-            orderKind = button.dataset.orderKind || "limit";
-            const group = button.closest("[data-order-kind-group]");
-            (group ? [...group.querySelectorAll("[data-order-kind]")] : orderKindButtons)
-              .forEach((item) => item.classList.toggle("is-active", item === button));
+            const quoted = Number(price.value);
+            const last = ticketQuotes.last;
+            if (vsLast && Number.isFinite(quoted) && quoted > 0 && Number.isFinite(last) && last > 0) {
+              const basis = ((quoted - last) / last) * 100;
+              vsLast.textContent = `Unsigned · vs last ${basis >= 0 ? "+" : ""}${basis.toFixed(2)}%`;
+              vsLast.classList.toggle("is-up", basis > 0);
+              vsLast.classList.toggle("is-down", basis < 0);
+            } else if (vsLast) {
+              vsLast.textContent = "Unsigned · vs last —";
+              vsLast.classList.remove("is-up", "is-down");
+            }
+          };
+          price.addEventListener("input", () => {
+            if (price.dataset.autofill !== "1") price.dataset.userEdited = "1";
             updateTotal();
-            setOrderStatus(
-              orderKind === "market"
-                ? "No Testnet book to take. Market preview stays blank. This terminal does not sign or submit."
-                : "Unsigned preview. Enter numbers to size a ticket. Nothing is signed or submitted.",
-            );
+          });
+          amount.addEventListener("input", updateTotal);
+          orderKindButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+              orderKind = button.dataset.orderKind || "limit";
+              orderKindButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+              updateTotal();
+              setOrderStatus(
+                orderKind === "market"
+                  ? "No Testnet book to take. Market preview stays blank. Official Xaman would sign; this terminal does not submit."
+                  : "Unsigned preview. Official Xaman signs. Nothing is submitted here.",
+              );
+            });
+          });
+          panel.querySelectorAll("[data-price-step]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              price.dataset.userEdited = "1";
+              price.value = bumpValue(price.value, Number(button.dataset.priceStep) || 1);
+              updateTotal();
+            });
+          });
+          panel.querySelectorAll("[data-amount-step]").forEach((button) => {
+            button.addEventListener("click", (event) => {
+              event.preventDefault();
+              const current = Number(amount.value);
+              const step = Number.isFinite(current) && current >= 100 ? 100 : Number.isFinite(current) && current >= 10 ? 10 : 1;
+              const next = Math.max(0, (Number.isFinite(current) ? current : 0) + (Number(button.dataset.amountStep) || 1) * step);
+              amount.value = String(next);
+              updateTotal();
+            });
+          });
+          panel.querySelectorAll("[data-size-chip]").forEach((button) => {
+            button.addEventListener("click", () => {
+              panel.querySelectorAll("[data-size-chip]").forEach((chip) => chip.classList.toggle("is-active", chip === button));
+              amount.value = sizePreset(side, Number(button.dataset.sizeChip) || 25);
+              updateTotal();
+            });
+          });
+          submit.addEventListener("click", () => {
+            setOrderStatus("Unsigned preview. Official Xaman signs. This terminal does not submit.", "gated");
+          });
+          updateTotal();
+        };
+        panels.forEach(bindPanel);
+        ticket.querySelectorAll("[data-quote-fill]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const key = button.dataset.quoteFill;
+            fillTicketPrices(ticketQuotes[key], true);
           });
         });
-        submit.addEventListener("click", () => {
-          setOrderStatus("Unsigned preview. This terminal does not sign or submit.", "gated");
+        ticket.querySelectorAll("[data-tab]").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (button.dataset.tab === "buy" || button.dataset.tab === "sell") {
+              ticket.dataset.ticketSide = button.dataset.tab;
+            }
+          });
         });
-        updateTotal();
+      });
+      $("[data-use-last]")?.addEventListener("click", () => {
+        fillTicketPrices(ticketQuotes.last, true);
+        setOrderStatus("Filled from the last validated print. Unsigned preview only.", "ready");
       });
     }
 
     function prefillDexPrices(spot) {
-      if (!Number.isFinite(spot) || spot <= 0) return;
-      const text = spot >= 1 ? spot.toFixed(4) : spot.toFixed(6);
-      $$("[data-dex-price]").forEach((input) => {
-        if (input.dataset.userEdited === "1") return;
-        input.dataset.autofill = "1";
-        input.value = text;
-        input.dispatchEvent(new Event("input"));
-        input.dataset.autofill = "";
-      });
+      fillTicketPrices(spot, false);
     }
 
     function setupChartControls() {
@@ -1813,24 +1982,31 @@
       };
       const resetChartStats = () => {
         setText("[data-chart-stat-price]", "—");
-        setText("[data-chart-stat-change]", "—");
+        setSignedText("[data-chart-stat-change]", "—", NaN);
         setText("[data-chart-stat-volume]", "—");
        setText("[data-chart-stat-market-cap]", "—");
         setText("[data-chart-stat-sma]", "—");
         setText("[data-chart-stat-high]", "—");
         setText("[data-chart-stat-low]", "—");
         setText("[data-chart-stat-print]", "—");
+        setText("[data-chart-stat-vwap]", "—");
+        setText("[data-chart-stat-spot]", "—");
+        setSignedText("[data-chart-stat-basis]", "—", NaN);
+        setText("[data-chart-stat-prints]", "—");
         setText("[data-chart-stat-rsi]", "—");
         setText("[data-chart-stat-macd]", "—");
         setText("[data-chart-symbol-price]", "—");
-        setText("[data-chart-symbol-change]", "—");
+        setSignedText("[data-chart-symbol-change]", "—", NaN);
         setText("[data-chart-print-age]", "—");
         hideChartHud();
        setText("[data-chart-ohlc-open]", "—");
        setText("[data-chart-ohlc-high]", "—");
        setText("[data-chart-ohlc-low]", "—");
        setText("[data-chart-ohlc-close]", "—");
-       setText("[data-chart-ohlc-change]", "—");
+       setSignedText("[data-chart-ohlc-change]", "—", NaN);
+        paintRangeMeter(NaN, NaN, NaN);
+        ticketQuotes.last = ticketQuotes.high = ticketQuotes.low = ticketQuotes.vwap = ticketQuotes.spot = NaN;
+        syncTicketQuotes();
         setLiveStatus(false);
       };
       const movingAverage = (values, period) =>
@@ -2332,18 +2508,35 @@
         const change = open ? ((livePrice - open) / open) * 100 : 0;
         const volume = volume24hXrp(trades);
         const lastPrint = [...used].sort((a, b) => b.time - a.time)[0];
-        chartState.data = { points, candles, livePrice, change, volume, open, high, low, quote: "XRP", intervalMs };
+        const vwap = tapeVwap(used);
+        const spot = ammSpotNumber();
+        const basis = Number.isFinite(spot) && spot > 0 && Number.isFinite(livePrice) && livePrice > 0
+          ? ((livePrice - spot) / spot) * 100
+          : NaN;
+        chartState.data = { points, candles, livePrice, change, volume, open, high, low, vwap, spot, basis, quote: "XRP", intervalMs };
         chartState.lastPrintTime = lastPrint?.time || null;
         updatePrintAge();
+        ticketQuotes.last = livePrice;
+        ticketQuotes.high = high;
+        ticketQuotes.low = low;
+        ticketQuotes.vwap = vwap;
+        ticketQuotes.spot = spot;
+        syncTicketQuotes();
         setText("[data-chart-stat-price]", formatAxis(livePrice));
-        setText("[data-chart-stat-change]", formatPercent(change));
+        setSignedText("[data-chart-stat-change]", formatPercent(change), change);
         setText("[data-chart-stat-volume]", volume > 0 ? `${formatIou(volume)} XRP` : "—");
+        setText("[data-chart-stat-vwap]", Number.isFinite(vwap) ? formatAxis(vwap) : "—");
+        setText("[data-chart-stat-spot]", Number.isFinite(spot) ? formatAxis(spot) : "—");
+        setSignedText("[data-chart-stat-basis]", Number.isFinite(basis) ? formatPercent(basis) : "—", basis);
+        setText("[data-chart-stat-prints]", String(used.length));
         setText("[data-chart-stat-market-cap]", state.verification.treasuryPnd != null ? `${formatIou(state.verification.treasuryPnd)} PND` : "—");
         setText("[data-chart-ohlc-open]", formatAxis(open));
         setText("[data-chart-ohlc-high]", formatAxis(high));
         setText("[data-chart-ohlc-low]", formatAxis(low));
         setText("[data-chart-ohlc-close]", formatAxis(livePrice));
-        setText("[data-chart-ohlc-change]", formatPercent(change));
+        setSignedText("[data-chart-ohlc-change]", formatPercent(change), change);
+        setSignedText("[data-chart-symbol-change]", formatPercent(change), change);
+        paintRangeMeter(livePrice, high, low);
         const status = $("[data-chart-stat-status]");
         if (status) {
           status.classList.toggle("is-gated", false);
@@ -2640,9 +2833,12 @@
       const clock = at
         ? new Date(at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" })
         : "waiting";
-      const pollText = hidden ? "Paused" : `Live · ${seconds}s`;
+      const remain = at
+        ? Math.max(0, Math.ceil((LEDGER_POLL_MS - (Date.now() - at)) / 1000))
+        : seconds;
+      const pollText = hidden ? "Paused" : busy ? "Polling…" : `Live · ${remain}s`;
       setText("[data-poll-note]", added > 0 ? `${pollText} · +${added}` : pollText);
-      setText("[data-chart-stat-poll]", `${seconds}s · ${clock}`);
+      setText("[data-chart-stat-poll]", busy ? `now · ${clock}` : `${remain}s · ${clock}`);
       setText("[data-data-poll]", clock);
       setText("[data-data-poll-note]", ledger ? `validated ${ledger} · ${seconds}s` : `validated · ${seconds}s`);
     }
@@ -2669,6 +2865,12 @@
     function startLedgerPoll() {
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = window.setInterval(pollLedger, LEDGER_POLL_MS);
+      if (!root.dataset.pollTick) {
+        root.dataset.pollTick = "1";
+        window.setInterval(() => {
+          if (!pollInFlight && lastPollAt) setPollChrome({ busy: false, at: lastPollAt, ledger: state.verification.ledger?.seq });
+        }, 1000);
+      }
       document.addEventListener("visibilitychange", onTradeVisibility);
       setPollChrome({ busy: false });
     }
