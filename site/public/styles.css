@@ -3111,12 +3111,18 @@ code.addr {
 }
 
 .hero-kicker {
+  /* Keep the original small-label slot so the tagline does not move. */
   margin: 0 0 0.9rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  height: 1.326rem;
+  font-size: clamp(5.25rem, 10.5vw, 7.25rem);
+  font-weight: 720;
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+  text-transform: none;
   color: var(--accent-bright);
+  text-shadow: 0 1px 18px rgb(21 27 33 / 0.92);
+  transform: translateY(calc(1.326rem - 100%));
+  width: max-content;
 }
 
 .hero-tagline {
