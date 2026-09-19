@@ -10,6 +10,8 @@
     if (window.location.pathname.startsWith("/trade")) return "/trade/";
     return "/connect/";
   };
+  const signInNetwork = () => "testnet";
+  const signInBody = (root) => ({ returnTo: returnTo(root), network: "testnet" });
 
   function qrState() {
     try {
@@ -68,7 +70,7 @@
         <p class="xaman-actions">
           ${payload.next ? `<a class="button" href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
         </p>
-        <p class="xaman-note">Scan the QR or use the deep link. Pond never asks for a seed.</p>
+        <p class="xaman-note">${signInNetwork() === "testnet" ? "Scan the QR or use the deep link on XRPL Testnet. Pond never asks for a seed." : "Scan the QR or use the deep link. Pond never asks for a seed."}</p>
       </div>`;
   }
 
@@ -88,7 +90,7 @@
         <p class="session-xaman-actions">
           ${payload.next ? `<a class="session-xaman-open" href="${esc(payload.next)}" target="_blank" rel="noopener noreferrer">Open in Xaman</a>` : ""}
         </p>
-        <p class="session-xaman-fine">Scan with official Xaman. Pond never asks for a seed.</p>
+        <p class="session-xaman-fine">${signInNetwork() === "testnet" ? "Scan with official Xaman on XRPL Testnet. Pond never asks for a seed." : "Scan with official Xaman. Pond never asks for a seed."}</p>
       </div>`;
   }
 
@@ -111,7 +113,7 @@
 
   function idleHtml(compact, autostart) {
     if (autostart) {
-      return `<p class="session-xaman-pending">Preparing official Xaman SignIn…</p>`;
+      return `<p class="session-xaman-pending">${signInNetwork() === "testnet" ? "Preparing official Xaman SignIn on XRPL Testnet…" : "Preparing official Xaman SignIn…"}</p>`;
     }
     if (compact) {
       return `<button type="button" class="trade-connect-option" data-xaman-signin role="menuitem">Xaman</button>`;
@@ -323,7 +325,7 @@
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        const payload = await post("/api/xaman/signin", { returnTo: returnTo(root) });
+        const payload = await post("/api/xaman/signin", signInBody(root));
         pollUntilResolved(root, health, payload, "Sign in with Xaman");
       } catch (error) {
         if (error.status === 503) {
@@ -389,7 +391,14 @@
     }
   }
 
+  function paintSignInHint() {
+    const hint = document.querySelector(".session-menu-block:has([data-xaman-app]) .session-menu-hint");
+    if (!hint) return;
+    hint.textContent = "Official SignIn on XRPL Testnet. The QR appears when this menu opens.";
+  }
+
   function paint(root, health) {
+    paintSignInHint();
     const current = pondAccount();
     const compact = isCompact(root);
     setNav(current, health);
@@ -440,7 +449,7 @@
     root.dataset.xamanBusy = "1";
     render(root, sessionWaitHtml({}, "Sign in with Xaman"));
     try {
-      const payload = await post("/api/xaman/signin", { returnTo: returnTo(root) });
+      const payload = await post("/api/xaman/signin", signInBody(root));
       inflightSignIn = payload;
       pollUntilResolved(root, health, payload, "Sign in with Xaman");
     } catch (error) {

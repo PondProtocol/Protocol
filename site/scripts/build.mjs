@@ -759,7 +759,7 @@ function sessionChipHtml() {
       </div>
       <div class="session-menu-block">
         <p class="session-menu-label">Xaman</p>
-        <p class="session-menu-hint">Official SignIn. The QR appears when this menu opens.</p>
+        <p class="session-menu-hint">Official SignIn on XRPL Testnet. The QR appears when this menu opens.</p>
         <div data-xaman-app data-xaman-compact data-xaman-autostart data-return="/trade/"></div>
         <p class="session-xaman-note" data-session-xaman-note>Xaman is disabled until Autoscale has XUMM_API_KEY and XUMM_API_SECRET.</p>
       </div>

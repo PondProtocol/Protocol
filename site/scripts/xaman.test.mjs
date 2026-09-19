@@ -163,6 +163,13 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(created.res.statusCode, 200);
       assert.equal(created.data.uuid, SIGNIN_UUID);
       assert.equal(created.data.expireMin, SIGNIN_EXPIRE_MIN);
+      assert.equal(created.data.submit, false);
+      assert.equal(created.data.network, "testnet");
+      const signInBody = xumm.created.find((item) => item.txjson.TransactionType === "SignIn");
+      assert.equal(signInBody.options.submit, false);
+      assert.equal(signInBody.options.force_network, "TESTNET");
+      assert.notEqual(signInBody.options.force_network, "MAINNET");
+      assert.ok(String(signInBody.custom_meta.instruction).includes("XRPL Testnet"));
       const cookies = cookieMap(created.res.headers["Set-Cookie"]);
       assert.ok(cookies[PAYLOAD_COOKIE]);
       assert.match(String(created.res.headers["Set-Cookie"]), /HttpOnly/);
@@ -291,6 +298,49 @@ test("SignIn payload is bound to an httpOnly cookie and TrustSet stays unsigned"
       assert.equal(editedBody.txjson.Amount2, "200000000");
       assert.equal(editedBody.txjson.TradingFee, 250);
       assert.equal(editedBody.options.force_network, "TESTNET");
+    } finally {
+      xumm.restore();
+    }
+  }));
+
+test("SignIn force_network is TESTNET even if the client asks for Mainnet", () =>
+  withStore(async () => {
+    const xumm = installXummMock();
+    try {
+      const tradeDefault = await xamanApi("/api/xaman/signin", {
+        method: "POST",
+        body: { returnTo: "/trade/" },
+      });
+      assert.equal(tradeDefault.res.statusCode, 200);
+      assert.equal(tradeDefault.data.network, "testnet");
+      assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
+      assert.equal(xumm.created.at(-1).options.submit, false);
+
+      const tradeExplicit = await xamanApi("/api/xaman/signin", {
+        method: "POST",
+        body: { returnTo: "/trade/", network: "testnet" },
+      });
+      assert.equal(tradeExplicit.res.statusCode, 200);
+      assert.equal(tradeExplicit.data.network, "testnet");
+      assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
+
+      const docs = await xamanApi("/api/xaman/signin", {
+        method: "POST",
+        body: { returnTo: "/connect/" },
+      });
+      assert.equal(docs.res.statusCode, 200);
+      assert.equal(docs.data.network, "testnet");
+      assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
+      assert.equal(xumm.created.at(-1).options.submit, false);
+
+      const ignoredMainnet = await xamanApi("/api/xaman/signin", {
+        method: "POST",
+        body: { returnTo: "/trade/", network: "mainnet" },
+      });
+      assert.equal(ignoredMainnet.res.statusCode, 200);
+      assert.equal(ignoredMainnet.data.network, "testnet");
+      assert.equal(xumm.created.at(-1).options.force_network, "TESTNET");
+      assert.notEqual(xumm.created.at(-1).options.force_network, "MAINNET");
     } finally {
       xumm.restore();
     }

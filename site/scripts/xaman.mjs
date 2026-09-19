@@ -290,12 +290,12 @@ async function createSignIn(req, res, body = {}) {
       options: {
         submit: false,
         expire: SIGNIN_EXPIRE_MIN,
-        force_network: "MAINNET",
+        force_network: "TESTNET",
         return_url: { app: back, web: back },
       },
       custom_meta: {
         instruction:
-          "Sign in to pond.greenhead.io. This is not a payment and is never submitted to the ledger. Pond never asks for your seed.",
+          "Sign in to pond.greenhead.io on XRPL Testnet. This is not a payment and is never submitted to the ledger. Pond never asks for your seed.",
       },
     },
   });
@@ -306,7 +306,7 @@ async function createSignIn(req, res, body = {}) {
     }, req);
     return;
   }
-  json(res, 200, publicCreate(data, SIGNIN_EXPIRE_MIN), req, {
+  json(res, 200, { ...publicCreate(data, SIGNIN_EXPIRE_MIN), submit: false, network: "testnet" }, req, {
     "Set-Cookie": payloadCookieHeader(req, {
       uuid: data.uuid,
       kind: "signin",

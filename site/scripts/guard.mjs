@@ -774,6 +774,10 @@ check(
     !xamanSrc.includes("family seed") &&
     /createAmmCreate[\s\S]*force_network: "TESTNET"/.test(xamanSrc) &&
     !/createAmmCreate[\s\S]*force_network: "MAINNET"/.test(xamanSrc) &&
+    /async function createSignIn[\s\S]*?force_network: "TESTNET"/.test(xamanSrc) &&
+    !/async function createSignIn[\s\S]*?force_network: "MAINNET"/.test(xamanSrc.split("async function createTrustSet")[0]) &&
+    xamanJsText.includes('network: "testnet"') &&
+    xamanJsText.includes("/api/xaman/signin") &&
     tradeJsText.includes("data-amm-send") &&
     tradeJsText.includes("data-amm-live-pnd") &&
     tradeJsText.includes("Open in Xaman") &&
