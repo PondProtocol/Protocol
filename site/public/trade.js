@@ -145,7 +145,7 @@
                   <div class="trade-amm-create" data-amm-create data-amm-deposit>
                     <p class="trade-amm-create-kicker">Testnet AMMDeposit</p>
                     <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMDeposit into the live PND/XRP pool — not a second AMMCreate. This server never signs. Xaman submits after you sign.</p>
-                    <div class="trade-amm-pool-stats" data-amm-pool-stats>
+                    <div class="trade-amm-pool-stats" data-amm-pool-stats hidden>
                       <div class="trade-amm-stat"><span>Pool</span><strong data-amm-stat-pool>No AMM pool</strong><em data-amm-stat-pool-note>amm_info</em></div>
                       <div class="trade-amm-stat"><span>DEX</span><strong data-amm-stat-dex>—</strong><em>book_offers</em></div>
                       <div class="trade-amm-stat"><span>Treasury PND</span><strong data-amm-live-pnd>—</strong><em>validated line</em></div>
@@ -153,31 +153,37 @@
                       <div class="trade-amm-stat"><span>Price</span><strong data-amm-stat-price>—</strong><em data-amm-stat-price-note>No AMM or DEX book</em></div>
                       <div class="trade-amm-stat"><span>Ledger</span><strong data-amm-stat-ledger>—</strong><em>validated</em></div>
                     </div>
-                    <p class="trade-amm-create-balances">Pool <code data-amm-pool-account>—</code></p>
+                    <p class="trade-amm-create-balances" hidden>Pool <code data-amm-pool-account>—</code></p>
                     <p class="trade-amm-create-session" data-amm-session>Sign in with Xaman to deposit from that wallet.</p>
-                    <div class="trade-amm-wallet" data-amm-wallet>
-                      <div><span>Your PND</span><strong data-amm-wallet-pnd>—</strong><em>signed-in line</em></div>
-                      <div><span>Your XRP</span><strong data-amm-wallet-xrp>—</strong><em>account_info</em></div>
+                    <div class="trade-amm-deposit-meta">
+                      <div class="trade-amm-wallet" data-amm-wallet>
+                        <div><span>Your PND</span><strong data-amm-wallet-pnd>—</strong><em>signed-in line</em></div>
+                        <div><span>Your XRP</span><strong data-amm-wallet-xrp>—</strong><em>account_info</em></div>
+                      </div>
+                      <div class="trade-amm-shape">
+                        <div class="trade-amm-sides" role="group" aria-label="Deposit shape">
+                          <button type="button" class="is-active" data-amm-side="two">Even-sided</button>
+                          <button type="button" data-amm-side="single">Single-sided</button>
+                        </div>
+                        <p class="trade-amm-side-note" data-amm-side-note>tfTwoAsset · both assets</p>
+                        <div class="trade-amm-single" data-amm-single hidden>
+                          <button type="button" class="is-active" data-amm-single-asset="PND">PND</button>
+                          <button type="button" data-amm-single-asset="XRP">XRP</button>
+                        </div>
+                      </div>
                     </div>
-                    <div class="trade-amm-sides" role="group" aria-label="Deposit shape">
-                      <button type="button" class="is-active" data-amm-side="two">Even-sided</button>
-                      <button type="button" data-amm-side="single">Single-sided</button>
+                    <div class="trade-amm-amounts">
+                      <label class="trade-amm-slider" data-amm-pnd-row>
+                        <span>PND amount</span>
+                        <input type="range" data-amm-pnd-range min="0" max="0" step="any" value="0" aria-label="PND amount slider">
+                        <div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="0" aria-label="PND amount for AMMDeposit"><b>PND</b></div>
+                      </label>
+                      <label class="trade-amm-slider" data-amm-xrp-row>
+                        <span>XRP amount</span>
+                        <input type="range" data-amm-xrp-range min="0" max="0" step="any" value="0" aria-label="XRP amount slider">
+                        <div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="0" aria-label="XRP amount for AMMDeposit"><b>XRP</b></div>
+                      </label>
                     </div>
-                    <p class="trade-amm-side-note" data-amm-side-note>tfTwoAsset · both assets</p>
-                    <div class="trade-amm-single" data-amm-single hidden>
-                      <button type="button" class="is-active" data-amm-single-asset="PND">PND</button>
-                      <button type="button" data-amm-single-asset="XRP">XRP</button>
-                    </div>
-                    <label class="trade-amm-slider" data-amm-pnd-row>
-                      <span>PND amount</span>
-                      <input type="range" data-amm-pnd-range min="0" max="0" step="any" value="0" aria-label="PND amount slider">
-                      <div><input data-amm-pnd inputmode="decimal" autocomplete="off" value="0" aria-label="PND amount for AMMDeposit"><b>PND</b></div>
-                    </label>
-                    <label class="trade-amm-slider" data-amm-xrp-row>
-                      <span>XRP amount</span>
-                      <input type="range" data-amm-xrp-range min="0" max="0" step="any" value="0" aria-label="XRP amount slider">
-                      <div><input data-amm-xrp inputmode="decimal" autocomplete="off" value="0" aria-label="XRP amount for AMMDeposit"><b>XRP</b></div>
-                    </label>
                     <label class="trade-amm-slider">
                       <span>Trading fee</span>
                       <input type="range" data-amm-fee-range min="0" max="1000" step="1" value="0" aria-label="Trading fee slider">

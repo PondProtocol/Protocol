@@ -801,7 +801,15 @@ check(
     !tradeJsText.includes("<strong>$rPND</strong>") &&
     /\.trade-app\[data-mode="amm"\] \.trade-detail-window/.test(stylesText) &&
     /body\.page-trade \.trade-app\[data-mode="amm"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
+    /body\.page-trade \.trade-app\[data-mode="chart"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
+    /body\.page-trade \.trade-app\[data-mode="dex"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
+    /body\.page-trade \.trade-app\[data-mode="data"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
     /:has\(#trade-app\[data-mode="amm"\]\)[\s\S]*overflow:\s*hidden/.test(stylesText) &&
+    /:has\(#trade-app\[data-mode="chart"\]\)/.test(stylesText) &&
+    /:has\(#trade-app\[data-mode="dex"\]\)/.test(stylesText) &&
+    /:has\(#trade-app\[data-mode="data"\]\)/.test(stylesText) &&
+    /trade-amm-amounts/.test(stylesText) &&
+    /trade-amm-deposit-meta/.test(stylesText) &&
     !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
     !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&
