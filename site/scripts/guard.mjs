@@ -863,6 +863,11 @@ const sessionJs = join(DIST_DIR, "session.js");
 const sessionJsText = existsSync(sessionJs) ? readFileSync(sessionJs, "utf8") : "";
 check("session.js is copied into the build", existsSync(sessionJs));
 check(
+  "Sign in menu stays hidden until opened",
+  stylesText.includes(".session-menu[hidden]") &&
+    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".session-menu[hidden]"))),
+);
+check(
   "top bar has a Sign in chip that reuses WalletConnect and Xaman",
   indexHtml.includes("data-session-chip") &&
     indexHtml.includes("/session.js") &&
