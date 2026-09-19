@@ -460,7 +460,7 @@ function simplifyPolyline(pts, epsilon) {
 }
 
 function polylinePath(pts, closed) {
-  const ring = simplifyPolyline(pts, 3.2);
+  const ring = simplifyPolyline(pts, 3.6);
   if (ring.length < 2) return "";
   let d = `M${Math.round(ring[0][0])} ${Math.round(ring[0][1])}`;
   for (let i = 1; i < ring.length; i++) d += `L${Math.round(ring[i][0])} ${Math.round(ring[i][1])}`;
@@ -474,50 +474,6 @@ function compactCss(css) {
     .replace(/\s*\n\s*/g, "\n")
     .replace(/\n{2,}/g, "\n")
     .trim();
-}
-
-function blobHeight(x, y, { x: cx, y: cy, a, rx, ry, th }) {
-  const dx = x - cx;
-  const dy = y - cy;
-  const c = Math.cos(th);
-  const s = Math.sin(th);
-  const u = (dx * c + dy * s) / rx;
-  const v = (-dx * s + dy * c) / ry;
-  return a * Math.exp(-0.5 * (u * u + v * v));
-}
-
-function terrainHeight(x, y) {
-  const features = [
-    { x: 0.08, y: 0.1, a: 0.72, rx: 0.1, ry: 0.08, th: 0.4 },
-    { x: 0.24, y: 0.07, a: 0.48, rx: 0.16, ry: 0.05, th: 0.08 },
-    { x: 0.46, y: 0.11, a: 0.58, rx: 0.14, ry: 0.06, th: -0.22 },
-    { x: 0.7, y: 0.13, a: 0.82, rx: 0.1, ry: 0.08, th: 0.55 },
-    { x: 0.92, y: 0.16, a: 0.5, rx: 0.08, ry: 0.1, th: -0.48 },
-    { x: 0.07, y: 0.38, a: 0.64, rx: 0.09, ry: 0.14, th: 0.88 },
-    { x: 0.2, y: 0.52, a: -0.42, rx: 0.11, ry: 0.07, th: 0.18 },
-    { x: 0.34, y: 0.3, a: 0.52, rx: 0.1, ry: 0.09, th: -0.62 },
-    { x: 0.5, y: 0.4, a: 0.44, rx: 0.12, ry: 0.08, th: 0.28 },
-    { x: 0.62, y: 0.5, a: -0.5, rx: 0.13, ry: 0.09, th: 0.35 },
-    { x: 0.4, y: 0.62, a: 0.46, rx: 0.08, ry: 0.13, th: 0.12 },
-    { x: 0.78, y: 0.34, a: 0.96, rx: 0.11, ry: 0.08, th: 0.48 },
-    { x: 0.88, y: 0.46, a: 0.56, rx: 0.07, ry: 0.13, th: 0.1 },
-    { x: 0.7, y: 0.6, a: 0.42, rx: 0.09, ry: 0.16, th: -0.82 },
-    { x: 0.12, y: 0.76, a: 0.74, rx: 0.12, ry: 0.09, th: 0.68 },
-    { x: 0.3, y: 0.88, a: 0.5, rx: 0.15, ry: 0.06, th: 0.04 },
-    { x: 0.52, y: 0.84, a: 0.4, rx: 0.18, ry: 0.06, th: -0.16 },
-    { x: 0.68, y: 0.9, a: -0.36, rx: 0.1, ry: 0.07, th: 0.42 },
-    { x: 0.86, y: 0.78, a: 0.74, rx: 0.1, ry: 0.09, th: -0.28 },
-    { x: 0.94, y: 0.92, a: 0.42, rx: 0.08, ry: 0.06, th: 0.78 },
-    { x: 0.58, y: 0.22, a: 0.36, rx: 0.2, ry: 0.05, th: 0.14 },
-  ];
-  let z =
-    0.38 +
-    0.2 * Math.sin(x * 3.05 + 0.35) * Math.cos(y * 2.35) +
-    0.14 * Math.sin((x * 0.85 + y) * 4.15) +
-    0.09 * Math.cos(x * 5.4 - y * 3.2);
-  for (const feature of features) z += blobHeight(x, y, feature);
-  z += 0.05 * Math.sin(x * 7.2 + y * 3.1) * Math.cos(y * 6.4 - x * 2.2);
-  return z;
 }
 
 function keyPoint(p) {
@@ -568,16 +524,6 @@ function stitchSegments(segments) {
     polylines.push(line);
   }
   return polylines;
-}
-
-function heightGrid(cols, rows) {
-  const grid = [];
-  for (let j = 0; j <= rows; j++) {
-    const row = [];
-    for (let i = 0; i <= cols; i++) row.push(terrainHeight(i / cols, j / rows));
-    grid.push(row);
-  }
-  return grid;
 }
 
 function isolines(width, height, cols, rows, level, grid) {
@@ -657,20 +603,15 @@ function pathLength(pts) {
   return n;
 }
 
+function wyomingElevationGrid() {
+  const elev = JSON.parse(readFileSync(join(SITE_ROOT, "scripts", "wyoming-elev.json"), "utf8"));
+  const grid = [];
+  for (let j = 0; j < elev.rows; j++) grid.push(elev.z.slice(j * elev.cols, (j + 1) * elev.cols));
+  return { cols: elev.cols, rows: elev.rows, grid };
+}
+
 function buildHeroTopoMarkup() {
-  const issuer = site.issuerAddress;
-  const treasury = site.treasuryAddress;
-  const operations = site.operationsAddress;
-  const lines = [
-    `TransactionType Payment Account ${issuer} Destination ${treasury} Amount 0 Flags 0`,
-    `TransactionType AccountSet Account ${issuer} Flags 0`,
-    `TransactionType TrustSet Account ${operations} Flags 131072`,
-    `Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
-    `TransactionType Payment Account ${issuer} Destination ${operations} Amount 0 Flags 0`,
-  ];
-  const cols = 64;
-  const rows = 36;
-  const grid = heightGrid(cols, rows);
+  const { cols, rows, grid } = wyomingElevationGrid();
   let zMin = Infinity;
   let zMax = -Infinity;
   for (const row of grid) {
@@ -679,40 +620,28 @@ function buildHeroTopoMarkup() {
       if (z > zMax) zMax = z;
     }
   }
-  const steps = 16;
+  const steps = 24;
   const levels = Array.from(
     { length: steps },
-    (_, i) => zMin + (zMax - zMin) * (0.06 + 0.88 * (i / (steps - 1))),
+    (_, i) => zMin + (zMax - zMin) * (0.05 + 0.9 * (i / (steps - 1))),
   );
   const contours = [];
   levels.forEach((level, levelIndex) => {
-    const index = levelIndex % 4 === 0;
-    for (const pts of isolines(1600, 900, cols, rows, level, grid)) {
-      if (pts.length < 6 || pathLength(pts) < 64) continue;
+    const index = levelIndex % 5 === 0;
+    for (const pts of isolines(1600, 1260, cols - 1, rows - 1, level, grid)) {
+      if (pts.length < 5 || pathLength(pts) < 48) continue;
       const closed = keyPoint(pts[0]) === keyPoint(pts[pts.length - 1]);
       const body = closed ? pts.slice(0, -1) : pts;
-      if (body.length < 5) continue;
+      if (body.length < 4) continue;
       const d = polylinePath(body, closed);
       if (!d) continue;
-      contours.push({ d, index, len: pathLength(body) });
+      contours.push({ d, index });
     }
   });
   const strokes = contours
-    .map((c, i) => {
-      const id = c.index ? ` id="hero-topo-p${i}"` : "";
-      return `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}"${id}/>`;
-    })
+    .map((c) => `<path class="${c.index ? "iso iso-index" : "iso"}" d="${c.d}"/>`)
     .join("");
-  const texts = contours
-    .map((c, i) => ({ c, i }))
-    .filter(({ c }) => c.index)
-    .map(({ c, i }, n) => {
-      const repeats = c.len > 520 ? 2 : 1;
-      const payload = esc(Array.from({ length: repeats }, () => lines[n % lines.length]).join(" · "));
-      return `<text class="index"><textPath href="#hero-topo-p${i}" startOffset="${(n * 7) % 19}%">${payload}</textPath></text>`;
-    })
-    .join("");
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><style>.iso{fill:none;stroke:#c9d6e0;stroke-width:.55;opacity:.3}.iso-index{stroke-width:1.05;opacity:.46}text{fill:#c9d6e0;stroke:#c9d6e0;stroke-width:.2;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:7px;font-weight:700;opacity:.72}</style>${strokes}${texts}</svg>`;
+  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1260" preserveAspectRatio="xMidYMid slice"><!-- Wyoming contour strokes from USGS GMTED2010 (public domain). --><style>.iso{fill:none;stroke:#c9d6e0;stroke-width:.55;opacity:.28}.iso-index{stroke-width:1.05;opacity:.44}</style>${strokes}</svg>`;
 }
 
 function heroTopoSvg() {
