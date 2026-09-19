@@ -27,8 +27,8 @@ failed listing, and it is not a reason to issue $PND through their create-token
 or memepad flows.
 
 Those products are also **not** official Pond URLs. Do not follow a guessed
-`/token/…` path from a search bar. [Official links](/links/) is the list.
-[Verify](/verify/) is how you check the issuer.
+`/token/…` path from a search bar. [Official links](/links/) is the list
+and the place to check the issuer.
 
 ## Check the crawl (optional)
 

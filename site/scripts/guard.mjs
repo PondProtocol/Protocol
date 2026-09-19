@@ -123,7 +123,7 @@ check("no navigable link points at a placeholder domain", linkHits.length === 0,
 // 6. The identity anchor names the website host and does not claim a placeholder.
 //
 // Remaining TODOs (icon, PRINCIPALS) are still expected. Live Domain and flags belong on
-// authored HTML (/wallets/), not in TOML comments. The TOML file must keep the comment that
+// authored HTML (/links/), not in TOML comments. The TOML file must keep the comment that
 // distinguishes website host from on-ledger Domain rather than claiming No Freeze there.
 if (existsSync(wellKnown)) {
   const toml = readFileSync(wellKnown, "utf8");
@@ -164,54 +164,49 @@ if (config.site.launchStatus !== "live") {
       })(),
   );
     check(
-      "verify page states no $PND has been issued",
-      existsSync(join(DIST_DIR, "verify", "index.html")) &&
-        readFileSync(join(DIST_DIR, "verify", "index.html"), "utf8").includes("has not been issued"),
-    );
-    check(
-      "wallets page states no $PND has been issued",
-      existsSync(join(DIST_DIR, "wallets", "index.html")) &&
-        readFileSync(join(DIST_DIR, "wallets", "index.html"), "utf8").includes("has not been issued"),
+      "official links page states no $PND has been issued",
+      existsSync(join(DIST_DIR, "links", "index.html")) &&
+        /has not launched/i.test(readFileSync(join(DIST_DIR, "links", "index.html"), "utf8")),
     );
 }
 
-// 8. Verifying the issuer is a core function of the site, so it must be reachable in one click
-//    from the landing page and present in the persistent header on every page.
+// 8. Official links are the identity surface. Reachable in one click from the landing page
+//    and present in the persistent chrome on every page.
 check(
-  "landing page links to /verify/",
-  existsSync(index) && readFileSync(index, "utf8").includes('href="/verify/"'),
+  "landing page links to /links/",
+  existsSync(index) && readFileSync(index, "utf8").includes('href="/links/"'),
 );
 
-const pagesMissingVerifyLink = files
+const pagesMissingLinksLink = files
   .filter((f) => f.endsWith("index.html") || f.endsWith("404.html"))
-  .filter((f) => !readFileSync(f, "utf8").includes('href="/verify/"'))
+  .filter((f) => !readFileSync(f, "utf8").includes('href="/links/"'))
   .map((f) => relative(DIST_DIR, f));
 check(
-  "every page carries a verify link",
-  pagesMissingVerifyLink.length === 0,
-  pagesMissingVerifyLink.join(", "),
+  "every page carries an official-links link",
+  pagesMissingLinksLink.length === 0,
+  pagesMissingLinksLink.join(", "),
 );
 
-// 9. The canonical issuer address must appear on the verify page. It is the whole point of it.
-const verifyPage = join(DIST_DIR, "verify", "index.html");
-const verifyHtml = existsSync(verifyPage) ? readFileSync(verifyPage, "utf8") : "";
-check("verify page shows the canonical issuer address", verifyHtml.includes(config.site.issuerAddress));
+// 9. The canonical issuer address must appear on Official links.
+const linksPage = join(DIST_DIR, "links", "index.html");
+const linksHtml = existsSync(linksPage) ? readFileSync(linksPage, "utf8") : "";
+check("official links page shows the canonical issuer address", linksHtml.includes(config.site.issuerAddress));
 
 // 10. Canonical direct links are the primary anti-impersonation mitigation, because search on at
 //     least one major front-end does not reliably surface a token that has a working page. They
 //     must actually render, and every one of them must appear.
 const links = config.canonicalLinks?.links ?? [];
-check("verify page renders the canonical link list", links.length > 0 && verifyHtml.includes("canon-list"));
-const missingLinks = links.filter((l) => !verifyHtml.includes(l.url)).map((l) => l.label);
+check("official links page renders the canonical link list", links.length > 0 && linksHtml.includes("canon-list"));
+const missingLinks = links.filter((l) => !linksHtml.includes(l.url)).map((l) => l.label);
 check("every canonical link is rendered", missingLinks.length === 0, missingLinks.join(", "));
 
 // 11. An unverified link must never be presented as though somebody had checked it. A confidently
 //     shown dead link teaches readers that this page cannot be trusted, which defeats its purpose.
 if (links.some((l) => l.status !== "verified")) {
-  check("unverified canonical links carry a visible warning", verifyHtml.includes("canon-warning"));
+  check("unverified canonical links carry a visible warning", linksHtml.includes("canon-warning"));
   const unbadged = links
     .filter((l) => l.status !== "verified")
-    .filter((l) => !verifyHtml.includes("status-warn"))
+    .filter((l) => !linksHtml.includes("status-warn"))
     .map((l) => l.label);
   check("unverified links are badged", unbadged.length === 0, unbadged.join(", "));
 }
@@ -320,31 +315,25 @@ const asText = (html) =>
     .replace(/&[a-z]+;|&#\d+;/gi, " ")
     .replace(/\s+/g, " ");
 
-const walletsPage = join(DIST_DIR, "wallets", "index.html");
-const walletsHtml = existsSync(walletsPage) ? readFileSync(walletsPage, "utf8") : "";
-const walletsText = asText(walletsHtml);
-check("wallets page was built", walletsHtml.length > 0);
+const officialLinksText = asText(linksHtml);
+check("official links page was built", linksHtml.length > 0);
 check(
-  "wallets page shows the issuer, Treasury, and Operations addresses",
-  walletsHtml.includes(config.site.issuerAddress) &&
-    walletsHtml.includes(config.site.treasuryAddress) &&
-    walletsHtml.includes(config.site.operationsAddress),
+  "official links page shows the issuer, Treasury, and Operations addresses",
+  linksHtml.includes(config.site.issuerAddress) &&
+    linksHtml.includes(config.site.treasuryAddress) &&
+    linksHtml.includes(config.site.operationsAddress),
 );
 check(
-  "wallets page does not invent a bot-ops address",
-  /no address/i.test(walletsText) && /not created/i.test(walletsText),
+  "official links page states Default Ripple and No Freeze",
+  /Default Ripple/i.test(officialLinksText) && /No Freeze/i.test(officialLinksText),
 );
 check(
-  "wallets page states Default Ripple and No Freeze from live account_flags",
-  /Default Ripple/i.test(walletsText) && /No Freeze/i.test(walletsText),
+  "official links page does not publish a DEX trade URL",
+  !/firstledger\.net\/token/i.test(linksHtml) && !/xpmarket\.com\/dex/i.test(linksHtml),
 );
 check(
-  "wallets page does not publish a DEX trade URL",
-  !/firstledger\.net\/token/i.test(walletsHtml) && !/xpmarket\.com\/dex/i.test(walletsHtml),
-);
-check(
-  "wallets page names the 2026-10-01 launch date without claiming $PND is live",
-  walletsHtml.includes("2026-10-01") && /has not been issued/i.test(walletsText),
+  "official links page names the 2026-10-01 launch date without claiming $PND is live",
+  linksHtml.includes("2026-10-01") && /has not launched/i.test(officialLinksText),
 );
 
 const indexHtml = existsSync(index) ? readFileSync(index, "utf8") : "";
@@ -358,36 +347,35 @@ check(
   !/Where Liquidity Remains/i.test(indexText) && !/Liquidity Stays Here/i.test(indexText),
 );
 
-const vestingPage = join(DIST_DIR, "vesting", "index.html");
-const vestingHtml = existsSync(vestingPage) ? readFileSync(vestingPage, "utf8") : "";
-const vestingText = asText(vestingHtml);
-check("supply-split page was built", vestingHtml.length > 0);
+const indexSupplyHtml = existsSync(index) ? readFileSync(index, "utf8") : "";
+const indexSupplyText = asText(indexSupplyHtml);
+check("home page was built", indexSupplyHtml.length > 0);
 check(
-  "supply-split page is the 10 / 10 / 80 snapshot path, not TokenEscrow",
-  /10 billion public/i.test(vestingText) &&
-    /10 billion team/i.test(vestingText) &&
-    /80 billion/i.test(vestingText) &&
-    /proportional to \$PND held/i.test(vestingText) &&
-    vestingHtml.includes("2027-01-01") &&
-    vestingHtml.includes("2027-08-01") &&
-    /snapshot/i.test(vestingText) &&
-    /treasury payments/i.test(vestingText) &&
-    /not TokenEscrow/i.test(vestingText),
+  "home page is the 10 / 10 / 80 snapshot path, not TokenEscrow",
+  /10B/i.test(indexSupplyText) &&
+    /Public/i.test(indexSupplyText) &&
+    /Team/i.test(indexSupplyText) &&
+    /80B/i.test(indexSupplyText) &&
+    indexSupplyHtml.includes("2027-01-01") &&
+    indexSupplyHtml.includes("2027-08-01") &&
+    /snapshot/i.test(indexSupplyText) &&
+    /treasury payments/i.test(indexSupplyText) &&
+    /not TokenEscrow/i.test(indexSupplyText),
 );
 check(
-  "supply-split page does not require trust-line locking",
-  !/asfAllowTrustLineLocking/i.test(vestingHtml) &&
-    !/SetFlag:\s*17/i.test(vestingHtml),
+  "home page does not require trust-line locking",
+  !/asfAllowTrustLineLocking/i.test(indexSupplyHtml) &&
+    !/SetFlag:\s*17/i.test(indexSupplyHtml),
 );
 check(
   "authored pages do not lock ten 9B escrows as the public schedule",
-  !/locked as ten/i.test(walletsText) &&
-    !/ten 9 billion Treasury self-escrows is the public/i.test(vestingText),
+  !/locked as ten/i.test(officialLinksText) &&
+    !/ten 9 billion Treasury self-escrows is the public/i.test(indexSupplyText),
 );
 check(
-  "wallets page does not treat trust-line locking as required",
-  !/later step \*if\* escrow/i.test(walletsText) &&
-    !/asfAllowTrustLineLocking is required/i.test(walletsText),
+  "official links page does not treat trust-line locking as required",
+  !/later step \*if\* escrow/i.test(officialLinksText) &&
+    !/asfAllowTrustLineLocking is required/i.test(officialLinksText),
 );
 
 const lockedNinetyHtml = [];
@@ -407,39 +395,29 @@ check(
   lockedNinetyHtml.join(", "),
 );
 
-const holdPage = join(DIST_DIR, "hold", "index.html");
-const holdHtml = existsSync(holdPage) ? readFileSync(holdPage, "utf8") : "";
-check("hold page was built", holdHtml.length > 0);
 check(
-  "hold page forbids seeds, generic connect-wallet, and claim buttons",
-  /no seed/i.test(asText(holdHtml)) &&
-    /connect a wallet/i.test(asText(holdHtml)) &&
-    /claim button/i.test(asText(holdHtml)),
+  "deleted public routes are unpublished",
+  !existsSync(join(DIST_DIR, "start", "index.html")) &&
+    !existsSync(join(DIST_DIR, "verify", "index.html")) &&
+    !existsSync(join(DIST_DIR, "wallets", "index.html")) &&
+    !existsSync(join(DIST_DIR, "hold", "index.html")) &&
+    !existsSync(join(DIST_DIR, "pnd", "index.html")) &&
+    !existsSync(join(DIST_DIR, "rpnd", "index.html")) &&
+    !existsSync(join(DIST_DIR, "vesting", "index.html")) &&
+    !existsSync(join(DIST_DIR, "connect", "index.html")) &&
+    !existsSync(join(DIST_DIR, "team", "index.html")) &&
+    !existsSync(join(DIST_DIR, "card", "index.html")) &&
+    !existsSync(join(DIST_DIR, "open-questions", "index.html")),
 );
 check(
-  "hold page points at official Xaman SignIn on Trade",
-  holdHtml.includes("/trade/") && /Xaman SignIn/i.test(asText(holdHtml)),
-);
-
-const connectPage = join(DIST_DIR, "connect", "index.html");
-const connectHtml = existsSync(connectPage) ? readFileSync(connectPage, "utf8") : "";
-check("connect page was built", connectHtml.length > 0);
-check(
-  "connect page is Xaman SignIn, not a claim or seed import",
-  /SignIn/i.test(asText(connectHtml)) &&
-    /never asks for a seed/i.test(asText(connectHtml)) &&
-    /not been issued/i.test(asText(connectHtml)) &&
-    /not a claim/i.test(asText(connectHtml)),
-);
-check(
-  "connect page stays honest when Xaman keys are missing",
-  /app keys/i.test(asText(connectHtml)),
-);
-check(
-  "every page still links to /connect/ (kept, not featured in the top bar)",
-  files
-    .filter((f) => f.endsWith("index.html") || f.endsWith("404.html"))
-    .every((f) => readFileSync(f, "utf8").includes('href="/connect/"')),
+  "kept app and identity routes still exist",
+  existsSync(join(DIST_DIR, "trade", "index.html")) &&
+    existsSync(join(DIST_DIR, "profile", "index.html")) &&
+    existsSync(join(DIST_DIR, "links", "index.html")) &&
+    existsSync(join(DIST_DIR, "legal", "index.html")) &&
+    existsSync(join(DIST_DIR, "Pond", "index.html")) &&
+    existsSync(join(DIST_DIR, "Protocol", "index.html")) &&
+    existsSync(join(DIST_DIR, "protocol", "index.html")),
 );
 
 const xamanJs = join(DIST_DIR, "xaman.js");
@@ -465,42 +443,22 @@ const topnavHtml = headerHtml.match(/<nav class="topnav"[\s\S]*?<\/nav>/)?.[0] ?
 const topnavSummaries = [...topnavHtml.matchAll(/<summary>([\s\S]*?)<\/summary>/g)].map((match) =>
   asText(match[1]).trim(),
 );
-const startHereMenu =
-  topnavHtml.match(/<div class="topnav-start">[\s\S]*?<\/div>/)?.[0] ??
-  topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="start-here">[\s\S]*?<\/details>/)?.[0] ??
-  "";
-const startHereIndex =
-  headerHtml.match(/<details class="nav-group" data-nav-group="start-here"[\s\S]*?<\/details>/)?.[0] ?? "";
 const protocolMenu =
   topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="protocol">[\s\S]*?<\/details>/)?.[0] ?? "";
-const startHerePanel = startHereMenu.match(/<div class="topnav-panel">[\s\S]*?<\/div>/)?.[0] ?? "";
-const startHereLabels = [...startHerePanel.matchAll(/<a href="[^"]+"[^>]*>([\s\S]*?)<\/a>/g)].map((match) =>
-  asText(match[1]).replace(/\bimportant\b/i, "").trim(),
-);
-const startHereIndexLabels = [...startHereIndex.matchAll(/<a href="[^"]+"[^>]*>([\s\S]*?)<\/a>/g)].map((match) =>
-  asText(match[1]).replace(/\bimportant\b/i, "").trim(),
-);
-const startHereOrder = [
-  "Begin",
-  "What is $PND",
-  "What is $rPND",
-  "Verify Issuer",
-  "Connect Wallet",
-  "Set Trust Lines",
-  "Ready to Use DEX",
-];
+const startHereLabels = [];
+const startHereOrder = [];
 check(
-  "top bar right cluster is Start here, $PND, $rPND, Protocol",
-  /<a class="topnav-start-link" href="\/start\/">Start here<\/a>/.test(topnavHtml) &&
-    topnavSummaries.filter((label) => label !== "Start here menu").join(" | ") === "$PND | $rPND | Protocol" &&
+  "top bar is Pond and Protocol, then search",
+  /<a class="topnav-page-link"[^>]*href="\/Pond\/">Pond<\/a>/.test(topnavHtml) &&
+    /<a class="topnav-start-link"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
-    headerHtml.indexOf("topbar-end") < headerHtml.indexOf("topnav-start"),
+    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/Pond/"') &&
+    headerHtml.indexOf('href="/Pond/"') < headerHtml.indexOf('href="/Protocol/"'),
 );
 check(
-  "top bar does not use Trade, Pond, Meet Team, Verify, Hold, Wallets, or Xaman as top-level items",
+  "top bar does not use Trade, Meet Team, Verify, Hold, Wallets, or Xaman as top-level items",
   !topnavSummaries.includes("Trade") &&
-    !topnavSummaries.includes("Pond") &&
     !topnavSummaries.includes("Meet Team") &&
     !topnavSummaries.includes("Verify the issuer") &&
     !topnavSummaries.includes("Hold safely") &&
@@ -510,13 +468,10 @@ check(
     !/>Xaman</i.test(topnavHtml),
 );
 check(
-  "Start here, $PND, $rPND, and Protocol sit immediately before search on the right",
+  "Pond and Protocol sit immediately before search on the right",
   headerHtml.includes("data-site-search") &&
     headerHtml.includes("topbar-end") &&
-    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('data-topnav-menu="start-here"') &&
-    headerHtml.indexOf('data-topnav-menu="start-here"') < headerHtml.indexOf('data-topnav-menu="pnd"') &&
-    headerHtml.indexOf('data-topnav-menu="pnd"') < headerHtml.indexOf('data-topnav-menu="rpnd"') &&
-    headerHtml.indexOf('data-topnav-menu="rpnd"') < headerHtml.indexOf('data-topnav-menu="protocol"') &&
+    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/Pond/"') &&
     headerHtml.indexOf('data-topnav-menu="protocol"') < headerHtml.indexOf("data-site-search") &&
     headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search"),
 );
@@ -530,41 +485,9 @@ check(
     !topnavSummaries.includes("Trade"),
 );
 check(
-  "Start here dropdown is the seven-step onboarding path",
-  startHereLabels.join(" | ") === startHereOrder.join(" | ") &&
-    startHereMenu.includes('href="/start/"') &&
-    startHereMenu.includes('href="/start/pnd/"') &&
-    startHereMenu.includes('href="/start/rpnd/"') &&
-    startHereMenu.includes('href="/verify/"') &&
-    startHereMenu.includes('href="/start/wallet/"') &&
-    startHereMenu.includes('href="/start/trust-lines/"') &&
-    startHereMenu.includes('href="/start/dex/"') &&
-    startHereMenu.includes('class="nav-badge"') &&
-    /important/i.test(startHereMenu) &&
-    !startHereMenu.includes("Pond Protocol") &&
-    !startHereMenu.includes("Meet Team") &&
-    !startHereMenu.includes("Hold safely") &&
-    !startHereMenu.includes("Official links") &&
-    !startHereMenu.includes("Trade $PND") &&
-    !startHereMenu.includes("Connect Xaman") &&
-    !startHereMenu.includes('href="/wallets/"') &&
-    !startHereMenu.includes('href="/pond/"'),
-);
-check(
-  "Start here control itself goes to /start/",
-  topnavHtml.includes('class="topnav-start-link"') &&
-    topnavHtml.includes('href="/start/"') &&
-    /<a class="topnav-start-link" href="\/start\/">Start here<\/a>/.test(topnavHtml),
-);
-check(
-  "Docs Index START HERE group matches the Start here dropdown",
-  startHereIndexLabels.join(" | ") === startHereOrder.join(" | ") &&
-    startHereIndex.includes('href="/start/trust-lines/"') &&
-    startHereIndex.includes('class="nav-badge"'),
-);
-check(
   "Protocol dropdown matches the Docs Index Protocol group",
-  protocolMenu.includes("Overview") &&
+  protocolMenu.includes("Docs") &&
+    protocolMenu.includes("Overview") &&
     protocolMenu.includes("Architecture") &&
     protocolMenu.includes("$PND and $rPND compared") &&
     protocolMenu.includes("Glossary") &&
@@ -575,12 +498,11 @@ check(
     protocolMenu.includes("07 — Security considerations"),
 );
 check(
-  "Pond page is unpublished and leftover Pond links go to Start here",
-  !existsSync(join(DIST_DIR, "pond", "index.html")) &&
-    !headerHtml.includes('href="/pond/"') &&
-    !indexHtml.includes('href="/pond/"') &&
-    existsSync(join(DIST_DIR, "team", "index.html")) &&
-    indexHtml.includes('href="/start/"'),
+  "Pond and Protocol landing pages are published",
+  existsSync(join(DIST_DIR, "Pond", "index.html")) &&
+    existsSync(join(DIST_DIR, "Protocol", "index.html")) &&
+    headerHtml.includes('href="/Pond/"') &&
+    headerHtml.includes('href="/Protocol/"'),
 );
 check(
   "docs index is the search panel, not a right-edge drawer",
@@ -624,8 +546,8 @@ check(
 const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "landing hero does not use a Connect Xaman CTA",
-  heroActions.includes("/verify/") &&
-    heroActions.includes("/hold/") &&
+  heroActions.includes("/Pond/") &&
+    heroActions.includes("/Protocol/") &&
     !/Connect Xaman/i.test(heroActions),
 );
 
@@ -885,8 +807,6 @@ check(
     !/\/trade\.[a-f0-9]{10}\.js/.test(indexHtml),
 );
 
-const linksPage = join(DIST_DIR, "links", "index.html");
-const linksHtml = existsSync(linksPage) ? readFileSync(linksPage, "utf8") : "";
 check(
   "official links name site, TOML, and Bithomp only as the list",
   linksHtml.includes("pond.greenhead.io") &&
@@ -900,10 +820,9 @@ check(
     !/firstledger\.net\/token/i.test(linksHtml),
 );
 
-const twoPage = join(DIST_DIR, "pnd-and-rpnd", "index.html");
 check(
-  "$PND and $rPND page says $rPND is not launching 1 Oct",
-  existsSync(twoPage) && /not launching on 1 October 2026/i.test(asText(readFileSync(twoPage, "utf8"))),
+  "home page says $rPND is not launching 1 Oct",
+  /not launching on 1 October 2026/i.test(asText(indexHtml)),
 );
 
 const discPage = join(DIST_DIR, "discovery", "index.html");
@@ -1281,8 +1200,8 @@ const balancesSrc = existsSync(join(SITE_ROOT, "scripts", "balances.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "balances.mjs"), "utf8")
   : "";
 check(
-  "profile shows trust lines, Start Here checklist, session expiry, and honest later fields",
-  profileJsText.includes("/start/trust-lines/") &&
+  "profile shows trust lines, Pond pages checklist, session expiry, and honest later fields",
+  profileJsText.includes("/trade/") &&
     profileJsText.includes("data-trust") &&
     profileJsText.includes("Missing / not issued") &&
     profileJsText.includes("profile-checklist") &&
@@ -1317,7 +1236,6 @@ check(
 check(
   "optional public card is handle and avatar only",
   existsSync(cardJs) &&
-    cardHtml.includes("data-pond-card") &&
     cardJsText.includes("/api/card/") &&
     cardJsText.includes("public-card-handle") &&
     !cardJsText.includes("shortAddr") &&
@@ -1325,9 +1243,7 @@ check(
     profilesSrc.includes("getPublicCard") &&
     profilesSrc.includes("/api/card/") &&
     profileJsText.includes("publicCard") &&
-    /never the address/.test(profileJsText) &&
-    !startHereLabels.includes("Public card") &&
-    !startHereOrder.includes("Public card"),
+    /never the address/.test(profileJsText),
 );
 const identiconSrc = existsSync(join(SITE_ROOT, "scripts", "identicon.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "identicon.mjs"), "utf8")
@@ -1362,70 +1278,26 @@ check(
     xamanJsText.includes("options.force"),
 );
 
-const startJs = join(DIST_DIR, "start.js");
-const startJsText = existsSync(startJs) ? readFileSync(startJs, "utf8") : "";
-const startPage = join(DIST_DIR, "start", "index.html");
-const startHtml = existsSync(startPage) ? readFileSync(startPage, "utf8") : "";
-const startPndHtml = existsSync(join(DIST_DIR, "start", "pnd", "index.html"))
-  ? readFileSync(join(DIST_DIR, "start", "pnd", "index.html"), "utf8")
+const pondHtml = existsSync(join(DIST_DIR, "Pond", "index.html"))
+  ? readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8")
   : "";
-const startRpndHtml = existsSync(join(DIST_DIR, "start", "rpnd", "index.html"))
-  ? readFileSync(join(DIST_DIR, "start", "rpnd", "index.html"), "utf8")
+const protocolLandingHtml = existsSync(join(DIST_DIR, "Protocol", "index.html"))
+  ? readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8")
   : "";
-const startWalletHtml = existsSync(join(DIST_DIR, "start", "wallet", "index.html"))
-  ? readFileSync(join(DIST_DIR, "start", "wallet", "index.html"), "utf8")
-  : "";
-const startTrustHtml = existsSync(join(DIST_DIR, "start", "trust-lines", "index.html"))
-  ? readFileSync(join(DIST_DIR, "start", "trust-lines", "index.html"), "utf8")
-  : "";
-const startDexHtml = existsSync(join(DIST_DIR, "start", "dex", "index.html"))
-  ? readFileSync(join(DIST_DIR, "start", "dex", "index.html"), "utf8")
-  : "";
-check("Start here onboarding pages were built", startHtml.length > 0 && startPndHtml && startRpndHtml && startWalletHtml && startTrustHtml && startDexHtml);
 check(
-  "legacy Start here pages stay published",
-  existsSync(join(DIST_DIR, "wallets", "index.html")) &&
-    existsSync(join(DIST_DIR, "hold", "index.html")) &&
-    existsSync(join(DIST_DIR, "team", "index.html")) &&
-    existsSync(join(DIST_DIR, "links", "index.html")) &&
-    existsSync(join(DIST_DIR, "connect", "index.html")) &&
-    existsSync(join(DIST_DIR, "trade", "index.html")),
-);
-const startStepsGuard =
-  startJsText.includes("begin") &&
-  startJsText.includes("what-is-pnd") &&
-  startJsText.includes("what-is-rpnd") &&
-  startJsText.includes("verify-issuer") &&
-  startJsText.includes("connect-wallet") &&
-  startJsText.includes("set-trust-lines") &&
-  startJsText.includes("ready-dex");
-check(
-  "/start/ tracks the seven steps in a cookie with localStorage backup",
-  startHtml.includes("data-start-progress") &&
-    startHtml.includes("/start.js") &&
-    startJsText.includes("pond.start.progress") &&
-    startJsText.includes("pond_progress") &&
-    startJsText.includes("localStorage") &&
-    startJsText.includes("accounts") &&
-    startStepsGuard,
-);
-check(
-  "trust-line and DEX steps say $PND is not issued and do not fake a live set/buy",
-  /has not been issued/i.test(asText(startTrustHtml)) &&
-    /no “set it now”/i.test(asText(startTrustHtml)) &&
-    /has not been issued/i.test(asText(startDexHtml)) &&
-    /not a live \$PND DEX/i.test(asText(startDexHtml)) &&
-    startDexHtml.includes('href="/trade/"') &&
-    !/buy now/i.test(asText(startDexHtml)) &&
-    !/set it now/i.test(asText(startWalletHtml)),
-);
-const startWalletArticle = startWalletHtml.match(/<article class="prose">[\s\S]*?<\/article>/)?.[0] ?? "";
-check(
-  "Connect Wallet onboarding links to official WalletConnect or Xaman only",
-  /WalletConnect or Xaman/i.test(asText(startWalletHtml)) &&
-    startWalletHtml.includes("/trade/") &&
-    /never asks for a seed/i.test(asText(startWalletHtml)) &&
-    !startWalletArticle.includes("data-xaman-app"),
+  "Pond and Protocol pages reuse the home hero chrome",
+  pondHtml.includes('class="hero-kicker">Pond') &&
+    protocolLandingHtml.includes('class="hero-kicker">Pond') &&
+    pondHtml.includes("Join the Flock at") &&
+    protocolLandingHtml.includes("Join the Flock at") &&
+    pondHtml.includes("hero-topo") &&
+    protocolLandingHtml.includes("hero-topo") &&
+    pondHtml.includes(config.site.issuerAddress) &&
+    protocolLandingHtml.includes(config.site.issuerAddress) &&
+    /Agent Tadpole/i.test(asText(pondHtml)) &&
+    /Greenhead Labs/i.test(asText(pondHtml)) &&
+    /Agent-AI-run/i.test(asText(protocolLandingHtml)) &&
+    /No Freeze/i.test(asText(protocolLandingHtml)),
 );
 
 /* ------------------------------------------------------------------ report */

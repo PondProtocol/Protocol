@@ -8,7 +8,7 @@ metadata file at exactly one path:
 `{{domain}}` is the **website host** — currently `pond.greenhead.io` on Replit. As of the
 2026-09-16 snapshot the issuer's on-ledger `Domain` field is that same host, so the two-way
 XLS-26 link is in place. Re-check `account_info` if this page might be stale. Live flags
-(Default Ripple, No Freeze, clawback off) are stated on [Wallets](/wallets/), not in the TOML
+(Default Ripple, No Freeze, clawback off) are stated on [Official links](/links/), not in the TOML
 file.
 
 ## Why the path is exact
@@ -50,8 +50,8 @@ the name and the icon still cannot produce that link.
 can only be changed while the issuer can still sign. After blackholing, whatever host is in
 `Domain` is frozen forever. **Do not blackhole** before the $rPND MPT exists on this account.
 
-This is the mechanism the [verify page](/verify/) asks you to check. Issuer flags belong on
-[Wallets](/wallets/), not in this file.
+This is the mechanism [Official links](/links/) asks you to check. Issuer flags belong on
+that page, not in this file.
 
 ## Who reads it
 
@@ -127,5 +127,5 @@ host. That bind can only be changed while the issuer can still sign:
 
 There is a mainnet token with the currency code `PND` in a frozen-wrong-host state
 today: blackholed issuer, `Domain` pointing at a host that returns HTTP 404, metadata unrecoverable
-forever. It is listed on the [verify page](/verify/). That is why this issuer must keep the
+forever. That is why this issuer must keep the
 ability to sign until $rPND exists.

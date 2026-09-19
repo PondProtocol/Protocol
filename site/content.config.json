@@ -37,7 +37,7 @@
       "",
       "  domain            = pond.greenhead.io  (Replit Autoscale, custom domain).",
       "  on-ledger Domain  = pond.greenhead.io as of the 2026-09-16 wallets snapshot.",
-      "                      Live flags live on /wallets/, not in xrp-ledger.toml comments.",
+      "                      Live flags live on /links/, not in xrp-ledger.toml comments.",
       "                      Do not edit the TOML Domain comments to claim No Freeze.",
       "",
       "pond.greenhead.io is a subdomain of greenhead.io, a name the owner holds. Binding",
@@ -52,16 +52,16 @@
     "repoUrlBase": "https://github.com/PondProtocol",
 
     "$comment_launchStatus": [
-      "launchStatus drives the sitewide banner and the wording on /verify/.",
+      "launchStatus drives the sitewide banner and the wording on /links/.",
       "",
       "  pre-launch : the issuer is funded and may already have Domain / Default Ripple /",
       "               No Freeze, but $PND has not been issued. The site states that no $PND",
       "               exists yet and that anything trading under the code PND is not $PND.",
       "  live       : Domain matches this host and $PND has been issued. Only set this after",
-      "               the checks on /verify/ actually pass.",
+      "               the checks on /links/ actually pass.",
       "",
       "Leave this at pre-launch until issuance is validated. Setting it to live early is the",
-      "one edit on this site that could mislead a buyer. Live flags belong on /wallets/."
+      "one edit on this site that could mislead a buyer. Live flags belong on /links/."
     ],
     "launchStatus": "pre-launch",
     "issuerAddressStatus": "funded issuer — Domain, Default Ripple, and No Freeze set; nothing issued"
@@ -69,7 +69,7 @@
 
   "canonicalLinks": {
     "$comment": [
-      "Direct links to the real $PND, rendered into /verify/ by the {{canonicalLinks}} placeholder.",
+      "Direct links to the real $PND, rendered into /links/ by the {{canonicalLinks}} placeholder.",
       "",
       "Why this list is load-bearing rather than a convenience. On at least one major XRPL trading",
       "front-end, having a token page is not the same as being findable: a token with a $649k market",
@@ -156,45 +156,16 @@
 
   "nav": [
     {
-      "section": "Start here",
+      "section": "Pond",
       "pages": [
-        { "authored": "start.md", "url": "/start/", "title": "Begin" },
-        { "authored": "start-pnd.md", "url": "/start/pnd/", "title": "What is $PND" },
-        { "authored": "start-rpnd.md", "url": "/start/rpnd/", "title": "What is $rPND" },
-        { "authored": "verify.md", "url": "/verify/", "title": "Verify Issuer" },
-        { "authored": "start-wallet.md", "url": "/start/wallet/", "title": "Connect Wallet" },
-        { "authored": "start-trust-lines.md", "url": "/start/trust-lines/", "title": "Set Trust Lines" },
-        { "authored": "start-dex.md", "url": "/start/dex/", "title": "Ready to Use DEX" }
-      ]
-    },
-    {
-      "section": "$PND",
-      "pages": [
-        { "authored": "pnd.md", "url": "/pnd/", "title": "$PND" },
-        { "authored": "wallets.md", "url": "/wallets/", "title": "Wallets" },
-        { "authored": "hold.md", "url": "/hold/", "title": "Hold safely" },
-        { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
-        { "repo": "pnd", "path": "docs/token-spec.md", "url": "/pnd/specification/", "title": "Token specification", "publish": true },
-        { "repo": "pnd", "path": "docs/trust-lines.md", "url": "/pnd/holding/", "title": "Holding $PND", "publish": true },
-        { "repo": "pnd", "path": "docs/integration.md", "url": "/pnd/integration/", "title": "Integration guide", "publish": true },
-        { "repo": "pnd", "path": "README.md", "url": "/pnd/overview/", "title": "Overview", "publish": true },
-        { "authored": "vesting.md", "url": "/vesting/", "title": "Supply split" },
-        { "authored": "pnd-and-rpnd.md", "url": "/pnd-and-rpnd/", "title": "$PND and $rPND" }
-      ]
-    },
-    {
-      "section": "$rPND",
-      "pages": [
-        { "authored": "rpnd.md", "url": "/rpnd/", "title": "$rPND" },
-        { "repo": "rpnd", "path": "docs/rpnd-spec.md", "url": "/rpnd/specification/", "title": "Token specification", "publish": true },
-        { "repo": "rpnd", "path": "docs/mpt-vs-iou.md", "url": "/rpnd/why-mpt/", "title": "Why $rPND is an MPT", "publish": true },
-        { "repo": "rpnd", "path": "docs/tokens.md", "url": "/rpnd/identity/", "title": "Token identity", "publish": true }
+        { "authored": "pond.md", "url": "/Pond/", "title": "Pond" }
       ]
     },
     {
       "section": "Protocol",
       "pages": [
-        { "authored": "protocol.md", "url": "/protocol/", "title": "Protocol" },
+        { "authored": "protocol-run.md", "url": "/Protocol/", "title": "Protocol" },
+        { "authored": "protocol.md", "url": "/protocol/", "title": "Docs" },
         { "repo": "protocol", "path": "README.md", "url": "/protocol/overview/", "title": "Overview", "publish": true },
         { "repo": "protocol", "path": "docs/architecture.md", "url": "/protocol/architecture/", "title": "Architecture", "publish": true },
         { "repo": "pnd", "path": "docs/pnd-vs-rpnd.md", "url": "/protocol/two-tokens/", "title": "$PND and $rPND compared", "publish": true },
@@ -215,19 +186,69 @@
       "section": "Status",
       "pages": [
         { "authored": "index.md", "url": "/", "title": "Home" },
-        { "authored": "connect.md", "url": "/connect/", "title": "Connect Xaman" },
-        { "authored": "team.md", "url": "/team/", "title": "Meet Team" },
+        { "authored": "trade.md", "url": "/trade/", "title": "Trade $PND" },
         { "authored": "links.md", "url": "/links/", "title": "Official links" },
         { "authored": "legal.md", "url": "/legal/", "title": "Legal & privacy" },
-        { "authored": "profile.md", "url": "/profile/", "title": "Profile" },
-        { "authored": "card.md", "url": "/card/", "title": "Public card" },
-        { "repo": "protocol", "path": "docs/open-questions.md", "url": "/open-questions/", "title": "Open questions", "publish": true },
-        { "repo": "pnd", "path": "docs/open-questions.md", "url": "/open-questions/pnd/", "title": "Open questions — $PND", "publish": true }
+        { "authored": "profile.md", "url": "/profile/", "title": "Profile" }
       ]
     }
   ],
 
   "excluded": [
+    {
+      "repo": "pnd",
+      "path": "docs/token-spec.md",
+      "publish": false,
+      "reason": "Owner unpublished the $PND docs routes. Keep the file in the PND repo."
+    },
+    {
+      "repo": "pnd",
+      "path": "docs/trust-lines.md",
+      "publish": false,
+      "reason": "Owner unpublished the $PND docs routes. Keep the file in the PND repo."
+    },
+    {
+      "repo": "pnd",
+      "path": "docs/integration.md",
+      "publish": false,
+      "reason": "Owner unpublished the $PND docs routes. Keep the file in the PND repo."
+    },
+    {
+      "repo": "pnd",
+      "path": "README.md",
+      "publish": false,
+      "reason": "Owner unpublished /pnd/overview/. Keep the file in the PND repo."
+    },
+    {
+      "repo": "rpnd",
+      "path": "docs/rpnd-spec.md",
+      "publish": false,
+      "reason": "Owner unpublished the $rPND docs routes. Keep the file in the rPND repo."
+    },
+    {
+      "repo": "rpnd",
+      "path": "docs/mpt-vs-iou.md",
+      "publish": false,
+      "reason": "Owner unpublished the $rPND docs routes. Keep the file in the rPND repo."
+    },
+    {
+      "repo": "rpnd",
+      "path": "docs/tokens.md",
+      "publish": false,
+      "reason": "Owner unpublished the $rPND docs routes. Keep the file in the rPND repo."
+    },
+    {
+      "repo": "protocol",
+      "path": "docs/open-questions.md",
+      "publish": false,
+      "reason": "Owner unpublished /open-questions/. Keep the file in the Protocol repo."
+    },
+    {
+      "repo": "pnd",
+      "path": "docs/open-questions.md",
+      "publish": false,
+      "reason": "Owner unpublished /open-questions/pnd/. Keep the file in the PND repo."
+    },
     {
       "repo": "rpnd",
       "path": "docs/issuance.md",
