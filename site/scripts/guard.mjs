@@ -810,6 +810,12 @@ check(
     /:has\(#trade-app\[data-mode="data"\]\)/.test(stylesText) &&
     /trade-amm-amounts/.test(stylesText) &&
     /trade-amm-deposit-meta/.test(stylesText) &&
+    tradeJsText.includes("ledgerTrades") &&
+    tradeJsText.includes("volume24hXrp") &&
+    tradeJsText.includes("paintLedgerChart") &&
+    tradeJsText.includes("data-dex-tape") &&
+    tradeJsText.includes("24h AMM/DEX tape") &&
+    stylesText.includes("trade-dex-live") &&
     !tradeJsText.includes("Those amounts will tecUNFUNDED") &&
     !tradeJsText.includes("Asked amounts are") &&
     tradeJsText.includes("Open in Xaman") &&

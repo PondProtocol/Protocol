@@ -2836,6 +2836,73 @@ code.addr {
   min-height: 25rem;
 }
 
+.trade-dex-market {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+.trade-dex-live {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.55rem;
+  min-height: 0;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+}
+
+.trade-dex-live[hidden],
+.trade-dex-chart-empty[hidden] {
+  display: none !important;
+}
+
+.trade-dex-book-wrap,
+.trade-dex-tape-wrap {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trade-dex-book,
+.trade-dex-tape {
+  display: grid;
+  gap: 0.22rem;
+  flex: 1;
+  min-height: 0;
+  margin: 0.2rem 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.trade-dex-book li,
+.trade-dex-tape li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.15rem 0.55rem;
+  padding: 0.28rem 0.2rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.trade-dex-book li strong,
+.trade-dex-tape li strong {
+  color: var(--text);
+  font-size: 0.68rem;
+}
+
+.trade-dex-tape li time,
+.trade-dex-book li em,
+.trade-dex-tape li em {
+  grid-column: 1 / -1;
+  font-style: normal;
+}
+
 .trade-app[data-mode="dex"] .trade-detail-window,
 .trade-app[data-mode="amm"] .trade-detail-window {
   display: none;
@@ -8654,7 +8721,9 @@ body.page-trade .trade-detail-window {
 
   body.page-trade .trade-app[data-mode="dex"] .trade-market-panels,
   body.page-trade .trade-app[data-mode="dex"] .trade-market-panels > .trade-panel,
-  body.page-trade .trade-app[data-mode="dex"] .trade-dex-chart-empty {
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-chart-empty,
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-market,
+  body.page-trade .trade-app[data-mode="dex"] .trade-dex-live {
     flex: 1;
     min-height: 0;
     height: auto;
