@@ -854,12 +854,9 @@ function pageScripts(page) {
   if (page.url === "/card/") tags.push('<script src="/card.js" defer></script>');
   if (page.url === "/trade/") {
     tags.push('<script src="/disclaimer.js" defer></script>');
-    tags.push(
-      '<script src="https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js" integrity="sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm" crossorigin="anonymous" defer></script>',
-    );
-    tags.push(
-      '<script src="https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js" integrity="sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM" crossorigin="anonymous" defer></script>',
-    );
+    // WalletConnect / xrpl are loaded on demand from trade.js and session.js.
+    // Putting jsDelivr in this defer list blocked /trade.js, so #trade-app
+    // stayed empty and page-trade CSS hid the footer — a blank dark page.
     tags.push('<script src="/trade.js" defer></script>');
   }
   return tags.join("\n");

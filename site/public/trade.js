@@ -1,5 +1,55 @@
 (() => {
   const WALLETCONNECT_PROJECT_ID = "89408e9bcaa385da1a1867c446cfb7b2";
+  const WC_SCRIPTS = [
+    {
+      src: "https://cdn.jsdelivr.net/npm/xrpl@4.6.0/build/xrpl-latest-min.js",
+      integrity: "sha384-CpYwnqlAsxiza8BZ+PUpX39uhZkCYfSBVvKjNVnA0imli67z0EGjXIw3qCPDvmcm",
+    },
+    {
+      src: "https://cdn.jsdelivr.net/npm/xrpl-connect@1.0.0-rc.2/xrpl-connect.umd.js",
+      integrity: "sha384-ueuYZnZaUD40FEdvT0PcZwjAEFauarQj4LK/sVpWW4YtlFBJOJOoo81UtiIoxilM",
+    },
+  ];
+  let wcScriptsPromise = null;
+
+  function loadWcScript(entry) {
+    const existing = [...document.scripts].find((node) => node.src === entry.src);
+    if (existing) {
+      return existing.dataset.loaded === "1" || window.XRPLConnect
+        ? Promise.resolve()
+        : new Promise((resolve, reject) => {
+            existing.addEventListener("load", resolve, { once: true });
+            existing.addEventListener("error", () => reject(new Error("WalletConnect script failed to load.")), {
+              once: true,
+            });
+          });
+    }
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = entry.src;
+      script.integrity = entry.integrity;
+      script.crossOrigin = "anonymous";
+      script.addEventListener(
+        "load",
+        () => {
+          script.dataset.loaded = "1";
+          resolve();
+        },
+        { once: true },
+      );
+      script.addEventListener("error", () => reject(new Error("WalletConnect script failed to load.")), { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureWcScripts() {
+    if (window.XRPLConnect?.WalletManager) return Promise.resolve();
+    if (!wcScriptsPromise) {
+      wcScriptsPromise = WC_SCRIPTS.reduce((chain, entry) => chain.then(() => loadWcScript(entry)), Promise.resolve());
+    }
+    return wcScriptsPromise;
+  }
+
   const networks = {
     testnet: {
       label: "XRPL Testnet",
@@ -38,20 +88,6 @@
       </div>
     </header>
 
-    <div class="trade-disclaimer-backdrop" data-disclaimer hidden>
-      <section class="trade-disclaimer-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-disclaimer-title">
-        <p class="trade-disclaimer-kicker">Before you continue</p>
-        <h2 id="trade-disclaimer-title">Pond is verification-first.</h2>
-        <p class="trade-disclaimer-copy">This terminal never needs your seed, private key, or recovery phrase. $PND has not been issued and no verified market is live yet.</p>
-        <p class="trade-disclaimer-copy">This terminal uses official WalletConnect or Xaman connect only. Pond never stores keys, seeds, or passwords, and never asks for a seed. After you connect, a session cookie remembers the XRPL address you signed in with.</p>
-        <a class="trade-disclaimer-legal" href="/legal/">Read the disclaimer</a>
-        <button type="button" class="trade-disclaimer-confirm" data-disclaimer-confirm aria-pressed="false"><span aria-hidden="true">✓</span><span>I understand the safety disclaimer</span></button>
-        <div class="trade-disclaimer-actions">
-          <a href="/start/" class="trade-disclaimer-new" data-disclaimer-new aria-disabled="true">I'm new to Pond Protocol</a>
-          <button type="button" class="trade-disclaimer-known" data-disclaimer-known disabled>I Understand Pond Protocol</button>
-        </div>
-      </section>
-    </div>
     <xrpl-wallet-connector id="pond-wallet-connector" background-color="#111315" theme-mode="dark"></xrpl-wallet-connector>
 
     <div class="trade-stat-strip">
@@ -727,22 +763,17 @@
     function setupWallet() {
       const connectButtons = $$("[data-wallet-connect]");
       const connector = $("#pond-wallet-connector");
-      const api = window.XRPLConnect;
-      if (!connectButtons.length) return null;
-      if (!connector || !api?.WalletManager || !api?.WalletConnectAdapter) {
-        setText("[data-wallet-status]", "WalletConnect unavailable");
-        setOrderStatus("WalletConnect could not load. Refresh and try again.", "error");
-        connectButtons.forEach((button) => {
-          button.disabled = true;
-        });
-        return null;
-      }
+      if (!connectButtons.length || !connector) return null;
 
       let manager = null;
       let managerNetwork = null;
       let generation = 0;
 
       const createManager = () => {
+        const api = window.XRPLConnect;
+        if (!api?.WalletManager || !api?.WalletConnectAdapter) {
+          throw new Error("WalletConnect could not load. Try again.");
+        }
         const adapter = new api.WalletConnectAdapter({
           projectId: WALLETCONNECT_PROJECT_ID,
           metadata: {
@@ -814,6 +845,7 @@
         setText("[data-wallet-status]", "Connecting…");
         setOrderStatus("Approve the XRPL account connection in your wallet.", "loading");
         try {
+          await ensureWcScripts();
           await ensureNetwork();
           await connector.open();
         } catch (error) {
@@ -825,7 +857,6 @@
       };
 
       connectButtons.forEach((button) => button.addEventListener("click", connect));
-      createManager();
       return {
         get manager() { return manager; },
         connect,

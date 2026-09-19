@@ -146,4 +146,13 @@
     close,
     persistAccepted,
   };
+
+  function boot() {
+    if (document.getElementById("trade-app") || document.querySelector("[data-disclaimer]")) {
+      gateTrade();
+    }
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
+  else boot();
 })();
