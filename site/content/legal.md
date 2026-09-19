@@ -19,7 +19,8 @@ We use cookies. That is intentional.
   set a session cookie with the XRPL address you signed in with and the
   connect method. Activity on this host refreshes that cookie. After 24
   hours with no activity, the session ends and the next visit is signed
-  out. You can also Sign out. The cookie is `httpOnly` and `SameSite=Lax`
+  out. You can also Sign out from your profile page. The cookie is
+  `httpOnly` and `SameSite=Lax`
   when the site process can set it.
 - **Start Here progress.** `/start/` stores checklist progress in a cookie
   (with a `localStorage` backup). Anonymous users keep progress in that
@@ -27,7 +28,7 @@ We use cookies. That is intentional.
   address.
 - **Account profile.** After official **Xaman SignIn**, this host assigns
   a tadpole handle and stores handle, XRPL address, optional display
-  name / bio, and a Start Here progress pointer in a JSON file the site
+  name / bio / profile icon, and a Start Here progress pointer in a JSON file the site
   process can write. That page is visible only while that Xaman session
   is logged in. WalletConnect on Trade does not open it. Logged-out
   visitors do not see handles or profile fields. We do not store seeds
