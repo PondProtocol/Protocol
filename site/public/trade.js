@@ -269,6 +269,13 @@
             <span class="is-active">Candles</span>
             <button type="button" class="is-active" data-chart-volume aria-pressed="true">Volume</button>
           </div>
+          <div class="trade-indicator-tools" data-control-group="overview-indicators">
+            <button type="button" class="is-active" data-chart-indicator="sma">SMA</button>
+            <button type="button" data-chart-indicator="ema">EMA</button>
+            <button type="button" data-chart-indicator="rsi">RSI</button>
+            <button type="button" data-chart-indicator="macd">MACD</button>
+            <button type="button" data-chart-indicator="bollinger">BB</button>
+          </div>
         </div>
         <div class="trade-chart-symbol-bar">
           <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1m</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
@@ -279,17 +286,17 @@
             <svg class="trade-chart-svg" data-chart-svg viewBox="0 0 1000 480" preserveAspectRatio="none" role="img" aria-label="PND / XRP Testnet chart"></svg>
             <span class="trade-chart-source" data-chart-source>Source: XRPL Testnet</span>
           </div>
-          <div class="trade-chart-empty-state" data-chart-empty-state>
+          <div class="trade-chart-empty-state is-loading" data-chart-empty-state>
             <div class="trade-chart-grid"></div>
             <span class="trade-chart-mark">P</span>
-            <strong data-chart-empty-title>No PND/XRP candles on Testnet</strong>
-            <span data-chart-empty-copy>There is no AMM or DEX book to plot. Last price, volume, and candles stay blank.</span>
+            <strong data-chart-empty-title>Loading Testnet tape…</strong>
+            <span data-chart-empty-copy>Reading the validated PND/XRP pool. Candles stay blank until prints arrive.</span>
           </div>
         </div>
-        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-source-label>XRPL Testnet</span></div>
+        <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA</span><span data-chart-source-label>XRPL Testnet</span></div>
       </section>
       <aside class="trade-overview-sidebar trade-overview-rail">
-          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>Treasury PND</span><strong data-chart-stat-market-cap>—</strong></div><div class="trade-overview-stat"><span>Average</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>No AMM or DEX book</strong></div></div>
+          <div class="trade-overview-card"><p class="trade-kicker">Market snapshot</p><div class="trade-overview-stat"><span>Last price</span><strong data-chart-stat-price>—</strong></div><div class="trade-overview-stat"><span>Change</span><strong data-chart-stat-change>—</strong></div><div class="trade-overview-stat"><span>24h volume</span><strong data-chart-stat-volume>—</strong></div><div class="trade-overview-stat"><span>SMA</span><strong data-chart-stat-sma>—</strong></div><div class="trade-overview-stat"><span>RSI</span><strong data-chart-stat-rsi>—</strong></div><div class="trade-overview-stat"><span>MACD</span><strong data-chart-stat-macd>—</strong></div><div class="trade-overview-stat"><span>Market status</span><strong data-chart-stat-status>Loading Testnet tape…</strong></div></div>
         <div class="trade-action-card trade-overview-ticket" data-order-ticket>
           <nav class="trade-action-tabs" aria-label="Chart order type" data-tab-group="chart-order">
             <button type="button" class="is-active" data-tab="buy" aria-selected="true">Buy</button>
@@ -558,7 +565,9 @@
         ammInfo: null,
         poolTxs: [],
         trades: [],
-        poolTxComplete: true,
+        poolTxComplete: false,
+        tapeLoading: true,
+        tapeMarker: null,
         treasuryPnd: null,
         treasuryXrpDrops: null,
         treasuryAccount: null,
@@ -1668,10 +1677,11 @@
       const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1 };
       const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48 };
       const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m" };
-      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, data: null };
+      const chartState = { pair: "pnd-xrp", range: "1m", volume: true, indicator: "sma", data: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
       const rangeButtons = $$("[data-chart-range]");
+      const indicatorButtons = $$("[data-chart-indicator]");
       const volumeToggle = $("[data-chart-volume]");
       const symbolMark = $("[data-chart-symbol-mark]");
       const liveChart = $("[data-chart-live]");
@@ -1693,11 +1703,21 @@
         if (!Number.isFinite(value)) return "—";
         return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
       };
-      const setChartEmpty = (title, copy) => {
+      const setChartEmpty = (title, copy, loading = false) => {
         setText("[data-chart-empty-title]", title);
         setText("[data-chart-empty-copy]", copy);
+        emptyChart.classList.toggle("is-loading", loading);
         liveChart.hidden = true;
         emptyChart.hidden = false;
+      };
+      const setChartLoading = (title = "Loading Testnet tape…", copy = "Reading validated PND/XRP prints. This is not an empty market.") => {
+        setChartEmpty(title, copy, true);
+        const status = $("[data-chart-stat-status]");
+        if (status) {
+          status.classList.add("is-live");
+          status.classList.remove("is-gated");
+          status.textContent = "Fetching tape…";
+        }
       };
       const setLiveStatus = (live) => {
         const status = $("[data-chart-stat-status]");
@@ -1786,6 +1806,15 @@
         if (chartState.data) renderChart();
       });
 
+      indicatorButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          chartState.indicator = button.dataset.chartIndicator || "sma";
+          indicatorButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+          setText("[data-chart-legend-indicator]", button.textContent.trim());
+          if (chartState.data) renderChart();
+        });
+      });
+
       function recentPriceDomain(points, livePrice) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
@@ -1809,23 +1838,52 @@
         const allCandles = chartState.data?.candles || [];
         const allPoints = allCandles.length ? allCandles : (chartState.data?.points || []);
         if (!allPoints.length) return;
-        const focusCount = Math.min(allPoints.length, 24);
+        const focusCount = Math.min(allPoints.length, 48);
         const points = allPoints.slice(-focusCount);
         const candles = allCandles.length ? allCandles.slice(-focusCount) : [];
-        const values = points.map((point) => point.value);
+        const values = points.map((point) => point.close ?? point.value);
         const volumes = points.map((point) => point.volume || 0);
         const width = 1000;
         const height = 480;
-        const left = 48;
-        const right = 56;
-        const top = 16;
+        const left = 50;
+        const right = 58;
+        const top = 12;
         const plotRight = width - right;
+        const indicator = chartState.indicator || "sma";
         const showVolume = chartState.volume !== false;
-        const volumeTop = showVolume ? 400 : 458;
-        const volumeBottom = 458;
-        const priceBottom = showVolume ? 384 : 440;
-        const { minValue, maxValue, lastPrice } = recentPriceDomain(points, chartState.data?.livePrice);
-        const padding = Math.max((maxValue - minValue) * 0.14, Math.abs(lastPrice || maxValue) * 0.01, 0.000001);
+        const showOsc = indicator === "rsi" || indicator === "macd";
+        const oscBottom = 458;
+        const oscTop = showOsc ? 424 : 458;
+        const volumeBottom = showOsc ? 414 : 458;
+        const volumeTop = showVolume ? (showOsc ? 372 : 400) : volumeBottom;
+        const priceBottom = (showVolume || showOsc) ? volumeTop - 14 : 440;
+        const maPeriod = Math.min(9, Math.max(5, Math.floor(values.length / 4) || 5));
+        const sma = movingAverage(values, maPeriod);
+        const ema = exponentialAverage(values, maPeriod);
+        const macdFast = exponentialAverage(values, Math.min(12, values.length));
+        const macdSlow = exponentialAverage(values, Math.min(26, Math.max(12, values.length)));
+        const macd = values.map((_, index) => (macdFast[index] == null || macdSlow[index] == null ? null : macdFast[index] - macdSlow[index]));
+        const rsi = relativeStrength(values, Math.min(14, Math.max(5, values.length - 1)));
+        const mean = movingAverage(values, maPeriod);
+        const standardDeviation = values.map((_, index) => {
+          if (index < maPeriod - 1) return null;
+          const slice = values.slice(index - maPeriod + 1, index + 1);
+          const average = mean[index];
+          return Math.sqrt(slice.reduce((sum, value) => sum + (value - average) ** 2, 0) / maPeriod);
+        });
+        const upper = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value + standardDeviation[index] * 2));
+        const lower = mean.map((value, index) => (value == null || standardDeviation[index] == null ? null : value - standardDeviation[index] * 2));
+        let { minValue, maxValue, lastPrice } = recentPriceDomain(points, chartState.data?.livePrice);
+        const tapeBands = [...sma, ...ema, ...upper, ...lower].filter((value) => (
+          value != null && Number.isFinite(lastPrice) && value >= lastPrice * 0.72 && value <= lastPrice * 1.4
+        ));
+        if (tapeBands.length) {
+          minValue = Math.min(minValue, ...tapeBands);
+          maxValue = Math.max(maxValue, ...tapeBands);
+        }
+        minValue = Math.min(minValue, lastPrice);
+        maxValue = Math.max(maxValue, lastPrice);
+        const padding = Math.max((maxValue - minValue) * 0.1, Math.abs(lastPrice || maxValue) * 0.008, 0.000001);
         const low = Math.min(minValue - padding, lastPrice);
         const high = Math.max(maxValue + padding, lastPrice);
         const count = Math.max(points.length, 1);
@@ -1838,32 +1896,32 @@
         const pricePath = values.length > 1 ? pathFor(values, x, y) : "";
         const areaPath = values.length > 1 ? `${pricePath} L ${x(values.length - 1)} ${priceBottom} L ${x(0)} ${priceBottom} Z` : "";
         const grid = [];
-        for (let index = 0; index < 4; index += 1) {
-          const gridY = top + (index / 3) * (priceBottom - top);
-          const gridValue = high - (index / 3) * (high - low);
+        for (let index = 0; index < 5; index += 1) {
+          const gridY = top + (index / 4) * (priceBottom - top);
+          const gridValue = high - (index / 4) * (high - low);
           grid.push(`<line class="trade-chart-grid-line" x1="${left}" x2="${plotRight}" y1="${gridY}" y2="${gridY}"/>`);
           grid.push(svgText(4, gridY + 3, formatTick(gridValue), "trade-chart-axis-label", "start"));
         }
-        for (let index = 0; index <= 4; index += 1) {
-          const gridX = left + (index / 4) * (plotRight - left);
-          grid.push(`<line class="trade-chart-vertical-grid" x1="${gridX}" x2="${gridX}" y1="${top}" y2="${volumeBottom}"/>`);
+        for (let index = 0; index <= 6; index += 1) {
+          const gridX = left + (index / 6) * (plotRight - left);
+          grid.push(`<line class="trade-chart-vertical-grid" x1="${gridX}" x2="${gridX}" y1="${top}" y2="${oscBottom}"/>`);
         }
-        const labelIndexes = points.length === 1 ? [0] : [0, Math.floor((points.length - 1) / 2), points.length - 1];
+        const labelStep = Math.max(1, Math.floor((points.length - 1) / 4));
+        const labelIndexes = [...new Set([0, labelStep, labelStep * 2, labelStep * 3, points.length - 1].filter((index) => index >= 0 && index < points.length))];
         const labels = labelIndexes
           .map((index) => {
             const text = new Date(points[index].time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
             return svgText(x(index), height - 3, text, "trade-chart-axis-label", index === 0 ? "start" : index === points.length - 1 ? "end" : "middle");
           })
           .join("");
-        const sma = movingAverage(values, Math.min(values.length, 5));
         const maxVolume = Math.max(...volumes, 1);
-        const barWidth = Math.max(8, slot * 0.7);
+        const barWidth = Math.max(3, slot * 0.72);
         const volumeBars = showVolume
           ? volumes
             .map((volume, index) => {
-              const barHeight = Math.max(2, (volume / maxVolume) * (volumeBottom - volumeTop - 5));
+              const barHeight = Math.max(2, (volume / maxVolume) * (volumeBottom - volumeTop - 4));
               const direction = index === 0 || values[index] >= values[index - 1] ? "is-up" : "is-down";
-              return `<rect class="trade-chart-volume ${direction}" x="${x(index) - barWidth / 2}" y="${volumeBottom - barHeight}" width="${barWidth}" height="${barHeight}" rx="1"/>`;
+              return `<rect class="trade-chart-volume ${direction}" x="${x(index) - barWidth / 2}" y="${volumeBottom - barHeight}" width="${barWidth}" height="${barHeight}"/>`;
             })
             .join("")
           : "";
@@ -1871,16 +1929,38 @@
           const cx = x(index);
           const hi = Number.isFinite(candle.high) ? candle.high : candle.value;
           const lo = Number.isFinite(candle.low) ? candle.low : candle.value;
+          const up = candle.close >= candle.open;
+          const direction = up ? "is-up" : "is-down";
           if (hi < low || lo > high) {
             const edge = hi < low ? priceBottom : top;
-            return `<rect class="trade-chart-candle ${candle.close >= candle.open ? "is-up" : "is-down"}" x="${cx - barWidth / 2}" y="${edge - 3}" width="${barWidth}" height="6" rx="0.7"/>`;
+            return `<rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${edge - 2}" width="${barWidth}" height="3"/>`;
           }
-          const up = candle.close >= candle.open;
           const bodyTop = y(Math.max(candle.open, candle.close));
           const bodyBot = y(Math.min(candle.open, candle.close));
-          const direction = up ? "is-up" : "is-down";
-          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(6, bodyBot - bodyTop)}" rx="0.7"/>`;
+          return `<line class="trade-chart-wick ${direction}" x1="${cx}" x2="${cx}" y1="${y(hi)}" y2="${y(lo)}"/><rect class="trade-chart-candle ${direction}" x="${cx - barWidth / 2}" y="${bodyTop}" width="${barWidth}" height="${Math.max(1.5, bodyBot - bodyTop)}"/>`;
         }).join("");
+        let indicatorPaths = "";
+        if (values.length > 1 && (indicator === "sma" || indicator === "bollinger")) {
+          indicatorPaths += `<path class="trade-chart-indicator" d="${pathFor(sma, x, y)}"/>`;
+        }
+        if (values.length > 1 && indicator === "ema") {
+          indicatorPaths += `<path class="trade-chart-indicator is-secondary" d="${pathFor(ema, x, y)}"/>`;
+        }
+        if (values.length > 1 && indicator === "bollinger") {
+          indicatorPaths += `<path class="trade-chart-indicator is-secondary" d="${pathFor(upper, x, y)}"/><path class="trade-chart-indicator is-secondary" d="${pathFor(lower, x, y)}"/>`;
+        }
+        let oscLayer = "";
+        if (showOsc) {
+          if (indicator === "rsi") {
+            const rsiY = (value) => oscBottom - (Math.min(100, Math.max(0, value)) / 100) * (oscBottom - oscTop);
+            oscLayer = `<line class="trade-chart-subgrid" x1="${left}" x2="${plotRight}" y1="${rsiY(70)}" y2="${rsiY(70)}"/><line class="trade-chart-subgrid" x1="${left}" x2="${plotRight}" y1="${rsiY(30)}" y2="${rsiY(30)}"/><path class="trade-chart-rsi" d="${pathFor(rsi, x, rsiY)}"/>${svgText(left, oscTop + 10, "RSI", "trade-chart-panel-label")}`;
+          } else {
+            const macdVals = macd.filter((value) => value != null);
+            const macdMax = Math.max(...macdVals.map((value) => Math.abs(value)), 0.000001);
+            const macdY = (value) => oscTop + (oscBottom - oscTop) / 2 - (value / macdMax) * ((oscBottom - oscTop) / 2);
+            oscLayer = `<path class="trade-chart-macd" d="${pathFor(macd, x, macdY)}"/>${svgText(left, oscTop + 10, "MACD", "trade-chart-panel-label")}`;
+          }
+        }
         const lineLayer = candles.length
           ? candleBodies
           : `${areaPath ? `<path class="trade-chart-area" d="${areaPath}"/>` : ""}${pricePath ? `<path class="trade-chart-price" d="${pricePath}"/>` : ""}`;
@@ -1888,13 +1968,17 @@
           ? `<line class="trade-chart-last-line" x1="${left}" x2="${plotRight}" y1="${y(lastPrice)}" y2="${y(lastPrice)}"/>${svgText(width - 4, y(lastPrice) + 3, formatTick(lastPrice), "trade-chart-last-label", "end")}`
           : "";
         const volumeLabel = showVolume ? svgText(left, volumeTop + 11, "VOLUME", "trade-chart-panel-label") : "";
-        const divider = showVolume ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>` : "";
+        const divider = showVolume || showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${volumeTop - 8}" y2="${volumeTop - 8}"/>` : "";
+        const oscDivider = showOsc ? `<line class="trade-chart-panel-divider" x1="${left}" x2="${plotRight}" y1="${oscTop - 6}" y2="${oscTop - 6}"/>` : "";
         const clip = `<clipPath id="trade-chart-price-clip"><rect x="${left}" y="${top}" width="${plotRight - left}" height="${priceBottom - top}"/></clipPath>`;
-        const plotLayer = `<g clip-path="url(#trade-chart-price-clip)">${lineLayer}</g>`;
-        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${lastLine}${divider}${volumeLabel}${plotLayer}${volumeBars}${labels}`;
+        const plotLayer = `<g clip-path="url(#trade-chart-price-clip)">${lineLayer}${indicatorPaths}</g>`;
+        svg.innerHTML = `<defs>${clip}</defs>${grid.join("")}${lastLine}${divider}${volumeLabel}${plotLayer}${volumeBars}${oscDivider}${oscLayer}${labels}`;
         liveChart.hidden = false;
         emptyChart.hidden = true;
+        emptyChart.classList.remove("is-loading");
         setText("[data-chart-stat-sma]", formatAxis(sma[sma.length - 1]));
+        setText("[data-chart-stat-rsi]", Number.isFinite(rsi[rsi.length - 1]) ? rsi[rsi.length - 1].toFixed(1) : "—");
+        setText("[data-chart-stat-macd]", Number.isFinite(macd[macd.length - 1]) ? macd[macd.length - 1].toFixed(4) : "—");
         setText("[data-chart-symbol-price]", formatAxis(chartState.data.livePrice));
         setText("[data-chart-symbol-change]", formatPercent(chartState.data.change));
       }
@@ -1921,12 +2005,17 @@
         const trades = state.verification.trades || [];
         const offers = state.verification.offers || [];
         const hasMarket = Boolean(state.verification.market) || trades.length > 0 || offers.length > 0;
+        const tapeLoading = state.verification.tapeLoading !== false && !state.verification.poolTxComplete;
         setText("[data-chart-symbol]", label);
         setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
         setText("[data-chart-legend-primary]", label);
         setText("[data-chart-symbol-source]", "XRPL Testnet");
         setText("[data-chart-source-label]", "XRPL Testnet");
         setText("[data-chart-source]", "Source: XRPL Testnet");
+        if (!hasMarket && (tapeLoading || state.verification.tapeLoading)) {
+          setChartLoading();
+          return;
+        }
         if (!hasMarket) {
           chartState.data = null;
           resetChartStats();
@@ -1942,16 +2031,19 @@
         let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);
         if (!used.length) used = [...trades].filter((trade) => trade.time).sort((a, b) => a.time - b.time);
         if (!used.length) {
-          chartState.data = null;
-          resetChartStats();
           if (hasMarket) {
             const spot = Number(String(getMarketPrice()).replace(" XRP", ""));
             if (Number.isFinite(spot) && spot > 0) {
               setText("[data-chart-stat-price]", formatAxis(spot));
               setText("[data-chart-symbol-price]", formatAxis(spot));
             }
-            setText("[data-chart-stat-volume]", volume24hXrp(trades) > 0 ? `${formatIou(volume24hXrp(trades))} XRP` : "—");
           }
+          if (tapeLoading || state.verification.tapeLoading) {
+            setChartLoading("Fetching validated prints…", "The PND/XRP pool is live. Candles appear when the first prints arrive.");
+            return;
+          }
+          chartState.data = null;
+          resetChartStats();
           setChartEmpty(
             `No validated ${label} prints to candle`,
             "Candles are built only from validated AMM/DEX prints. Empty minutes stay blank.",
@@ -2166,23 +2258,20 @@
       const amm = ammInfo?.result?.amm || null;
       let poolTxs = [];
       let poolTxComplete = true;
+      let tapeLoading = false;
+      let tapeMarker = null;
       if (amm?.account) {
-        let marker;
-        for (let page = 0; page < 4 && poolTxs.length < 200; page += 1) {
-          const history = await wsRpc(endpoint, "account_tx", {
-            account: amm.account,
-            ledger_index_min: -1,
-            ledger_index_max: -1,
-            limit: 50,
-            forward: false,
-            ...(marker ? { marker } : {}),
-          }, signal).catch(() => null);
-          const batch = history?.result?.transactions || [];
-          poolTxs.push(...batch);
-          marker = history?.result?.marker;
-          if (!marker || !batch.length) break;
-        }
-        poolTxComplete = !marker;
+        const history = await wsRpc(endpoint, "account_tx", {
+          account: amm.account,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: 80,
+          forward: false,
+        }, signal).catch(() => null);
+        poolTxs = history?.result?.transactions || [];
+        tapeMarker = history?.result?.marker || null;
+        poolTxComplete = !tapeMarker;
+        tapeLoading = Boolean(tapeMarker);
       }
       const trades = ledgerTrades(poolTxs);
       let walletPnd = null;
@@ -2220,6 +2309,8 @@
         ammInfo: ammInfo?.result || null,
         poolTxs,
         poolTxComplete,
+        tapeLoading,
+        tapeMarker,
         trades,
         treasuryPnd,
         treasuryXrpDrops,
@@ -2228,6 +2319,41 @@
         walletXrpDrops,
         walletAccount,
       };
+    }
+
+    async function continuePoolTape(signal, generation) {
+      const ammAccount = state.verification.ammInfo?.amm?.account;
+      if (!ammAccount || !state.verification.tapeMarker) return;
+      const endpoint = networks[state.network].endpoint;
+      let poolTxs = [...(state.verification.poolTxs || [])];
+      let marker = state.verification.tapeMarker;
+      for (let page = 0; page < 3 && poolTxs.length < 200 && marker; page += 1) {
+        const history = await wsRpc(endpoint, "account_tx", {
+          account: ammAccount,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: 80,
+          forward: false,
+          marker,
+        }, signal).catch(() => null);
+        if (!isCurrent(generation) || signal.aborted) return;
+        const batch = history?.result?.transactions || [];
+        poolTxs.push(...batch);
+        marker = history?.result?.marker || null;
+        state.verification = {
+          ...state.verification,
+          poolTxs,
+          trades: ledgerTrades(poolTxs),
+          tapeMarker: marker,
+          poolTxComplete: !marker,
+          tapeLoading: Boolean(marker),
+        };
+        setMarketState(state.verification);
+        if (!marker || !batch.length) break;
+      }
+      if (!isCurrent(generation)) return;
+      state.verification = { ...state.verification, tapeLoading: false, poolTxComplete: !state.verification.tapeMarker };
+      setMarketState(state.verification);
     }
 
     async function refresh() {
@@ -2250,7 +2376,7 @@
         setText("[data-issuer-status]", "Issuer address unavailable");
         setText("[data-issuer-detail]", "The published issuer address is required before ledger checks can run.");
         if (icon) icon.dataset.state = "error";
-        state.verification = { ...state.verification, issuer: false, issued: false, market: false };
+        state.verification = { ...state.verification, issuer: false, issued: false, market: false, tapeLoading: false };
         setMarketState(state.verification);
         return;
       }
@@ -2261,6 +2387,7 @@
         const ledgerIndex = verification.ledger?.seq || "available";
         setStatus("online", `Validated ledger ${ledgerIndex}`);
         setMarketState(verification);
+        if (verification.tapeMarker) await continuePoolTape(signal, generation);
         if (icon) icon.dataset.state = verification.issuer ? "ready" : "error";
         setText("[data-issuer-status]", verification.market
           ? "PND/XRP market on this network"
@@ -2275,7 +2402,7 @@
         setText("[data-issuer-status]", "Issuer check unavailable");
         setText("[data-issuer-detail]", error.message || "The selected XRPL endpoint did not respond.");
         if (icon) icon.dataset.state = "error";
-        state.verification = { ...state.verification, issuer: false, issued: false, orderBook: false, amm: false, market: false };
+        state.verification = { ...state.verification, issuer: false, issued: false, orderBook: false, amm: false, market: false, tapeLoading: false };
         setMarketState(state.verification);
       }
     }

@@ -5591,10 +5591,15 @@ body:has([data-pond-profile]) .profile-card {
   margin-left: 0;
 }
 
-.trade-chart-market-controls .trade-chart-tools {
+.trade-chart-market-controls .trade-chart-tools,
+.trade-chart-market-controls .trade-indicator-tools {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.25rem;
+}
+
+.trade-chart-market-controls .trade-chart-tools {
   margin-left: auto;
 }
 
@@ -5942,28 +5947,36 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-volume {
-  fill: #347bbf;
-  opacity: 0.8;
+  fill: #26a69a;
+  opacity: 0.45;
 }
 
 .trade-chart-volume.is-down {
-  fill: #bd5260;
+  fill: #ef5350;
 }
 
 .trade-chart-wick {
-  stroke-width: 1.2;
+  stroke-width: 1;
 }
 
 .trade-chart-wick.is-up,
 .trade-chart-candle.is-up {
-  stroke: #74d3a0;
-  fill: #74d3a0;
+  stroke: #26a69a;
+  fill: #26a69a;
 }
 
 .trade-chart-wick.is-down,
 .trade-chart-candle.is-down {
-  stroke: #f0a3a3;
-  fill: #f0a3a3;
+  stroke: #ef5350;
+  fill: #ef5350;
+}
+
+.trade-chart-empty-state.is-loading .trade-chart-mark {
+  display: none;
+}
+
+.trade-chart-empty-state.is-loading strong {
+  color: var(--text);
 }
 
 .trade-chart-rsi,

@@ -825,6 +825,10 @@ check(
     !tradeJsText.includes('data-chart-range="1h"') &&
     !tradeJsText.includes("print candles") &&
     tradeJsText.includes("data-chart-volume") &&
+    tradeJsText.includes("continuePoolTape") &&
+    tradeJsText.includes("setChartLoading") &&
+    tradeJsText.includes("Loading Testnet tape") &&
+    tradeJsText.includes('data-chart-indicator="sma"') &&
     tradeJsText.includes('preserveAspectRatio="none"') &&
     tradeJsText.includes("trade-overview-ticket") &&
     stylesText.includes("trade-chart-candle") &&
