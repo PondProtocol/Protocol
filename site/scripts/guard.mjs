@@ -630,14 +630,14 @@ check(
 );
 check(
   "trade disclaimer gates actions, links /legal/, and states WalletConnect or Xaman only",
-  tradeJsText.includes("data-disclaimer-confirm") &&
-    tradeJsText.includes('href="/start/"') &&
-    tradeJsText.includes('href="/legal/"') &&
-    /Read the disclaimer/i.test(tradeJsText) &&
-    /WalletConnect or Xaman/i.test(tradeJsText) &&
-    /never stores keys/i.test(tradeJsText) &&
-    /never needs your seed/i.test(tradeJsText) &&
-    /\$PND has not been issued/i.test(tradeJsText),
+  tradeHtml.includes("data-disclaimer-confirm") &&
+    tradeHtml.includes('href="/start/"') &&
+    tradeHtml.includes('href="/legal/"') &&
+    /Read the disclaimer/i.test(tradeHtml) &&
+    /WalletConnect or Xaman/i.test(tradeHtml) &&
+    /never stores keys/i.test(tradeHtml) &&
+    /never needs your seed/i.test(tradeHtml) &&
+    /\$PND has not been issued/i.test(tradeHtml),
 );
 check(
   "xaman.js keeps an honest /connect/ unavailable card and a short disabled Trade option",
@@ -924,6 +924,8 @@ check(
   "profile page is the account surface and not a Start here step",
   profileHtml.includes("data-pond-profile") &&
     profileHtml.includes("page-profile") &&
+    profileHtml.includes("data-profile-locked") &&
+    profileHtml.includes("Sign in with official Xaman") &&
     !/Complete your Pond Protocol Profile/i.test(asText(profileHtml)) &&
     !/Account pages open after official/i.test(asText(profileHtml)) &&
     profileHtml.includes("/profile.js") &&
@@ -933,7 +935,7 @@ check(
 );
 check(
   "profile card is centered on the viewport",
-  /body\.page-profile \.shell[\s\S]*?display:\s*flex[\s\S]*?justify-content:\s*center[\s\S]*?margin-inline:\s*auto/.test(
+  /body\.page-profile \.shell[\s\S]*?display:\s*flex[\s\S]*?align-items:\s*center[\s\S]*?justify-content:\s*center[\s\S]*?margin-inline:\s*auto/.test(
     stylesText,
   ) &&
     /body\.page-profile main[\s\S]*?margin-inline:\s*auto/.test(stylesText) &&
@@ -995,6 +997,9 @@ check(
     indexHtml.includes("/privacy.js") &&
     indexHtml.includes("/xaman.js") &&
     tradeHtml.includes("/trade.js") &&
+    !tradeHtml.includes("cdn.jsdelivr.net") &&
+    tradeHtml.includes("data-disclaimer") &&
+    tradeHtml.includes("Before you continue") &&
     profileHtml.includes("/profile.js"),
 );
 check(
