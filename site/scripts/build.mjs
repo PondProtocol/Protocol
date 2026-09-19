@@ -661,11 +661,11 @@ function heroHtml() {
   <div class="hero-inner">
     <div class="hero-heading">
       <p class="hero-kicker">Pond</p>
-      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at the<br>The Pond</h1>
+      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>The Pond</h1>
     </div>
-    <p class="hero-lede"><strong>$PND has not launched.</strong> Target 1 October 2026.
-    Identity is the pair <strong>(PND, issuer address)</strong>, never the ticker.
-    $rPND is not launching that day.</p>
+    <p class="hero-lede"><strong>Testnet phase.</strong> 100B $PND is issued to the Testnet treasury.
+    Faucet XRP is worthless. Mainnet has not issued $PND.
+    Identity is still the pair <strong>(PND, issuer address)</strong>, never the ticker.</p>
     ${chip}
     <div class="hero-id">
       <span class="hero-id-label">Canonical issuer</span>
