@@ -1303,6 +1303,13 @@
       setText("[data-amm-stat-price-note]", market ? "Validated book or AMM" : "No AMM or DEX book");
       setText("[data-amm-stat-ledger]", ledger?.seq ? String(ledger.seq) : "—");
       syncAmmSliders();
+      const evenNote = $("[data-amm-side-note]");
+      if (evenNote && isEvenDeposit()) {
+        const pair = liveAmmReservePair();
+        evenNote.textContent = pair
+          ? `tfTwoAsset · paired at ${pair.xrpPerPnd.toFixed(8)} XRP / PND`
+          : "tfTwoAsset · both assets";
+      }
     }
 
     function syncAmmSliders() {
