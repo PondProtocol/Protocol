@@ -784,6 +784,13 @@ check(
     tradeJsText.includes("data-amm-live-pnd") &&
     tradeJsText.includes("data-amm-pool-stats") &&
     tradeJsText.includes("No AMM pool") &&
+    tradeJsText.includes("data-amm-pools") &&
+    tradeJsText.includes("account_tx") &&
+    tradeJsText.includes("$rPND is not issued. No rPND pool.") &&
+    /data-tab-group="amm-market"[\s\S]*class="is-active" data-tab="pools"/.test(tradeJsText) &&
+    /data-tab-group="amm-action"[\s\S]*class="is-active" data-tab="liquidity"/.test(tradeJsText) &&
+    !(/data-tab-group="amm-market"[\s\S]*?<\/nav>/.exec(tradeJsText)?.[0] || "").includes('data-tab="chart"') &&
+    !tradeJsText.includes("<strong>$rPND</strong>") &&
     /\.trade-app\[data-mode="amm"\] \.trade-detail-window/.test(stylesText) &&
     /body\.page-trade \.trade-app\[data-mode="amm"\][\s\S]*flex-direction:\s*column/.test(stylesText) &&
     /:has\(#trade-app\[data-mode="amm"\]\)[\s\S]*overflow:\s*hidden/.test(stylesText) &&

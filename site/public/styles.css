@@ -2550,6 +2550,141 @@ code.addr {
   background: rgb(255 255 255 / 0.025);
 }
 
+.trade-amm-pools,
+.trade-amm-activity {
+  display: grid;
+  align-content: start;
+  gap: 0.55rem;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  padding: 0.65rem 0.7rem;
+}
+
+.trade-amm-pools-empty,
+.trade-amm-pools-note {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.trade-amm-pool-card {
+  display: grid;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%),
+    color-mix(in srgb, var(--bg-soft) 86%, #000);
+}
+
+.trade-amm-pool-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.trade-amm-pool-head strong {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.trade-amm-pool-head span,
+.trade-amm-pool-account {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.trade-amm-pool-account {
+  max-width: 18rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--accent-bright);
+}
+
+.trade-amm-pool-hero,
+.trade-amm-pool-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.trade-amm-pool-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.trade-amm-pool-hero > div,
+.trade-amm-pool-facts > div {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+  padding: 0.38rem 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg-code) 80%, var(--accent));
+}
+
+.trade-amm-pool-hero dt,
+.trade-amm-pool-facts dt,
+.trade-amm-pool-hero em {
+  color: var(--text-muted);
+  font-size: 0.56rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.trade-amm-pool-hero dd,
+.trade-amm-pool-facts dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.trade-amm-pool-hero em {
+  display: block;
+  margin-top: 0.08rem;
+  font-weight: 500;
+}
+
+.trade-amm-tx-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-amm-tx-list li {
+  display: grid;
+  gap: 0.12rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-code) 82%, var(--accent));
+}
+
+.trade-amm-tx-list span,
+.trade-amm-tx-list em,
+.trade-amm-tx-list code {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+@media (max-width: 1040px) {
+  .trade-amm-pool-hero,
+  .trade-amm-pool-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .trade-liquidity-preview strong {
   font-size: 0.8rem;
 }
@@ -5927,7 +6062,9 @@ body.page-trade .trade-mode-workspace {
   body.page-trade .trade-app[data-mode="amm"] .trade-market-panels > .trade-panel,
   body.page-trade .trade-app[data-mode="amm"] .trade-chart-empty,
   body.page-trade .trade-app[data-mode="amm"] .trade-empty-panel,
-  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview {
+  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pools,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-activity {
     flex: 1;
     min-height: 0;
     height: auto;
@@ -8045,7 +8182,9 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="amm"] .trade-market-panels > .trade-panel,
   body.page-trade .trade-app[data-mode="amm"] .trade-chart-empty,
   body.page-trade .trade-app[data-mode="amm"] .trade-empty-panel,
-  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview {
+  body.page-trade .trade-app[data-mode="amm"] .trade-liquidity-preview,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pools,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-activity {
     flex: 1;
     min-height: 0;
     height: auto;
@@ -8162,5 +8301,20 @@ body.page-trade .trade-detail-window {
     margin: 0;
     font-size: 0.68rem;
     line-height: 1.3;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pools,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-activity {
+    padding: 0.45rem 0.5rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-card {
+    gap: 0.4rem;
+    padding: 0.55rem 0.6rem;
+  }
+
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-hero dd,
+  body.page-trade .trade-app[data-mode="amm"] .trade-amm-pool-facts dd {
+    font-size: 0.68rem;
   }
 }

@@ -103,28 +103,19 @@
     <div class="trade-workspace trade-mode-view" data-mode-view="amm" aria-label="AMM workspace">
       <section class="trade-market-pane" aria-label="Market view">
         <nav class="trade-subtabs" aria-label="AMM market detail" data-tab-group="amm-market">
-          <button type="button" class="is-active" data-tab="chart" aria-selected="true">Chart</button>
-          <button type="button" data-tab="pools" aria-selected="false">Pools</button>
+          <button type="button" class="is-active" data-tab="pools" aria-selected="true">Pools</button>
           <button type="button" data-tab="activity" aria-selected="false">Activity</button>
         </nav>
-        <div class="trade-chart-toolbar">
-          <div class="trade-chart-tools"><span>Price</span><span>Volume</span><span>Indicators</span></div>
-          <div class="trade-range-tools"><button type="button" class="is-active">1W</button><button type="button">1M</button><button type="button">3M</button><button type="button">All</button></div>
-        </div>
         <div class="trade-market-panels" data-tab-panels="amm-market">
-          <div class="trade-panel is-active" data-panel="chart">
-            <div class="trade-chart-empty">
-              <div class="trade-chart-grid"></div>
-              <span class="trade-chart-mark">P</span>
-              <strong>No PND/XRP AMM or DEX book yet</strong>
-              <span>Candles stay blank until Testnet has a validated pool or order book. This page will not invent a last price.</span>
+          <div class="trade-panel is-active" data-panel="pools">
+            <div class="trade-amm-pools" data-amm-pools>
+              <p class="trade-amm-pools-empty">Reading validated ledger…</p>
             </div>
           </div>
-          <div class="trade-panel" data-panel="pools" hidden>
-            <div class="trade-liquidity-preview"><div><strong>$PND / XRP AMM</strong><span>Testnet pool</span><b data-amm-status>Reading ledger…</b></div><div><strong>$rPND</strong><span>MPT</span><b>Not issued</b></div></div>
-          </div>
           <div class="trade-panel" data-panel="activity" hidden>
-            <div class="trade-empty-panel"><strong>No AMM activity on Testnet</strong><span>Validated AMM transactions will list here if a PND/XRP pool is created.</span></div>
+            <div class="trade-amm-activity" data-amm-activity>
+              <p class="trade-amm-pools-empty">Reading validated ledger…</p>
+            </div>
           </div>
         </div>
         <div class="trade-market-footer"><span>Data source: XRPL validated ledger</span><span data-issuer-status>Checking issuer account</span></div>
@@ -133,18 +124,18 @@
       <aside class="trade-action-pane" aria-label="Trade actions">
         <div class="trade-action-card">
           <nav class="trade-action-tabs" aria-label="AMM action" data-tab-group="amm-action">
-            <button type="button" class="is-active" data-tab="swap" aria-selected="true">Swap</button>
-            <button type="button" data-tab="liquidity" aria-selected="false">Liquidity</button>
+            <button type="button" class="is-active" data-tab="liquidity" aria-selected="true">Liquidity</button>
+            <button type="button" data-tab="swap" aria-selected="false">Swap</button>
           </nav>
           <div class="trade-action-panels" data-tab-panels="amm-action">
-            <div class="trade-panel is-active" data-panel="swap">
+            <div class="trade-panel" data-panel="swap" hidden>
               <div class="trade-action-field"><span>Sell</span><div><strong>0.00</strong><b>XRP⌄</b></div><small>—</small></div>
               <button type="button" class="trade-flip" aria-label="Flip assets">↕</button>
               <div class="trade-action-field"><span>Buy</span><div><strong>0.00</strong><b>$PND⌄</b></div><small>—</small></div>
               <div class="trade-summary-row"><span>Rate</span><strong>—</strong></div>
               <button type="button" class="trade-connect-button" disabled>Unsigned preview — this terminal does not sign or submit</button>
             </div>
-            <div class="trade-panel" data-panel="liquidity" hidden>
+            <div class="trade-panel is-active" data-panel="liquidity">
               <div class="trade-inline-tabs" aria-label="Liquidity action" data-tab-group="amm-liquidity">
                 <button type="button" class="is-active" data-tab="add" aria-selected="true">Add</button>
                 <button type="button" data-tab="remove" aria-selected="false">Remove</button>
@@ -153,7 +144,7 @@
                 <div class="trade-panel is-active" data-panel="add">
                   <div class="trade-amm-create" data-amm-create>
                     <p class="trade-amm-create-kicker">Testnet AMMCreate</p>
-                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate, not a deposit into an existing pool — no pool yet. This server never signs. Xaman submits after you sign.</p>
+                    <p class="trade-amm-create-copy">Official Xaman. Unsigned AMMCreate. If a PND/XRP pool already exists, another create for this pair will not succeed. This server never signs. Xaman submits after you sign.</p>
                     <div class="trade-amm-pool-stats" data-amm-pool-stats>
                       <div class="trade-amm-stat"><span>Pool</span><strong data-amm-stat-pool>No AMM pool</strong><em data-amm-stat-pool-note>amm_info</em></div>
                       <div class="trade-amm-stat"><span>DEX</span><strong data-amm-stat-dex>—</strong><em>book_offers</em></div>
@@ -516,6 +507,8 @@
         pndLines: [],
         offers: [],
         ammInfo: null,
+        poolTxs: [],
+        poolTxComplete: true,
         treasuryPnd: null,
         treasuryXrpDrops: null,
         treasuryAccount: null,
@@ -627,6 +620,7 @@
         ? "Faucet XRP is worthless. 100B PND is at the Testnet treasury. Mainnet is not issued."
         : "Same issuer r-address. No mainnet obligations. Testnet holds the issued 100B.");
       paintAmmCreateBalances();
+      paintAmmPools();
       const emptyRows = root.querySelectorAll(".trade-empty-row");
       emptyRows.forEach((row) => {
         row.textContent = offers.length
@@ -646,6 +640,125 @@
       if (typeof value === "string") return formatDrops(value);
       if (typeof value.value === "string") return value.value;
       return "—";
+    }
+
+    function escText(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function rippleDate(seconds) {
+      const n = Number(seconds);
+      if (!Number.isFinite(n)) return "—";
+      const iso = new Date((n + 946684800) * 1000).toISOString();
+      return `${iso.slice(0, 19).replace("T", " ")} UTC`;
+    }
+
+    function tradingFeeLabel(fee) {
+      const n = Number(fee);
+      if (!Number.isFinite(n)) return "—";
+      return `${(n / 1000).toFixed(n % 10 ? 3 : 1)}% · ${n}`;
+    }
+
+    function splitAmmAssets(amm) {
+      const a = amm?.amount;
+      const b = amm?.amount2;
+      const isXrp = (value) => typeof value === "string";
+      return {
+        xrp: isXrp(a) ? a : isXrp(b) ? b : null,
+        iou: !isXrp(a) && a ? a : !isXrp(b) && b ? b : null,
+      };
+    }
+
+    function reserveRatio(xrpDrops, iouValue) {
+      try {
+        const xrp = Number(formatDrops(xrpDrops));
+        const iou = Number(iouValue);
+        if (!Number.isFinite(xrp) || !Number.isFinite(iou) || iou <= 0) return "—";
+        return `${(xrp / iou).toFixed(8)} XRP / PND`;
+      } catch {
+        return "—";
+      }
+    }
+
+    function txRecord(item) {
+      const tx = item?.tx || item?.tx_json || {};
+      const meta = item?.meta || {};
+      return {
+        type: tx.TransactionType || "—",
+        date: tx.date,
+        result: meta.TransactionResult || "—",
+        hash: tx.hash || item?.hash || "",
+        ledger: item?.ledger_index || tx.ledger_index,
+      };
+    }
+
+    function paintAmmPools() {
+      const list = $("[data-amm-pools]");
+      const activity = $("[data-amm-activity]");
+      if (!list) return;
+      const { ammInfo, poolTxs = [], poolTxComplete = true, ledger } = state.verification;
+      const amm = ammInfo?.amm || null;
+      const networkLabel = networks[state.network].label;
+      if (!amm) {
+        list.innerHTML = `
+          <p class="trade-amm-pools-empty">No PND/XRP AMM on ${escText(networkLabel)} yet. This page will not invent a pool or a last price.</p>
+          <p class="trade-amm-pools-note">$rPND is not issued. No rPND pool.</p>`;
+        if (activity) {
+          activity.innerHTML = `<p class="trade-amm-pools-empty">No validated AMM transactions on ${escText(networkLabel)}.</p>`;
+        }
+        return;
+      }
+      const { xrp, iou } = splitAmmAssets(amm);
+      const pndValue = iou?.value;
+      const created = poolTxs.map(txRecord).find((row) => row.type === "AMMCreate") || poolTxs.map(txRecord)[0];
+      const txCount = poolTxComplete ? String(poolTxs.length) : `${poolTxs.length}+`;
+      const lp = amm.lp_token;
+      const auction = amm.auction_slot;
+      const votes = Array.isArray(amm.vote_slots) ? amm.vote_slots : [];
+      const voteHtml = votes.length
+        ? votes.map((vote) => `${escText(shortAccount(vote.account))} · fee ${escText(tradingFeeLabel(vote.trading_fee))} · weight ${escText(vote.vote_weight)}`).join("<br>")
+        : "—";
+      list.innerHTML = `
+        <article class="trade-amm-pool-card">
+          <header class="trade-amm-pool-head">
+            <div>
+              <strong>$PND / XRP</strong>
+              <span>${escText(networkLabel)} · validated amm_info</span>
+            </div>
+            <code class="trade-amm-pool-account">${escText(amm.account || "—")}</code>
+          </header>
+          <dl class="trade-amm-pool-hero">
+            <div><dt>Total locked</dt><dd>${escText(pndValue != null ? `${formatIou(pndValue)} PND` : "—")} + ${escText(xrp != null ? `${formatDrops(xrp)} XRP` : "—")}</dd></div>
+            <div><dt>XRP worth</dt><dd>${escText(xrp != null ? `${formatDrops(xrp)} XRP` : "—")}<em>XRP reserve, not a USD print</em></dd></div>
+            <div><dt>Date created</dt><dd>${escText(created ? rippleDate(created.date) : "—")}<em>AMMCreate close time</em></dd></div>
+            <div><dt>Transactions</dt><dd>${escText(txCount)}<em>account_tx${poolTxComplete ? "" : " · truncated"}</em></dd></div>
+          </dl>
+          <dl class="trade-amm-pool-facts">
+            <div><dt>PND reserve</dt><dd>${escText(pndValue != null ? formatIou(pndValue) : "—")}</dd></div>
+            <div><dt>XRP reserve</dt><dd>${escText(xrp != null ? formatDrops(xrp) : "—")}</dd></div>
+            <div><dt>Reserve ratio</dt><dd>${escText(reserveRatio(xrp, pndValue))}</dd></div>
+            <div><dt>Trading fee</dt><dd>${escText(tradingFeeLabel(amm.trading_fee))}</dd></div>
+            <div><dt>LP tokens</dt><dd>${escText(lp?.value != null ? formatIou(lp.value) : "—")}</dd></div>
+            <div><dt>LP issuer</dt><dd>${escText(lp?.issuer || "—")}</dd></div>
+            <div><dt>Pool account</dt><dd>${escText(amm.account || "—")}</dd></div>
+            <div><dt>PND issuer</dt><dd>${escText(iou?.issuer || issuer || "—")}</dd></div>
+            <div><dt>Asset2 frozen</dt><dd>${amm.asset2_frozen ? "Yes" : "No"}</dd></div>
+            <div><dt>Ledger</dt><dd>${escText(ammInfo.ledger_index || ledger?.seq || "—")}</dd></div>
+            <div><dt>Auction</dt><dd>${escText(auction?.account ? `${shortAccount(auction.account)} · exp ${String(auction.expiration || "—").replace("T", " ").replace("+0000", " UTC")}` : "—")}</dd></div>
+            <div><dt>Vote slots</dt><dd>${voteHtml}</dd></div>
+          </dl>
+          <p class="trade-amm-pools-note">$rPND is not issued. No rPND pool.</p>
+        </article>`;
+      if (activity) {
+        const rows = poolTxs.map(txRecord);
+        activity.innerHTML = rows.length
+          ? `<ol class="trade-amm-tx-list">${rows.map((row) => `<li><strong>${escText(row.type)}</strong><span>${escText(rippleDate(row.date))}</span><em>${escText(row.result)}</em>${row.hash ? `<code>${escText(row.hash)}</code>` : ""}</li>`).join("")}</ol>`
+          : `<p class="trade-amm-pools-empty">Pool ${escText(amm.account)} has no account_tx rows yet.</p>`;
+      }
     }
 
     function setNetworkButtons() {
@@ -1573,6 +1686,19 @@
         ...(bids?.result?.offers || []),
       ];
       const amm = ammInfo?.result?.amm || null;
+      let poolTxs = [];
+      let poolTxComplete = true;
+      if (amm?.account) {
+        const history = await wsRpc(endpoint, "account_tx", {
+          account: amm.account,
+          ledger_index_min: -1,
+          ledger_index_max: -1,
+          limit: 50,
+          forward: true,
+        }, signal).catch(() => null);
+        poolTxs = history?.result?.transactions || [];
+        poolTxComplete = !history?.result?.marker;
+      }
       return {
         issuer: Boolean(account),
         issued,
@@ -1585,6 +1711,8 @@
         offers,
         pndLines,
         ammInfo: ammInfo?.result || null,
+        poolTxs,
+        poolTxComplete,
         treasuryPnd,
         treasuryXrpDrops,
         treasuryAccount: treasuryLinesResponse?.result?.account || null,
