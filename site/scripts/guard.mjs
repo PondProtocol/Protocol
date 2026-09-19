@@ -847,8 +847,13 @@ check(
     tradeJsText.includes("formatCompact") &&
     tradeJsText.includes("setVisibleRange") &&
     tradeJsText.includes("fitTvViewport") &&
+    tradeJsText.includes("macdSignal") &&
+    tradeJsText.includes("emaLine") &&
+    tradeJsText.includes("ResizeObserver") &&
+    tradeJsText.includes("data-chart-hud-ind") &&
     stylesText.includes("trade-chart-board") &&
     stylesText.includes(".trade-chart-board table") &&
+    stylesText.includes("100svh !important") &&
     stylesText.includes("trade-overview-rail") &&
     /grid-template-areas:\s*"plot rail"/.test(stylesText) &&
     tradeJsText.includes("data-dex-tape") &&

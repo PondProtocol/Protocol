@@ -9215,4 +9215,54 @@ body.page-trade .trade-detail-window {
   body.page-trade .trade-app[data-mode="data"] .trade-data-integrity {
     padding: 0.36rem 0.5rem;
   }
+
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]),
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) .shell,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) main,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) .prose,
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) #trade-app {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html.has-nav-js body.page-trade:has(#trade-app[data-mode="chart"]) {
+    height: 100svh !important;
+    max-height: 100svh !important;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-mode-tabs,
+  body.page-trade .trade-app[data-mode="chart"] .trade-mode-workspace,
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-chart,
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-plot,
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-live,
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-board {
+    min-height: 0 !important;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-mode-workspace,
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-chart,
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-plot,
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-live,
+  body.page-trade .trade-app[data-mode="chart"] .trade-chart-board {
+    flex: 1 1 auto !important;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-plot {
+    padding: 0;
+  }
+
+  body.page-trade .trade-app[data-mode="chart"] .trade-overview-legend {
+    position: absolute;
+    left: 0.45rem;
+    bottom: 1.28rem;
+    z-index: 3;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    pointer-events: none;
+  }
 }
