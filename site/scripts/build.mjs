@@ -590,6 +590,32 @@ function heroTopoSvg() {
   return `<div class="hero-topo" aria-hidden="true"><img class="hero-topo-img" src="/hero-topo.svg" alt="" decoding="async" fetchpriority="low"></div>`;
 }
 
+function bithompExplorer(address) {
+  return `https://bithomp.com/explorer/${address}`;
+}
+
+function heroWalletHtml(label, address) {
+  return `<a class="hero-wallet" href="${esc(bithompExplorer(address))}" target="_blank" rel="noopener noreferrer">
+      <span class="hero-wallet-label">${esc(label)}</span>
+      <code class="addr">${esc(address)}</code>
+    </a>`;
+}
+
+function heroPagesHtml() {
+  const cards = [
+    ["/Pond/", "Pond", "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole."],
+    ["/profile/", "Profile", "Xaman account. Handle and balances. Never a seed."],
+    ["/trade/", "Trade", "Testnet terminal. Not a live mainnet DEX."],
+    ["/Protocol/", "Protocol", "Decentralized and Agent-AI-run."],
+  ];
+  return `<nav class="hero-pages" aria-label="Pond pages">${cards
+    .map(
+      ([href, title, blurb]) =>
+        `<a class="hero-page" href="${esc(href)}"><strong>${esc(title)}</strong><span>${esc(blurb)}</span></a>`,
+    )
+    .join("")}</nav>`;
+}
+
 function heroHtml() {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -600,22 +626,28 @@ function heroHtml() {
   return `<section class="hero" aria-labelledby="hero-tagline">
   ${heroTopoSvg()}
   <div class="hero-inner">
-    <div class="hero-heading">
-      <p class="hero-kicker">Pond</p>
-      <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>the Pond</h1>
+    <div class="hero-main">
+      <div class="hero-copy">
+        <div class="hero-heading">
+          <p class="hero-kicker">Pond</p>
+          <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>the Pond</h1>
+        </div>
+        <p class="hero-lede"><strong>Testnet phase.</strong> 100B $PND is issued to the Testnet treasury.
+        Faucet XRP is worthless. Mainnet has not issued $PND.
+        Identity is still the pair <strong>(PND, issuer address)</strong>, never the ticker.</p>
+        ${chip}
+        <div class="hero-wallets" aria-label="Official wallets">
+          ${heroWalletHtml("Issuer", site.issuerAddress)}
+          ${heroWalletHtml("Treasury", site.treasuryAddress)}
+          ${heroWalletHtml("Operations", site.operationsAddress)}
+        </div>
+        <p class="hero-actions">
+          <a class="button" href="/Pond/">Pond <span aria-hidden="true">↗</span></a>
+          <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
+        </p>
+      </div>
+      ${heroPagesHtml()}
     </div>
-    <p class="hero-lede"><strong>Testnet phase.</strong> 100B $PND is issued to the Testnet treasury.
-    Faucet XRP is worthless. Mainnet has not issued $PND.
-    Identity is still the pair <strong>(PND, issuer address)</strong>, never the ticker.</p>
-    ${chip}
-    <div class="hero-id">
-      <span class="hero-id-label">Canonical issuer</span>
-      <code class="addr">${esc(site.issuerAddress)}</code>
-    </div>
-    <p class="hero-actions">
-      <a class="button" href="/Pond/">Pond <span aria-hidden="true">↗</span></a>
-      <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
-    </p>
   </div>
 </section>`;
 }
@@ -687,7 +719,8 @@ const iconScan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 function sessionChipHtml() {
   return `<div class="session-chip" data-session-chip>
   <div class="session-guest" data-session-guest>
-    <button type="button" class="session-toggle" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
+    <img class="session-avatar" data-guest-avatar width="30" height="30" alt="" src="/identicon/0000000000000000.svg">
+    <button type="button" class="session-toggle visually-hidden" data-session-toggle aria-haspopup="menu" aria-expanded="false" aria-controls="session-menu">Sign in</button>
     <div class="session-menu" id="session-menu" data-session-menu hidden>
       <p class="session-menu-kicker">Sign in</p>
       <p class="session-menu-copy">Official WalletConnect or Xaman. Pond never asks for a seed.</p>
@@ -889,10 +922,14 @@ ${canonical}
     </p>
   </div>
   <div class="topbar-end">
-    ${topnavHtml(page.url)}
-    ${searchHtml(page.url)}
-    <a class="topbar-trade" href="/trade/">Trade</a>
-    ${sessionChipHtml()}
+    <div class="topbar-nav-group">
+      ${topnavHtml(page.url)}
+      ${searchHtml(page.url)}
+    </div>
+    <div class="topbar-account-group">
+      <a class="topbar-trade" href="/trade/" data-topbar-cta>Login</a>
+      ${sessionChipHtml()}
+    </div>
   </div>
 </header>
 ${banner}

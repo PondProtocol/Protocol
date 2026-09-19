@@ -22,6 +22,11 @@
   const profileLink = () => document.querySelector("[data-session-profile]");
   const avatarEl = () => document.querySelector("[data-session-avatar]");
   const nameEl = () => document.querySelector("[data-session-name]");
+  const ctaEl = () => document.querySelector("[data-topbar-cta]");
+  const guestAvatarEl = () => document.querySelector("[data-guest-avatar]");
+  const GUEST_CYCLE_MS = 5000;
+  let guestTimer = 0;
+  let lastGuestSeed = "";
 
   function identiconSrc(address) {
     const addr = String(address || "").trim();
@@ -91,8 +96,39 @@
     }
   }
 
+  function randomIdenticonSeed() {
+    const bytes = new Uint8Array(8);
+    crypto.getRandomValues(bytes);
+    return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  function paintGuestAvatar() {
+    const img = guestAvatarEl();
+    if (!img || current?.address) return;
+    let seed = randomIdenticonSeed();
+    while (seed === lastGuestSeed) seed = randomIdenticonSeed();
+    lastGuestSeed = seed;
+    img.src = `/identicon/${seed}.svg`;
+    img.alt = "";
+  }
+
+  function stopGuestCycle() {
+    if (guestTimer) window.clearInterval(guestTimer);
+    guestTimer = 0;
+  }
+
+  function startGuestCycle() {
+    if (guestTimer) return;
+    paintGuestAvatar();
+    guestTimer = window.setInterval(paintGuestAvatar, GUEST_CYCLE_MS);
+  }
+
   function paint() {
     const signedIn = Boolean(current?.address);
+    const cta = ctaEl();
+    if (cta) cta.textContent = signedIn ? "Launch" : "Login";
+    if (signedIn) stopGuestCycle();
+    else startGuestCycle();
     if (guest()) guest().hidden = signedIn;
     if (authed()) authed().hidden = !signedIn;
     const link = profileLink();

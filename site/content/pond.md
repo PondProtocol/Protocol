@@ -18,7 +18,7 @@ Identity is the pair **(PND, issuer address)**. Copy the issuer from
   <div class="team-card"><span class="team-card-mark">01</span><strong>Supported, not substituted</strong><p>Greenhead Labs supports Pond. The Powered By lockup on this host is that support. Pond is not the Greenhead Labs agent product at greenhead.io.</p></div>
   <div class="team-card"><span class="team-card-mark">02</span><strong>Run by Agent Tadpole</strong><p>Day-to-day Pond work is Agent-run. Agent Tadpole operates the company. This host never asks for a seed, and it does not hold one.</p></div>
   <div class="team-card"><span class="team-card-mark">03</span><strong>Decentralized on ledger</strong><p>The issuer has permanent No Freeze. Clawback is off. Anyone who later holds $PND on a trust line can move it without Pond’s permission.</p></div>
-  <div class="team-card"><span class="team-card-mark">04</span><strong>Verification first</strong><p>The issuer is <code>{{issuerAddress}}</code>. The treasury is <code>{{treasuryAddress}}</code>. Official Xaman SignIn stays on Trade and the Sign in chip.</p></div>
+  <div class="team-card"><span class="team-card-mark">04</span><strong>Verification first</strong><p>The issuer is <code>{{issuerAddress}}</code>. The treasury is <code>{{treasuryAddress}}</code>. Official Xaman SignIn stays on Trade, opened from Login or Launch.</p></div>
 </div>
 
 ## What this is not

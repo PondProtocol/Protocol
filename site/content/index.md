@@ -11,7 +11,7 @@ ticker.
 <a class="join-card" href="/links/"><strong>Official links</strong><span>Issuer, treasury, TOML, explorers. Nothing else is official.</span></a>
 </div>
 
-The Trade button in the top bar is the same terminal.
+The Login button in the top bar opens the same terminal. After you sign in it says Launch.
 
 ## Identity
 
