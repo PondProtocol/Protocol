@@ -697,6 +697,7 @@ check(
     /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
+const homeLaunchHtml = indexHtml.match(/<p class="hero-actions home-launch"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "home first window is a centered logo on the topo",
   indexHtml.includes('class="home-window-logo"') &&
@@ -704,8 +705,10 @@ check(
     indexHtml.includes('class="home-logo-mark"') &&
     indexHtml.includes('src="/pond-mark.png"') &&
     !indexHtml.includes('src="/pond-mark.svg"') &&
-    indexHtml.includes(">Pond Protocol</span>") &&
-    indexHtml.includes('href="#pond-board">Launch</a>') &&
+    homeLaunchHtml.includes('href="/Pond/">Pond</a>') &&
+    homeLaunchHtml.includes('href="/Protocol/">Protocol</a>') &&
+    homeLaunchHtml.includes('href="#pond-board">Launch</a>') &&
+    !homeLaunchHtml.includes("Pond Protocol") &&
     !indexHtml.includes('href="#pond-board">Pond Protocol') &&
     existsSync(join(DIST_DIR, "pond-mark.png")) &&
     !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
