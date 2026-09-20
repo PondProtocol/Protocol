@@ -624,7 +624,6 @@ function heroPagesHtml(home = false) {
         "Testnet 100B $PND paid to treasury. Mainnet is unissued.",
         "Proposed split: 10B public, 10B team, 80B holder drops.",
         "Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.",
-        "$rPND is deferred. DynamicMPT is not enabled on Mainnet.",
       ],
     },
     {
@@ -638,7 +637,6 @@ function heroPagesHtml(home = false) {
         "Login in the top bar opens Trade. After you sign in it says Launch.",
         "Official connect is WalletConnect or Xaman only.",
         "We do not store seeds or private keys.",
-        "After 24 hours with no activity, the session ends.",
       ],
     },
     {
@@ -653,7 +651,6 @@ function heroPagesHtml(home = false) {
         "Same r-address as mainnet.",
         "Testnet XRP is faucet-issued and worthless.",
         "Mainnet still has no $PND issued.",
-        "Not a live mainnet DEX.",
       ],
     },
     {

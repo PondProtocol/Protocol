@@ -766,13 +766,11 @@ check(
     heroPages.includes("Testnet 100B $PND paid to treasury. Mainnet is unissued.") &&
     heroPages.includes("Proposed split: 10B public, 10B team, 80B holder drops.") &&
     heroPages.includes("Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.") &&
-    heroPages.includes("$rPND is deferred. DynamicMPT is not enabled on Mainnet.") &&
     heroPages.includes("Sign in with official Xaman to open your account page.") &&
     heroPages.includes("Logged-out visitors do not see handles or profile fields.") &&
     heroPages.includes("Login in the top bar opens Trade. After you sign in it says Launch.") &&
     heroPages.includes("Official connect is WalletConnect or Xaman only.") &&
     heroPages.includes("We do not store seeds or private keys.") &&
-    heroPages.includes("After 24 hours with no activity, the session ends.") &&
     !heroPages.includes("Official Xaman SignIn stays on Trade") &&
     heroPages.includes("XRPL Testnet. This page reads the validated ledger.") &&
     heroPages.includes("It does not sign or submit.") &&
@@ -780,7 +778,6 @@ check(
     heroPages.includes("Same r-address as mainnet.") &&
     heroPages.includes("Testnet XRP is faucet-issued and worthless.") &&
     heroPages.includes("Mainnet still has no $PND issued.") &&
-    heroPages.includes("Not a live mainnet DEX.") &&
     heroPages.includes(">This is the desk and ops page.<") &&
     heroPages.includes("Master / feed: Tadpole&#39;s rPND… address. Nathan funds 50B $PND + liquidity XRP here.") &&
     heroPages.includes("Bird Hunt 15: Nest ×5 / Current ×5 / Perch ×5.") &&
