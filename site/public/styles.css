@@ -6062,6 +6062,112 @@ body:has([data-pond-profile]) .profile-card {
   margin: 0.35rem 0 0;
 }
 
+/* ------------------------------------------------------------------ protocol desks */
+
+body.page-protocol .prose,
+body.page-protocol .toc {
+  max-width: 64rem;
+}
+
+.desk-master {
+  display: grid;
+  gap: 0.45rem;
+  margin: 1rem 0 1.6rem;
+  padding: clamp(1rem, 2.4vw, 1.45rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 0 0%, rgb(74 144 217 / 0.12), transparent 42%),
+    var(--bg-soft);
+}
+
+.desk-master .start-eyebrow {
+  margin: 0;
+}
+
+.desk-master-addr {
+  margin: 0;
+}
+
+.desk-master-addr code {
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+}
+
+.desk-master p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.prose table.desk-table {
+  display: table;
+  width: 100%;
+}
+
+.desk-table th {
+  color: var(--accent-bright);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.desk-table td {
+  color: var(--text);
+}
+
+.desk-table code {
+  display: block;
+  margin: 0 0 0.25rem;
+  width: fit-content;
+  color: var(--accent-bright);
+}
+
+.desk-gate {
+  display: inline-block;
+  margin-left: 0.2rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-bright);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  vertical-align: 0.08em;
+}
+
+.desk-gate-hard {
+  background: var(--critical-soft);
+  color: var(--critical);
+}
+
+.desk-roster {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0 0 1.5rem;
+}
+
+.desk-row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+}
+
+.desk-row code {
+  color: var(--accent-bright);
+}
+
+.desk-row strong {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
 @media (max-width: 780px) {
   .trade-disclaimer-actions {
     align-items: stretch;
@@ -6083,6 +6189,10 @@ body:has([data-pond-profile]) .profile-card {
   .pond-pillars,
   .team-grid,
   .start-progress.is-compact .start-progress-list {
+    grid-template-columns: 1fr;
+  }
+
+  .desk-row {
     grid-template-columns: 1fr;
   }
 
