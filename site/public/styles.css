@@ -3872,7 +3872,6 @@ code.addr {
   --privacy-reserve-h: 0px;
   --home-footer-h: 2.55rem;
   --home-grid-gap: 1.4rem;
-  --home-chrome-h: 5.125rem;
 }
 
 .page-index .privacy-dock {
@@ -3946,6 +3945,7 @@ code.addr {
 .page-index .home-window-board {
   background: #000;
   border-bottom: 0;
+  scroll-margin-top: 0;
 }
 
 /* greenhead.io landing: absolute bottom-4, centered two-line legal. */
@@ -4011,7 +4011,7 @@ code.addr {
 
 .page-index .hero-inner {
   position: absolute;
-  top: calc(var(--home-frame) + var(--home-chrome-h));
+  top: var(--home-frame);
   right: var(--home-frame);
   left: var(--home-frame);
   bottom: calc(var(--home-frame) + var(--home-footer-h) + var(--privacy-reserve-h));

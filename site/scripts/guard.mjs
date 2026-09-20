@@ -686,9 +686,7 @@ check(
     stylesText.includes(".page-index .hero-inner") &&
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-window-logo"))) &&
-    /top:\s*calc\(var\(--home-frame\) \+ var\(--home-chrome-h\)\)/.test(
-      stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
-    ) &&
+    /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /bottom:\s*calc\(var\(--home-frame\) \+ var\(--home-footer-h\) \+ var\(--privacy-reserve-h\)\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
     ) &&
