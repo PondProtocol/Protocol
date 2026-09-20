@@ -717,6 +717,21 @@ check(
     /justify-content:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))),
 );
 check(
+  "site header uses the white :P mark beside Pond",
+  indexHtml.includes('class="brand-mark" src="/pond-mark.png"') &&
+    !indexHtml.includes('class="brand-mark" src="/icon-512.png"') &&
+    readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8").includes(
+      'class="brand-mark" src="/pond-mark.png"',
+    ) &&
+    readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8").includes(
+      'class="brand-mark" src="/pond-mark.png"',
+    ) &&
+    tradeHtml.includes('class="brand-mark" src="/pond-mark.png"') &&
+    /object-fit:\s*contain/.test(stylesText.slice(stylesText.indexOf(".brand-mark"))) &&
+    /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".brand-mark"))) &&
+    !/border-radius:\s*50%/.test(stylesText.slice(stylesText.indexOf(".brand-mark"), stylesText.indexOf(".brand-mark") + 220)),
+);
+check(
   "home second window is the moved board on black",
   indexHtml.includes('id="pond-board"') &&
     indexHtml.includes('class="hero home-window-board"') &&

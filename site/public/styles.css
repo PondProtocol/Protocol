@@ -196,12 +196,13 @@ a:hover {
 }
 
 .brand-mark {
-  width: 1.3rem;
-  height: 1.3rem;
-  border-radius: 50%;
+  width: 1.45rem;
+  height: 1.28rem;
+  border-radius: 0;
   flex: none;
   display: block;
-  box-shadow: 0 0 0 1px var(--accent-soft), 0 0 10px var(--accent-glow);
+  object-fit: contain;
+  background: none;
 }
 
 .topnav {
