@@ -1018,6 +1018,13 @@ check(
     tradeJsText.includes("paintLedgerChart") &&
     tradeJsText.includes("printsToCandles") &&
     tradeJsText.includes("recentPriceDomain") &&
+    tradeJsText.includes("plotScaleMargins") &&
+    tradeJsText.includes("applyPlotScale") &&
+    tradeJsText.includes("ensureOscillatorPanes") &&
+    tradeJsText.includes("top: 0.30") &&
+    tradeJsText.includes("bottom: showVolume ? 0.40") &&
+    tradeJsText.includes("top: showVolume ? 0.60") &&
+    !/addSeries\(LC\.LineSeries, lineOpts\("#b687f0"\), 1\)/.test(tradeJsText) &&
     tradeJsText.includes("LightweightCharts") &&
     tradeJsText.includes("createChart") &&
     tradeJsText.includes("CandlestickSeries") &&
