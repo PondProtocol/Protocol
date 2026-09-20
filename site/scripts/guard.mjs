@@ -685,7 +685,7 @@ check(
     stylesText.includes("container-name: home-hero") &&
     stylesText.includes(".page-index .hero-inner") &&
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
-    /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
+    /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-window-logo"))) &&
     /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
     /bottom:\s*calc\(var\(--home-frame\) \+ var\(--home-footer-h\) \+ var\(--privacy-reserve-h\)\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
@@ -696,6 +696,34 @@ check(
     ) &&
     /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
+);
+check(
+  "home first window is a centered logo on the topo",
+  indexHtml.includes('class="home-window-logo"') &&
+    indexHtml.includes('id="pond-launch"') &&
+    indexHtml.includes('class="home-logo-mark"') &&
+    indexHtml.includes('src="/pond-mark.png"') &&
+    !indexHtml.includes('src="/pond-mark.svg"') &&
+    indexHtml.includes(">Pond Protocol</span>") &&
+    indexHtml.includes('href="#pond-board">Launch</a>') &&
+    !indexHtml.includes('href="#pond-board">Pond Protocol') &&
+    existsSync(join(DIST_DIR, "pond-mark.png")) &&
+    !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
+    readFileSync(join(DIST_DIR, "pond-mark.png")).subarray(0, 8).equals(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    ) &&
+    /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-mark"))) &&
+    /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))) &&
+    /justify-content:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))),
+);
+check(
+  "home second window is the moved board on black",
+  indexHtml.includes('id="pond-board"') &&
+    indexHtml.includes('class="hero home-window-board"') &&
+    indexHtml.includes('class="hero-kicker"') &&
+    /background:\s*#000/.test(stylesText.slice(stylesText.indexOf(".page-index .home-window-board"))) &&
+    /background:\s*#000/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen .hero"))) &&
+    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))),
 );
 check(
   "home has a centered Greenhead Labs legal footer",
@@ -717,7 +745,11 @@ check(
     /position:\s*absolute/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /text-align:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
-    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))),
+    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))) &&
+    stylesText.includes(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer") &&
+    /2 \* \(min\(24rem/.test(
+      stylesText.slice(stylesText.indexOf(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer")),
+    ),
 );
 check(
   "home Private Browsing notice is a compact overlay card",
@@ -731,10 +763,15 @@ check(
     !stylesText.includes("calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2)"),
 );
 check(
-  "home 2x2 tiles are translucent over the Wyoming topo",
+  "home 2x2 tiles stay the same size on the black board",
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+    /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
+    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))) &&
+    stylesText.includes(".page-index .home-window-board .hero-pages") &&
+    /aspect-ratio:\s*1\s*\/\s*1/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .home-window-board .hero-pages")),
+    ),
 );
 check(
   "home 2x2 tiles each have a unique 75 percent fill",

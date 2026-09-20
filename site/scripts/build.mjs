@@ -704,6 +704,16 @@ function homeLegalHtml() {
 </footer>`;
 }
 
+function homeLogoHtml() {
+  return `<div class="home-logo-stage">
+    <img class="home-logo-mark" src="/pond-mark.png" width="320" height="281" alt="Pond Protocol">
+    <p class="hero-actions home-launch" role="group" aria-label="Pond Protocol">
+      <span class="button button-quiet">Pond Protocol</span>
+      <a class="button" href="#pond-board">Launch</a>
+    </p>
+  </div>`;
+}
+
 function heroHtml(home = false) {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -711,8 +721,10 @@ function heroHtml(home = false) {
       <span>Nothing issued. Nothing to buy.</span>
     </div>`
     : "";
-  return `<section class="hero" aria-labelledby="hero-tagline">
-  ${heroTopoSvg()}
+  const boardClass = home ? `hero home-window-board` : "hero";
+  const boardId = home ? ` id="pond-board"` : "";
+  return `<section class="${boardClass}"${boardId} aria-labelledby="hero-tagline">
+  ${home ? "" : heroTopoSvg()}
   <div class="hero-inner">
     <div class="hero-main">
       <div class="hero-copy">
@@ -1002,7 +1014,10 @@ ${canonical}
 <body class="${pageBodyClass(page)}"${isHome ? ' data-home-privacy="open"' : ""}>
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
-${isHome ? `<div class="home-screen">` : ""}
+${isHome ? `<div class="home-screen">
+<section class="home-window-logo" id="pond-launch">
+${heroTopoSvg()}
+` : ""}
 <header class="topbar">
   <div class="brand-cluster">
     <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="28" height="28" alt=""><span class="brand-word">Pond</span></a>
@@ -1026,8 +1041,9 @@ ${isHome ? `<div class="home-screen">` : ""}
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
+${isHome ? `${homeLogoHtml()}${homeLegalHtml()}${privacyDockHtml({ home: true })}</section>` : ""}
 ${landing ? heroHtml(isHome) : ""}
-${isHome ? `${homeLegalHtml()}</div>` : ""}
+${isHome ? `</div>` : ""}
 <div class="shell">
   <main id="main">
     ${landing ? "" : tocHtml(html)}
@@ -1097,7 +1113,7 @@ ${isHome ? `${homeLegalHtml()}</div>` : ""}
   </div>
 </footer>
 </div>
-${privacyDockHtml({ home: isHome })}
+${isHome ? "" : privacyDockHtml({ home: false })}
 <script>window.POND={issuer:${JSON.stringify(site.issuerAddress)},domain:${JSON.stringify(site.domain)}};</script>
 ${pageScripts(page)}
 </body>

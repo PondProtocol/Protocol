@@ -3882,13 +3882,71 @@ code.addr {
 
 .page-index .home-screen {
   position: relative;
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  display: block;
+  box-sizing: border-box;
+  height: auto;
+  max-height: none;
+  padding: 0;
+  overflow: visible;
+}
+
+.page-index .home-window-logo {
+  position: relative;
   box-sizing: border-box;
   height: 100svh;
   max-height: 100svh;
-  padding: 0;
   overflow: hidden;
+  background: var(--hero-solid, #151b21);
+}
+
+.page-index .home-window-logo .hero-topo {
+  z-index: 0;
+}
+
+.page-index .home-window-logo .topbar,
+.page-index .home-window-logo .protocol-snapshot {
+  position: relative;
+  z-index: 4;
+}
+
+.page-index .home-logo-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.35rem;
+  box-sizing: border-box;
+  padding: 5.5rem var(--home-frame) 4.5rem;
+  pointer-events: none;
+}
+
+.page-index .home-logo-mark {
+  display: block;
+  width: min(20rem, 42vmin);
+  height: auto;
+  object-fit: contain;
+  background: none;
+  border: 0;
+  pointer-events: none;
+}
+
+.page-index .home-launch {
+  pointer-events: auto;
+  justify-content: center;
+  margin: 0;
+}
+
+.page-index .home-window-logo .privacy-dock {
+  position: absolute;
+}
+
+.page-index .home-window-board {
+  background: #000;
+  border-bottom: 0;
+  scroll-margin-top: 0;
 }
 
 /* greenhead.io landing: absolute bottom-4, centered two-line legal. */
@@ -3918,12 +3976,23 @@ code.addr {
 }
 
 .page-index .home-legal-disclaimer {
-  max-width: min(38rem, calc(100vw - min(24rem, calc(100vw - 2rem)) - var(--home-frame) - 2.5rem));
+  max-width: min(38rem, calc(100vw - 2 * var(--home-frame) - 2rem));
   margin: 0.25rem 0 0;
   padding: 0 1rem;
   color: rgb(255 255 255 / 0.3);
   font-size: 9px;
   line-height: 1.625;
+}
+
+/* Centered: reserve the compact 24rem card on both sides of center. */
+.page-index[data-home-privacy="open"] .home-legal-disclaimer {
+  max-width: min(
+    38rem,
+    max(
+      16rem,
+      calc(100vw - 2 * (min(24rem, calc(100vw - 2rem)) + var(--home-frame) + 0.75rem))
+    )
+  );
 }
 
 .page-index .footer {
@@ -3932,10 +4001,13 @@ code.addr {
 
 .page-index .home-screen .hero {
   position: relative;
+  box-sizing: border-box;
   min-height: 0;
-  height: auto;
+  height: 100svh;
+  max-height: 100svh;
   align-items: stretch;
   overflow: hidden;
+  background: #000;
 }
 
 .page-index .hero-inner {
@@ -4050,6 +4122,17 @@ code.addr {
   max-height: none;
   justify-self: stretch;
   align-self: stretch;
+}
+
+/* Board window keeps the original 2×2 box. Privacy lives on window 1. */
+.page-index .home-window-board .hero-pages,
+.page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  justify-self: end;
+  align-self: end;
 }
 
 .page-index .hero-page {
@@ -4749,6 +4832,15 @@ code.addr {
     max-height: none;
     justify-self: stretch;
     align-self: stretch;
+  }
+
+  .page-index .home-window-board .hero-pages,
+  .page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
+    aspect-ratio: 1 / 1;
+    height: auto;
+    max-height: 100%;
+    justify-self: end;
+    align-self: end;
   }
 
   .page-index .hero-page {
