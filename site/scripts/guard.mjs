@@ -763,7 +763,11 @@ check(
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))),
+    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))) &&
+    stylesText.includes(".page-index .home-window-board .hero-pages") &&
+    /aspect-ratio:\s*1\s*\/\s*1/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .home-window-board .hero-pages")),
+    ),
 );
 check(
   "home 2x2 tiles each have a unique 75 percent fill",
