@@ -119,6 +119,17 @@ a:hover {
   flex: none;
   flex-wrap: nowrap;
   min-width: 0;
+  padding: 0.22rem 0.55rem 0.22rem 0.4rem;
+  border: 1px solid rgb(236 242 248 / 0.78);
+  border-radius: 0.55rem;
+  background: rgb(8 12 16 / 0.28);
+}
+
+.site-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
 }
 
 .brand {
@@ -132,6 +143,62 @@ a:hover {
   color: var(--text);
   text-decoration: none;
   flex: none;
+}
+
+.site-switcher > summary.brand {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+.site-switcher > summary.brand::-webkit-details-marker {
+  display: none;
+}
+
+.site-switcher-panel {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  z-index: 50;
+  display: grid;
+  min-width: 13.2rem;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 1.5rem));
+  padding: 0.45rem 0.4rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 0.75rem;
+  background: hsl(220 14% 10%);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.45);
+}
+
+.site-switcher-kicker {
+  margin: 0.2rem 0.45rem 0.15rem;
+  color: rgb(255 255 255 / 0.3);
+  font: 650 0.58rem var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.site-switcher-kicker + .site-switcher-kicker,
+.site-switcher-panel a + .site-switcher-kicker {
+  margin-top: 0.55rem;
+}
+
+.site-switcher-panel a {
+  display: block;
+  padding: 0.42rem 0.55rem;
+  border-radius: 0.4rem;
+  color: var(--text);
+  font: 550 0.78rem var(--mono);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.site-switcher-panel a:hover,
+.site-switcher-panel a:focus-visible,
+.site-switcher-panel a[aria-current="page"] {
+  background: rgb(143 199 255 / 0.1);
+  color: var(--text);
 }
 
 .brand-word {
@@ -171,28 +238,6 @@ a:hover {
   flex: none;
   display: block;
   object-fit: cover;
-}
-
-.powered-by-return {
-  margin-left: 0.08rem;
-  color: color-mix(in srgb, var(--text-muted) 55%, var(--text) 45%);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-}
-
-.powered-by-return::before {
-  content: "·";
-  margin-right: 0.42rem;
-  color: var(--text-muted);
-  opacity: 0.75;
-}
-
-.powered-by-return:hover,
-.powered-by-return:focus-visible {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
 }
 
 .brand-mark {
@@ -244,6 +289,10 @@ a:hover {
   align-items: center;
   gap: 0.45rem;
   flex: none;
+  padding: 0.18rem 0.28rem 0.18rem 0.22rem;
+  border: 1px solid rgb(236 242 248 / 0.78);
+  border-radius: 0.55rem;
+  background: rgb(8 12 16 / 0.28);
 }
 
 .site-search {
@@ -3944,12 +3993,6 @@ code.addr {
   position: absolute;
 }
 
-.page-index .home-window-board {
-  background: #000;
-  border-bottom: 0;
-  scroll-margin-top: 0;
-}
-
 /* greenhead.io landing: absolute bottom-4, centered two-line legal. */
 .page-index .home-legal {
   position: absolute;
@@ -4123,17 +4166,6 @@ code.addr {
   max-height: none;
   justify-self: stretch;
   align-self: stretch;
-}
-
-/* Board window keeps the original 2×2 box. Privacy lives on window 1. */
-.page-index .home-window-board .hero-pages,
-.page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  height: auto;
-  max-height: 100%;
-  justify-self: end;
-  align-self: end;
 }
 
 .page-index .hero-page {
@@ -4833,15 +4865,6 @@ code.addr {
     max-height: none;
     justify-self: stretch;
     align-self: stretch;
-  }
-
-  .page-index .home-window-board .hero-pages,
-  .page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
-    aspect-ratio: 1 / 1;
-    height: auto;
-    max-height: 100%;
-    justify-self: end;
-    align-self: end;
   }
 
   .page-index .hero-page {

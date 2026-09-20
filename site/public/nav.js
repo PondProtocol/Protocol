@@ -17,8 +17,18 @@
     return [...document.querySelectorAll("[data-topnav-menu]")];
   }
 
+  function switcherMenus() {
+    return [...document.querySelectorAll("[data-site-switcher]")];
+  }
+
   function closeTopnavMenus(except) {
     topnavMenus().forEach((menu) => {
+      if (menu !== except) menu.open = false;
+    });
+  }
+
+  function closeSwitcherMenus(except) {
+    switcherMenus().forEach((menu) => {
       if (menu !== except) menu.open = false;
     });
   }
@@ -40,6 +50,7 @@
     input?.setAttribute("aria-expanded", String(open));
     if (open) {
       closeTopnavMenus();
+      closeSwitcherMenus();
       openAllGroups(root);
     }
   }
@@ -85,6 +96,17 @@
       menu.addEventListener("toggle", () => {
         if (!menu.open) return;
         closeTopnavMenus(menu);
+        closeSwitcherMenus();
+        setIndexOpen(false);
+      });
+    });
+    switcherMenus().forEach((menu) => {
+      if (menu.dataset.bound === "1") return;
+      menu.dataset.bound = "1";
+      menu.addEventListener("toggle", () => {
+        if (!menu.open) return;
+        closeSwitcherMenus(menu);
+        closeTopnavMenus();
         setIndexOpen(false);
       });
     });
@@ -274,6 +296,7 @@
     if (url.origin !== window.location.origin || url.hash) return;
     if (link.closest("#docs-nav")) setIndexOpen(false);
     if (link.closest("[data-topnav-menu]")) closeTopnavMenus();
+    if (link.closest("[data-site-switcher]")) closeSwitcherMenus();
     const next = `${url.pathname}${url.search}`;
     if (needsDocumentLoad(next)) return;
     event.preventDefault();
@@ -285,27 +308,38 @@
     const target = event.target;
     if (!(target instanceof Node)) return;
     const menu = target instanceof Element ? target.closest("[data-topnav-menu]") : null;
+    const switcher = target instanceof Element ? target.closest("[data-site-switcher]") : null;
     if (menu) {
       closeTopnavMenus(menu);
+      closeSwitcherMenus();
+      setIndexOpen(false);
+      return;
+    }
+    if (switcher) {
+      closeSwitcherMenus(switcher);
+      closeTopnavMenus();
       setIndexOpen(false);
       return;
     }
     if (form && form.contains(target)) {
       closeTopnavMenus();
+      closeSwitcherMenus();
       return;
     }
     setIndexOpen(false);
     closeTopnavMenus();
+    closeSwitcherMenus();
   });
 
   window.addEventListener("popstate", () => navigate(`${window.location.pathname}${window.location.search}`, false));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       const root = docsNav();
-      const openMenu = topnavMenus().find((menu) => menu.open);
+      const openMenu = topnavMenus().find((menu) => menu.open) || switcherMenus().find((menu) => menu.open);
       if (openMenu) {
         event.preventDefault();
         closeTopnavMenus();
+        closeSwitcherMenus();
         openMenu.querySelector("summary")?.focus();
         return;
       }
