@@ -1574,31 +1574,52 @@ check(
 const pondHtml = existsSync(join(DIST_DIR, "Pond", "index.html"))
   ? readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8")
   : "";
+const pondArticle = pondHtml.match(/<article class="prose">([\s\S]*?)<\/article>/)?.[1] ?? "";
+const pondText = asText(pondHtml);
 const protocolHtml = existsSync(join(DIST_DIR, "Protocol", "index.html"))
   ? readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8")
   : "";
 const protocolArticle = protocolHtml.match(/<article class="prose">([\s\S]*?)<\/article>/)?.[1] ?? "";
 const protocolText = asText(protocolHtml);
 check(
-  "Pond page reuses the home hero chrome",
-  pondHtml.includes('class="hero-kicker">Pond') &&
-    pondHtml.includes("Join the Flock at<br>the Pond") &&
-    !pondHtml.includes("Join the Flock at<br>The Pond") &&
-    pondHtml.includes("hero-topo") &&
-    pondHtml.includes(config.site.issuerAddress) &&
-    pondHtml.includes(config.site.treasuryAddress) &&
-    pondHtml.includes(config.site.operationsAddress) &&
-    pondHtml.includes('class="hero-pages"') &&
-    !pondHtml.includes("page-index") &&
+  "Pond is the $PND / $rPND tokenomics page, not a home clone",
+  pondHtml.includes("page-pond") &&
+    pondHtml.includes("desk-table") &&
+    pondHtml.includes("desk-master") &&
+    pondArticle.includes(config.site.issuerAddress) &&
+    pondArticle.includes(config.site.treasuryAddress) &&
+    pondArticle.includes(config.site.operationsAddress) &&
+    /\$PND/.test(pondText) &&
+    /\$rPND/.test(pondText) &&
+    /tokenomics/i.test(pondText) &&
+    /treasury/i.test(pondText) &&
+    /escrow/i.test(pondText) &&
+    /100B/i.test(pondText) &&
+    /Mainnet/i.test(pondText) &&
+    /unissued/i.test(pondText) &&
+    /DynamicMPT/i.test(pondText) &&
+    /temDISABLED/i.test(pondText) &&
+    /TokenEscrow/i.test(pondText) &&
+    /owner decision/i.test(pondText) &&
+    /proposed/i.test(pondText) &&
+    !pondHtml.includes('class="hero"') &&
+    !pondHtml.includes("hero-pages") &&
+    !pondHtml.includes("Join the Flock") &&
+    !pondHtml.includes("How Pond operates") &&
+    !pondHtml.includes("team-grid") &&
     !pondHtml.includes("home-screen") &&
-    pondHtml.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
-    /Agent Tadpole/i.test(asText(pondHtml)) &&
-    /Greenhead Labs/i.test(asText(pondHtml)),
+    !pondHtml.includes("page-index"),
 );
 check(
-  "Pond landing keeps the short 2x2 cards",
-  pondHtml.includes('<a class="hero-page hero-page-pond" href="/Pond/">') &&
-    !pondHtml.includes("hero-page-go"),
+  "Pond marks the 10 / 10 / 80 split and team snapshot as unsigned",
+  /10B/i.test(pondText) &&
+    /80B/i.test(pondText) &&
+    /2027-01-01/.test(pondArticle) &&
+    /2027-08-01/.test(pondArticle) &&
+    /Not all confirmed/i.test(pondText) &&
+    /team 10B/i.test(pondText) &&
+    /Perk vs required/i.test(pondText) &&
+    !/Mainnet.{0,40}issued 100B/i.test(pondText),
 );
 check(
   "Protocol is the desk and ops page, not a home clone",
