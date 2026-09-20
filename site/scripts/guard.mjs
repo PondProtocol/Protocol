@@ -10,6 +10,7 @@
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { inflateSync } from "node:zlib";
 import {
   DIST_DIR,
   IMPORTED_DIR,
@@ -32,6 +33,81 @@ const checks = [];
 function check(name, ok, detail = "") {
   checks.push({ name, ok, detail });
   if (!ok) failures.push(`${name}${detail ? ` — ${detail}` : ""}`);
+}
+
+function pngRgbaStats(buf) {
+  if (!buf?.length || !buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+    return null;
+  }
+  let pos = 8;
+  let width = 0;
+  let height = 0;
+  let depth = 0;
+  let colorType = 0;
+  const idat = [];
+  while (pos + 12 <= buf.length) {
+    const length = buf.readUInt32BE(pos);
+    const type = buf.toString("ascii", pos + 4, pos + 8);
+    const data = buf.subarray(pos + 8, pos + 8 + length);
+    pos += 12 + length;
+    if (type === "IHDR") {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      depth = data[8];
+      colorType = data[9];
+    } else if (type === "IDAT") {
+      idat.push(data);
+    } else if (type === "IEND") {
+      break;
+    }
+  }
+  if (depth !== 8 || colorType !== 6 || !width || !height) return null;
+  const raw = inflateSync(Buffer.concat(idat));
+  const bpp = 4;
+  const stride = width * bpp;
+  const out = Buffer.alloc(height * stride);
+  let i = 0;
+  let prev = Buffer.alloc(stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[i++];
+    const row = raw.subarray(i, i + stride);
+    i += stride;
+    const dest = out.subarray(y * stride, (y + 1) * stride);
+    for (let x = 0; x < stride; x++) {
+      const byte = row[x];
+      const left = x >= bpp ? dest[x - bpp] : 0;
+      const up = prev[x];
+      const upLeft = x >= bpp ? prev[x - bpp] : 0;
+      let val = byte;
+      if (filter === 1) val = (byte + left) & 255;
+      else if (filter === 2) val = (byte + up) & 255;
+      else if (filter === 3) val = (byte + Math.floor((left + up) / 2)) & 255;
+      else if (filter === 4) {
+        const p = left + up - upLeft;
+        const pa = Math.abs(p - left);
+        const pb = Math.abs(p - up);
+        const pc = Math.abs(p - upLeft);
+        const pr = pa <= pb && pa <= pc ? left : pb <= pc ? up : upLeft;
+        val = (byte + pr) & 255;
+      }
+      dest[x] = val;
+    }
+    prev = Buffer.from(dest);
+  }
+  let opaqueWhite = 0;
+  let opaqueBlue = 0;
+  let opaqueOther = 0;
+  for (let p = 0; p < out.length; p += 4) {
+    const r = out[p];
+    const g = out[p + 1];
+    const b = out[p + 2];
+    const a = out[p + 3];
+    if (a !== 255) continue;
+    if (r >= 250 && g >= 250 && b >= 250) opaqueWhite += 1;
+    else if (r <= 20 && g >= 50 && g <= 90 && b >= 140 && b <= 180) opaqueBlue += 1;
+    else opaqueOther += 1;
+  }
+  return { width, height, opaqueWhite, opaqueBlue, opaqueOther };
 }
 
 /* ------------------------------------------------------- collect built files */
@@ -697,24 +773,39 @@ check(
     /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
+const homeLaunchHtml = indexHtml.match(/<p class="hero-actions home-launch"[\s\S]*?<\/p>/)?.[0] ?? "";
+const pondMark = existsSync(join(DIST_DIR, "pond-mark.png"))
+  ? readFileSync(join(DIST_DIR, "pond-mark.png"))
+  : Buffer.alloc(0);
+const pondMarkPixels = pngRgbaStats(pondMark);
 check(
-  "home first window is a centered logo on the topo",
+  "home first window is a centered white logo on the topo",
   indexHtml.includes('class="home-window-logo"') &&
     indexHtml.includes('id="pond-launch"') &&
     indexHtml.includes('class="home-logo-mark"') &&
     indexHtml.includes('src="/pond-mark.png"') &&
     !indexHtml.includes('src="/pond-mark.svg"') &&
-    indexHtml.includes(">Pond Protocol</span>") &&
-    indexHtml.includes('href="#pond-board">Launch</a>') &&
+    homeLaunchHtml.includes('href="/Pond/">Pond</a>') &&
+    homeLaunchHtml.includes('href="/Protocol/">Protocol</a>') &&
+    homeLaunchHtml.includes('href="#pond-board">Launch</a>') &&
+    !homeLaunchHtml.includes("Pond Protocol") &&
     !indexHtml.includes('href="#pond-board">Pond Protocol') &&
     existsSync(join(DIST_DIR, "pond-mark.png")) &&
     !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
-    readFileSync(join(DIST_DIR, "pond-mark.png")).subarray(0, 8).equals(
-      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    ) &&
+    pondMark.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) &&
+    pondMarkPixels?.opaqueWhite > 0 &&
+    pondMarkPixels?.opaqueBlue === 0 &&
+    pondMarkPixels?.opaqueOther === 0 &&
     /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-mark"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))) &&
     /justify-content:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))),
+);
+check(
+  "top bar brand mark is the white :P",
+  brandHtml.includes('src="/pond-mark.png"') &&
+    !brandHtml.includes('src="/icon-512.png"') &&
+    /object-fit:\s*contain/.test(stylesText.slice(stylesText.indexOf(".brand-mark"))) &&
+    !/border-radius:\s*50%/.test(stylesText.slice(stylesText.indexOf(".brand-mark"), stylesText.indexOf(".brand-mark") + 220)),
 );
 check(
   "home second window is the moved board on black",
