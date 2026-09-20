@@ -702,13 +702,17 @@ check(
   indexHtml.includes('class="home-window-logo"') &&
     indexHtml.includes('id="pond-launch"') &&
     indexHtml.includes('class="home-logo-mark"') &&
-    indexHtml.includes('src="/pond-mark.svg"') &&
+    indexHtml.includes('src="/pond-mark.png"') &&
+    !indexHtml.includes('src="/pond-mark.svg"') &&
     indexHtml.includes(">Pond Protocol</span>") &&
     indexHtml.includes('href="#pond-board">Launch</a>') &&
     !indexHtml.includes('href="#pond-board">Pond Protocol') &&
-    existsSync(join(DIST_DIR, "pond-mark.svg")) &&
-    !readFileSync(join(DIST_DIR, "pond-mark.svg"), "utf8").includes('fill="#fff"') &&
-    !readFileSync(join(DIST_DIR, "pond-mark.svg"), "utf8").includes("fill:white") &&
+    existsSync(join(DIST_DIR, "pond-mark.png")) &&
+    !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
+    readFileSync(join(DIST_DIR, "pond-mark.png")).subarray(0, 8).equals(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    ) &&
+    /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-mark"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))) &&
     /justify-content:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))),
 );

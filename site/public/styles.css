@@ -3927,6 +3927,7 @@ code.addr {
   display: block;
   width: min(20rem, 42vmin);
   height: auto;
+  object-fit: contain;
   background: none;
   border: 0;
   pointer-events: none;

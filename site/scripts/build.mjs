@@ -706,7 +706,7 @@ function homeLegalHtml() {
 
 function homeLogoHtml() {
   return `<div class="home-logo-stage">
-    <img class="home-logo-mark" src="/pond-mark.svg" width="280" height="280" alt="Pond Protocol">
+    <img class="home-logo-mark" src="/pond-mark.png" width="320" height="281" alt="Pond Protocol">
     <p class="hero-actions home-launch" role="group" aria-label="Pond Protocol">
       <span class="button button-quiet">Pond Protocol</span>
       <a class="button" href="#pond-board">Launch</a>
