@@ -700,9 +700,22 @@ check(
 check(
   "home 2x2 tiles are translucent over the Wyoming topo",
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /background:\s*rgb\(236 242 248 \/ 0\.58\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-page"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))),
+);
+check(
+  "home 2x2 tiles each have a unique 75 percent fill",
+  indexHtml.includes("hero-page-pond") &&
+    indexHtml.includes("hero-page-profile") &&
+    indexHtml.includes("hero-page-trade") &&
+    indexHtml.includes("hero-page-protocol") &&
+    /hero-page-pond[\s\S]*?rgb\(74 144 217 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-profile[\s\S]*?rgb\(168 140 196 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-trade[\s\S]*?rgb\(0 180 150 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-protocol[\s\S]*?rgb\(214 176 72 \/ 0\.75\)/.test(stylesText) &&
+    !/hero-page \{[\s\S]*?background:\s*rgb\(236 242 248 \/ 0\.58\)/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .hero-page")),
+    ),
 );
 check(
   "trade page does not use traffic-light disclaimer colors",
