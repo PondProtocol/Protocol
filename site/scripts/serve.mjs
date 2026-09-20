@@ -8,11 +8,12 @@
  * local check and a production check look the same. Node standard library only.
  *
  * Also answers /health, /api/session, /api/profile/*, /api/card/*, /identicon/*,
- * and /api/xaman/* .
+ * /api/tape, and /api/xaman/* .
  * Those routes need this process (Autoscale). The Xaman API secret stays
  * here — it is never written into site/dist. Session cookies are signed
  * here. Tadpole profiles are a JSON file this process can persist and
- * are visible only to an active Xaman session.
+ * are visible only to an active Xaman session. The $PND tape is another
+ * JSON file: validated AMM/DEX prints from the first Payment forward.
  */
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
@@ -23,6 +24,7 @@ import { DIST_DIR } from "./lib.mjs";
 import { handleIdenticon } from "./identicon.mjs";
 import { handleProfiles, isProfilePage } from "./profiles.mjs";
 import { handleSession, touchSession } from "./session.mjs";
+import { handleTape, startTapeSync } from "./tape.mjs";
 import { allowedOrigin, handleApi } from "./xaman.mjs";
 
 const port = Number(process.env.PORT ?? 8080);
@@ -53,6 +55,7 @@ createServer(async (req, res) => {
     if (handleIdenticon(req, res, url)) return;
     if (await handleSession(req, res, url)) return;
     if (await handleProfiles(req, res, url, { readSession: touchSession })) return;
+    if (await handleTape(req, res, url)) return;
     if (await handleApi(req, res, url, { readSession: touchSession })) return;
   } catch (error) {
     res.statusCode = 500;
@@ -98,9 +101,11 @@ createServer(async (req, res) => {
   }
   createReadStream(path).pipe(res);
 }).listen(port, host, () => {
+  startTapeSync();
   process.stdout.write(
     `\n  serving site/dist on http://${host}:${port}\n` +
       `  identity anchor: http://${host}:${port}/.well-known/xrp-ledger.toml\n` +
-      `  health:          http://${host}:${port}/health\n\n`,
+      `  health:          http://${host}:${port}/health\n` +
+      `  pnd tape:        http://${host}:${port}/api/tape\n\n`,
   );
 });

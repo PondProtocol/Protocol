@@ -11,6 +11,7 @@ var/
 site/dist/
 site/.screenshots/
 site/data/profiles.json
+site/data/pnd-tape.json
 site/data/*.tmp
 .config/
 .cache/

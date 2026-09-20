@@ -294,7 +294,7 @@ ${ticketPanelMarkup("sell")}
         <div class="trade-chart-market-controls">
           <div class="trade-chart-tf-groups" data-control-group="overview-range">
             <div class="trade-overview-controls trade-chart-tf-intraday" role="group" aria-label="Intraday"><button type="button" class="is-active" data-chart-range="1m">1m</button><button type="button" data-chart-range="5m">5m</button><button type="button" data-chart-range="15m">15m</button><button type="button" data-chart-range="30m">30m</button></div>
-            <div class="trade-overview-controls trade-chart-tf-higher" role="group" aria-label="Higher timeframes"><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button></div>
+            <div class="trade-overview-controls trade-chart-tf-higher" role="group" aria-label="Higher timeframes"><button type="button" data-chart-range="1h">1H</button><button type="button" data-chart-range="4h">4H</button><button type="button" data-chart-range="1d">1D</button><button type="button" data-chart-range="all">All</button></div>
           </div>
           <div class="trade-chart-tools">
             <button type="button" class="is-active" data-chart-style="candles" aria-pressed="true">Candles</button>
@@ -333,7 +333,7 @@ ${ticketPanelMarkup("sell")}
           </div>
         </div>
         <div class="trade-chart-symbol-bar">
-          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1m</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span></div>
+          <div class="trade-chart-symbol"><span class="trade-chart-symbol-mark" data-chart-symbol-mark>P</span><strong data-chart-symbol>PND / XRP</strong><span data-chart-timeframe>1m</span><span class="trade-chart-symbol-source" data-chart-symbol-source>XRPL Testnet</span><span class="trade-chart-history-span" data-chart-history-span>Tape not loaded</span></div>
           <div class="trade-chart-readout"><strong data-chart-symbol-price>—</strong><span data-chart-symbol-change>—</span><span class="trade-chart-print-age" data-chart-print-age>—</span></div>
         </div>
         <div class="trade-chart-ohlc">
@@ -343,7 +343,7 @@ ${ticketPanelMarkup("sell")}
           <span><b>C</b><strong data-chart-ohlc-close>—</strong></span>
           <span class="trade-chart-ohlc-change"><strong data-chart-ohlc-change>—</strong></span>
           <span class="trade-chart-bar-left"><b>Bar</b><strong data-chart-bar-left>—</strong></span>
-          <span class="trade-chart-keys" data-chart-keys>1 5 Q W H 4 D · V S E R M B · L G F · − + . 0 U P · Esc</span>
+          <span class="trade-chart-keys" data-chart-keys>1 5 Q W H 4 D A · V S E R M B · L G F · − + . 0 U P · Esc</span>
         </div>
         <div class="trade-overview-plot">
           <div class="trade-chart-live" data-chart-live hidden>
@@ -353,6 +353,9 @@ ${ticketPanelMarkup("sell")}
               <span data-chart-hud-ohlc>—</span>
               <span data-chart-hud-vol>—</span>
               <span data-chart-hud-prints>—</span>
+              <span data-chart-hud-bar>—</span>
+              <span data-chart-hud-vwap>—</span>
+              <span data-chart-hud-span>—</span>
               <span data-chart-hud-pin hidden>—</span>
               <span data-chart-hud-ind>—</span>
             </div>
@@ -363,6 +366,7 @@ ${ticketPanelMarkup("sell")}
             <span class="trade-chart-mark">P</span>
             <strong data-chart-empty-title>Loading Testnet tape…</strong>
             <span data-chart-empty-copy>Reading the validated PND/XRP pool. Candles stay blank until prints arrive.</span>
+            <button type="button" class="trade-chart-empty-action" data-chart-empty-all hidden>Show full tape</button>
           </div>
         </div>
         <div class="trade-overview-legend"><span><i class="trade-legend-dot"></i><span data-chart-legend-primary>PND / XRP</span></span><span data-chart-legend-volume><i class="trade-legend-bar"></i>Volume</span><span data-chart-legend-indicator>SMA · EMA · RSI · MACD · BB</span><span data-chart-source-label>XRPL Testnet</span></div>
@@ -393,6 +397,9 @@ ${ticketPanelMarkup("sell")}
               <div class="trade-overview-stat"><span>AMM spot</span><strong data-chart-stat-spot>—</strong></div>
               <div class="trade-overview-stat"><span>Basis</span><strong data-chart-stat-basis>—</strong></div>
               <div class="trade-overview-stat"><span>Prints</span><strong data-chart-stat-prints>—</strong></div>
+              <div class="trade-overview-stat"><span>From first</span><strong data-chart-stat-from-first>—</strong></div>
+              <div class="trade-overview-stat"><span>First print</span><strong data-chart-stat-first>—</strong></div>
+              <div class="trade-overview-stat"><span>Tape</span><strong data-chart-stat-tape>—</strong></div>
               <div class="trade-overview-stat trade-snapshot-dup"><span>Last print</span><strong data-chart-stat-print>—</strong></div>
               <div class="trade-overview-stat trade-snapshot-dup"><span>Your PND</span><strong data-chart-stat-wallet-pnd>—</strong></div>
               <div class="trade-overview-stat trade-snapshot-dup"><span>Your XRP</span><strong data-chart-stat-wallet-xrp>—</strong></div>
@@ -664,9 +671,12 @@ ${ticketPanelMarkup("sell")}
         ammInfo: null,
         poolTxs: [],
         trades: [],
+        persistedPrints: [],
         poolTxComplete: false,
         tapeLoading: true,
         tapeMarker: null,
+        tapeComplete: false,
+        firstPrint: null,
         treasuryPnd: null,
         treasuryXrpDrops: null,
         treasuryAccount: null,
@@ -1013,6 +1023,55 @@ ${ticketPanelMarkup("sell")}
       return items.map(ledgerTrade).filter(Boolean);
     }
 
+    function mergeTradesByHash(...lists) {
+      const seen = new Set();
+      const merged = [];
+      for (const list of lists) {
+        for (const print of list || []) {
+          const key = print?.hash || `${print?.time || ""}:${print?.price || ""}`;
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          merged.push(print);
+        }
+      }
+      return merged
+        .filter((print) => print.time && print.price > 0)
+        .sort((a, b) => a.time - b.time || String(a.hash).localeCompare(String(b.hash)));
+    }
+
+    async function loadPersistedTape(signal) {
+      if (state.network !== "testnet") return null;
+      try {
+        const response = await fetch("/api/tape", { signal });
+        if (!response.ok) return null;
+        const body = await response.json();
+        if (!Array.isArray(body?.prints)) return null;
+        return body;
+      } catch (error) {
+        if (isAbortError(error)) throw error;
+        return null;
+      }
+    }
+
+    function applyPersistedTape(verification, tape) {
+      const persisted = tape?.prints || verification.persistedPrints || [];
+      if (!persisted.length && !verification.trades?.length) {
+        return {
+          ...verification,
+          tapeComplete: Boolean(tape?.complete || verification.tapeComplete),
+        };
+      }
+      const trades = mergeTradesByHash(persisted, verification.trades);
+      return {
+        ...verification,
+        persistedPrints: persisted.length ? persisted : verification.persistedPrints || [],
+        trades,
+        tapeComplete: Boolean(tape?.complete || verification.tapeComplete),
+        firstPrint: tape?.firstPrint || trades[0] || verification.firstPrint || null,
+        tapeCount: tape?.count || trades.length,
+      };
+    }
+
     function poolTxHash(item) {
       return item?.hash || item?.tx?.hash || item?.tx_json?.hash || "";
     }
@@ -1027,13 +1086,19 @@ ${ticketPanelMarkup("sell")}
         seen.add(key);
         merged.push(item);
       }
+      const persisted = incoming.persistedPrints?.length ? incoming.persistedPrints : (previous.persistedPrints || []);
+      const trades = mergeTradesByHash(persisted, previous.trades, incoming.trades, ledgerTrades(merged));
       return {
         ...incoming,
         poolTxs: merged,
-        trades: ledgerTrades(merged),
+        persistedPrints: persisted,
+        trades,
+        firstPrint: incoming.firstPrint || previous.firstPrint || trades[0] || null,
+        tapeComplete: Boolean(previous.tapeComplete || incoming.tapeComplete),
+        tapeCount: Math.max(incoming.tapeCount || 0, previous.tapeCount || 0, trades.length),
         tapeMarker: previous.poolTxComplete ? null : (previous.tapeMarker || incoming.tapeMarker),
         poolTxComplete: Boolean(previous.poolTxComplete || incoming.poolTxComplete),
-        tapeLoading: previous.poolTxComplete ? false : Boolean(incoming.tapeLoading),
+        tapeLoading: previous.poolTxComplete || previous.tapeComplete ? false : Boolean(incoming.tapeLoading),
       };
     }
 
@@ -1045,6 +1110,23 @@ ${ticketPanelMarkup("sell")}
     function volume24hXrp(trades = []) {
       const cutoff = Date.now() - 24 * 60 * 60 * 1000;
       return trades.reduce((sum, trade) => sum + (trade.time && trade.time >= cutoff ? trade.xrp : 0), 0);
+    }
+
+    function volumeFromFirst(trades = []) {
+      return trades.reduce((sum, trade) => sum + (Number(trade.xrp) || 0), 0);
+    }
+
+    function formatTapeClock(timeMs) {
+      if (!Number.isFinite(timeMs)) return "—";
+      return `${new Date(timeMs).toISOString().slice(11, 19)} UTC`;
+    }
+
+    function tapeCompletenessLabel(verification = state.verification) {
+      const count = (verification.trades || []).length;
+      if (verification.tapeComplete && count) return `complete · ${count}`;
+      if (verification.tapeLoading && count) return `backfilling · ${count}+`;
+      if (count) return `${count} loaded`;
+      return verification.tapeLoading ? "loading" : "empty";
     }
 
     function tapeVwap(prints = []) {
@@ -1114,14 +1196,22 @@ ${ticketPanelMarkup("sell")}
       });
     }
 
-    function paintSnapshotPrints(prints = []) {
+    function paintSnapshotPrints(prints = [], allPrints = prints) {
       const list = $("[data-snapshot-prints]");
       if (!list) return;
-      const rows = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time).slice(0, 3);
+      const sorted = [...prints].filter((print) => print.time && print.price > 0).sort((a, b) => b.time - a.time);
+      const first = [...allPrints].filter((print) => print.time && print.price > 0).sort((a, b) => a.time - b.time)[0];
+      const latest = sorted.slice(0, 8);
+      const rows = [];
+      if (first && !latest.some((print) => print.hash && print.hash === first.hash)) {
+        rows.push({ print: first, kind: "first" });
+      }
+      latest.forEach((print) => rows.push({ print, kind: print.hash && first?.hash === print.hash ? "first" : "last" }));
       list.innerHTML = rows.length
-        ? rows.map((print) => {
+        ? rows.map(({ print, kind }) => {
             const clock = new Date(print.time).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
-            return `<li><button type="button" data-print-fill="${escText(String(print.price))}"><strong>${escText(formatQuotePrice(print.price) || String(print.price))}</strong><span>${escText(formatIou(print.xrp || 0))} XRP</span><time>${escText(clock)}</time></button></li>`;
+            const label = kind === "first" ? "First" : print.side === "sell" ? "Sell" : "Buy";
+            return `<li class="${kind === "first" ? "is-first" : ""}"><button type="button" data-print-fill="${escText(String(print.price))}"><strong>${escText(formatQuotePrice(print.price) || String(print.price))}</strong><span>${escText(label)} · ${escText(formatIou(print.xrp || 0))} XRP</span><time>${escText(clock)}</time></button></li>`;
           }).join("")
         : "<li>No validated prints in this window.</li>";
     }
@@ -1139,7 +1229,7 @@ ${ticketPanelMarkup("sell")}
       });
     }
 
-    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "4h": 4 * 60 * 60_000, "1d": 24 * 60 * 60_000 };
+    const CANDLE_MS = { "1m": 60_000, "5m": 5 * 60_000, "15m": 15 * 60_000, "30m": 30 * 60_000, "1h": 60 * 60_000, "4h": 4 * 60 * 60_000, "1d": 24 * 60 * 60_000, all: 60_000 };
 
     function printsToCandles(prints = [], intervalMs) {
       if (!intervalMs || !prints.length) return [];
@@ -2096,9 +2186,9 @@ ${ticketPanelMarkup("sell")}
         "pnd-xrp": "PND / XRP",
         "pnd-usd": "PND / USD",
       };
-      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90 };
-      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90 };
-      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D" };
+      const rangeDays = { "1m": 1, "5m": 1, "15m": 1, "30m": 1, "1h": 14, "4h": 30, "1d": 90, all: 90 };
+      const rangePoints = { "1m": 288, "5m": 288, "15m": 96, "30m": 48, "1h": 336, "4h": 180, "1d": 90, all: 2000 };
+      const rangeLabels = { "1m": "1m", "5m": "5m", "15m": "15m", "30m": "30m", "1h": "1H", "4h": "4H", "1d": "1D", all: "All" };
       const chartState = { pair: "pnd-xrp", range: "1m", volume: true, style: "candles", magnet: false, log: false, grid: true, hl: true, volSma: true, compact: true, utc: false, pin: false, pinPrice: null, period: 8, indicator: "sma", indicators: { sma: true, ema: true, rsi: false, macd: false, bollinger: true }, data: null, hoverIndex: null, lastPrintTime: null, printByTime: null, layout: null };
       let chartLoadController = null;
       let chartLoadGeneration = 0;
@@ -2125,10 +2215,13 @@ ${ticketPanelMarkup("sell")}
         if (!Number.isFinite(value)) return "—";
         return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
       };
-      const setChartEmpty = (title, copy, loading = false) => {
+      const setChartEmpty = (title, copy, loading = false, { showAll = false } = {}) => {
         setText("[data-chart-empty-title]", title);
         setText("[data-chart-empty-copy]", copy);
         emptyChart.classList.toggle("is-loading", loading);
+        emptyChart.classList.toggle("has-tape", showAll);
+        const allBtn = $("[data-chart-empty-all]");
+        if (allBtn) allBtn.hidden = !showAll;
         liveChart.hidden = true;
         emptyChart.hidden = false;
         hideChartHud();
@@ -2162,6 +2255,10 @@ ${ticketPanelMarkup("sell")}
         setText("[data-chart-stat-spot]", "—");
         setSignedText("[data-chart-stat-basis]", "—", NaN);
         setText("[data-chart-stat-prints]", "—");
+        setText("[data-chart-stat-from-first]", "—");
+        setText("[data-chart-stat-first]", "—");
+        setText("[data-chart-stat-tape]", "—");
+        setText("[data-chart-history-span]", "Tape not loaded");
         setText("[data-chart-stat-wallet-pnd]", "—");
         setText("[data-chart-stat-wallet-xrp]", "—");
         paintSnapshotPrints([]);
@@ -2502,6 +2599,7 @@ ${ticketPanelMarkup("sell")}
         applyPinLine();
       });
       $("[data-chart-reset]")?.addEventListener("click", resetChartView);
+      $("[data-chart-empty-all]")?.addEventListener("click", () => setRange("all"));
       syncNavButtons();
       $$("[data-chart-period]").forEach((button) => {
         button.addEventListener("click", () => {
@@ -2530,25 +2628,28 @@ ${ticketPanelMarkup("sell")}
         });
       });
 
-      function recentPriceDomain(points, livePrice) {
+      function recentPriceDomain(points, livePrice, { fullHistory = false, visibleOnly = false } = {}) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
-        const window = points.slice(-Math.min(points.length, 48));
+        const useAll = fullHistory || visibleOnly || chartState.range === "all" || chartState.compact === false;
+        const window = useAll ? points : points.slice(-Math.min(points.length, 48));
         const lows = window.map((point) => (Number.isFinite(point.low) ? point.low : point.value));
         const highs = window.map((point) => (Number.isFinite(point.high) ? point.high : point.value));
         const closes = window.map((point) => point.close ?? point.value);
         let minValue = Math.min(lastPrice, ...lows);
         let maxValue = Math.max(lastPrice, ...highs);
-        const sorted = [...closes].filter(Number.isFinite).sort((a, b) => a - b);
-        const mid = sorted[Math.floor(sorted.length / 2)] || lastPrice;
-        if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > mid * 8 || minValue < mid / 8 || maxValue > lastPrice * 2.2 || minValue < lastPrice * 0.45)) {
-          const near = window.filter((point) => {
-            const close = point.close ?? point.value;
-            return close >= mid * 0.35 && close <= Math.max(mid * 2.8, lastPrice * 1.15);
-          });
-          const use = near.length >= 3 ? near : window;
-          minValue = Math.min(lastPrice, ...use.map((point) => (Number.isFinite(point.low) ? point.low : point.value)));
-          maxValue = Math.max(lastPrice, ...use.map((point) => (Number.isFinite(point.high) ? point.high : point.value)));
+        if (!useAll) {
+          const sorted = [...closes].filter(Number.isFinite).sort((a, b) => a - b);
+          const mid = sorted[Math.floor(sorted.length / 2)] || lastPrice;
+          if (Number.isFinite(lastPrice) && lastPrice > 0 && (maxValue > mid * 8 || minValue < mid / 8 || maxValue > lastPrice * 2.2 || minValue < lastPrice * 0.45)) {
+            const near = window.filter((point) => {
+              const close = point.close ?? point.value;
+              return close >= mid * 0.35 && close <= Math.max(mid * 2.8, lastPrice * 1.15);
+            });
+            const use = near.length >= 3 ? near : window;
+            minValue = Math.min(lastPrice, ...use.map((point) => (Number.isFinite(point.low) ? point.low : point.value)));
+            maxValue = Math.max(lastPrice, ...use.map((point) => (Number.isFinite(point.high) ? point.high : point.value)));
+          }
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
@@ -2578,7 +2679,9 @@ ${ticketPanelMarkup("sell")}
           scaleMargins: { top: 0.08, bottom: showVolume ? 0.2 : 0.06 },
         });
         tv.chart.timeScale().fitContent();
-        const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice);
+        const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice, {
+          fullHistory: chartState.range === "all" || chartState.compact === false,
+        });
         const range = { minValue: domain.minValue, maxValue: domain.maxValue };
         tv.candles.applyOptions({
           lastValueVisible: true,
@@ -2690,8 +2793,19 @@ ${ticketPanelMarkup("sell")}
           const lowLine = candles.createPriceLine({ price: 0, color: "#ef9a9a", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "L" });
           const pinLine = candles.createPriceLine({ price: 0, color: "#f7c66a", lineWidth: 1, lineStyle: 0, axisLabelVisible: false, title: "Pin", lineVisible: false });
           const hudPrintsFor = (time) => {
-            const count = chartState.printByTime?.get(time);
+            const detail = chartState.printByTime?.get(time);
+            const count = detail?.count ?? detail;
             return Number.isFinite(count) && count > 0 ? `${count} print${count === 1 ? "" : "s"}` : "—";
+          };
+          const hudBarFor = (time) => {
+            const detail = chartState.printByTime?.get(time);
+            if (!detail || typeof detail !== "object") return "—";
+            const buys = detail.buys || 0;
+            const sells = detail.sells || 0;
+            const first = detail.firstTime ? formatHudTime(detail.firstTime) : "";
+            const last = detail.lastTime && detail.lastTime !== detail.firstTime ? formatHudTime(detail.lastTime) : "";
+            const span = first && last ? `${first}–${last}` : first;
+            return `${buys} buy · ${sells} sell${span ? ` · ${span}` : ""}`;
           };
           chart.subscribeCrosshairMove((param) => {
             const candle = param.seriesData?.get(candles);
@@ -2710,16 +2824,36 @@ ${ticketPanelMarkup("sell")}
             if (indicatorOn("ema") && emaPoint) parts.push(`EMA ${formatTick(emaPoint.value)}`);
             if (indicatorOn("rsi") && rsiPoint) parts.push(`RSI ${Number(rsiPoint.value).toFixed(1)}`);
             if (indicatorOn("macd") && macdPoint) parts.push(`MACD ${formatTick(macdPoint.value)}`);
+            const detail = chartState.printByTime?.get(param.time);
             setText("[data-chart-hud-time]", formatHudTime(timeMs));
             setText("[data-chart-hud-ohlc]", `O ${formatTick(candle.open)}  H ${formatTick(candle.high)}  L ${formatTick(candle.low)}  C ${formatTick(candle.close)}`);
             setText("[data-chart-hud-vol]", `${formatIou(volumePoint?.value || 0)} XRP`);
             setText("[data-chart-hud-prints]", hudPrintsFor(param.time));
+            setText("[data-chart-hud-bar]", hudBarFor(param.time));
+            setText("[data-chart-hud-vwap]", Number.isFinite(detail?.vwap) ? `VWAP ${formatTick(detail.vwap)}` : (Number.isFinite(chartState.data?.sessionVwap) ? `VWAP ${formatTick(chartState.data.sessionVwap)}` : "—"));
+            setText("[data-chart-hud-span]", chartState.data?.historySpan || "—");
             setText("[data-chart-hud-ind]", parts.join("  ") || "—");
             setText("[data-chart-ohlc-open]", formatAxis(candle.open));
             setText("[data-chart-ohlc-high]", formatAxis(candle.high));
             setText("[data-chart-ohlc-low]", formatAxis(candle.low));
             setText("[data-chart-ohlc-close]", formatAxis(candle.close));
             if (hud) hud.hidden = false;
+          });
+          chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
+            if (!range || !chartState.tv || !chartState.data) return;
+            const rows = currentPlotRows();
+            if (!rows.length) return;
+            const from = Math.max(0, Math.floor(range.from));
+            const to = Math.min(rows.length - 1, Math.ceil(range.to));
+            const visible = rows.slice(from, to + 1);
+            if (visible.length < 2) return;
+            const domain = recentPriceDomain(visible.map((row) => ({ ...row, value: row.close })), chartState.data.livePrice, {
+              visibleOnly: true,
+            });
+            const scale = chartState.tv.candles.priceScale();
+            if (!chartState.log && scale.setVisibleRange) {
+              scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
+            }
           });
           chart.subscribeClick((param) => {
             const candle = param.seriesData?.get(candles);
@@ -2771,7 +2905,7 @@ ${ticketPanelMarkup("sell")}
           };
         }).filter((row, index, list) => Number.isFinite(row.time) && (index === 0 || row.time > list[index - 1].time));
         if (!rows.length) return;
-        chartState.printByTime = new Map(rows.map((row) => [row.time, row.prints]));
+        if (chartState.data?.printByTime instanceof Map) chartState.printByTime = chartState.data.printByTime;
         const values = rows.map((row) => row.close);
         const times = rows.map((row) => row.time);
         const maPeriod = Math.min(Math.max(chartState.period || 8, 2), Math.max(2, values.length));
@@ -2877,7 +3011,7 @@ ${ticketPanelMarkup("sell")}
         const trades = state.verification.trades || [];
         const offers = state.verification.offers || [];
         const hasMarket = Boolean(state.verification.market) || trades.length > 0 || offers.length > 0;
-        const tapeLoading = state.verification.tapeLoading !== false && !state.verification.poolTxComplete;
+        const tapeLoading = state.verification.tapeLoading !== false && !state.verification.poolTxComplete && !state.verification.tapeComplete;
         setText("[data-chart-symbol]", label);
         setText("[data-chart-timeframe]", rangeLabels[chartState.range]);
         setText("[data-chart-legend-primary]", label);
@@ -2897,11 +3031,11 @@ ${ticketPanelMarkup("sell")}
           );
           return;
         }
-        const windows = { "1m": 6 * 60 * 60 * 1000, "5m": 24 * 60 * 60 * 1000, "15m": 3 * 24 * 60 * 60 * 1000, "30m": 7 * 24 * 60 * 60 * 1000, "1h": 14 * 24 * 60 * 60 * 1000, "4h": 30 * 24 * 60 * 60 * 1000, "1d": 90 * 24 * 60 * 60 * 1000 };
-        const windowMs = windows[chartState.range];
+        const windows = { "1m": 48 * 60 * 60 * 1000, "5m": 7 * 24 * 60 * 60 * 1000, "15m": 14 * 24 * 60 * 60 * 1000, "30m": 30 * 24 * 60 * 60 * 1000, "1h": 60 * 24 * 60 * 60 * 1000, "4h": 90 * 24 * 60 * 60 * 1000, "1d": 365 * 24 * 60 * 60 * 1000 };
+        const windowMs = chartState.range === "all" ? 0 : windows[chartState.range];
         const cutoff = windowMs ? Date.now() - windowMs : 0;
-        let used = trades.filter((trade) => trade.time && trade.time >= cutoff).sort((a, b) => a.time - b.time);
-        if (!used.length) used = [...trades].filter((trade) => trade.time).sort((a, b) => a.time - b.time);
+        const dated = [...trades].filter((trade) => trade.time).sort((a, b) => a.time - b.time);
+        const used = cutoff ? dated.filter((trade) => trade.time >= cutoff) : dated;
         if (!used.length) {
           if (hasMarket) {
             const spot = Number(String(getMarketPrice()).replace(" XRP", ""));
@@ -2916,13 +3050,27 @@ ${ticketPanelMarkup("sell")}
           }
           chartState.data = null;
           resetChartStats();
+          if (dated.length) {
+            const first = dated[0];
+            setChartEmpty(
+              `No ${label} prints in this ${rangeLabels[chartState.range]} window`,
+              `${dated.length} validated print${dated.length === 1 ? "" : "s"} from ${formatTapeClock(first.time)}. Empty minutes stay blank. All shows the full tape.`,
+              false,
+              { showAll: true },
+            );
+            setText("[data-chart-stat-prints]", String(dated.length));
+            setText("[data-chart-stat-first]", formatTapeClock(first.time));
+            setText("[data-chart-stat-tape]", tapeCompletenessLabel());
+            setText("[data-chart-history-span]", `First ${formatTapeClock(first.time)} · ${dated.length} prints`);
+            return;
+          }
           setChartEmpty(
             `No validated ${label} prints to candle`,
             "Candles are built only from validated AMM/DEX prints. Empty minutes stay blank.",
           );
           return;
         }
-        const intervalMs = CANDLE_MS[chartState.range];
+        const intervalMs = CANDLE_MS[chartState.range] || CANDLE_MS["1m"];
         const candles = intervalMs ? printsToCandles(used, intervalMs) : [];
         const points = candles.length
           ? candles
@@ -2934,13 +3082,37 @@ ${ticketPanelMarkup("sell")}
         const livePrice = last.close ?? last.value;
         const change = open ? ((livePrice - open) / open) * 100 : 0;
         const volume = volume24hXrp(trades);
-        const lastPrint = [...used].sort((a, b) => b.time - a.time)[0];
+        const fromFirst = volumeFromFirst(dated);
+        const lastPrint = used[used.length - 1];
+        const firstPrint = dated[0];
         const vwap = tapeVwap(used);
+        const sessionVwap = tapeVwap(dated);
         const spot = ammSpotNumber();
         const basis = Number.isFinite(spot) && spot > 0 && Number.isFinite(livePrice) && livePrice > 0
           ? ((livePrice - spot) / spot) * 100
           : NaN;
-        chartState.data = { points, candles, livePrice, change, volume, open, high, low, vwap, spot, basis, quote: "XRP", intervalMs };
+        const historySpan = firstPrint
+          ? `First ${formatTapeClock(firstPrint.time)} → ${formatTapeClock(lastPrint.time)} · ${dated.length} print${dated.length === 1 ? "" : "s"}`
+          : `${dated.length} prints`;
+        const printByTime = new Map();
+        const bucketMs = intervalMs || 60_000;
+        used.forEach((print) => {
+          const key = Math.floor(print.time / 1000 / (bucketMs / 1000)) * (bucketMs / 1000);
+          const bucket = printByTime.get(key) || { count: 0, buys: 0, sells: 0, firstTime: print.time, lastTime: print.time, notional: 0, weight: 0, vwap: NaN };
+          bucket.count += 1;
+          if (print.side === "sell") bucket.sells += 1;
+          else bucket.buys += 1;
+          bucket.firstTime = Math.min(bucket.firstTime, print.time);
+          bucket.lastTime = Math.max(bucket.lastTime, print.time);
+          if (print.price > 0 && print.xrp > 0) {
+            bucket.notional += print.price * print.xrp;
+            bucket.weight += print.xrp;
+            bucket.vwap = bucket.weight > 0 ? bucket.notional / bucket.weight : NaN;
+          }
+          printByTime.set(key, bucket);
+        });
+        chartState.data = { points, candles, livePrice, change, volume, open, high, low, vwap, sessionVwap, spot, basis, quote: "XRP", intervalMs, historySpan, printByTime };
+        chartState.printByTime = printByTime;
         chartState.lastPrintTime = lastPrint?.time || null;
         updatePrintAge();
         ticketQuotes.last = livePrice;
@@ -2952,10 +3124,14 @@ ${ticketPanelMarkup("sell")}
         setText("[data-chart-stat-price]", formatAxis(livePrice));
         setSignedText("[data-chart-stat-change]", formatPercent(change), change);
         setText("[data-chart-stat-volume]", volume > 0 ? `${formatIou(volume)} XRP` : "—");
+        setText("[data-chart-stat-from-first]", fromFirst > 0 ? `${formatIou(fromFirst)} XRP` : "—");
+        setText("[data-chart-stat-first]", formatTapeClock(firstPrint?.time));
+        setText("[data-chart-stat-tape]", tapeCompletenessLabel());
+        setText("[data-chart-history-span]", historySpan);
         setText("[data-chart-stat-vwap]", Number.isFinite(vwap) ? formatAxis(vwap) : "—");
         setText("[data-chart-stat-spot]", Number.isFinite(spot) ? formatAxis(spot) : "—");
         setSignedText("[data-chart-stat-basis]", Number.isFinite(basis) ? formatPercent(basis) : "—", basis);
-        setText("[data-chart-stat-prints]", String(used.length));
+        setText("[data-chart-stat-prints]", `${used.length}${dated.length !== used.length ? ` / ${dated.length}` : ""}`);
         setText("[data-chart-stat-market-cap]", state.verification.treasuryPnd != null ? `${formatIou(state.verification.treasuryPnd)} PND` : "—");
         setText("[data-chart-ohlc-open]", formatAxis(open));
         setText("[data-chart-ohlc-high]", formatAxis(high));
@@ -2965,15 +3141,16 @@ ${ticketPanelMarkup("sell")}
         setSignedText("[data-chart-symbol-change]", formatPercent(change), change);
         paintRangeMeter(livePrice, high, low);
         paintWalletStats();
-        paintSnapshotPrints(used);
+        paintSnapshotPrints(used, dated);
         if (followLast) fillTicketPrices(livePrice, true);
         const status = $("[data-chart-stat-status]");
         if (status) {
           status.classList.toggle("is-gated", false);
           status.classList.toggle("is-live", true);
+          const tapeNote = state.verification.tapeComplete ? "tape complete" : "backfilling tape";
           status.textContent = candles.length
-            ? `${candles.length} candle${candles.length === 1 ? "" : "s"} · ${used.length} trade${used.length === 1 ? "" : "s"}`
-            : `${used.length} trade${used.length === 1 ? "" : "s"}`;
+            ? `${candles.length} candle${candles.length === 1 ? "" : "s"} · ${used.length} trade${used.length === 1 ? "" : "s"} · ${tapeNote}`
+            : `${used.length} trade${used.length === 1 ? "" : "s"} · ${tapeNote}`;
         }
         prefillDexPrices(livePrice);
         updateBarLeft();
@@ -3060,7 +3237,7 @@ ${ticketPanelMarkup("sell")}
         if (root.dataset.mode !== "chart") return;
         if (event.target.closest("input, textarea, select, [contenteditable]")) return;
         const key = event.key.toLowerCase();
-        const ranges = { 1: "1m", 5: "5m", q: "15m", w: "30m", h: "1h", 4: "4h", d: "1d" };
+        const ranges = { 1: "1m", 5: "5m", q: "15m", w: "30m", h: "1h", 4: "4h", d: "1d", a: "all" };
         if (ranges[key]) {
           event.preventDefault();
           setRange(ranges[key]);
@@ -3274,14 +3451,14 @@ ${ticketPanelMarkup("sell")}
         const batch = history?.result?.transactions || [];
         poolTxs.push(...batch);
         marker = history?.result?.marker || null;
-        state.verification = {
+        state.verification = applyPersistedTape({
           ...state.verification,
           poolTxs,
           trades: ledgerTrades(poolTxs),
           tapeMarker: marker,
           poolTxComplete: !marker,
-          tapeLoading: Boolean(marker),
-        };
+          tapeLoading: Boolean(marker) && !state.verification.tapeComplete,
+        }, { prints: state.verification.persistedPrints, complete: state.verification.tapeComplete });
         setMarketState(state.verification);
         if (!marker || !batch.length) break;
       }
@@ -3305,8 +3482,10 @@ ${ticketPanelMarkup("sell")}
       const remain = at
         ? Math.max(0, Math.ceil((LEDGER_POLL_MS - (Date.now() - at)) / 1000))
         : seconds;
+      const tapeNote = tapeCompletenessLabel();
       const pollText = hidden ? "Paused" : busy ? "Polling…" : `Live · ${remain}s`;
-      setText("[data-poll-note]", added > 0 ? `${pollText} · +${added}` : pollText);
+      const withTape = `${pollText} · ${tapeNote}`;
+      setText("[data-poll-note]", added > 0 ? `${withTape} · +${added}` : withTape);
       setText("[data-chart-stat-poll]", busy ? `now · ${clock}` : `${remain}s · ${clock}`);
       setText("[data-data-poll]", clock);
       setText("[data-data-poll-note]", ledger ? `validated ${ledger} · ${seconds}s` : `validated · ${seconds}s`);
@@ -3391,9 +3570,16 @@ ${ticketPanelMarkup("sell")}
       }
       try {
         const previous = state.verification;
-        let verification = await readMarketState(signal);
+        const [raw, tape] = await Promise.all([readMarketState(signal), loadPersistedTape(signal)]);
         if (!isCurrent(generation)) return;
+        let verification = applyPersistedTape(raw, tape);
         if (quiet) verification = mergePoolHistory(previous, verification);
+        verification = applyPersistedTape(verification, {
+          prints: verification.persistedPrints || tape?.prints || previous.persistedPrints || [],
+          complete: Boolean(verification.tapeComplete || tape?.complete || previous.tapeComplete),
+          firstPrint: verification.firstPrint || tape?.firstPrint || previous.firstPrint,
+          count: verification.tapeCount || tape?.count,
+        });
         const added = countNewPrints(previous, verification);
         state.verification = verification;
         lastPollAt = Date.now();
