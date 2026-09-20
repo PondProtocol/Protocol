@@ -445,20 +445,41 @@ const xamanJs = join(DIST_DIR, "xaman.js");
 check("xaman.js is copied into the build", existsSync(xamanJs));
 
 const headerHtml = indexHtml.match(/<header class="topbar">[\s\S]*?<\/header>/)?.[0] ?? "";
-const brandHtml = headerHtml.match(/<a class="brand"[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "";
+const brandHtml = headerHtml.match(/<summary class="brand"[^>]*>[\s\S]*?<\/summary>/)?.[0] ?? "";
 const brandText = asText(brandHtml);
 const duckMark = join(DIST_DIR, "greenhead-duck.png");
+const switcherHtml = headerHtml.match(/<details class="site-switcher"[\s\S]*?<\/details>/)?.[0] ?? "";
 check(
   "top bar brand word is Pond",
   /^\s*Pond\s*$/.test(brandText),
 );
 check(
-  "top bar credits Greenhead Labs with the duck mark and a return link",
+  "top bar credits Greenhead Labs with the duck mark and no return link",
   headerHtml.includes("Powered By Greenhead Labs") &&
     headerHtml.includes("/greenhead-duck.png") &&
     existsSync(duckMark) &&
     headerHtml.includes('href="https://greenhead.io"') &&
-    headerHtml.includes("Return to Main Site"),
+    !headerHtml.includes("Return to Main Site") &&
+    !headerHtml.includes("powered-by-return"),
+);
+check(
+  "Pond logo opens a published-site switcher",
+  headerHtml.includes('data-site-switcher') &&
+    switcherHtml.includes('href="https://greenhead.io"') &&
+    switcherHtml.includes(">greenhead.io<") &&
+    switcherHtml.includes('href="/"') &&
+    switcherHtml.includes(">pond.greenhead.io<") &&
+    switcherHtml.includes('href="/Pond/"') &&
+    switcherHtml.includes('href="/Protocol/"') &&
+    switcherHtml.includes('href="/trade/"') &&
+    switcherHtml.includes('href="/links/"') &&
+    switcherHtml.includes('href="/legal/"') &&
+    switcherHtml.includes('href="/profile/"') &&
+    !switcherHtml.includes("x402.greenhead.io") &&
+    !switcherHtml.includes("database.greenhead.io") &&
+    !switcherHtml.includes("trader.greenhead.io") &&
+    !switcherHtml.includes("greenhead.io/dashboard") &&
+    !switcherHtml.includes("greenhead.io/Agent"),
 );
 const topnavHtml = headerHtml.match(/<nav class="topnav"[\s\S]*?<\/nav>/)?.[0] ?? "";
 const topnavSummaries = [...topnavHtml.matchAll(/<summary>([\s\S]*?)<\/summary>/g)].map((match) =>
@@ -468,14 +489,16 @@ const protocolMenu =
   topnavHtml.match(/<details class="topnav-menu" data-topnav-menu="protocol">[\s\S]*?<\/details>/)?.[0] ?? "";
 const startHereLabels = [];
 const startHereOrder = [];
+const topnavPondAt = headerHtml.indexOf('href="/Pond/">Pond</a>');
+const topnavProtocolAt = headerHtml.indexOf('href="/Protocol/">Protocol</a>');
 check(
   "top bar is Pond and Protocol, then search",
   /<a class="topnav-page-link(?: active)?"[^>]*href="\/Pond\/">Pond<\/a>/.test(topnavHtml) &&
     /<a class="topnav-page-link(?: active)?"[^>]*href="\/Protocol\/">Protocol<\/a>/.test(topnavHtml) &&
     headerHtml.includes("topbar-end") &&
     headerHtml.indexOf("brand-cluster") < headerHtml.indexOf("topbar-end") &&
-    headerHtml.indexOf("topbar-end") < headerHtml.indexOf('href="/Pond/"') &&
-    headerHtml.indexOf('href="/Pond/"') < headerHtml.indexOf('href="/Protocol/"'),
+    headerHtml.indexOf("topbar-end") < topnavPondAt &&
+    topnavPondAt < topnavProtocolAt,
 );
 check(
   "top bar does not use Trade, Meet Team, Verify, Hold, Wallets, or Xaman as top-level items",
@@ -492,8 +515,8 @@ check(
   "Pond and Protocol sit immediately before search on the right",
   headerHtml.includes("data-site-search") &&
     headerHtml.includes("topbar-end") &&
-    headerHtml.indexOf("Return to Main Site") < headerHtml.indexOf('href="/Pond/"') &&
-    headerHtml.indexOf('href="/Protocol/"') < headerHtml.indexOf("data-site-search") &&
+    headerHtml.indexOf("data-site-switcher") < topnavPondAt &&
+    topnavProtocolAt < headerHtml.indexOf("data-site-search") &&
     headerHtml.indexOf("</nav>") < headerHtml.indexOf("data-site-search") &&
     !headerHtml.includes("data-topnav-menu") &&
     !topnavHtml.includes("<details"),
@@ -505,8 +528,8 @@ check(
     headerHtml.includes('class="topbar-trade"') &&
     headerHtml.includes('data-topbar-cta') &&
     /<a class="topbar-trade" href="\/trade\/"[^>]*>Login<\/a>/.test(headerHtml) &&
-    headerHtml.indexOf("topbar-nav-group") < headerHtml.indexOf('href="/Pond/"') &&
-    headerHtml.indexOf('href="/Protocol/"') < headerHtml.indexOf("data-site-search") &&
+    headerHtml.indexOf("topbar-nav-group") < topnavPondAt &&
+    topnavProtocolAt < headerHtml.indexOf("data-site-search") &&
     headerHtml.indexOf("data-site-search") < headerHtml.indexOf("topbar-account-group") &&
     headerHtml.indexOf("topbar-account-group") < headerHtml.indexOf("topbar-trade") &&
     headerHtml.indexOf("topbar-trade") < headerHtml.indexOf("data-session-chip") &&
@@ -877,6 +900,13 @@ check(
     /flex-wrap:\s*nowrap/.test(stylesText) &&
     stylesText.includes("brand-rule") &&
     stylesText.includes("brand-word"),
+);
+check(
+  "header clusters use rounded square boxes",
+  /border-radius:\s*0\.55rem/.test(stylesText.slice(stylesText.indexOf(".brand-cluster"))) &&
+    /border-radius:\s*0\.55rem/.test(stylesText.slice(stylesText.indexOf(".topbar-account-group"))) &&
+    stylesText.includes(".site-switcher-panel") &&
+    !stylesText.includes(".powered-by-return"),
 );
 
 const secretLeak = textFiles.filter((f) => {

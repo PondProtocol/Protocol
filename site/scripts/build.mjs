@@ -680,6 +680,43 @@ const iconBan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const iconCookie = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>`;
 const iconScan = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/><path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0"/></svg>`;
 
+function siteSwitcherHtml(currentUrl) {
+  const host = displayDomain;
+  const sites = [
+    { href: "https://greenhead.io", label: "greenhead.io", external: true },
+    { href: "/", label: host },
+  ];
+  const pages = [
+    { href: "/Pond/", label: "/Pond/" },
+    { href: "/Protocol/", label: "/Protocol/" },
+    { href: "/trade/", label: "/trade/" },
+    { href: "/links/", label: "/links/" },
+    { href: "/legal/", label: "/legal/" },
+    { href: "/profile/", label: "/profile/" },
+  ];
+  const link = (item) => {
+    const current = !item.external && item.href === currentUrl;
+    const extra = item.external
+      ? ` target="_blank" rel="noopener noreferrer"`
+      : current
+        ? ` aria-current="page"`
+        : "";
+    return `<a href="${esc(item.href)}"${extra}>${esc(item.label)}</a>`;
+  };
+  return `<details class="site-switcher" data-site-switcher>
+    <summary class="brand" aria-label="Pond sites">
+      <img class="brand-mark" src="/pond-mark.png" width="28" height="25" alt="">
+      <span class="brand-word">Pond</span>
+    </summary>
+    <nav class="site-switcher-panel" aria-label="Published sites">
+      <p class="site-switcher-kicker">Sites</p>
+      ${sites.map(link).join("")}
+      <p class="site-switcher-kicker">${esc(host)}</p>
+      ${pages.map(link).join("")}
+    </nav>
+  </details>`;
+}
+
 function sessionChipHtml() {
   return `<div class="session-chip" data-session-chip>
   <div class="session-guest" data-session-guest>
@@ -884,12 +921,11 @@ ${heroTopoSvg()}
 ` : ""}
 <header class="topbar">
   <div class="brand-cluster">
-    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/pond-mark.png" width="28" height="25" alt=""><span class="brand-word">Pond</span></a>
+    ${siteSwitcherHtml(page.url)}
     <span class="brand-rule" aria-hidden="true"></span>
     <p class="powered-by">
       <span class="powered-by-label">Powered By Greenhead Labs</span>
       <img class="powered-by-mark" src="/greenhead-duck.png" width="18" height="18" alt="">
-      <a class="powered-by-return" href="https://greenhead.io">Return to Main Site</a>
     </p>
   </div>
   <div class="topbar-end">
