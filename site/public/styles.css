@@ -2015,6 +2015,11 @@ code.addr {
 
 /* ---------------------------------------------------------- trade workspace */
 
+/* /trade/ only: no Private Browsing card or privacy vault button. */
+.page-trade .privacy-dock {
+  display: none;
+}
+
 .page-trade .shell {
   max-width: 100rem;
   padding-top: 1rem;
