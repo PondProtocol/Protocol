@@ -760,24 +760,73 @@ check(
     heroPages.includes('href="/profile/"') &&
     heroPages.includes('href="/trade/"') &&
     heroPages.includes('href="/Protocol/"') &&
-    heroPages.includes(">How Pond operates.<") &&
-    heroPages.includes("Pond is the company. Greenhead Labs supports it. Agent Tadpole runs it.") &&
-    heroPages.includes("Mainnet has not issued $PND.") &&
-    heroPages.includes("Identity is the pair (PND, issuer address).") &&
-    heroPages.includes("Permanent No Freeze. Clawback is off.") &&
+    heroPages.includes(">This is the $PND / $rPND page.<") &&
+    heroPages.includes("Tokenomics, treasury, and escrow. It is not the desk page.") &&
+    heroPages.includes("Identity is (PND, issuer address), never the ticker alone.") &&
+    heroPages.includes("Testnet 100B $PND paid to treasury. Mainnet is unissued.") &&
+    heroPages.includes("Proposed split: 10B public, 10B team, 80B holder drops.") &&
+    heroPages.includes("Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.") &&
     heroPages.includes("Sign in with official Xaman to open your account page.") &&
     heroPages.includes("Logged-out visitors do not see handles or profile fields.") &&
+    heroPages.includes("Login in the top bar opens Trade. After you sign in it says Launch.") &&
+    heroPages.includes("Official connect is WalletConnect or Xaman only.") &&
+    heroPages.includes("We do not store seeds or private keys.") &&
     !heroPages.includes("Official Xaman SignIn stays on Trade") &&
     heroPages.includes("XRPL Testnet. This page reads the validated ledger.") &&
     heroPages.includes("It does not sign or submit.") &&
     heroPages.includes("Treasury holds 100,000,000,000 PND.") &&
+    heroPages.includes("Same r-address as mainnet.") &&
     heroPages.includes("Testnet XRP is faucet-issued and worthless.") &&
     heroPages.includes("Mainnet still has no $PND issued.") &&
-    heroPages.includes("Pond Protocol is decentralized and Agent-AI-run.") &&
-    heroPages.includes("Permanent No Freeze is set. Clawback is off.") &&
-    heroPages.includes("Agents run the protocol work. They do not ask you for a seed.") &&
-    heroPages.includes("$PND is Testnet-issued; Mainnet has not issued. $rPND is not live.") &&
+    heroPages.includes(">This is the desk and ops page.<") &&
+    heroPages.includes("Master / feed: Tadpole&#39;s rPND… address. Nathan funds 50B $PND + liquidity XRP here.") &&
+    heroPages.includes("Bird Hunt 15: Nest ×5 / Current ×5 / Perch ×5.") &&
+    heroPages.includes("They draw inventory from master under Tadpole&#39;s ops rules.") &&
+    heroPages.includes("Not the 50B treasury seat. Not one of the 15 desk seats.") &&
     /hero-page-go[\s\S]*?margin:\s*0 0 0 auto/.test(stylesText),
+);
+check(
+  "home Start here is a centered landing band under the hero",
+  indexHtml.includes('class="home-start"') &&
+    indexHtml.includes('id="start-here"') &&
+    indexHtml.includes("home-start-cards") &&
+    indexHtml.includes("home-start-card") &&
+    /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
+    indexHtml.indexOf('class="hero"') < indexHtml.indexOf('class="home-start"') &&
+    !indexHtml.includes('class="join-card"') &&
+    !indexHtml.includes("How the company operates") &&
+    /display:\s*flex/.test(stylesText.slice(stylesText.indexOf(".page-index .home-start"))) &&
+    /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-start"))) &&
+    /text-align:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-start"))) &&
+    !readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8").includes("home-start") &&
+    !readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8").includes("home-start") &&
+    !tradeHtml.includes("home-start") &&
+    !readFileSync(join(DIST_DIR, "profile", "index.html"), "utf8").includes("home-start"),
+);
+check(
+  "home scrolls published page previews after Start here",
+  indexHtml.includes('id="pond-stop"') &&
+    indexHtml.includes('id="protocol-stop"') &&
+    indexHtml.includes('id="login-stop"') &&
+    indexHtml.includes('id="links-stop"') &&
+    indexHtml.includes('id="trade-stop"') &&
+    indexHtml.includes('id="legal-stop"') &&
+    indexHtml.indexOf('id="start-here"') < indexHtml.indexOf('id="pond-stop"') &&
+    indexHtml.indexOf('id="pond-stop"') < indexHtml.indexOf('id="protocol-stop"') &&
+    indexHtml.indexOf('id="protocol-stop"') < indexHtml.indexOf('id="login-stop"') &&
+    indexHtml.indexOf('id="login-stop"') < indexHtml.indexOf('id="links-stop"') &&
+    indexHtml.indexOf('id="links-stop"') < indexHtml.indexOf('id="trade-stop"') &&
+    indexHtml.indexOf('id="trade-stop"') < indexHtml.indexOf('id="legal-stop"') &&
+    indexHtml.includes("This is the $PND / $rPND page.") &&
+    indexHtml.includes("This is the desk and ops page.") &&
+    indexHtml.includes("Sign in with official Xaman to open your account page.") &&
+    indexHtml.includes("These are the only Pond Protocol URLs this site will ask you to use") &&
+    indexHtml.includes("XRPL Testnet terminal.") &&
+    indexHtml.includes("This page is for pond.greenhead.io.") &&
+    !indexHtml.includes('data-pond-profile') &&
+    !indexHtml.includes('id="trade-app"') &&
+    !indexHtml.includes("## Identity") &&
+    !indexHtml.includes(">Identity</h2>"),
 );
 check(
   "trade page does not use traffic-light disclaimer colors",
@@ -1368,8 +1417,10 @@ check(
     indexHtml.includes("100B $PND is issued to the Testnet treasury") &&
     indexHtml.includes("Faucet XRP is worthless") &&
     indexHtml.includes("Mainnet has not issued $PND") &&
-    !/<p class="hero-lede">[\s\S]*?Target 1 October 2026/.test(indexHtml) &&
-    !/<p class="hero-lede">[\s\S]*?has not launched/.test(indexHtml) &&
+    !/<p class="hero-lede">[^<]*Target 1 October 2026/.test(indexHtml) &&
+    !/<p class="hero-lede">[\s\S]*?has not launched[\s\S]*?<\/p>/.test(
+      indexHtml.match(/<p class="hero-lede">[\s\S]*?<\/p>/)?.[0] ?? "",
+    ) &&
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
     /<link rel="stylesheet" href="\/styles\.[a-f0-9]{10}\.css">/.test(indexHtml) &&
     /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&

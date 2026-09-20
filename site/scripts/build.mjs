@@ -617,12 +617,13 @@ function heroPagesHtml(home = false) {
       key: "pond",
       mark: "01",
       title: "Pond",
-      lede: "How Pond operates.",
+      lede: "This is the $PND / $rPND page.",
       facts: [
-        "Pond is the company. Greenhead Labs supports it. Agent Tadpole runs it.",
-        "Mainnet has not issued $PND.",
-        "Identity is the pair (PND, issuer address).",
-        "Permanent No Freeze. Clawback is off.",
+        "Tokenomics, treasury, and escrow. It is not the desk page.",
+        "Identity is (PND, issuer address), never the ticker alone.",
+        "Testnet 100B $PND paid to treasury. Mainnet is unissued.",
+        "Proposed split: 10B public, 10B team, 80B holder drops.",
+        "Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.",
       ],
     },
     {
@@ -631,7 +632,12 @@ function heroPagesHtml(home = false) {
       mark: "02",
       title: "Profile",
       lede: "Sign in with official Xaman to open your account page.",
-      facts: ["Logged-out visitors do not see handles or profile fields."],
+      facts: [
+        "Logged-out visitors do not see handles or profile fields.",
+        "Login in the top bar opens Trade. After you sign in it says Launch.",
+        "Official connect is WalletConnect or Xaman only.",
+        "We do not store seeds or private keys.",
+      ],
     },
     {
       href: "/trade/",
@@ -642,6 +648,7 @@ function heroPagesHtml(home = false) {
       facts: [
         "It does not sign or submit.",
         "Treasury holds 100,000,000,000 PND.",
+        "Same r-address as mainnet.",
         "Testnet XRP is faucet-issued and worthless.",
         "Mainnet still has no $PND issued.",
       ],
@@ -651,20 +658,21 @@ function heroPagesHtml(home = false) {
       key: "protocol",
       mark: "04",
       title: "Protocol",
-      lede: "Pond Protocol is decentralized and Agent-AI-run.",
+      lede: "This is the desk and ops page.",
       facts: [
-        "Permanent No Freeze is set. Clawback is off.",
-        "Agents run the protocol work. They do not ask you for a seed.",
-        "$PND is Testnet-issued; Mainnet has not issued. $rPND is not live.",
+        "Master / feed: Tadpole's rPND… address. Nathan funds 50B $PND + liquidity XRP here.",
+        "Bird Hunt 15: Nest ×5 / Current ×5 / Perch ×5.",
+        "They draw inventory from master under Tadpole's ops rules.",
+        "Not the 50B treasury seat. Not one of the 15 desk seats.",
       ],
     },
   ];
   if (!home) {
     const blurbs = {
-      pond: "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole.",
+      pond: "$PND / $rPND tokenomics, treasury, and escrow. Not the desk page.",
       profile: "Xaman account. Handle and balances. Never a seed.",
       trade: "Testnet terminal. Not a live mainnet DEX.",
-      protocol: "Decentralized and Agent-AI-run.",
+      protocol: "Desk and ops. Master / feed and Bird Hunt 15.",
     };
     return `<nav class="hero-pages" aria-label="Pond pages">${cards
       .map(
