@@ -2628,6 +2628,34 @@ ${ticketPanelMarkup("sell")}
         });
       });
 
+      function plotScaleMargins(showVolume) {
+        return {
+          price: { top: 0.30, bottom: showVolume ? 0.40 : 0.12 },
+          volume: { top: showVolume ? 0.60 : 1, bottom: 0 },
+        };
+      }
+
+      function applyPlotScale(tv, range, showVolume) {
+        const margins = plotScaleMargins(showVolume);
+        tv.volume?.priceScale().applyOptions({
+          scaleMargins: margins.volume,
+          borderVisible: false,
+        });
+        tv.candles.applyOptions({
+          lastValueVisible: true,
+          priceLineVisible: true,
+          autoscaleInfoProvider: () => ({ priceRange: range }),
+        });
+        tv.overlay.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.emaLine?.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
+        tv.candles.priceScale().applyOptions({
+          autoScale: true,
+          scaleMargins: margins.price,
+        });
+      }
+
       function recentPriceDomain(points, livePrice, { fullHistory = false, visibleOnly = false } = {}) {
         const last = points[points.length - 1];
         const lastPrice = Number.isFinite(livePrice) ? livePrice : (last.close ?? last.value);
@@ -2653,7 +2681,7 @@ ${ticketPanelMarkup("sell")}
         }
         minValue = Math.min(minValue, lastPrice);
         maxValue = Math.max(maxValue, lastPrice);
-        const pad = Math.max((maxValue - minValue) * 0.08, Math.abs(lastPrice) * 0.04, 1e-5);
+        const pad = Math.max((maxValue - minValue) * 0.04, Math.abs(lastPrice) * 0.02, 1e-5);
         return { minValue: minValue - pad, maxValue: maxValue + pad, lastPrice };
       }
 
@@ -2668,38 +2696,14 @@ ${ticketPanelMarkup("sell")}
         const compact = Boolean(chartState.compact);
         const rsiH = showRsi ? Math.round(height * (compact ? 0.12 : 0.16)) : 0;
         const macdH = showMacd ? Math.round(height * (compact ? 0.12 : 0.16)) : 0;
-        if (panes[0]?.setHeight) panes[0].setHeight(Math.max(140, height - rsiH - macdH));
+        if (panes[0]?.setHeight) panes[0].setHeight(Math.max(180, height - rsiH - macdH));
         if (panes[1]?.setHeight) panes[1].setHeight(rsiH);
         if (panes[2]?.setHeight) panes[2].setHeight(macdH);
-        tv.volume?.priceScale().applyOptions({
-          scaleMargins: { top: showVolume ? 0.8 : 1, bottom: 0 },
-          borderVisible: false,
-        });
-        tv.candles.priceScale().applyOptions({
-          scaleMargins: { top: 0.08, bottom: showVolume ? 0.2 : 0.06 },
-        });
         tv.chart.timeScale().fitContent();
         const domain = recentPriceDomain(rows.map((row) => ({ ...row, value: row.close })), livePrice, {
           fullHistory: chartState.range === "all" || chartState.compact === false,
         });
-        const range = { minValue: domain.minValue, maxValue: domain.maxValue };
-        tv.candles.applyOptions({
-          lastValueVisible: true,
-          priceLineVisible: true,
-          autoscaleInfoProvider: () => ({ priceRange: range }),
-        });
-        tv.overlay.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
-        tv.emaLine?.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
-        tv.bandHigh.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
-        tv.bandLow.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: range }) });
-        const scale = tv.candles.priceScale();
-        const margins = { top: 0.08, bottom: showVolume ? 0.2 : 0.06 };
-        if (chartState.log) {
-          scale.applyOptions({ autoScale: true, scaleMargins: margins });
-        } else {
-          scale.applyOptions({ autoScale: false, scaleMargins: margins });
-          if (scale.setVisibleRange) scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
-        }
+        applyPlotScale(tv, { minValue: domain.minValue, maxValue: domain.maxValue }, showVolume);
       }
 
       function renderChart() {
@@ -2742,7 +2746,7 @@ ${ticketPanelMarkup("sell")}
               vertLine: { color: "#787b86", labelBackgroundColor: "#2b2f36" },
               horzLine: { color: "#787b86", labelBackgroundColor: "#2b2f36" },
             },
-            rightPriceScale: { borderColor: "#2b2f36", scaleMargins: { top: 0.08, bottom: 0.04 } },
+            rightPriceScale: { borderColor: "#2b2f36", scaleMargins: { top: 0.30, bottom: 0.40 } },
             timeScale: { borderColor: "#2b2f36", timeVisible: true, secondsVisible: false, rightOffset: 6 },
             localization: { priceFormatter: (price) => formatTick(price) },
           });
@@ -2765,7 +2769,7 @@ ${ticketPanelMarkup("sell")}
             lastValueVisible: false,
             priceScaleId: "vol",
           });
-          volume.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 }, borderVisible: false });
+          volume.priceScale().applyOptions({ scaleMargins: { top: 0.60, bottom: 0 }, borderVisible: false });
           const lineOpts = (color, width = 2) => ({
             color,
             lineWidth: width,
@@ -2850,10 +2854,7 @@ ${ticketPanelMarkup("sell")}
             const domain = recentPriceDomain(visible.map((row) => ({ ...row, value: row.close })), chartState.data.livePrice, {
               visibleOnly: true,
             });
-            const scale = chartState.tv.candles.priceScale();
-            if (!chartState.log && scale.setVisibleRange) {
-              scale.setVisibleRange({ from: domain.minValue, to: domain.maxValue });
-            }
+            applyPlotScale(chartState.tv, { minValue: domain.minValue, maxValue: domain.maxValue }, chartState.volume !== false);
           });
           chart.subscribeClick((param) => {
             const candle = param.seriesData?.get(candles);

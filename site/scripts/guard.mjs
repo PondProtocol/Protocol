@@ -1018,6 +1018,11 @@ check(
     tradeJsText.includes("paintLedgerChart") &&
     tradeJsText.includes("printsToCandles") &&
     tradeJsText.includes("recentPriceDomain") &&
+    tradeJsText.includes("plotScaleMargins") &&
+    tradeJsText.includes("applyPlotScale") &&
+    tradeJsText.includes("top: 0.30") &&
+    tradeJsText.includes("bottom: showVolume ? 0.40") &&
+    tradeJsText.includes("top: showVolume ? 0.60") &&
     tradeJsText.includes("LightweightCharts") &&
     tradeJsText.includes("createChart") &&
     tradeJsText.includes("CandlestickSeries") &&
