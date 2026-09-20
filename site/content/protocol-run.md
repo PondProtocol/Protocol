@@ -1,35 +1,88 @@
-## Protocol
+# Protocol
 
-Pond Protocol is decentralized and **Agent-AI-run**.
+This is the desk and ops page. It lists the master / feed wallet and
+Bird Hunt 15. It is not the home page.
 
-The ledger holds the rules that matter: issuer identity, permanent No Freeze,
-and no clawback. Agents run the protocol work. This page does not create a
-ledger link between $PND and $rPND, and it does not issue tokens.
+## Master / feed wallet
 
-<div class="team-intro">
-  <p class="start-eyebrow">Agent-AI-run</p>
-  <h2>How Pond Protocol stays decentralized.</h2>
-  <p>Agent Tadpole runs Pond. Greenhead Labs supports the work. Neither one
-  can freeze a holder or claw tokens back. Those powers are already off.</p>
+Tadpole's rPND… address. Nathan funds 50B $PND + liquidity XRP here. Not
+one of the 15 desk seats.
+
+<div class="desk-master">
+  <p class="start-eyebrow">Master / feed</p>
+  <p class="desk-master-addr"><code>rPND…</code></p>
+  <p>Tadpole's rPND… address. Nathan funds 50B $PND + liquidity XRP here.
+  Not one of the 15 desk seats.</p>
 </div>
 
-<div class="team-grid">
-  <div class="team-card"><span class="team-card-mark">01</span><strong>On-ledger rules</strong><p>Identity is <strong>(PND, issuer address)</strong>. The issuer is <code>{{issuerAddress}}</code>. The treasury is <code>{{treasuryAddress}}</code>. Anyone can issue the ticker <code>PND</code>. Only this issuer is ours.</p></div>
-  <div class="team-card"><span class="team-card-mark">02</span><strong>No freeze, no clawback</strong><p>Permanent No Freeze is set. Clawback is off. That is the decentralized IOU posture. It is not a promise we can later reverse from this site.</p></div>
-  <div class="team-card"><span class="team-card-mark">03</span><strong>Agent-AI-run</strong><p>Protocol operations are Agent-run. Agents draft and publish. They do not ask you for a seed. Official Xaman is unchanged: SignIn on Trade from Login or Launch, secrets only on Autoscale.</p></div>
-  <div class="team-card"><span class="team-card-mark">04</span><strong>Public issuer</strong><p>Copy the issuer from Official links. $PND is Testnet-issued; Mainnet has not issued. $rPND is not live.</p></div>
+## Bird Hunt 15
+
+Nest ×5 / Current ×5 / Perch ×5. They draw inventory from master under
+Tadpole's ops rules; they are not the 50B treasury seat.
+
+<table class="desk-table">
+  <thead>
+    <tr>
+      <th>Team Nest — Liquidity</th>
+      <th>Team Current — Flow</th>
+      <th>Team Perch — Holder</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>nest_lp_core</code> Core AMM LP</td>
+      <td><code>cur_twap</code> TWAP iceberg <span class="desk-gate">soft-gated</span></td>
+      <td><code>perch_treasury</code> Treasury / ops payouts sleeve</td>
+    </tr>
+    <tr>
+      <td><code>nest_lp_aggro</code> Aggressive AMM LP <span class="desk-gate">soft-gated</span></td>
+      <td><code>cur_dip</code> Dip buyer</td>
+      <td><code>perch_rewards</code> Rewards sleeve</td>
+    </tr>
+    <tr>
+      <td><code>nest_spread</code> Tight two-sided spread maker</td>
+      <td><code>cur_rip</code> Rip / breakout harvester <span class="desk-gate">soft-gated</span></td>
+      <td><code>perch_buyback</code> Fee buyback <span class="desk-gate">soft-gated</span></td>
+    </tr>
+    <tr>
+      <td><code>nest_grid</code> Grid ladder around mid</td>
+      <td><code>cur_arb</code> Cross-path arb</td>
+      <td><code>perch_claim</code> Claim / x402 path sleeve</td>
+    </tr>
+    <tr>
+      <td><code>nest_skew</code> Inventory-aware skew</td>
+      <td><code>cur_taker</code> Net taker <span class="desk-gate desk-gate-hard">hard-gated / kill switch</span></td>
+      <td><code>perch_backstop</code> Emergency backstop</td>
+    </tr>
+  </tbody>
+</table>
+
+## Team Nest — Liquidity
+
+<div class="desk-roster">
+  <div class="desk-row"><code>nest_lp_core</code><strong>Core AMM LP</strong></div>
+  <div class="desk-row"><code>nest_lp_aggro</code><strong>Aggressive AMM LP <span class="desk-gate">soft-gated</span></strong></div>
+  <div class="desk-row"><code>nest_spread</code><strong>Tight two-sided spread maker</strong></div>
+  <div class="desk-row"><code>nest_grid</code><strong>Grid ladder around mid</strong></div>
+  <div class="desk-row"><code>nest_skew</code><strong>Inventory-aware skew</strong></div>
 </div>
 
-<div class="join">
-<a class="join-card" href="/Pond/"><strong>Pond</strong><span>How the company operates. Supported by Greenhead Labs. Run by Agent Tadpole.</span></a>
-<a class="join-card" href="/links/"><strong>Official links</strong><span>Issuer, treasury, TOML, explorers. Nothing else is official.</span></a>
-<a class="join-card" href="/trade/"><strong>Trade</strong><span>Testnet terminal. Not a live mainnet DEX.</span></a>
+## Team Current — Flow
+
+<div class="desk-roster">
+  <div class="desk-row"><code>cur_twap</code><strong>TWAP iceberg <span class="desk-gate">soft-gated</span></strong></div>
+  <div class="desk-row"><code>cur_dip</code><strong>Dip buyer</strong></div>
+  <div class="desk-row"><code>cur_rip</code><strong>Rip / breakout harvester <span class="desk-gate">soft-gated</span></strong></div>
+  <div class="desk-row"><code>cur_arb</code><strong>Cross-path arb</strong></div>
+  <div class="desk-row"><code>cur_taker</code><strong>Net taker <span class="desk-gate desk-gate-hard">hard-gated / kill switch</span></strong></div>
 </div>
 
-## Current state
+## Team Perch — Holder
 
-**Testnet phase.** 100B $PND is issued to the Testnet treasury. Faucet XRP is
-worthless. Mainnet has not issued $PND. $rPND has not been created.
-
-Pond the company is on [Pond](/Pond/). Official URLs are on
-[Official links](/links/).
+<div class="desk-roster">
+  <div class="desk-row"><code>perch_treasury</code><strong>Treasury / ops payouts sleeve</strong></div>
+  <div class="desk-row"><code>perch_rewards</code><strong>Rewards sleeve</strong></div>
+  <div class="desk-row"><code>perch_buyback</code><strong>Fee buyback <span class="desk-gate">soft-gated</span></strong></div>
+  <div class="desk-row"><code>perch_claim</code><strong>Claim / x402 path sleeve</strong></div>
+  <div class="desk-row"><code>perch_backstop</code><strong>Emergency backstop</strong></div>
+</div>

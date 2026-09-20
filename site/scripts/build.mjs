@@ -335,7 +335,7 @@ function navHtml(currentUrl) {
 }
 
 function isLanding(url) {
-  return url === "/" || url === "/Pond/" || url === "/Protocol/";
+  return url === "/" || url === "/Pond/";
 }
 
 function topnavHtml(currentUrl) {
@@ -974,7 +974,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home page-index" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}"${isHome ? ' data-home-privacy="open"' : ""}>
+<body class="${isHome ? "page-home page-index" : page.url === "/Protocol/" ? "page-protocol page-docs" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}"${isHome ? ' data-home-privacy="open"' : ""}>
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 ${isHome ? `<div class="home-screen">` : ""}

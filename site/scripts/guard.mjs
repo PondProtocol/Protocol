@@ -1574,44 +1574,72 @@ check(
 const pondHtml = existsSync(join(DIST_DIR, "Pond", "index.html"))
   ? readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8")
   : "";
-const protocolLandingHtml = existsSync(join(DIST_DIR, "Protocol", "index.html"))
+const protocolHtml = existsSync(join(DIST_DIR, "Protocol", "index.html"))
   ? readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8")
   : "";
+const protocolArticle = protocolHtml.match(/<article class="prose">([\s\S]*?)<\/article>/)?.[1] ?? "";
+const protocolText = asText(protocolHtml);
 check(
-  "Pond and Protocol pages reuse the home hero chrome",
+  "Pond page reuses the home hero chrome",
   pondHtml.includes('class="hero-kicker">Pond') &&
-    protocolLandingHtml.includes('class="hero-kicker">Pond') &&
     pondHtml.includes("Join the Flock at<br>the Pond") &&
-    protocolLandingHtml.includes("Join the Flock at<br>the Pond") &&
     !pondHtml.includes("Join the Flock at<br>The Pond") &&
-    !protocolLandingHtml.includes("Join the Flock at<br>The Pond") &&
     pondHtml.includes("hero-topo") &&
-    protocolLandingHtml.includes("hero-topo") &&
     pondHtml.includes(config.site.issuerAddress) &&
-    protocolLandingHtml.includes(config.site.issuerAddress) &&
     pondHtml.includes(config.site.treasuryAddress) &&
-    protocolLandingHtml.includes(config.site.treasuryAddress) &&
     pondHtml.includes(config.site.operationsAddress) &&
-    protocolLandingHtml.includes(config.site.operationsAddress) &&
     pondHtml.includes('class="hero-pages"') &&
-    protocolLandingHtml.includes('class="hero-pages"') &&
     !pondHtml.includes("page-index") &&
-    !protocolLandingHtml.includes("page-index") &&
     !pondHtml.includes("home-screen") &&
-    !protocolLandingHtml.includes("home-screen") &&
     pondHtml.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
-    protocolLandingHtml.includes(`https://bithomp.com/explorer/${config.site.operationsAddress}`) &&
     /Agent Tadpole/i.test(asText(pondHtml)) &&
-    /Greenhead Labs/i.test(asText(pondHtml)) &&
-    /Agent-AI-run/i.test(asText(protocolLandingHtml)) &&
-    /No Freeze/i.test(asText(protocolLandingHtml)),
+    /Greenhead Labs/i.test(asText(pondHtml)),
 );
 check(
-  "Pond and Protocol landings keep the short 2x2 cards",
+  "Pond landing keeps the short 2x2 cards",
   pondHtml.includes('<a class="hero-page hero-page-pond" href="/Pond/">') &&
-    protocolLandingHtml.includes('<a class="hero-page hero-page-protocol" href="/Protocol/">') &&
-    !pondHtml.includes("hero-page-go") &&
-    !protocolLandingHtml.includes("hero-page-go"),
+    !pondHtml.includes("hero-page-go"),
+);
+check(
+  "Protocol is the desk and ops page, not a home clone",
+  protocolHtml.includes("page-protocol") &&
+    protocolHtml.includes("Bird Hunt 15") &&
+    protocolHtml.includes("desk-table") &&
+    protocolHtml.includes("rPND…") &&
+    protocolHtml.includes("nest_lp_core") &&
+    protocolHtml.includes("nest_lp_aggro") &&
+    protocolHtml.includes("nest_spread") &&
+    protocolHtml.includes("nest_grid") &&
+    protocolHtml.includes("nest_skew") &&
+    protocolHtml.includes("cur_twap") &&
+    protocolHtml.includes("cur_dip") &&
+    protocolHtml.includes("cur_rip") &&
+    protocolHtml.includes("cur_arb") &&
+    protocolHtml.includes("cur_taker") &&
+    protocolHtml.includes("perch_treasury") &&
+    protocolHtml.includes("perch_rewards") &&
+    protocolHtml.includes("perch_buyback") &&
+    protocolHtml.includes("perch_claim") &&
+    protocolHtml.includes("perch_backstop") &&
+    /Master \/ feed wallet/i.test(protocolText) &&
+    /Team Nest/i.test(protocolText) &&
+    /Team Current/i.test(protocolText) &&
+    /Team Perch/i.test(protocolText) &&
+    /50B \$PND/i.test(protocolText) &&
+    !protocolHtml.includes('class="hero"') &&
+    !protocolHtml.includes("hero-pages") &&
+    !protocolHtml.includes("Join the Flock") &&
+    !protocolHtml.includes("How Pond Protocol stays decentralized") &&
+    !protocolHtml.includes("team-grid") &&
+    !protocolHtml.includes("join-card") &&
+    !/Agent-AI-run/i.test(protocolText),
+);
+check(
+  "Protocol master feed keeps the unpublished rPND… wording",
+  protocolArticle.includes("rPND…") &&
+    !protocolArticle.includes(config.site.issuerAddress) &&
+    !protocolArticle.includes(config.site.treasuryAddress) &&
+    !protocolArticle.includes(config.site.operationsAddress),
 );
 
 /* ------------------------------------------------------------------ report */
