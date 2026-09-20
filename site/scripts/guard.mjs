@@ -687,7 +687,7 @@ check(
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
-    /bottom:\s*calc\(var\(--home-frame\) \+ var\(--privacy-reserve-h\)\)/.test(
+    /bottom:\s*calc\(var\(--home-frame\) \+ var\(--home-footer-h\) \+ var\(--privacy-reserve-h\)\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
     ) &&
     /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
@@ -696,6 +696,28 @@ check(
     ) &&
     /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
+);
+check(
+  "home has a centered Greenhead Labs legal footer",
+  indexHtml.includes('class="home-legal"') &&
+    indexHtml.includes("data-home-legal") &&
+    indexHtml.includes("© 2026 Greenhead Labs. All rights reserved.") &&
+    indexHtml.includes("pond.greenhead.io") &&
+    indexHtml.includes("Testnet $PND site, docs, and DEX.") &&
+    indexHtml.includes(
+      "Greenhead Labs LLC is a private company and does not offer investment products, financial services, securities, or custodial services.",
+    ) &&
+    !indexHtml.includes("Mainnet issuance") &&
+    !/home-legal[\s\S]*issued on Mainnet/i.test(indexHtml) &&
+    !readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8").includes("home-legal") &&
+    !readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8").includes("home-legal") &&
+    !tradeHtml.includes("home-legal") &&
+    !readFileSync(join(DIST_DIR, "profile", "index.html"), "utf8").includes("home-legal") &&
+    stylesText.includes("--home-footer-h") &&
+    /position:\s*absolute/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
+    /text-align:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
+    /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
+    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))),
 );
 check(
   "home Private Browsing notice is a compact overlay card",

@@ -679,6 +679,14 @@ function heroPagesHtml(home = false) {
     .join("")}</nav>`;
 }
 
+function homeLegalHtml() {
+  const host = displayDomain;
+  return `<footer class="home-legal" data-home-legal>
+  <p class="home-legal-copy">© 2026 Greenhead Labs. All rights reserved. · ${esc(host)}</p>
+  <p class="home-legal-disclaimer">Testnet $PND site, docs, and DEX. Greenhead Labs LLC is a private company and does not offer investment products, financial services, securities, or custodial services.</p>
+</footer>`;
+}
+
 function heroHtml(home = false) {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
@@ -1002,7 +1010,7 @@ ${isHome ? `<div class="home-screen">` : ""}
 ${banner}
 ${protocolSnapshotHtml()}
 ${landing ? heroHtml(isHome) : ""}
-${isHome ? `</div>` : ""}
+${isHome ? `${homeLegalHtml()}</div>` : ""}
 <div class="shell">
   <main id="main">
     ${landing ? "" : tocHtml(html)}
