@@ -767,7 +767,7 @@ check(
     /position:\s*absolute/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /text-align:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
-    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))) &&
+    /display:\s*block/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))) &&
     stylesText.includes(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer") &&
     /2 \* \(min\(24rem/.test(
       stylesText.slice(stylesText.indexOf(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer")),
@@ -902,8 +902,23 @@ check(
     stylesText.includes("brand-word"),
 );
 check(
-  "header clusters use rounded square boxes",
-  /border-radius:\s*0\.55rem/.test(stylesText.slice(stylesText.indexOf(".brand-cluster"))) &&
+  "home shows the site footer after the page walk",
+  indexHtml.includes('<footer class="footer">') &&
+    indexHtml.includes("footer-column") &&
+    indexHtml.includes("Markets &amp; assets") &&
+    indexHtml.includes("Back to top") &&
+    indexHtml.includes("Documentation licensed Apache-2.0.") &&
+    indexHtml.includes("The issuer address is the source of truth for $PND identity.") &&
+    indexHtml.indexOf('id="start-here"') < indexHtml.indexOf('<footer class="footer">') &&
+    indexHtml.indexOf('id="legal-stop"') < indexHtml.indexOf('<footer class="footer">') &&
+    /display:\s*block/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))) &&
+    !/display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"), stylesText.indexOf(".page-index .footer") + 80)),
+);
+check(
+  "left header cluster has no rounded box",
+  !/border:\s*1px/.test(stylesText.slice(stylesText.indexOf(".brand-cluster"), stylesText.indexOf(".site-switcher"))) &&
+    !/border-radius:/.test(stylesText.slice(stylesText.indexOf(".brand-cluster"), stylesText.indexOf(".site-switcher"))) &&
+    !/background:\s*rgb/.test(stylesText.slice(stylesText.indexOf(".brand-cluster"), stylesText.indexOf(".site-switcher"))) &&
     /border-radius:\s*0\.55rem/.test(stylesText.slice(stylesText.indexOf(".topbar-account-group"))) &&
     stylesText.includes(".site-switcher-panel") &&
     !stylesText.includes(".powered-by-return"),
