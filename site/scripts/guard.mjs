@@ -698,6 +698,17 @@ check(
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
 check(
+  "home Private Browsing notice is a compact overlay card",
+  /--privacy-reserve-h:\s*0px/.test(stylesText.slice(stylesText.indexOf(".page-index {"))) &&
+    /width:\s*min\(calc\(100vw - 2rem\), 24rem\)/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .privacy-notice")),
+    ) &&
+    /max-width:\s*min\(calc\(100vw - 2rem\), 24rem\)/.test(
+      stylesText.slice(stylesText.indexOf(".page-index .privacy-notice")),
+    ) &&
+    !stylesText.includes("calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2)"),
+);
+check(
   "home 2x2 tiles are translucent over the Wyoming topo",
   /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&

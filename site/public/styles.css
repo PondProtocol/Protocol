@@ -3930,8 +3930,9 @@ code.addr {
 }
 
 .page-index .privacy-notice {
-  width: calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2);
-  max-width: none;
+  /* Compact greenhead.io card. Overlay — do not match the 2×2 column width. */
+  width: min(calc(100vw - 2rem), 24rem);
+  max-width: min(calc(100vw - 2rem), 24rem);
 }
 
 .page-index .hero-copy {
@@ -4343,8 +4344,8 @@ code.addr {
 
   .page-index .privacy-notice {
     padding: 0.55rem 0.65rem 0.6rem;
-    width: calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2);
-    max-width: none;
+    width: min(calc(100vw - 2rem), 24rem);
+    max-width: min(calc(100vw - 2rem), 24rem);
   }
 
   .page-index .privacy-notice-copy {
