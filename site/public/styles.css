@@ -3918,12 +3918,23 @@ code.addr {
 }
 
 .page-index .home-legal-disclaimer {
-  max-width: min(38rem, calc(100vw - min(24rem, calc(100vw - 2rem)) - var(--home-frame) - 2.5rem));
+  max-width: min(38rem, calc(100vw - 2 * var(--home-frame) - 2rem));
   margin: 0.25rem 0 0;
   padding: 0 1rem;
   color: rgb(255 255 255 / 0.3);
   font-size: 9px;
   line-height: 1.625;
+}
+
+/* Centered: reserve the compact 24rem card on both sides of center. */
+.page-index[data-home-privacy="open"] .home-legal-disclaimer {
+  max-width: min(
+    38rem,
+    max(
+      16rem,
+      calc(100vw - 2 * (min(24rem, calc(100vw - 2rem)) + var(--home-frame) + 0.75rem))
+    )
+  );
 }
 
 .page-index .footer {

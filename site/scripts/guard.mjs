@@ -717,7 +717,11 @@ check(
     /position:\s*absolute/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /text-align:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-legal"))) &&
-    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))),
+    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .footer"))) &&
+    stylesText.includes(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer") &&
+    /2 \* \(min\(24rem/.test(
+      stylesText.slice(stylesText.indexOf(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer")),
+    ),
 );
 check(
   "home Private Browsing notice is a compact overlay card",
