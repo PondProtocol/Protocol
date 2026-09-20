@@ -710,12 +710,41 @@ check(
     indexHtml.includes("hero-page-trade") &&
     indexHtml.includes("hero-page-protocol") &&
     /hero-page-pond[\s\S]*?rgb\(74 144 217 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-profile[\s\S]*?rgb\(168 140 196 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-trade[\s\S]*?rgb\(0 180 150 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-protocol[\s\S]*?rgb\(214 176 72 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-profile[\s\S]*?rgb\(90 122 154 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-trade[\s\S]*?rgb\(56 148 186 \/ 0\.75\)/.test(stylesText) &&
+    /hero-page-protocol[\s\S]*?rgb\(48 86 140 \/ 0\.75\)/.test(stylesText) &&
+    !stylesText.includes("rgb(168 140 196 / 0.75)") &&
+    !stylesText.includes("rgb(0 180 150 / 0.75)") &&
+    !stylesText.includes("rgb(214 176 72 / 0.75)") &&
     !/hero-page \{[\s\S]*?background:\s*rgb\(236 242 248 \/ 0\.58\)/.test(
       stylesText.slice(stylesText.indexOf(".page-index .hero-page")),
     ),
+);
+check(
+  "home 2x2 tiles carry page facts and a top-right path",
+  heroPages.includes("hero-page-go") &&
+    heroPages.includes('href="/Pond/"') &&
+    heroPages.includes('href="/profile/"') &&
+    heroPages.includes('href="/trade/"') &&
+    heroPages.includes('href="/Protocol/"') &&
+    heroPages.includes(">How Pond operates.<") &&
+    heroPages.includes("Pond is the company. Greenhead Labs supports it. Agent Tadpole runs it.") &&
+    heroPages.includes("Mainnet has not issued $PND.") &&
+    heroPages.includes("Identity is the pair (PND, issuer address).") &&
+    heroPages.includes("Permanent No Freeze. Clawback is off.") &&
+    heroPages.includes("Sign in with official Xaman to open your account page.") &&
+    heroPages.includes("Logged-out visitors do not see handles or profile fields.") &&
+    !heroPages.includes("Official Xaman SignIn stays on Trade") &&
+    heroPages.includes("XRPL Testnet. This page reads the validated ledger.") &&
+    heroPages.includes("It does not sign or submit.") &&
+    heroPages.includes("Treasury holds 100,000,000,000 PND.") &&
+    heroPages.includes("Testnet XRP is faucet-issued and worthless.") &&
+    heroPages.includes("Mainnet still has no $PND issued.") &&
+    heroPages.includes("Pond Protocol is decentralized and Agent-AI-run.") &&
+    heroPages.includes("Permanent No Freeze is set. Clawback is off.") &&
+    heroPages.includes("Agents run the protocol work. They do not ask you for a seed.") &&
+    heroPages.includes("$PND is Testnet-issued; Mainnet has not issued. $rPND is not live.") &&
+    /hero-page-go[\s\S]*?margin:\s*0 0 0 auto/.test(stylesText),
 );
 check(
   "trade page does not use traffic-light disclaimer colors",
@@ -1520,6 +1549,13 @@ check(
     /Greenhead Labs/i.test(asText(pondHtml)) &&
     /Agent-AI-run/i.test(asText(protocolLandingHtml)) &&
     /No Freeze/i.test(asText(protocolLandingHtml)),
+);
+check(
+  "Pond and Protocol landings keep the short 2x2 cards",
+  pondHtml.includes('<a class="hero-page hero-page-pond" href="/Pond/">') &&
+    protocolLandingHtml.includes('<a class="hero-page hero-page-protocol" href="/Protocol/">') &&
+    !pondHtml.includes("hero-page-go") &&
+    !protocolLandingHtml.includes("hero-page-go"),
 );
 
 /* ------------------------------------------------------------------ report */
