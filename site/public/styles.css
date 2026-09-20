@@ -6107,7 +6107,9 @@ body:has([data-pond-profile]) .profile-card {
 /* ------------------------------------------------------------------ protocol desks */
 
 body.page-protocol .prose,
-body.page-protocol .toc {
+body.page-protocol .toc,
+body.page-pond .prose,
+body.page-pond .toc {
   max-width: 64rem;
 }
 

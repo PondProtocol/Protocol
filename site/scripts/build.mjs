@@ -335,7 +335,16 @@ function navHtml(currentUrl) {
 }
 
 function isLanding(url) {
-  return url === "/" || url === "/Pond/";
+  return url === "/";
+}
+
+function pageBodyClass(page) {
+  if (page.url === "/") return "page-home page-index";
+  if (page.url === "/Pond/") return "page-pond page-docs";
+  if (page.url === "/Protocol/") return "page-protocol page-docs";
+  if (page.url === "/trade/") return "page-trade page-docs";
+  if (page.url.startsWith("/profile/")) return "page-profile page-docs";
+  return "page-docs";
 }
 
 function topnavHtml(currentUrl) {
@@ -936,7 +945,7 @@ function layout(page, html) {
       }. Edit it there, not here.</p>`
     : "";
   // Sibling-repo token-spec still names a 90B Treasury escrow. That is not the
-  // public schedule. Authored /vesting/ is the high-level split. Never invent
+  // public schedule. Authored /Pond/ is the high-level split. Never invent
   // a claim UI from this notice.
   const lockedNinety =
     /holds the 90\s*(?:B|billion).{0,40}escrow/i.test(page.markdown || "") ||
@@ -949,7 +958,7 @@ function layout(page, html) {
 public, 10 billion team, 80 billion to holders at 10 billion per month from
 2027-01-01 through 2027-08-01, proportional to $PND held. Snapshot plus
 treasury payments, not TokenEscrow, not a claim.
-<a href="/Protocol/">Protocol</a>.</p>
+<a href="/Pond/">Pond</a>.</p>
 </div>`
     : "";
 
@@ -982,7 +991,7 @@ ${canonical}
 <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512">
 <link rel="apple-touch-icon" href="/icon-512.png">
 </head>
-<body class="${isHome ? "page-home page-index" : page.url === "/Protocol/" ? "page-protocol page-docs" : landing ? "page-home" : page.url === "/trade/" ? "page-trade page-docs" : page.url.startsWith("/profile/") ? "page-profile page-docs" : "page-docs"}"${isHome ? ' data-home-privacy="open"' : ""}>
+<body class="${pageBodyClass(page)}"${isHome ? ' data-home-privacy="open"' : ""}>
 <div id="site-view">
 <a class="skip" href="#main">Skip to content</a>
 ${isHome ? `<div class="home-screen">` : ""}
