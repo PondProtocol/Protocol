@@ -697,6 +697,7 @@ check(
     /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
     /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
 );
+const homeLaunchHtml = indexHtml.match(/<p class="hero-actions home-launch"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "home first window is a centered logo on the topo",
   indexHtml.includes('class="home-window-logo"') &&
@@ -704,8 +705,10 @@ check(
     indexHtml.includes('class="home-logo-mark"') &&
     indexHtml.includes('src="/pond-mark.png"') &&
     !indexHtml.includes('src="/pond-mark.svg"') &&
-    indexHtml.includes(">Pond Protocol</span>") &&
-    indexHtml.includes('href="#pond-board">Launch</a>') &&
+    homeLaunchHtml.includes('href="/Pond/">Pond</a>') &&
+    homeLaunchHtml.includes('href="/Protocol/">Protocol</a>') &&
+    homeLaunchHtml.includes('href="#pond-board">Launch</a>') &&
+    !homeLaunchHtml.includes("Pond Protocol") &&
     !indexHtml.includes('href="#pond-board">Pond Protocol') &&
     existsSync(join(DIST_DIR, "pond-mark.png")) &&
     !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
@@ -715,6 +718,21 @@ check(
     /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-mark"))) &&
     /align-items:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))) &&
     /justify-content:\s*center/.test(stylesText.slice(stylesText.indexOf(".page-index .home-logo-stage"))),
+);
+check(
+  "site header uses the white :P mark beside Pond",
+  indexHtml.includes('class="brand-mark" src="/pond-mark.png"') &&
+    !indexHtml.includes('class="brand-mark" src="/icon-512.png"') &&
+    readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8").includes(
+      'class="brand-mark" src="/pond-mark.png"',
+    ) &&
+    readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8").includes(
+      'class="brand-mark" src="/pond-mark.png"',
+    ) &&
+    tradeHtml.includes('class="brand-mark" src="/pond-mark.png"') &&
+    /object-fit:\s*contain/.test(stylesText.slice(stylesText.indexOf(".brand-mark"))) &&
+    /background:\s*none/.test(stylesText.slice(stylesText.indexOf(".brand-mark"))) &&
+    !/border-radius:\s*50%/.test(stylesText.slice(stylesText.indexOf(".brand-mark"), stylesText.indexOf(".brand-mark") + 220)),
 );
 check(
   "home second window is the moved board on black",

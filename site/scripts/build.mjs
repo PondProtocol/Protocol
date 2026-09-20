@@ -707,8 +707,9 @@ function homeLegalHtml() {
 function homeLogoHtml() {
   return `<div class="home-logo-stage">
     <img class="home-logo-mark" src="/pond-mark.png" width="320" height="281" alt="Pond Protocol">
-    <p class="hero-actions home-launch" role="group" aria-label="Pond Protocol">
-      <span class="button button-quiet">Pond Protocol</span>
+    <p class="hero-actions home-launch" role="group" aria-label="Pond and Protocol">
+      <a class="button button-quiet" href="/Pond/">Pond</a>
+      <a class="button button-quiet" href="/Protocol/">Protocol</a>
       <a class="button" href="#pond-board">Launch</a>
     </p>
   </div>`;
@@ -1020,7 +1021,7 @@ ${heroTopoSvg()}
 ` : ""}
 <header class="topbar">
   <div class="brand-cluster">
-    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/icon-512.png" width="28" height="28" alt=""><span class="brand-word">Pond</span></a>
+    <a class="brand" href="/" aria-label="${esc(site.title)}"><img class="brand-mark" src="/pond-mark.png" width="28" height="25" alt=""><span class="brand-word">Pond</span></a>
     <span class="brand-rule" aria-hidden="true"></span>
     <p class="powered-by">
       <span class="powered-by-label">Powered By Greenhead Labs</span>
