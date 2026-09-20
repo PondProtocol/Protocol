@@ -157,9 +157,9 @@ if (config.site.launchStatus !== "live") {
       (() => {
         const html = readFileSync(index, "utf8");
         return (
-          html.includes("Testnet phase.") &&
-          html.includes("Mainnet has not issued $PND") &&
-          html.includes("100B $PND is issued to the Testnet treasury")
+          html.includes("100B $PND paid to treasury") &&
+          html.includes("$PND is unissued") &&
+          html.includes("Mainnet still has no $PND issued")
         );
       })(),
   );
@@ -568,40 +568,40 @@ check(
     !navJsText.includes("sessionStorage") &&
     navJsText.includes("pond_session"),
 );
-const heroPages = indexHtml.match(/class="hero-pages"[\s\S]*?<\/nav>/)?.[0] ?? "";
-const heroWallets = indexHtml.match(/class="hero-wallets"[\s\S]*?<\/div>/)?.[0] ?? "";
-const heroActions = indexHtml.match(/class="hero-actions"[\s\S]*?<\/p>/)?.[0] ?? "";
+const homeLaunchHtml = indexHtml.match(/<p class="hero-actions home-launch"[\s\S]*?<\/p>/)?.[0] ?? "";
+const homeStartHtml = indexHtml.match(/class="home-start"[\s\S]*?<\/section>/)?.[0] ?? "";
 check(
-  "landing hero does not use a Connect Xaman CTA",
-  heroPages.includes("/Pond/") &&
-    heroPages.includes("/Protocol/") &&
-    !/Connect Xaman/i.test(heroPages) &&
-    !/Connect Xaman/i.test(heroActions),
+  "landing first window does not use a Connect Xaman CTA",
+  homeLaunchHtml.includes('href="/Pond/">Pond</a>') &&
+    homeLaunchHtml.includes('href="/Protocol/">Protocol</a>') &&
+    homeLaunchHtml.includes('href="#start-here">Launch</a>') &&
+    !/Connect Xaman/i.test(homeLaunchHtml),
 );
 check(
-  "hero keeps Pond and Protocol buttons under the wallet chips",
-  heroActions.includes('href="/Pond/"') &&
-    heroActions.includes('href="/Protocol/"') &&
-    heroActions.includes("button-quiet") &&
-    indexHtml.indexOf('class="hero-wallets"') < indexHtml.indexOf('class="hero-actions"') &&
-    indexHtml.indexOf('class="hero-actions"') < indexHtml.indexOf('class="hero-pages"'),
+  "home first window keeps Pond, Protocol, and Launch on the topo",
+  homeLaunchHtml.includes("button-quiet") &&
+    homeLaunchHtml.includes('href="/Pond/"') &&
+    homeLaunchHtml.includes('href="/Protocol/"') &&
+    homeLaunchHtml.includes('href="#start-here"') &&
+    !indexHtml.includes('class="hero-wallets"') &&
+    !indexHtml.includes('class="hero-pages"'),
 );
 check(
-  "hero lists issuer, treasury, and operations on Bithomp",
-  heroWallets.includes("Issuer") &&
-    heroWallets.includes("Treasury") &&
-    heroWallets.includes("Operations") &&
-    heroWallets.includes(`https://bithomp.com/explorer/${config.site.issuerAddress}`) &&
-    heroWallets.includes(`https://bithomp.com/explorer/${config.site.treasuryAddress}`) &&
-    heroWallets.includes(`https://bithomp.com/explorer/${config.site.operationsAddress}`) &&
-    !heroWallets.includes("Canonical issuer"),
+  "home page walk still names issuer, treasury, and operations",
+  indexHtml.includes("Issuer") &&
+    indexHtml.includes("Treasury") &&
+    indexHtml.includes("Operations") &&
+    indexHtml.includes(config.site.issuerAddress) &&
+    indexHtml.includes(config.site.treasuryAddress) &&
+    indexHtml.includes(config.site.operationsAddress) &&
+    !indexHtml.includes("Canonical issuer"),
 );
 check(
-  "hero has a 2x2 box for Pond, Profile, Trade, and Protocol",
-  heroPages.includes('href="/Pond/"') &&
-    heroPages.includes('href="/profile/"') &&
-    heroPages.includes('href="/trade/"') &&
-    heroPages.includes('href="/Protocol/"'),
+  "Start here cards link Pond, Protocol, Trade, and Official links",
+  homeStartHtml.includes('href="/Pond/"') &&
+    homeStartHtml.includes('href="/Protocol/"') &&
+    homeStartHtml.includes('href="/trade/"') &&
+    homeStartHtml.includes('href="/links/"'),
 );
 
 const tradePage = join(DIST_DIR, "trade", "index.html");
@@ -669,35 +669,16 @@ check(
 const stylesCss = join(DIST_DIR, "styles.css");
 const stylesText = existsSync(stylesCss) ? readFileSync(stylesCss, "utf8") : "";
 check(
-  "hero page grid is a 2x2 box",
-  stylesText.includes(".hero-pages") &&
-    /grid-template-columns:\s*1fr 1fr/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))) &&
-    /min-height:\s*32rem/.test(stylesText.slice(stylesText.indexOf(".hero-pages"))) &&
-    /min-height:\s*13\.5rem/.test(stylesText.slice(stylesText.indexOf(".hero-page"))),
-);
-check(
-  "home hero frame matches the Private Browsing dock",
+  "home first window frame matches the Private Browsing dock",
   indexHtml.includes('class="page-home page-index"') &&
     indexHtml.includes('class="home-screen"') &&
     stylesText.includes("--home-frame: clamp(") &&
     stylesText.includes("--home-scale") &&
     stylesText.includes("--privacy-reserve-h") &&
-    stylesText.includes("container-name: home-hero") &&
-    stylesText.includes(".page-index .hero-inner") &&
     /padding:\s*0/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen"))) &&
     /max-height:\s*100svh/.test(stylesText.slice(stylesText.indexOf(".page-index .home-window-logo"))) &&
-    /top:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-inner"))) &&
-    /bottom:\s*calc\(var\(--home-frame\) \+ var\(--home-footer-h\) \+ var\(--privacy-reserve-h\)\)/.test(
-      stylesText.slice(stylesText.indexOf(".page-index .hero-inner")),
-    ) &&
-    /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))) &&
-    /grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/.test(
-      stylesText.slice(stylesText.indexOf(".page-index .hero-main")),
-    ) &&
-    /height:\s*100%/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /position:\s*static/.test(stylesText.slice(stylesText.indexOf(".page-index .hero .hero-kicker"))),
+    /right:\s*var\(--home-frame\)/.test(stylesText.slice(stylesText.indexOf(".page-index .privacy-dock"))),
 );
-const homeLaunchHtml = indexHtml.match(/<p class="hero-actions home-launch"[\s\S]*?<\/p>/)?.[0] ?? "";
 check(
   "home first window is a centered logo on the topo",
   indexHtml.includes('class="home-window-logo"') &&
@@ -707,9 +688,9 @@ check(
     !indexHtml.includes('src="/pond-mark.svg"') &&
     homeLaunchHtml.includes('href="/Pond/">Pond</a>') &&
     homeLaunchHtml.includes('href="/Protocol/">Protocol</a>') &&
-    homeLaunchHtml.includes('href="#pond-board">Launch</a>') &&
+    homeLaunchHtml.includes('href="#start-here">Launch</a>') &&
     !homeLaunchHtml.includes("Pond Protocol") &&
-    !indexHtml.includes('href="#pond-board">Pond Protocol') &&
+    !indexHtml.includes('href="#pond-board"') &&
     existsSync(join(DIST_DIR, "pond-mark.png")) &&
     !existsSync(join(DIST_DIR, "pond-mark.svg")) &&
     readFileSync(join(DIST_DIR, "pond-mark.png")).subarray(0, 8).equals(
@@ -735,13 +716,13 @@ check(
     !/border-radius:\s*50%/.test(stylesText.slice(stylesText.indexOf(".brand-mark"), stylesText.indexOf(".brand-mark") + 220)),
 );
 check(
-  "home second window is the moved board on black",
-  indexHtml.includes('id="pond-board"') &&
-    indexHtml.includes('class="hero home-window-board"') &&
-    indexHtml.includes('class="hero-kicker"') &&
-    /background:\s*#000/.test(stylesText.slice(stylesText.indexOf(".page-index .home-window-board"))) &&
-    /background:\s*#000/.test(stylesText.slice(stylesText.indexOf(".page-index .home-screen .hero"))) &&
-    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))),
+  "home has no black second-window board",
+  !indexHtml.includes('id="pond-board"') &&
+    !indexHtml.includes("home-window-board") &&
+    !indexHtml.includes('class="hero-kicker"') &&
+    !indexHtml.includes('class="hero-pages"') &&
+    !indexHtml.includes("Join the Flock") &&
+    !stylesText.includes(".page-index .home-window-board"),
 );
 check(
   "home has a centered Greenhead Labs legal footer",
@@ -767,7 +748,9 @@ check(
     stylesText.includes(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer") &&
     /2 \* \(min\(24rem/.test(
       stylesText.slice(stylesText.indexOf(".page-index[data-home-privacy=\"open\"] .home-legal-disclaimer")),
-    ),
+    ) &&
+    indexHtml.indexOf('class="home-window-logo"') < indexHtml.indexOf("data-home-legal") &&
+    indexHtml.indexOf("data-home-legal") < indexHtml.indexOf('id="start-here"'),
 );
 check(
   "home Private Browsing notice is a compact overlay card",
@@ -781,73 +764,37 @@ check(
     !stylesText.includes("calc((100vw - 2 * var(--home-frame) - var(--home-grid-gap)) / 2)"),
 );
 check(
-  "home 2x2 tiles stay the same size on the black board",
-  /background:\s*transparent/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /backdrop-filter:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /aspect-ratio:\s*1\s*\/\s*1/.test(stylesText.slice(stylesText.indexOf(".page-index .hero-pages"))) &&
-    /--home-grid-gap:\s*1\.4rem/.test(stylesText.slice(stylesText.indexOf(".page-index {"))) &&
-    stylesText.includes(".page-index .home-window-board .hero-pages") &&
-    /aspect-ratio:\s*1\s*\/\s*1/.test(
-      stylesText.slice(stylesText.indexOf(".page-index .home-window-board .hero-pages")),
-    ),
+  "home page walk keeps the published page facts after Start here",
+  indexHtml.includes("This is the $PND / $rPND page.") &&
+    indexHtml.includes("tokenomics, treasury, and escrow. It is not the desk page.") &&
+    indexHtml.includes("(PND, issuer address)") &&
+    indexHtml.includes("100B $PND paid to treasury") &&
+    indexHtml.includes("$PND is unissued") &&
+    indexHtml.includes("Not TokenEscrow") &&
+    indexHtml.includes("Sign in with official Xaman to open your account page.") &&
+    indexHtml.includes("Logged-out visitors do not see handles or profile fields.") &&
+    indexHtml.includes("The Login button in the top bar opens Trade. After you sign in it says Launch.") &&
+    indexHtml.includes("Official connect is WalletConnect or Xaman only.") &&
+    indexHtml.includes("We do not store seeds or private keys.") &&
+    !indexHtml.includes("Official Xaman SignIn stays on Trade") &&
+    indexHtml.includes("This page reads the validated ledger.") &&
+    indexHtml.includes("It does not sign or submit.") &&
+    indexHtml.includes("100,000,000,000 PND") &&
+    indexHtml.includes("Same r-address as mainnet.") &&
+    indexHtml.includes("Testnet XRP is faucet-issued and worthless.") &&
+    indexHtml.includes("Mainnet still has no $PND issued.") &&
+    indexHtml.includes("This is the desk and ops page.") &&
+    indexHtml.includes("Bird Hunt 15") &&
+    indexHtml.includes("Nest ×5 / Current ×5 / Perch ×5."),
 );
 check(
-  "home 2x2 tiles each have a unique 75 percent fill",
-  indexHtml.includes("hero-page-pond") &&
-    indexHtml.includes("hero-page-profile") &&
-    indexHtml.includes("hero-page-trade") &&
-    indexHtml.includes("hero-page-protocol") &&
-    /hero-page-pond[\s\S]*?rgb\(74 144 217 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-profile[\s\S]*?rgb\(90 122 154 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-trade[\s\S]*?rgb\(56 148 186 \/ 0\.75\)/.test(stylesText) &&
-    /hero-page-protocol[\s\S]*?rgb\(48 86 140 \/ 0\.75\)/.test(stylesText) &&
-    !stylesText.includes("rgb(168 140 196 / 0.75)") &&
-    !stylesText.includes("rgb(0 180 150 / 0.75)") &&
-    !stylesText.includes("rgb(214 176 72 / 0.75)") &&
-    !/hero-page \{[\s\S]*?background:\s*rgb\(236 242 248 \/ 0\.58\)/.test(
-      stylesText.slice(stylesText.indexOf(".page-index .hero-page")),
-    ),
-);
-check(
-  "home 2x2 tiles carry page facts and a top-right path",
-  heroPages.includes("hero-page-go") &&
-    heroPages.includes('href="/Pond/"') &&
-    heroPages.includes('href="/profile/"') &&
-    heroPages.includes('href="/trade/"') &&
-    heroPages.includes('href="/Protocol/"') &&
-    heroPages.includes(">This is the $PND / $rPND page.<") &&
-    heroPages.includes("Tokenomics, treasury, and escrow. It is not the desk page.") &&
-    heroPages.includes("Identity is (PND, issuer address), never the ticker alone.") &&
-    heroPages.includes("Testnet 100B $PND paid to treasury. Mainnet is unissued.") &&
-    heroPages.includes("Proposed split: 10B public, 10B team, 80B holder drops.") &&
-    heroPages.includes("Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.") &&
-    heroPages.includes("Sign in with official Xaman to open your account page.") &&
-    heroPages.includes("Logged-out visitors do not see handles or profile fields.") &&
-    heroPages.includes("Login in the top bar opens Trade. After you sign in it says Launch.") &&
-    heroPages.includes("Official connect is WalletConnect or Xaman only.") &&
-    heroPages.includes("We do not store seeds or private keys.") &&
-    !heroPages.includes("Official Xaman SignIn stays on Trade") &&
-    heroPages.includes("XRPL Testnet. This page reads the validated ledger.") &&
-    heroPages.includes("It does not sign or submit.") &&
-    heroPages.includes("Treasury holds 100,000,000,000 PND.") &&
-    heroPages.includes("Same r-address as mainnet.") &&
-    heroPages.includes("Testnet XRP is faucet-issued and worthless.") &&
-    heroPages.includes("Mainnet still has no $PND issued.") &&
-    heroPages.includes(">This is the desk and ops page.<") &&
-    heroPages.includes("Master / feed: Tadpole&#39;s rPND… address. Nathan funds 50B $PND + liquidity XRP here.") &&
-    heroPages.includes("Bird Hunt 15: Nest ×5 / Current ×5 / Perch ×5.") &&
-    heroPages.includes("They draw inventory from master under Tadpole&#39;s ops rules.") &&
-    heroPages.includes("Not the 50B treasury seat. Not one of the 15 desk seats.") &&
-    /hero-page-go[\s\S]*?margin:\s*0 0 0 auto/.test(stylesText),
-);
-check(
-  "home Start here is a centered landing band under the hero",
+  "home Start here is a centered landing band under the first window",
   indexHtml.includes('class="home-start"') &&
     indexHtml.includes('id="start-here"') &&
     indexHtml.includes("home-start-cards") &&
     indexHtml.includes("home-start-card") &&
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
-    indexHtml.indexOf('class="hero"') < indexHtml.indexOf('class="home-start"') &&
+    indexHtml.indexOf('class="home-window-logo"') < indexHtml.indexOf('class="home-start"') &&
     !indexHtml.includes('class="join-card"') &&
     !indexHtml.includes("How the company operates") &&
     /display:\s*flex/.test(stylesText.slice(stylesText.indexOf(".page-index .home-start"))) &&
@@ -1463,36 +1410,22 @@ check(
     /body\.page-profile \.profile-card[\s\S]*?margin-inline:\s*auto/.test(stylesText),
 );
 check(
-  "landing hero is a solid color with Start Here below the fold",
+  "landing first window is a solid topo with Start Here below the fold",
   /--hero-solid:\s*#151b21/.test(stylesText) &&
     /min-height:\s*100svh/.test(stylesText) &&
     /min-height:\s*100dvh/.test(stylesText) &&
     !indexHtml.includes("hero-art") &&
     !indexHtml.includes("hero-signal") &&
     !indexHtml.includes('src="/hero.png"') &&
-    indexHtml.includes("hero-kicker") &&
-    indexHtml.includes('<p class="hero-kicker">Pond</p>') &&
-    !indexHtml.includes('<p class="hero-kicker">Pond Protocol</p>') &&
-    /<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>the Pond<\/h1>/.test(indexHtml) &&
-    !/<h1[^>]*hero-tagline[^>]*>Join the Flock at<br>The Pond<\/h1>/.test(indexHtml) &&
-    indexHtml.includes("Testnet phase.") &&
-    indexHtml.includes("100B $PND is issued to the Testnet treasury") &&
-    indexHtml.includes("Faucet XRP is worthless") &&
-    indexHtml.includes("Mainnet has not issued $PND") &&
-    !/<p class="hero-lede">[^<]*Target 1 October 2026/.test(indexHtml) &&
-    !/<p class="hero-lede">[\s\S]*?has not launched[\s\S]*?<\/p>/.test(
-      indexHtml.match(/<p class="hero-lede">[\s\S]*?<\/p>/)?.[0] ?? "",
-    ) &&
+    !indexHtml.includes("hero-kicker") &&
+    !indexHtml.includes("Join the Flock") &&
+    indexHtml.includes("100B $PND paid to treasury") &&
+    indexHtml.includes("Testnet XRP is faucet-issued and worthless") &&
+    indexHtml.includes("Mainnet still has no $PND issued") &&
     indexHtml.includes("Where Liquidity Goes to Stay.") &&
     /<link rel="stylesheet" href="\/styles\.[a-f0-9]{10}\.css">/.test(indexHtml) &&
-    /\.hero-tagline[\s\S]*?font-size:\s*clamp\(2\.4rem,\s*5vw,\s*4rem\)/.test(stylesText) &&
-    /\.hero-tagline[\s\S]*?text-transform:\s*none/.test(stylesText) &&
-    /\.hero \.hero-kicker[\s\S]*?font-size:\s*clamp\(8\.75rem/.test(stylesText) &&
-    /\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 - 0\.4rem\)/.test(stylesText) &&
-    !/\.hero \.hero-kicker[\s\S]*?bottom:\s*calc\(100% - 0\.78rem \* 1\.7 \+ 3\.3rem\)/.test(stylesText) &&
-    !/\.hero \.hero-kicker[\s\S]*?height:\s*1\.326rem/.test(stylesText) &&
     /<article class="prose">[\s\S]*Start here/i.test(indexHtml) &&
-    indexHtml.indexOf('class="hero"') < indexHtml.indexOf('<article class="prose">'),
+    indexHtml.indexOf('class="home-window-logo"') < indexHtml.indexOf('<article class="prose">'),
 );
 const heroTopoSvg = existsSync(join(DIST_DIR, "hero-topo.svg"))
   ? readFileSync(join(DIST_DIR, "hero-topo.svg"), "utf8")

@@ -3944,12 +3944,6 @@ code.addr {
   position: absolute;
 }
 
-.page-index .home-window-board {
-  background: #000;
-  border-bottom: 0;
-  scroll-margin-top: 0;
-}
-
 /* greenhead.io landing: absolute bottom-4, centered two-line legal. */
 .page-index .home-legal {
   position: absolute;
@@ -4123,17 +4117,6 @@ code.addr {
   max-height: none;
   justify-self: stretch;
   align-self: stretch;
-}
-
-/* Board window keeps the original 2×2 box. Privacy lives on window 1. */
-.page-index .home-window-board .hero-pages,
-.page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  height: auto;
-  max-height: 100%;
-  justify-self: end;
-  align-self: end;
 }
 
 .page-index .hero-page {
@@ -4833,15 +4816,6 @@ code.addr {
     max-height: none;
     justify-self: stretch;
     align-self: stretch;
-  }
-
-  .page-index .home-window-board .hero-pages,
-  .page-index[data-home-privacy="closed"] .home-window-board .hero-pages {
-    aspect-ratio: 1 / 1;
-    height: auto;
-    max-height: 100%;
-    justify-self: end;
-    align-self: end;
   }
 
   .page-index .hero-page {

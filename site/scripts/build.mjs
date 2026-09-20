@@ -296,8 +296,6 @@ function renderMarkdown(page) {
 
 /* ------------------------------------------------------------------- layout */
 
-const isPreLaunch = site.launchStatus !== "live";
-
 function navGroupId(section) {
   return String(section)
     .toLowerCase()
@@ -599,103 +597,6 @@ function heroTopoSvg() {
   return `<div class="hero-topo" aria-hidden="true"><img class="hero-topo-img" src="/hero-topo.svg" alt="" decoding="async" fetchpriority="low"></div>`;
 }
 
-function bithompExplorer(address) {
-  return `https://bithomp.com/explorer/${address}`;
-}
-
-function heroWalletHtml(label, address) {
-  return `<a class="hero-wallet" href="${esc(bithompExplorer(address))}" target="_blank" rel="noopener noreferrer">
-      <span class="hero-wallet-label">${esc(label)}</span>
-      <code class="addr">${esc(address)}</code>
-    </a>`;
-}
-
-function heroPagesHtml(home = false) {
-  const cards = [
-    {
-      href: "/Pond/",
-      key: "pond",
-      mark: "01",
-      title: "Pond",
-      lede: "This is the $PND / $rPND page.",
-      facts: [
-        "Tokenomics, treasury, and escrow. It is not the desk page.",
-        "Identity is (PND, issuer address), never the ticker alone.",
-        "Testnet 100B $PND paid to treasury. Mainnet is unissued.",
-        "Proposed split: 10B public, 10B team, 80B holder drops.",
-        "Snapshot, then Treasury Payments. Not TokenEscrow. No claim button.",
-      ],
-    },
-    {
-      href: "/profile/",
-      key: "profile",
-      mark: "02",
-      title: "Profile",
-      lede: "Sign in with official Xaman to open your account page.",
-      facts: [
-        "Logged-out visitors do not see handles or profile fields.",
-        "Login in the top bar opens Trade. After you sign in it says Launch.",
-        "Official connect is WalletConnect or Xaman only.",
-        "We do not store seeds or private keys.",
-      ],
-    },
-    {
-      href: "/trade/",
-      key: "trade",
-      mark: "03",
-      title: "Trade",
-      lede: "XRPL Testnet. This page reads the validated ledger.",
-      facts: [
-        "It does not sign or submit.",
-        "Treasury holds 100,000,000,000 PND.",
-        "Same r-address as mainnet.",
-        "Testnet XRP is faucet-issued and worthless.",
-        "Mainnet still has no $PND issued.",
-      ],
-    },
-    {
-      href: "/Protocol/",
-      key: "protocol",
-      mark: "04",
-      title: "Protocol",
-      lede: "This is the desk and ops page.",
-      facts: [
-        "Master / feed: Tadpole's rPND… address. Nathan funds 50B $PND + liquidity XRP here.",
-        "Bird Hunt 15: Nest ×5 / Current ×5 / Perch ×5.",
-        "They draw inventory from master under Tadpole's ops rules.",
-        "Not the 50B treasury seat. Not one of the 15 desk seats.",
-      ],
-    },
-  ];
-  if (!home) {
-    const blurbs = {
-      pond: "$PND / $rPND tokenomics, treasury, and escrow. Not the desk page.",
-      profile: "Xaman account. Handle and balances. Never a seed.",
-      trade: "Testnet terminal. Not a live mainnet DEX.",
-      protocol: "Desk and ops. Master / feed and Bird Hunt 15.",
-    };
-    return `<nav class="hero-pages" aria-label="Pond pages">${cards
-      .map(
-        (card) =>
-          `<a class="hero-page hero-page-${card.key}" href="${esc(card.href)}"><strong>${esc(card.title)}</strong><span>${esc(blurbs[card.key])}</span></a>`,
-      )
-      .join("")}</nav>`;
-  }
-  return `<nav class="hero-pages" aria-label="Pond pages">${cards
-    .map(
-      (card) => `<article class="hero-page hero-page-${card.key}">
-      <header class="hero-page-head">
-        <p class="hero-page-kicker">${card.mark}</p>
-        <a class="hero-page-go" href="${esc(card.href)}">${esc(card.href)}</a>
-      </header>
-      <h2 class="hero-page-title">${esc(card.title)}</h2>
-      <p class="hero-page-lede">${esc(card.lede)}</p>
-      <ul class="hero-page-facts">${card.facts.map((fact) => `<li>${esc(fact)}</li>`).join("")}</ul>
-    </article>`,
-    )
-    .join("")}</nav>`;
-}
-
 function homeLegalHtml() {
   const host = displayDomain;
   return `<footer class="home-legal" data-home-legal>
@@ -710,47 +611,9 @@ function homeLogoHtml() {
     <p class="hero-actions home-launch" role="group" aria-label="Pond and Protocol">
       <a class="button button-quiet" href="/Pond/">Pond</a>
       <a class="button button-quiet" href="/Protocol/">Protocol</a>
-      <a class="button" href="#pond-board">Launch</a>
+      <a class="button" href="#start-here">Launch</a>
     </p>
   </div>`;
-}
-
-function heroHtml(home = false) {
-  const chip = isPreLaunch
-    ? `<div class="hero-status" role="status">
-      <span class="status-chip">Pre-launch · nothing issued yet</span>
-      <span>Nothing issued. Nothing to buy.</span>
-    </div>`
-    : "";
-  const boardClass = home ? `hero home-window-board` : "hero";
-  const boardId = home ? ` id="pond-board"` : "";
-  return `<section class="${boardClass}"${boardId} aria-labelledby="hero-tagline">
-  ${home ? "" : heroTopoSvg()}
-  <div class="hero-inner">
-    <div class="hero-main">
-      <div class="hero-copy">
-        <div class="hero-heading">
-          <p class="hero-kicker">Pond</p>
-          <h1 id="hero-tagline" class="hero-tagline">Join the Flock at<br>the Pond</h1>
-        </div>
-        <p class="hero-lede"><strong>Testnet phase.</strong> 100B $PND is issued to the Testnet treasury.
-        Faucet XRP is worthless. Mainnet has not issued $PND.
-        Identity is still the pair <strong>(PND, issuer address)</strong>, never the ticker.</p>
-        ${chip}
-        <div class="hero-wallets" aria-label="Official wallets">
-          ${heroWalletHtml("Issuer", site.issuerAddress)}
-          ${heroWalletHtml("Treasury", site.treasuryAddress)}
-          ${heroWalletHtml("Operations", site.operationsAddress)}
-        </div>
-        <p class="hero-actions">
-          <a class="button" href="/Pond/">Pond <span aria-hidden="true">↗</span></a>
-          <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
-        </p>
-      </div>
-      ${heroPagesHtml(home)}
-    </div>
-  </div>
-</section>`;
 }
 
 function protocolSnapshotHtml() {
@@ -1043,7 +906,6 @@ ${heroTopoSvg()}
 ${banner}
 ${protocolSnapshotHtml()}
 ${isHome ? `${homeLogoHtml()}${homeLegalHtml()}${privacyDockHtml({ home: true })}</section>` : ""}
-${landing ? heroHtml(isHome) : ""}
 ${isHome ? `</div>` : ""}
 <div class="shell">
   <main id="main">
