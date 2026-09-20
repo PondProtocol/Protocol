@@ -601,22 +601,85 @@ function heroWalletHtml(label, address) {
     </a>`;
 }
 
-function heroPagesHtml() {
+function heroPagesHtml(home = false) {
   const cards = [
-    ["/Pond/", "Pond", "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole.", "pond"],
-    ["/profile/", "Profile", "Xaman account. Handle and balances. Never a seed.", "profile"],
-    ["/trade/", "Trade", "Testnet terminal. Not a live mainnet DEX.", "trade"],
-    ["/Protocol/", "Protocol", "Decentralized and Agent-AI-run.", "protocol"],
+    {
+      href: "/Pond/",
+      key: "pond",
+      mark: "01",
+      title: "Pond",
+      lede: "How Pond operates.",
+      facts: [
+        "Pond is the company. Greenhead Labs supports it. Agent Tadpole runs it.",
+        "Mainnet has not issued $PND.",
+        "Identity is the pair (PND, issuer address).",
+        "Permanent No Freeze. Clawback is off.",
+      ],
+    },
+    {
+      href: "/profile/",
+      key: "profile",
+      mark: "02",
+      title: "Profile",
+      lede: "Sign in with official Xaman to open your account page.",
+      facts: ["Logged-out visitors do not see handles or profile fields."],
+    },
+    {
+      href: "/trade/",
+      key: "trade",
+      mark: "03",
+      title: "Trade",
+      lede: "XRPL Testnet. This page reads the validated ledger.",
+      facts: [
+        "It does not sign or submit.",
+        "Treasury holds 100,000,000,000 PND.",
+        "Testnet XRP is faucet-issued and worthless.",
+        "Mainnet still has no $PND issued.",
+      ],
+    },
+    {
+      href: "/Protocol/",
+      key: "protocol",
+      mark: "04",
+      title: "Protocol",
+      lede: "Pond Protocol is decentralized and Agent-AI-run.",
+      facts: [
+        "Permanent No Freeze is set. Clawback is off.",
+        "Agents run the protocol work. They do not ask you for a seed.",
+        "$PND is Testnet-issued; Mainnet has not issued. $rPND is not live.",
+      ],
+    },
   ];
+  if (!home) {
+    const blurbs = {
+      pond: "How Pond operates. Supported by Greenhead Labs. Run by Agent Tadpole.",
+      profile: "Xaman account. Handle and balances. Never a seed.",
+      trade: "Testnet terminal. Not a live mainnet DEX.",
+      protocol: "Decentralized and Agent-AI-run.",
+    };
+    return `<nav class="hero-pages" aria-label="Pond pages">${cards
+      .map(
+        (card) =>
+          `<a class="hero-page hero-page-${card.key}" href="${esc(card.href)}"><strong>${esc(card.title)}</strong><span>${esc(blurbs[card.key])}</span></a>`,
+      )
+      .join("")}</nav>`;
+  }
   return `<nav class="hero-pages" aria-label="Pond pages">${cards
     .map(
-      ([href, title, blurb, key]) =>
-        `<a class="hero-page hero-page-${key}" href="${esc(href)}"><strong>${esc(title)}</strong><span>${esc(blurb)}</span></a>`,
+      (card) => `<article class="hero-page hero-page-${card.key}">
+      <header class="hero-page-head">
+        <p class="hero-page-kicker">${card.mark}</p>
+        <a class="hero-page-go" href="${esc(card.href)}">${esc(card.href)}</a>
+      </header>
+      <h2 class="hero-page-title">${esc(card.title)}</h2>
+      <p class="hero-page-lede">${esc(card.lede)}</p>
+      <ul class="hero-page-facts">${card.facts.map((fact) => `<li>${esc(fact)}</li>`).join("")}</ul>
+    </article>`,
     )
     .join("")}</nav>`;
 }
 
-function heroHtml() {
+function heroHtml(home = false) {
   const chip = isPreLaunch
     ? `<div class="hero-status" role="status">
       <span class="status-chip">Pre-launch · nothing issued yet</span>
@@ -646,7 +709,7 @@ function heroHtml() {
           <a class="button button-quiet" href="/Protocol/">Protocol <span aria-hidden="true">↗</span></a>
         </p>
       </div>
-      ${heroPagesHtml()}
+      ${heroPagesHtml(home)}
     </div>
   </div>
 </section>`;
@@ -938,7 +1001,7 @@ ${isHome ? `<div class="home-screen">` : ""}
 </header>
 ${banner}
 ${protocolSnapshotHtml()}
-${landing ? heroHtml() : ""}
+${landing ? heroHtml(isHome) : ""}
 ${isHome ? `</div>` : ""}
 <div class="shell">
   <main id="main">
