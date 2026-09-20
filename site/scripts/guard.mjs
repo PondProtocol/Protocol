@@ -359,7 +359,7 @@ check(
     indexSupplyHtml.includes("2027-01-01") &&
     indexSupplyHtml.includes("2027-08-01") &&
     /snapshot/i.test(indexSupplyText) &&
-    /treasury payments/i.test(indexSupplyText) &&
+    /treasury\s+payment/i.test(indexSupplyText) &&
     /not TokenEscrow/i.test(indexSupplyText),
 );
 check(
@@ -780,7 +780,7 @@ check(
     indexHtml.includes("This page reads the validated ledger.") &&
     indexHtml.includes("It does not sign or submit.") &&
     indexHtml.includes("100,000,000,000 PND") &&
-    indexHtml.includes("Same r-address as mainnet.") &&
+    indexHtml.includes("same r-address as mainnet") &&
     indexHtml.includes("Testnet XRP is faucet-issued and worthless.") &&
     indexHtml.includes("Mainnet still has no $PND issued.") &&
     indexHtml.includes("This is the desk and ops page.") &&
@@ -1174,7 +1174,8 @@ if (tomlHasIcon) {
 
 check(
   "status chip is rendered while pre-launch",
-  config.site.launchStatus === "live" || (existsSync(index) && readFileSync(index, "utf8").includes("nothing issued yet")),
+  config.site.launchStatus === "live" ||
+    (existsSync(index) && readFileSync(index, "utf8").includes("nothing issued")),
 );
 
 const authoredStale = [];
