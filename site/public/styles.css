@@ -6946,7 +6946,38 @@ body:has([data-pond-profile]) .profile-card {
 }
 
 .trade-chart-hud [data-chart-hud-prints],
-.trade-chart-hud [data-chart-hud-pin] {
+.trade-chart-hud [data-chart-hud-pin],
+.trade-chart-hud [data-chart-hud-bar],
+.trade-chart-hud [data-chart-hud-vwap],
+.trade-chart-hud [data-chart-hud-span] {
+  color: #c9b27a;
+}
+
+.trade-chart-history-span {
+  display: block;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+}
+
+.trade-chart-empty-action {
+  position: relative;
+  margin-top: 0.35rem;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #1a1e22;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+}
+
+.trade-chart-empty-action[hidden] {
+  display: none !important;
+}
+
+.trade-snapshot-prints li.is-first button {
   color: #c9b27a;
 }
 
@@ -10635,7 +10666,9 @@ body.page-trade .trade-detail-window {
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints {
-    display: none;
+    display: block;
+    max-height: 7.2rem;
+    overflow: auto;
   }
 
   body.page-trade .trade-app[data-mode="chart"] .trade-snapshot-prints button,

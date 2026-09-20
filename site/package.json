@@ -11,7 +11,7 @@
   "scripts": {
     "sync": "node scripts/sync.mjs",
     "build": "node scripts/build.mjs",
-    "check": "node scripts/build.mjs --strict && node scripts/guard.mjs && node --test --test-concurrency=1 scripts/identicon.test.mjs scripts/profiles.test.mjs scripts/session.test.mjs scripts/balances.test.mjs scripts/xaman.test.mjs",
+    "check": "node scripts/build.mjs --strict && node scripts/guard.mjs && node --test --test-concurrency=1 scripts/identicon.test.mjs scripts/profiles.test.mjs scripts/session.test.mjs scripts/balances.test.mjs scripts/xaman.test.mjs scripts/tape.test.mjs",
     "serve": "node scripts/serve.mjs",
     "verify:live": "node scripts/verify-live.mjs"
   },

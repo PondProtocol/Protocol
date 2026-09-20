@@ -906,9 +906,11 @@ check(
     tradeJsText.includes('data-chart-range="1h"') &&
     tradeJsText.includes('data-chart-range="4h"') &&
     tradeJsText.includes('data-chart-range="1d"') &&
+    tradeJsText.includes('data-chart-range="all"') &&
     tradeJsText.includes('"1h": 60 * 60_000') &&
     tradeJsText.includes('"4h": 4 * 60 * 60_000') &&
     tradeJsText.includes('"1d": 24 * 60 * 60_000') &&
+    tradeJsText.includes("all: 60_000") &&
     tradeJsText.includes('data-chart-style="candles"') &&
     tradeJsText.includes("data-chart-magnet") &&
     tradeJsText.includes("data-chart-log") &&
@@ -928,7 +930,17 @@ check(
     stylesText.includes(".trade-chart-snapshot") &&
     /grid-template-rows:\s*minmax\(0,\s*26%\)/.test(stylesText) &&
     stylesText.includes("trade-snapshot-dup") &&
-    tradeJsText.includes("slice(0, 3)") &&
+    tradeJsText.includes("slice(0, 8)") &&
+    tradeJsText.includes('kind: "first"') &&
+    tradeJsText.includes("loadPersistedTape") &&
+    tradeJsText.includes("mergeTradesByHash") &&
+    tradeJsText.includes("/api/tape") &&
+    tradeJsText.includes("data-chart-history-span") &&
+    tradeJsText.includes("data-chart-empty-all") &&
+    tradeJsText.includes("data-chart-stat-from-first") &&
+    tradeJsText.includes("data-chart-hud-vwap") &&
+    tradeJsText.includes("visibleOnly") &&
+    tradeJsText.includes("tapeCompletenessLabel") &&
     tradeJsText.includes("compact: true") &&
     tradeJsText.includes("data-chart-period") &&
     tradeJsText.includes("data-chart-bar-left") &&
@@ -1497,6 +1509,24 @@ const identiconSrc = existsSync(join(SITE_ROOT, "scripts", "identicon.mjs"))
   ? readFileSync(join(SITE_ROOT, "scripts", "identicon.mjs"), "utf8")
   : "";
 const serveSrc = readFileSync(join(SITE_ROOT, "scripts", "serve.mjs"), "utf8");
+const tapeSrc = existsSync(join(SITE_ROOT, "scripts", "tape.mjs"))
+  ? readFileSync(join(SITE_ROOT, "scripts", "tape.mjs"), "utf8")
+  : "";
+check(
+  "server persists the full validated PND tape and never drops genesis",
+  tapeSrc.includes("export async function syncTape") &&
+    tapeSrc.includes("mergePrints") &&
+    tapeSrc.includes("forward: true") &&
+    tapeSrc.includes("GET /api/tape") &&
+    tapeSrc.includes("AMMCreate") &&
+    !tapeSrc.includes("mnemonic") &&
+    serveSrc.includes("handleTape") &&
+    serveSrc.includes("startTapeSync") &&
+    serveSrc.includes("/api/tape") &&
+    tradeJsText.includes("applyPersistedTape") &&
+    tradeJsText.includes("tapeComplete") &&
+    !tradeJsText.includes("slice(0, 3)"),
+);
 check(
   "new tadpole accounts get an address-derived identicon, not the duck",
   identiconSrc.includes("identiconHash") &&
