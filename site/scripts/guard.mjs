@@ -1126,16 +1126,31 @@ check(
     !/<div class="privacy-notice"[^>]*\bhidden\b/.test(indexHtml),
 );
 check(
-  "trade privacy dock still starts as the fab",
+  "trade privacy dock HTML is present but /trade/ hides it",
   tradeHtml.includes('data-privacy-mode="fab"') &&
-    /data-privacy-notice hidden/.test(tradeHtml),
+    /data-privacy-notice hidden/.test(tradeHtml) &&
+    tradeHasDock &&
+    /page-trade \.privacy-dock/.test(stylesText) &&
+    /display:\s*none/.test(stylesText.slice(stylesText.indexOf(".page-trade .privacy-dock"))) &&
+    privacyJsText.includes("isTrade") &&
+    privacyJsText.includes('"/trade/"') &&
+    privacyJsText.includes("hideOnTrade") &&
+    privacyJsText.includes('privacyMode = "hidden"'),
 );
 check(
-  "privacy dock is sitewide, including Trade",
+  "privacy dock stays on home, Pond, Protocol, and profile",
   indexHtml.includes('data-privacy-dock') &&
     indexHtml.includes("/privacy.js") &&
-    tradeHasDock &&
-    legalHtml.includes('data-privacy-dock'),
+    legalHtml.includes('data-privacy-dock') &&
+    existsSync(join(DIST_DIR, "Pond", "index.html")) &&
+    readFileSync(join(DIST_DIR, "Pond", "index.html"), "utf8").includes("data-privacy-dock") &&
+    existsSync(join(DIST_DIR, "Protocol", "index.html")) &&
+    readFileSync(join(DIST_DIR, "Protocol", "index.html"), "utf8").includes("data-privacy-dock") &&
+    existsSync(join(DIST_DIR, "profile", "index.html")) &&
+    readFileSync(join(DIST_DIR, "profile", "index.html"), "utf8").includes("data-privacy-dock") &&
+    !privacyJsText.includes('"/Pond/"') &&
+    !privacyJsText.includes('"/Protocol/"') &&
+    !privacyJsText.includes('"/profile/"'),
 );
 check(
   "privacy UI has the icon, Private Browsing card, and Privacy vault",

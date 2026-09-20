@@ -1,5 +1,6 @@
 (() => {
   const HOME_PATHS = new Set(["/", "/index.html", ""]);
+  const TRADE_PATHS = new Set(["/trade", "/trade/"]);
 
   const dock = () => document.querySelector("[data-privacy-dock]");
   const fab = () => document.querySelector("[data-privacy-fab]");
@@ -8,8 +9,16 @@
   const stack = () => document.querySelector("[data-privacy-stack]");
   const gpcNote = () => document.querySelector("[data-privacy-gpc]");
 
+  function pagePath(pathname) {
+    return (pathname || "/").split("?")[0].split("#")[0];
+  }
+
   function isHome(pathname) {
-    return HOME_PATHS.has((pathname || "/").split("?")[0].split("#")[0]);
+    return HOME_PATHS.has(pagePath(pathname));
+  }
+
+  function isTrade(pathname) {
+    return TRADE_PATHS.has(pagePath(pathname));
   }
 
   function hasGpc(nav = typeof navigator === "undefined" ? undefined : navigator) {
@@ -18,9 +27,21 @@
   }
 
   function mode() {
+    const root = dock();
+    if (root?.hidden || root?.dataset.privacyMode === "hidden") return "hidden";
     if (vault() && !vault().hidden) return "vault";
     if (notice() && !notice().hidden) return "notice";
     return "fab";
+  }
+
+  function hideOnTrade() {
+    const root = dock();
+    if (!root) return;
+    root.hidden = true;
+    if (fab()) fab().hidden = true;
+    if (notice()) notice().hidden = true;
+    if (vault()) vault().hidden = true;
+    root.dataset.privacyMode = "hidden";
   }
 
   function syncHomePrivacyReserve() {
@@ -47,8 +68,13 @@
   }
 
   function setMode(next) {
+    if (isTrade(window.location.pathname)) {
+      hideOnTrade();
+      return;
+    }
     const root = dock();
     if (!root) return;
+    root.hidden = false;
     if (fab()) fab().hidden = next !== "fab";
     if (notice()) notice().hidden = next !== "notice";
     if (vault()) vault().hidden = next !== "vault";
@@ -66,11 +92,15 @@
 
   function onPathChange() {
     applyGpc();
-    if (isHome(window.location.pathname)) {
-      if (mode() === "fab") setMode("notice");
+    if (isTrade(window.location.pathname)) {
+      hideOnTrade();
       return;
     }
-    if (mode() === "notice") setMode("fab");
+    if (isHome(window.location.pathname)) {
+      if (mode() === "fab" || mode() === "hidden") setMode("notice");
+      return;
+    }
+    if (mode() === "notice" || mode() === "hidden") setMode("fab");
   }
 
   function setup() {
@@ -136,7 +166,9 @@
       }
     });
 
-    if (isHome(window.location.pathname)) {
+    if (isTrade(window.location.pathname)) {
+      hideOnTrade();
+    } else if (isHome(window.location.pathname)) {
       if (mode() !== "notice") setMode("notice");
     } else if (mode() !== "fab") {
       setMode("fab");
@@ -159,6 +191,7 @@
 
   window.PondPrivacy = {
     openVault() {
+      if (isTrade(window.location.pathname)) return;
       setMode("vault");
     },
   };
